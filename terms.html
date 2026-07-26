@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>약관 및 개인정보처리방침 · 레오파드 모프 계산기</title>
+<style>
+  :root{ --bg:#EDEAE1; --card:#FDFCF9; --card2:#F4F1E9; --ink:#26221D; --ink2:#8A8375;
+    --hair:rgba(38,34,29,.1); --teal:#0E7C7B; --shadow:0 1px 2px rgba(38,34,29,.05),0 8px 24px rgba(38,34,29,.06); }
+  @media (prefers-color-scheme:dark){ :root{ --bg:#141310; --card:#211E1A; --card2:#1B1915; --ink:#F3EFE7;
+    --ink2:#A49D8F; --hair:rgba(255,255,255,.1); --teal:#3FB8B2; --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 26px rgba(0,0,0,.3);} }
+  *{box-sizing:border-box} html,body{margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);line-height:1.7;
+    font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;padding-bottom:50px}
+  header{padding:20px 16px 8px;text-align:center;position:relative}
+  .back{position:absolute;left:14px;top:20px;color:var(--teal);text-decoration:none;font-weight:700;font-size:13.5px}
+  header h1{margin:0;font-size:19px;font-weight:800}
+  .wrap{max-width:720px;margin:0 auto;padding:10px 16px}
+  .seg{display:flex;background:rgba(120,120,128,.14);border-radius:11px;padding:3px;margin-bottom:16px}
+  .seg button{flex:1;background:transparent;border:none;padding:10px;border-radius:9px;font-size:14px;font-weight:700;
+    color:var(--ink);cursor:pointer;font-family:inherit}
+  .seg button.on{background:var(--card);box-shadow:0 1px 3px rgba(38,34,29,.16)}
+  .doc{background:var(--card);border-radius:16px;padding:20px;box-shadow:var(--shadow);font-size:14px}
+  .doc h2{font-size:16px;margin:22px 0 8px;font-weight:800}
+  .doc h2:first-child{margin-top:0}
+  .doc p{margin:8px 0;color:var(--ink)}
+  .doc ul{margin:8px 0;padding-left:18px}
+  .doc li{margin:5px 0}
+  .doc .meta{color:var(--ink2);font-size:12.5px;margin-bottom:14px}
+  table{width:100%;border-collapse:collapse;margin:10px 0;font-size:13px}
+  th,td{border:1px solid var(--hair);padding:9px 10px;text-align:left;vertical-align:top}
+  th{background:var(--card2);font-weight:700;font-size:12.5px}
+  .em{background:var(--card2);border-radius:10px;padding:12px 14px;margin:12px 0;font-size:13px;color:var(--ink2)}
+</style>
+</head>
+<body>
+<header>
+  <a class="back" href="login.html">← 돌아가기</a>
+  <h1>약관 및 개인정보</h1>
+</header>
+<div class="wrap">
+  <div class="seg">
+    <button id="t1" class="on">이용약관</button>
+    <button id="t2">개인정보처리방침</button>
+  </div>
+
+  <div class="doc" id="terms">
+    <div class="meta">시행일 2026년 7월 26일</div>
+
+    <h2>제1조 (목적)</h2>
+    <p>본 약관은 레오파드 모프 계산기(이하 "서비스")가 제공하는 파충류 모프 유전 계산 및 브리딩 관리 서비스의 이용과 관련하여, 서비스와 이용자의 권리·의무 및 책임사항을 규정함을 목적으로 합니다.</p>
+
+    <h2>제2조 (정의)</h2>
+    <ul>
+      <li>"서비스"란 레오파드 게코 등 파충류의 모프 유전 확률을 계산하고 브리딩 정보를 관리할 수 있도록 제공되는 웹 서비스를 말합니다.</li>
+      <li>"회원"이란 본 약관에 동의하고 계정을 생성한 자를 말합니다.</li>
+      <li>"프리미엄"이란 발급된 코드 또는 유료 결제를 통해 이용할 수 있는 확장 기능을 말합니다.</li>
+    </ul>
+
+    <h2>제3조 (약관의 효력 및 변경)</h2>
+    <p>본 약관은 서비스 화면에 게시함으로써 효력이 발생합니다. 서비스는 관련 법령을 위배하지 않는 범위에서 약관을 변경할 수 있으며, 변경 시 적용일자와 사유를 명시하여 사전에 공지합니다. 회원이 변경된 약관에 동의하지 않는 경우 이용을 중단하고 탈퇴할 수 있습니다.</p>
+
+    <h2>제4조 (회원가입 및 계정)</h2>
+    <ul>
+      <li>회원가입은 본 약관 및 개인정보 수집·이용에 동의하고, 만 14세 이상인 자에 한하여 가능합니다.</li>
+      <li>회원은 계정 정보를 제3자에게 양도하거나 대여할 수 없습니다.</li>
+      <li>계정 관리 소홀로 발생한 손해에 대한 책임은 회원에게 있습니다.</li>
+    </ul>
+
+    <h2>제5조 (서비스의 제공)</h2>
+    <p>서비스는 모프 유전 확률 계산, 콤보 명칭 안내, 개체·페어링·클러치 관리 등의 기능을 제공합니다. 서비스는 운영상·기술상 필요에 따라 제공 기능의 전부 또는 일부를 변경하거나 중단할 수 있습니다.</p>
+
+    <h2>제6조 (계산 결과의 성격 및 면책)</h2>
+    <div class="em">
+      본 서비스가 제공하는 확률은 <b>멘델 유전 법칙에 근거한 이론값</b>이며, 실제 부화 결과와 다를 수 있습니다. 라인브리딩(다인자) 형질은 확률 계산의 대상이 아닙니다. 서비스는 계산 결과를 근거로 한 개체의 매매·교배·사육 판단 및 그로 인한 손해에 대하여 책임을 지지 않습니다. 개체의 건강 및 사육 관련 사항은 반드시 전문 수의사 등 전문가와 상담하시기 바랍니다.
+    </div>
+
+    <h2>제7조 (회원의 의무)</h2>
+    <ul>
+      <li>타인의 정보를 도용하거나 허위 정보를 등록해서는 안 됩니다.</li>
+      <li>서비스를 무단으로 복제·배포하거나 자동화된 수단으로 과도한 부하를 유발해서는 안 됩니다.</li>
+      <li>발급된 프리미엄 코드를 재판매하거나 타인과 공유해서는 안 됩니다.</li>
+    </ul>
+
+    <h2>제8조 (프리미엄 코드 및 이용 제한)</h2>
+    <p>프리미엄 코드는 1인 1회에 한하여 사용할 수 있으며 재사용할 수 없습니다. 회원 계정에 연결되어 이용 기간 동안 유지됩니다. 부정 사용이 확인되거나 본 약관을 위반한 경우, 서비스는 사전 통지 없이 해당 코드의 효력을 정지하거나 이용을 제한할 수 있습니다.</p>
+
+    <h2>제9조 (게시물 및 콘텐츠)</h2>
+    <p>회원이 등록한 개체 정보·사진 등의 저작권은 회원에게 있습니다. 서비스는 서비스 운영·개선 목적에 한하여 이를 저장·표시할 수 있습니다.</p>
+
+    <h2>제10조 (탈퇴 및 이용계약 해지)</h2>
+    <p>회원은 언제든지 탈퇴를 요청할 수 있으며, 요청 시 관련 법령에 따라 보존이 필요한 정보를 제외한 개인정보는 지체 없이 파기됩니다.</p>
+
+    <h2>제11조 (문의)</h2>
+    <p>서비스 이용 관련 문의는 kmc612000@gmail.com 으로 연락해 주시기 바랍니다.</p>
+  </div>
+
+  <div class="doc" id="privacy" style="display:none">
+    <div class="meta">시행일 2026년 7월 26일</div>
+    <p>레오파드 모프 계산기(이하 "서비스")는 이용자의 개인정보를 중요하게 생각하며, 「개인정보 보호법」 등 관련 법령을 준수합니다.</p>
+
+    <h2>1. 수집하는 개인정보 항목 및 목적</h2>
+    <table>
+      <tr><th>구분</th><th>수집 항목</th><th>이용 목적</th><th>보유 기간</th></tr>
+      <tr><td>필수</td><td>이메일 주소, 비밀번호(암호화 저장)</td><td>회원 식별, 로그인, 프리미엄 이용 자격 확인</td><td>회원 탈퇴 시까지</td></tr>
+      <tr><td>필수</td><td>약관·개인정보 동의 기록, 동의 일시</td><td>동의 이력 관리 (법정 의무)</td><td>회원 탈퇴 후 5년</td></tr>
+      <tr><td>자동</td><td>접속 일시, 브라우저 정보, 기기 식별값, 이용 기록</td><td>서비스 개선, 통계 분석, 부정 이용 방지</td><td>수집일로부터 1년</td></tr>
+      <tr><td>선택</td><td>휴대전화번호, 닉네임</td><td>마케팅 정보 전송, 문의 응대</td><td>동의 철회 시까지</td></tr>
+      <tr><td>선택</td><td>등록한 개체·페어링·클러치 정보 및 사진</td><td>브리딩 관리 기능 제공</td><td>회원 탈퇴 또는 삭제 시까지</td></tr>
+    </table>
+    <p>구글 계정으로 로그인하는 경우, 구글로부터 이메일 주소와 프로필 기본 정보를 제공받습니다.</p>
+
+    <h2>2. 개인정보의 제3자 제공 (선택)</h2>
+    <p>서비스는 원칙적으로 이용자의 개인정보를 외부에 제공하지 않습니다. 다만 이용자가 <b>별도로 동의한 경우</b>에 한하여 아래와 같이 제공될 수 있으며, <b>동의하지 않아도 서비스 이용에 제한이 없습니다.</b></p>
+    <table>
+      <tr><th>제공받는 자</th><th>제공 항목</th><th>제공 목적</th><th>보유 기간</th></tr>
+      <tr><td>제휴 분양샵·용품 판매처 등 제휴사</td><td>이메일, 닉네임, (동의 시) 휴대전화번호</td><td>제휴 상품·이벤트 안내</td><td>동의 철회 시까지</td></tr>
+    </table>
+    <p>실제 제휴가 발생하는 시점에 제공받는 자와 항목을 구체적으로 고지하고 별도 동의를 받습니다.</p>
+
+    <h2>3. 광고성 정보 전송 (선택)</h2>
+    <p>이용자가 마케팅 정보 수신에 동의한 경우, 이메일 또는 문자메시지로 신규 기능·이벤트·제휴 혜택 등의 광고성 정보를 전송할 수 있습니다. 동의는 선택 사항이며 언제든지 계정 화면에서 철회할 수 있습니다. 「정보통신망법」에 따라 2년마다 수신 동의 여부를 확인합니다.</p>
+
+    <h2>4. 개인정보의 처리 위탁</h2>
+    <table>
+      <tr><th>수탁자</th><th>위탁 업무</th></tr>
+      <tr><td>Supabase Inc.</td><td>회원 인증, 데이터베이스 및 파일 저장 (서버 위치: 대한민국 서울 리전)</td></tr>
+      <tr><td>GitHub, Inc.</td><td>웹사이트 호스팅</td></tr>
+    </table>
+
+    <h2>5. 쿠키 및 유사 기술</h2>
+    <p>서비스는 로그인 상태 유지와 이용 통계를 위해 브라우저 저장소(쿠키, localStorage, sessionStorage)를 사용합니다. 저장되는 정보는 로그인 세션 정보, 기기 식별값, 화면 설정값(언어·표시 옵션) 등이며 이름·주소 등 신원 정보는 포함되지 않습니다. 브라우저 설정에서 저장을 거부할 수 있으나, 이 경우 로그인 유지 등 일부 기능이 정상 동작하지 않을 수 있습니다.</p>
+
+    <h2>6. 개인정보의 파기</h2>
+    <p>보유 기간이 지나거나 처리 목적이 달성된 개인정보는 지체 없이 파기합니다. 전자적 파일은 복구할 수 없는 방법으로 영구 삭제합니다.</p>
+
+    <h2>7. 이용자의 권리</h2>
+    <p>이용자는 언제든지 개인정보 열람·정정·삭제·처리정지를 요구할 수 있으며, 동의를 철회할 수 있습니다. 계정 화면에서 직접 변경하거나 아래 연락처로 요청하실 수 있습니다. 만 14세 미만 아동의 개인정보는 수집하지 않습니다.</p>
+
+    <h2>8. 개인정보 보호책임자</h2>
+    <p>책임자: 서비스 운영자<br>연락처: kmc612000@gmail.com</p>
+    <p>개인정보 침해에 대한 신고·상담이 필요한 경우 개인정보침해신고센터(privacy.kisa.or.kr, 국번없이 118) 등에 문의하실 수 있습니다.</p>
+
+    <h2>9. 방침의 변경</h2>
+    <p>본 방침이 변경되는 경우 변경 사항을 시행 7일 전부터 서비스 화면에 공지합니다.</p>
+  </div>
+</div>
+<script>
+  var t1=document.getElementById('t1'), t2=document.getElementById('t2');
+  var d1=document.getElementById('terms'), d2=document.getElementById('privacy');
+  function show(which){
+    var isT = which==='terms';
+    t1.className = isT?'on':''; t2.className = isT?'':'on';
+    d1.style.display = isT?'':'none'; d2.style.display = isT?'none':'';
+    try{ history.replaceState(null,'','#'+which); }catch(e){}
+    window.scrollTo(0,0);
+  }
+  t1.onclick=function(){show('terms')}; t2.onclick=function(){show('privacy')};
+  if((location.hash||'').indexOf('privacy')>=0) show('privacy');
+</script>
+</body>
+</html>

@@ -398,6 +398,7 @@ if(typeof GENES==='undefined'){
 
   <div class="bottom-links">
     <button class="blink" onclick="openUpd()">📢 업데이트 노트</button>
+    <a class="blink" id="acctBtn" href="login.html" style="display:none">👤 로그인</a>
     <a class="blink" id="proBtn" href="breeding.html" style="display:none">🦎 브리딩 관리</a>
     <button class="blink" id="premBtn" onclick="openPrem()" style="display:none">💎 프리미엄 코드</button>
     <a class="blink" id="mailLink" href="mailto:kmc612000@gmail.com">✉️ kmc612000@gmail.com</a>
@@ -931,6 +932,8 @@ applyLang();
     catch(e){ try{ const r2=await SB.rpc('is_premium',{p_device:uid()}); isPrem=!!r2.data; }catch(x){ isPrem=false; } }
     if(btn) btn.textContent = isPrem? (premKind==='sub'?'💎 구독 중':'💎 체험판 이용중') : '💎 프리미엄 코드';
     window.__isPrem = isPrem;
+    const ab=document.getElementById('acctBtn');
+    if(ab){ ab.style.display=''; ab.textContent = USER? ('👤 '+String(USER.email||'내 계정').split('@')[0]) : '👤 로그인'; }
     if(pro) pro.style.display = isPrem? '' : 'none';
     const ad=document.getElementById('adSlot'); if(ad && isPrem) ad.style.display='none';   // 프리미엄 = 광고 제거
   }
@@ -945,22 +948,7 @@ applyLang();
       document.getElementById('btnLogout').onclick=async()=>{ await SB.auth.signOut(); USER=null; await refreshPrem(); openPrem(); };
     } else {
       acct.innerHTML='<div class="lockbox" style="text-align:left"><b>로그인하면 기기가 바뀌어도 프리미엄이 유지됩니다.</b><br>로그인 없이 코드를 쓰면 이 브라우저에서만 인정돼요.</div>'
-        +'<button class="abtn" id="btnGoogle" style="width:100%;margin:9px 0 6px">🔵 Google로 계속하기</button>'
-        +'<div class="tokgrid"><input class="ain" id="loginEmail" type="email" placeholder="이메일"><input class="ain" id="loginPw" type="password" placeholder="비밀번호"></div>'
-        +'<div class="aformbtns"><button class="abtn ghost" id="btnSignin" style="flex:1">로그인</button><button class="abtn ghost" id="btnSignup" style="flex:1">회원가입</button></div>'
-        +'<div id="loginMsg" class="aerr"></div>';
-      document.getElementById('btnGoogle').onclick=async()=>{
-        const r=await SB.auth.signInWithOAuth({provider:'google',options:{redirectTo:location.href.split('#')[0]}});
-        if(r.error) document.getElementById('loginMsg').textContent='구글 로그인 실패: '+r.error.message; };
-      const em=()=>document.getElementById('loginEmail').value.trim(), pw=()=>document.getElementById('loginPw').value;
-      document.getElementById('btnSignin').onclick=async()=>{ const m=document.getElementById('loginMsg'); m.textContent='로그인 중…';
-        const r=await SB.auth.signInWithPassword({email:em(),password:pw()});
-        if(r.error) m.textContent=r.error.message; else { USER=r.data.user; await migrateDevice(); await refreshPrem(); openPrem(); } };
-      document.getElementById('btnSignup').onclick=async()=>{ const m=document.getElementById('loginMsg'); m.textContent='가입 중…';
-        const r=await SB.auth.signUp({email:em(),password:pw()});
-        if(r.error) m.textContent=r.error.message;
-        else if(r.data.session){ USER=r.data.user; await migrateDevice(); await refreshPrem(); openPrem(); }
-        else m.textContent='확인 메일을 보냈어요. 메일에서 인증 후 로그인해 주세요.'; };
+        +'<a class="abtn" href="login.html" style="display:block;width:100%;margin:10px 0 2px;text-align:center;text-decoration:none;box-sizing:border-box">로그인 / 회원가입</a>';
     }
     document.getElementById('premStatus').textContent = isPrem
       ? ((premKind==='sub'?'구독':'체험판')+' 이용 중' + (exp? ' · '+exp+'까지' : ' · 무기한'))

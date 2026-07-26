@@ -21,9 +21,24 @@ function morphNameOf(id){
 
 /* ===== 레오파드 모프 계산기 · 공용 코어 (index.html / breeding.html 공용) ===== */
 
-const DONATE_URL = '#';
-const AD_ENABLED = true;
-const AD_HTML    = '';
+/* --- 후원 계좌 --- */
+const DONATE_BANK = '카카오뱅크';
+const DONATE_ACCT = '3333-17-6613203';
+
+/* --- 광고 ---------------------------------------------------------------
+   AD_ENABLED : 광고 영역 표시 여부 (프리미엄 회원에게는 자동으로 숨겨짐)
+   AD_HTML    : 광고 스크립트/태그를 여기에 붙여넣으면 그대로 렌더링됩니다.
+                비워두면 "이 자리에 광고 코드를 넣을 수 있어요" 안내만 보입니다.
+
+   ⚠️ 광고를 실제로 넣기 전에 반드시 확인할 것
+   1. 광고 네트워크가 행태정보(쿠키)를 수집하면 개인정보처리방침의
+      「5. 쿠키 및 유사 기술」에 광고 사업자명·수집 항목·거부 방법을 추가해야 합니다.
+      (terms.html 에 관련 문단이 준비되어 있으니 사업자명만 채우면 됩니다)
+   2. 만 14세 미만 이용자에게는 맞춤형 광고를 노출하지 않도록 설정해야 합니다.
+   3. 애드센스 등 대부분의 네트워크는 자체 도메인·충분한 콘텐츠를 요구합니다.  */
+const AD_ENABLED  = true;
+const AD_HTML     = '';
+const AD_PROVIDER = '';    // 예: 'Google AdSense' — 채우면 개인정보처리방침 안내에 표시됨
 /* --- 백엔드(Supabase) : 관리자·통계·코드 기능. 비워두면 계산기만 동작 --- */
 const SUPABASE_URL  = 'https://icjuhsktqcfloiqdfxtm.supabase.co';
 const SUPABASE_ANON = 'sb_publishable_uAf776_KFEyAqG_eWJdYRQ_zm3n_uKm';

@@ -132,6 +132,7 @@
 
     <h2>5. 쿠키 및 유사 기술</h2>
     <p>서비스는 로그인 상태 유지와 이용 통계를 위해 브라우저 저장소(쿠키, localStorage, sessionStorage)를 사용합니다. 저장되는 정보는 로그인 세션 정보, 기기 식별값, 화면 설정값(언어·표시 옵션) 등이며 이름·주소 등 신원 정보는 포함되지 않습니다. 브라우저 설정에서 저장을 거부할 수 있으나, 이 경우 로그인 유지 등 일부 기능이 정상 동작하지 않을 수 있습니다.</p>
+    <p id="adClause" style="display:none"><b>광고 및 행태정보</b> — 서비스는 운영비 충당을 위해 광고를 게재하며, 광고 사업자(<span id="adVendor">-</span>)가 쿠키 등을 통해 이용자의 방문 기록·관심사 등 행태정보를 수집하여 맞춤형 광고를 제공할 수 있습니다. 이 정보는 서비스가 아닌 해당 광고 사업자가 수집·처리하며, 이름·연락처 등 개인을 직접 식별하는 정보는 제공하지 않습니다. 맞춤형 광고는 브라우저 설정 또는 광고 사업자의 설정 페이지에서 거부할 수 있으며, 거부하더라도 광고 자체는 표시될 수 있습니다. <b>만 14세 미만 이용자에게는 맞춤형 광고를 제공하지 않습니다.</b> 프리미엄 이용 중에는 광고가 표시되지 않습니다.</p>
 
     <h2>6. 개인정보의 파기 및 회원탈퇴</h2>
     <p>보유 기간이 지나거나 처리 목적이 달성된 개인정보는 지체 없이 파기합니다. 전자적 파일은 복구할 수 없는 방법으로 영구 삭제합니다.</p>
@@ -155,7 +156,17 @@
     <p>본 방침이 변경되는 경우 변경 사항을 시행 7일 전부터 서비스 화면에 공지합니다.</p>
   </div>
 </div>
+<script src="gecko-core.js"></script>
 <script>
+  /* 광고를 실제로 붙이면(AD_PROVIDER 설정) 행태정보 조항이 자동으로 노출됩니다 */
+  (function(){
+    try{
+      if(typeof AD_PROVIDER==='string' && AD_PROVIDER.trim()){
+        document.getElementById('adVendor').textContent=AD_PROVIDER;
+        document.getElementById('adClause').style.display='';
+      }
+    }catch(e){}
+  })();
   var t1=document.getElementById('t1'), t2=document.getElementById('t2');
   var d1=document.getElementById('terms'), d2=document.getElementById('privacy');
   function show(which){

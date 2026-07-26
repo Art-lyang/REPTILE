@@ -383,15 +383,24 @@ function tabGoal(){
          : '개체의 성별을 등록하면 가능한 페어링을 찾아드려요.')+'</div></div>';
     }
 
-    // 3) 세대 경로
-    h+='<div class="pathbox"><b>추천 경로</b>';
-    if(!missing.length && A.length)
-      h+='<div class="step"><span class="num ok">✓</span><span>필요한 조건을 <b>이미 모두 보유</b>하고 있어요. 위 페어링으로 바로 시도할 수 있습니다.</span></div>';
-    if(!n) h+='<div class="step"><span class="num">1</span><span>한쪽 부모에만 형질이 있으면 F1에서 바로 나옵니다.</span></div>';
+    // 3) 세대 경로 — 조건 충족 여부에 따라 다르게 안내
+    const ready = A.length && !missing.length;
+    h+='<div class="pathbox"><b>'+(ready? '지금 할 수 있는 것' : '추천 경로')+'</b>';
+    if(ready){
+      h+='<div class="step"><span class="num ok">✓</span><span>필요한 조건을 <b>이미 모두 보유</b>하고 있어요. 위 페어링을 <b>페어링 탭</b>에 등록하면 실제 출현 확률이 계산됩니다.</span></div>';
+      if(n) h+='<div class="step"><span class="num">i</span><span>다만 부모가 모두 <b>het</b>인 형질이 있으면 한 배에서 바로 안 나올 수 있어요. '
+        +'열성·슈퍼폼 조건이 '+n+'개라 최대 <b>1/'+Math.pow(4,n)+'</b>('+(100/Math.pow(4,n)).toFixed(1)+'%)까지 낮아질 수 있습니다. '
+        +'부모 중 한쪽이 비주얼이면 확률이 크게 올라갑니다.</span></div>';
+    }
+    else if(!n){
+      h+='<div class="step"><span class="num">1</span><span>우성·불완전우성 형질이라 <b>한쪽 부모에만 있으면 F1에서 바로</b> 나옵니다. 해당 개체를 들이면 됩니다.</span></div>';
+    }
     else{
       h+='<div class="step"><span class="num">1</span><span><b>F1</b> — 서로 다른 형질의 비주얼끼리 교배해 <b>더블 het</b>를 만듭니다. 이 세대에선 목표가 안 나옵니다.</span></div>';
       h+='<div class="step"><span class="num">2</span><span><b>F2</b> — het끼리 교배 시 목표 출현. 확률 약 <b>1/'+Math.pow(4,n)+'</b> ('+(100/Math.pow(4,n)).toFixed(1)+'%)</span></div>';
       if(n>=2) h+='<div class="step"><span class="num">↺</span><span>확률이 낮으면 F1에서 <b>비주얼 하나 + het</b>를 먼저 만들고 역교배하면 확률이 크게 올라갑니다.</span></div>';
+      if(missing.length) h+='<div class="step"><span class="num no">!</span><span>먼저 <b>'
+        +esc(missing.map(r=>morphNameOf(r.token)).join(', '))+'</b> 조건을 채울 개체가 필요해요.</span></div>';
     }
     h+='</div>';
     out.innerHTML=h;

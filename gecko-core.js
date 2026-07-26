@@ -59,7 +59,7 @@ const FAMILIES = [
   {id:'patternless', type:'rec', ko:'패턴리스·화이트', en:'Patternless & White', zh:'无纹·白', ja:'パターンレス・白',
      desc:{ko:'패턴·색소 감소', en:'Reduced pattern / pigment', zh:'斑纹 / 色素减少', ja:'模様・色素の減少'}},
   {id:'snowcolor', type:'incdom', ko:'스노우·색', en:'Snow & Color', zh:'雪花·颜色', ja:'スノー・カラー',
-     desc:{ko:'지색·색 변이 (호모 = 슈퍼)', en:'Ground / color (homozygous = super)', zh:'底色 / 颜色（纯合 = 超级）', ja:'地色・色（ホモ = スーパー）'}},
+     desc:{ko:'지색·색 변이 (슈퍼폼 발현)', en:'Ground / color (homozygous = super)', zh:'底色 / 颜色（纯合 = 超级）', ja:'地色・色（スーパーフォームあり）'}},
   {id:'dominant', type:'dom', ko:'우성 형질', en:'Dominant traits', zh:'显性性状', ja:'優性形質',
      desc:{ko:'한 쪽만 있어도 발현', en:'Expressed from a single copy', zh:'单拷贝即表现', ja:'片方だけでも発現'}},
   {id:'poly', type:'poly', ko:'라인브리딩', en:'Line-bred', zh:'线育', ja:'ラインブリード',
@@ -103,7 +103,7 @@ const DANGER = {
       zh:'⚠️ 后代可能出现<b>柠檬霜</b>。柠檬霜即使为杂合(het)也有较高的皮肤肿瘤（虹彩细胞瘤）风险。',
       ja:'⚠️ 仔に<b>レモンフロスト</b>が出る可能性があります。レモンフロストはヘテロ(het)でも皮膚腫瘍（虹色素胞腫）のリスクが高いモルフです。'},
     super:{level:'high',
-      ko:'🛑 <b>슈퍼 레몬 프로스트(호모)</b>가 나올 수 있습니다. 슈퍼는 종양 발생률이 매우 높아 심각한 건강 문제를 일으키며, 이 조합의 브리딩은 권장되지 않습니다.',
+      ko:'🛑 <b>슈퍼 레몬 프로스트(슈퍼폼)</b>가 나올 수 있습니다. 슈퍼폼은 종양 발생률이 매우 높아 심각한 건강 문제를 일으키며, 이 조합의 브리딩은 권장되지 않습니다.',
       en:'🛑 <b>Super Lemon Frost (homozygous)</b> is possible. Supers have a very high tumor rate and serious welfare issues — this pairing is not recommended.',
       zh:'🛑 可能出现<b>超级柠檬霜（纯合）</b>。超级个体肿瘤发生率极高，会导致严重健康问题，不建议进行此配对繁殖。',
       ja:'🛑 <b>スーパーレモンフロスト（ホモ）</b>が出る可能性があります。スーパーは腫瘍発生率が非常に高く深刻な健康問題を招くため、この組み合わせの繁殖は推奨されません。'},
@@ -346,3 +346,67 @@ function gatherPoly(){
     .map(p=>({name:pName(p), both:STATE.A[p.id]==='yes'&&STATE.B[p.id]==='yes'}));
 }
 
+
+/* ================= 이미지 리사이즈 (공용) =================
+   큰 사진(휴대폰 4천만 화소 등)도 안전하게 줄여서 업로드합니다.
+   - EXIF 회전 자동 보정 (createImageBitmap)
+   - 최대 변 길이 제한 + 목표 용량(기본 350KB)까지 화질 자동 조정
+   - 아주 큰 이미지는 단계적으로 축소해 모바일 브라우저 메모리 초과 방지 */
+async function resizeImage(file, max, opt){
+  opt = opt || {};
+  const maxBytes = opt.maxBytes || 350*1024;   // 목표 용량
+  const minQ     = opt.minQ     || 0.5;        // 최저 화질
+  max = max || 900;
+
+  if(!file || !/^image\//.test(file.type||'')) throw new Error('이미지 파일이 아니에요.');
+
+  // 1) 디코딩 (EXIF 회전 반영)
+  let src = null, useBitmap = false;
+  try{
+    if(window.createImageBitmap){
+      src = await createImageBitmap(file, {imageOrientation:'from-image'});
+      useBitmap = true;
+    }
+  }catch(e){ src = null; }
+  if(!src){
+    src = await new Promise((res,rej)=>{ const i=new Image();
+      i.onload=()=>res(i); i.onerror=()=>rej(new Error('이미지를 열 수 없어요.'));
+      i.src=URL.createObjectURL(file); });
+  }
+
+  let sw = src.width, sh = src.height;
+  if(!sw || !sh) throw new Error('이미지 크기를 읽을 수 없어요.');
+
+  // 2) 목표 크기 계산
+  const scale = Math.min(1, max/Math.max(sw,sh));
+  let tw = Math.max(1, Math.round(sw*scale)), th = Math.max(1, Math.round(sh*scale));
+
+  // 3) 단계적 축소 (한 번에 1/2 이하로 줄이면 계단현상 → 반씩 줄임)
+  let cur = document.createElement('canvas');
+  cur.width = sw; cur.height = sh;
+  cur.getContext('2d').drawImage(src, 0, 0);
+  if(useBitmap && src.close) src.close();
+
+  let cw = sw, ch = sh;
+  while(cw > tw*2 || ch > th*2){
+    const nw = Math.max(tw, Math.round(cw/2)), nh = Math.max(th, Math.round(ch/2));
+    const nx = document.createElement('canvas'); nx.width=nw; nx.height=nh;
+    const cx = nx.getContext('2d'); cx.imageSmoothingQuality='high';
+    cx.drawImage(cur, 0, 0, nw, nh);
+    cur = nx; cw = nw; ch = nh;
+  }
+  const out = document.createElement('canvas'); out.width=tw; out.height=th;
+  const ox = out.getContext('2d'); ox.imageSmoothingQuality='high';
+  ox.drawImage(cur, 0, 0, tw, th);
+
+  // 4) 용량이 목표보다 크면 화질을 낮춰 재인코딩
+  const encode = q => new Promise((res,rej)=>
+    out.toBlob(b=> b? res(b) : rej(new Error('이미지 변환에 실패했어요.')), 'image/jpeg', q));
+  let q = 0.85, blob = await encode(q);
+  while(blob.size > maxBytes && q > minQ){
+    q = Math.max(minQ, q - 0.12);
+    blob = await encode(q);
+  }
+  return blob;
+}
+if(typeof window!=='undefined') window.resizeImage = resizeImage;

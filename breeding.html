@@ -127,10 +127,7 @@ async function loadAll(){
 }
 async function save(t,row){ const r=await SB.rpc('save_row',{p_device:uid(),p_table:t,p_row:row}); if(r.error) throw r.error; return r.data; }
 async function del(t,id){ await SB.rpc('delete_row',{p_device:uid(),p_table:t,p_id:id}); }
-function resizeImage(file,max){ return new Promise((res,rej)=>{ const i=new Image(); i.onload=()=>{ let w=i.width,h=i.height;
-  if(w>h&&w>max){h=Math.round(h*max/w);w=max;} else if(h>=w&&h>max){w=Math.round(w*max/h);h=max;}
-  const c=document.createElement('canvas'); c.width=w;c.height=h; c.getContext('2d').drawImage(i,0,0,w,h);
-  c.toBlob(b=>b?res(b):rej(new Error('blob')),'image/jpeg',0.85); }; i.onerror=()=>rej(new Error('img')); i.src=URL.createObjectURL(file); }); }
+/* resizeImage 는 gecko-core.js 의 공용 함수를 사용합니다 (큰 사진 자동 축소·회전 보정) */
 
 function render(){ ({animals:tabAnimals,pair:tabPair,clutch:tabClutch,goal:tabGoal}[TAB])(); }
 
@@ -178,12 +175,22 @@ function form(a){
     +'<div class="formbtns"><button class="btn" id="save">저장</button><button class="btn ghost" id="cancel">취소</button></div><div class="err" id="err"></div></div>';
   $('f_sex').value=a.sex||''; $('f_grade').value=a.color_grade||'';
   let photo=a.photo_url||null;
-  $('f_img').onchange=async e=>{ const f=e.target.files[0]; if(!f)return; const pv=$('prev'); pv.textContent='업로드 중…';
-    try{ const b=await resizeImage(f,700); const path='a/'+uid().replace(/[^\w-]/g,'')+'_'+Date.now()+'.jpg';
+  $('f_img').onchange=async e=>{ const f=e.target.files[0]; if(!f)return; const pv=$('prev');
+    const mb=(f.size/1048576).toFixed(1);
+    pv.textContent = f.size>1048576 ? '사진을 줄이는 중… ('+mb+'MB)' : '업로드 중…';
+    try{
+      const b=await resizeImage(f,900);
+      pv.textContent='업로드 중… ('+Math.round(b.size/1024)+'KB로 축소됨)';
+      const path='a/'+uid().replace(/[^\w-]/g,'')+'_'+Date.now()+'.jpg';
       const up=await SB.storage.from('morph-images').upload(path,b,{contentType:'image/jpeg',upsert:true});
-      if(up.error){ pv.textContent='실패: '+up.error.message; return; }
+      if(up.error){
+        const m=up.error.message||'';
+        pv.textContent = /row-level security|Unauthorized|policy/i.test(m)
+          ? '업로드 권한이 없어요. 관리자에게 문의해 주세요. (Storage 정책 미적용)'
+          : '실패: '+m;
+        return; }
       photo=SB.storage.from('morph-images').getPublicUrl(path).data.publicUrl; pv.innerHTML='<img src="'+esc(photo)+'">';
-    }catch(x){ pv.textContent='실패'; } };
+    }catch(x){ pv.textContent='실패: '+(x.message||'사진을 처리하지 못했어요.'); } };
   $('cancel').onclick=()=>tabAnimals();
   $('save').onclick=async()=>{
     const row={ id:a.id||null, name:$('f_name').value.trim(), sex:$('f_sex').value||null,

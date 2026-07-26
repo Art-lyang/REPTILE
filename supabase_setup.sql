@@ -251,4 +251,181 @@ create or replace view public.top_combos
   group by ckey
   order by cnt desc;
 
--- 완료. 다음으로 Storage 버킷 'morph-images'(Public) 를 만들면 이미지 업로드가 됩니다.
+-- ============================================================
+--  v2 · 회원(동의/프로필) + 관리자 권한 체계
+--  이 파일 전체를 다시 [Run] 하면 v2까지 한 번에 적용됩니다.
+-- ============================================================
+
+-- A) 관리자 명단 -----------------------------------------------
+create table if not exists public.admins (
+  email      text primary key,
+  note       text,
+  created_at timestamptz default now()
+);
+alter table public.admins enable row level security;
+
+-- 본인 이메일을 관리자에 등록 (필요하면 아래에 추가)
+insert into public.admins(email, note) values ('kmc612000@gmail.com', 'owner')
+  on conflict (email) do nothing;
+
+create or replace function public.is_admin()
+returns boolean language sql stable security definer set search_path = public as $$
+  select exists(
+    select 1 from public.admins a
+    where lower(a.email) = lower(coalesce(auth.jwt()->>'email',''))
+  );
+$$;
+grant execute on function public.is_admin() to anon, authenticated;
+
+drop policy if exists admins_read on public.admins;
+create policy admins_read on public.admins for select to authenticated using (public.is_admin());
+
+-- B) 회원 프로필 + 동의 기록 -----------------------------------
+create table if not exists public.profiles (
+  user_id         uuid primary key,        -- auth.users.id
+  email           text,
+  name            text,                    -- 이름 (선택 수집)
+  nickname        text,                    -- 닉네임 (선택 수집)
+  phone           text,                    -- 휴대전화 (선택 수집)
+  agree_terms     boolean default false,   -- [필수] 이용약관
+  agree_privacy   boolean default false,   -- [필수] 개인정보 수집·이용
+  agree_age14     boolean default false,   -- [필수] 만 14세 이상
+  agree_third     boolean default false,   -- [선택] 제3자 제공
+  agree_mkt_email boolean default false,   -- [선택] 이메일 마케팅
+  agree_mkt_sms   boolean default false,   -- [선택] 문자 마케팅
+  consent_at      timestamptz,             -- 최종 동의 일시 (법정 기록)
+  mkt_at          timestamptz,             -- 마케팅 최초 동의 일시
+  created_at      timestamptz default now(),
+  updated_at      timestamptz default now()
+);
+-- 이미 만들어 둔 경우를 위한 컬럼 보강
+alter table public.profiles add column if not exists name       text;
+alter table public.profiles add column if not exists nickname   text;
+alter table public.profiles add column if not exists consent_at timestamptz;
+alter table public.profiles add column if not exists mkt_at     timestamptz;
+alter table public.profiles add column if not exists updated_at timestamptz default now();
+
+alter table public.profiles enable row level security;
+-- 조회는 관리자만. 쓰기는 아래 save_consent RPC 로만 (직접 insert/update 불가)
+drop policy if exists profiles_admin_read on public.profiles;
+create policy profiles_admin_read on public.profiles for select to authenticated using (public.is_admin());
+
+-- C) 동의 저장 / 조회 RPC --------------------------------------
+-- 이전 버전(이름 파라미터 없던 시그니처)이 있으면 제거 → 호출 모호성 방지
+drop function if exists public.save_consent(boolean,boolean,boolean,boolean,boolean,boolean,text,text);
+
+create or replace function public.save_consent(
+  p_terms boolean, p_privacy boolean, p_age14 boolean,
+  p_third boolean default false, p_mkt_email boolean default false, p_mkt_sms boolean default false,
+  p_phone text default null, p_nickname text default null, p_name text default null)
+returns jsonb language plpgsql security definer set search_path = public as $$
+declare uid uuid := auth.uid();
+        em  text := coalesce(auth.jwt()->>'email','');
+begin
+  if uid is null then raise exception 'not signed in'; end if;
+  insert into public.profiles as p
+    (user_id, email, name, nickname, phone,
+     agree_terms, agree_privacy, agree_age14, agree_third, agree_mkt_email, agree_mkt_sms,
+     consent_at, mkt_at)
+  values
+    (uid, em,
+     nullif(trim(coalesce(p_name,'')),''),
+     nullif(trim(coalesce(p_nickname,'')),''),
+     nullif(trim(coalesce(p_phone,'')),''),
+     p_terms, p_privacy, p_age14, p_third, p_mkt_email, p_mkt_sms,
+     now(), case when p_mkt_email or p_mkt_sms then now() end)
+  on conflict (user_id) do update set
+    email           = excluded.email,
+    name            = coalesce(excluded.name,     p.name),      -- 빈 값이면 기존 유지
+    nickname        = coalesce(excluded.nickname, p.nickname),
+    phone           = coalesce(excluded.phone,    p.phone),
+    agree_terms     = excluded.agree_terms,
+    agree_privacy   = excluded.agree_privacy,
+    agree_age14     = excluded.agree_age14,
+    agree_third     = excluded.agree_third,
+    agree_mkt_email = excluded.agree_mkt_email,
+    agree_mkt_sms   = excluded.agree_mkt_sms,
+    consent_at      = now(),
+    mkt_at          = case when excluded.agree_mkt_email or excluded.agree_mkt_sms
+                           then coalesce(p.mkt_at, now()) else null end,
+    updated_at      = now();
+  return jsonb_build_object('ok', true);
+end $$;
+grant execute on function public.save_consent(boolean,boolean,boolean,boolean,boolean,boolean,text,text,text) to authenticated;
+
+create or replace function public.my_consent()
+returns jsonb language sql security definer set search_path = public as $$
+  select coalesce(
+    (select to_jsonb(p) from public.profiles p where p.user_id = auth.uid()),
+    'null'::jsonb);
+$$;
+grant execute on function public.my_consent() to authenticated;
+
+-- D) 검색(계산) 로그를 기기와 연결 — 동의 회원의 이용 기록 분석용
+alter table public.combo_queries add column if not exists device text;
+
+-- E) [보안 강화] 관리자 전용 잠금 -------------------------------
+--    기존에는 "로그인한 누구나" 모프 수정·코드 발급·로그 열람이 가능했음.
+--    일반 회원가입이 열렸으므로 관리자(admins 등록 이메일)만 가능하도록 교체.
+drop policy if exists morphs_admin on public.morphs;
+create policy morphs_admin on public.morphs for all to authenticated
+  using (public.is_admin()) with check (public.is_admin());
+
+drop policy if exists combos_admin on public.combos;
+create policy combos_admin on public.combos for all to authenticated
+  using (public.is_admin()) with check (public.is_admin());
+
+drop policy if exists visits_read on public.visits;
+create policy visits_read on public.visits for select to authenticated using (public.is_admin());
+
+drop policy if exists cq_read on public.combo_queries;
+create policy cq_read on public.combo_queries for select to authenticated using (public.is_admin());
+
+drop policy if exists codes_admin on public.access_codes;
+create policy codes_admin on public.access_codes for all to authenticated
+  using (public.is_admin()) with check (public.is_admin());
+
+do $$ declare t text; begin
+  foreach t in array array['animals','pairings','clutches'] loop
+    execute format('drop policy if exists %I_admin on public.%I', t, t);
+    execute format('create policy %I_admin on public.%I for all to authenticated using (public.is_admin()) with check (public.is_admin())', t, t);
+  end loop;
+end $$;
+
+-- F) Storage(사진 업로드) 정책 --------------------------------
+--    증상: 사진 업로드 시 "new row violates row-level security policy"
+--    원인: morph-images 버킷에 INSERT 정책이 없어서 업로드가 막힘.
+--    (버킷이 없으면 자동 생성 · Public 읽기)
+insert into storage.buckets (id, name, public)
+  values ('morph-images','morph-images', true)
+  on conflict (id) do update set public = true;
+
+-- 누구나 읽기 (이미지가 사이트에 표시되어야 하므로)
+drop policy if exists mi_read on storage.objects;
+create policy mi_read on storage.objects for select
+  using (bucket_id = 'morph-images');
+
+-- 업로드: 관리자는 모프 이미지(m/), 로그인 회원은 개체 사진(a/)
+drop policy if exists mi_insert on storage.objects;
+create policy mi_insert on storage.objects for insert to anon, authenticated
+  with check (
+    bucket_id = 'morph-images'
+    and ( public.is_admin()                                   -- 관리자: 전체 허용
+       or (auth.uid() is not null and name like 'a/%')        -- 회원: 개체 사진만
+       or name like 'a/%' )                                   -- 비로그인 기기(device) 사용자
+  );
+
+-- 수정/삭제: 관리자만 (실수로 남의 사진을 지우지 못하게)
+drop policy if exists mi_update on storage.objects;
+create policy mi_update on storage.objects for update to authenticated
+  using (bucket_id = 'morph-images' and public.is_admin())
+  with check (bucket_id = 'morph-images' and public.is_admin());
+
+drop policy if exists mi_delete on storage.objects;
+create policy mi_delete on storage.objects for delete to authenticated
+  using (bucket_id = 'morph-images' and public.is_admin());
+
+-- 완료. Storage 버킷은 위 F) 에서 자동 생성됩니다.
+-- v2 적용 후 확인: ① Supabase SQL Editor에서 이 파일 전체 Run
+--                ② #admin 접속 → 회원 탭이 열리는지 확인 (admins에 등록된 이메일로 로그인)
+--                ③ 브리딩 관리에서 개체 사진 업로드가 되는지 확인

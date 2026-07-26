@@ -72,8 +72,12 @@ if(typeof GENES==='undefined'){
   header h1{margin:0;font-size:26px;font-weight:800;letter-spacing:-.5px}
   header .sub{color:var(--ink2);font-size:13.5px;margin-top:6px;max-width:420px;margin-left:auto;margin-right:auto}
   /* 우측 상단 언어 버튼(햄버거) + 드롭다운 */
-  .langbtn{position:absolute;top:16px;right:16px;width:42px;height:42px;border-radius:13px;background:var(--card);box-shadow:var(--shadow);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--ink);z-index:40;padding:0}
-  .langbtn svg{width:21px;height:21px}
+  .langbtn{position:absolute;top:16px;right:16px;height:42px;border-radius:13px;background:var(--card);box-shadow:var(--shadow);border:none;
+    display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;color:var(--ink);z-index:40;padding:0 13px;
+    font-family:inherit;font-size:13px;font-weight:700;letter-spacing:-.2px}
+  .langbtn svg{width:18px;height:18px;flex:0 0 auto}
+  .langbtn .lgtxt{white-space:nowrap}
+  @media (max-width:420px){ .langbtn .lgtxt{display:none} .langbtn{width:42px;padding:0} }
   .langmenu{position:absolute;top:64px;right:16px;background:var(--card);border-radius:15px;box-shadow:0 10px 34px rgba(38,34,29,.2);padding:6px;min-width:158px;z-index:50;display:none;text-align:left}
   .langmenu.open{display:block}
   .langmenu button{display:flex;align-items:center;justify-content:space-between;width:100%;background:transparent;border:none;padding:11px 13px;font-size:14.5px;font-weight:500;color:var(--ink);cursor:pointer;font-family:inherit;border-radius:10px}
@@ -84,9 +88,20 @@ if(typeof GENES==='undefined'){
   .wrap{max-width:880px;margin:0 auto;padding:8px 16px}
 
   /* iOS 행 + 스위치 */
-  .polytoggle{display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--card);border-radius:var(--radius);padding:14px 16px;margin-bottom:16px;box-shadow:var(--shadow)}
-  .polytoggle .pt-txt{font-size:14.5px;font-weight:500}
-  .polytoggle .pt-txt small{display:block;color:var(--ink2);font-size:11.5px;margin-top:2px;font-weight:400}
+  /* 표시 옵션 — 한 줄짜리 컴팩트 바 (설명은 ⓘ 툴팁) */
+  .optbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;background:var(--card);border-radius:var(--radius);
+    padding:8px 10px;margin-bottom:14px;box-shadow:var(--shadow)}
+  .optchip{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--chipbd);background:transparent;
+    border-radius:999px;padding:6px 12px;font-size:12.5px;font-weight:600;color:var(--ink);cursor:pointer;
+    font-family:inherit;line-height:1.3;transition:background .12s,border-color .12s}
+  .optchip .dotx{width:8px;height:8px;border-radius:50%;background:var(--chipbd);flex:0 0 auto;transition:background .12s}
+  .optchip[aria-pressed="true"]{background:var(--teal);border-color:var(--teal);color:#fff}
+  .optchip[aria-pressed="true"] .dotx{background:#fff}
+  .optchip:active{filter:brightness(.97)}
+  .optinfo{margin-left:auto;display:flex;align-items:center;gap:5px;font-size:11.5px;color:var(--ink2);cursor:help;padding:4px 2px}
+  .optnote{flex-basis:100%;font-size:11.5px;color:var(--ink2);line-height:1.55;margin:2px 2px 0;display:none}
+  .optnote.show{display:block}
+  @media (max-width:420px){ .optinfo span.oitxt{display:none} }
   .switch{position:relative;display:inline-block;width:51px;height:31px;flex:0 0 auto}
   .switch input{opacity:0;width:0;height:0}
   .slider{position:absolute;inset:0;background:rgba(120,120,128,.3);border-radius:31px;transition:.25s;cursor:pointer}
@@ -230,9 +245,13 @@ if(typeof GENES==='undefined'){
   .empty{color:var(--ink2);font-size:14px;text-align:center;padding:30px 10px}
   footer{text-align:center;color:var(--ink2);font-size:11.5px;margin-top:26px}
   /* 하단 링크(업데이트 노트 · 이메일) */
+  /* 상단 내비게이션 (내 정보 · 브리딩 관리 · 업데이트 노트) */
+  .topnav{display:flex;gap:7px;justify-content:center;flex-wrap:wrap;margin:14px auto 0;max-width:760px;padding:0 4px}
+  .topnav .blink{font-size:12.5px;padding:8px 13px}
   .bottom-links{display:flex;gap:9px;justify-content:center;flex-wrap:wrap;margin-top:18px}
   .blink{display:inline-flex;align-items:center;gap:6px;background:var(--card);border:1px solid var(--hair);color:var(--ink);text-decoration:none;font-weight:600;font-size:13px;padding:10px 15px;border-radius:12px;cursor:pointer;font-family:inherit;box-shadow:var(--shadow)}
   .blink:active{filter:brightness(.97)}
+  .blink.prem{background:rgba(234,195,106,.2);border-color:rgba(197,146,32,.35)}
   .mailnote{text-align:center;color:var(--ink2);font-size:11.5px;margin-top:8px}
   /* 업데이트 노트 모달 */
   .modal-overlay{position:fixed;inset:0;background:rgba(20,17,14,.55);display:none;align-items:flex-end;justify-content:center;z-index:100}
@@ -360,11 +379,18 @@ if(typeof GENES==='undefined'){
 </head>
 <body>
 <header>
-  <button class="langbtn" id="langBtn" aria-label="Language">
-    <svg viewBox="0 0 24 24" fill="none"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+  <button class="langbtn" id="langBtn" aria-label="Language" title="Language">
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.7 3.8 9S14.5 18.4 12 21c-2.5-2.6-3.8-5.7-3.8-9S9.5 5.6 12 3z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+    <span class="lgtxt">Language</span>
   </button>
   <h1 id="h-title">🦎 Leopard Gecko Morph Calculator</h1>
   <div class="sub" id="h-sub"></div>
+  <nav class="topnav">
+    <a class="blink" id="acctBtn" href="login.html" style="display:none">👤 로그인</a>
+    <a class="blink" id="proBtn" href="breeding.html" style="display:none">🦎 브리딩 관리</a>
+    <button class="blink prem" id="premBtn" onclick="openPrem()" style="display:none">💎 프리미엄 코드</button>
+    <button class="blink" onclick="openUpd()">📢 업데이트 노트</button>
+  </nav>
   <div class="langmenu" id="langMenu">
     <div class="mtitle" id="lbl-langtitle">Language</div>
     <button data-lang="ko">한국어</button>
@@ -375,13 +401,11 @@ if(typeof GENES==='undefined'){
 </header>
 
 <div class="wrap">
-  <div class="polytoggle">
-    <span class="pt-txt" id="lbl-partial"></span>
-    <label class="switch"><input type="checkbox" id="partialchk"><span class="slider"></span></label>
-  </div>
-  <div class="polytoggle">
-    <span class="pt-txt" id="lbl-vintage"></span>
-    <label class="switch"><input type="checkbox" id="vintagechk"><span class="slider"></span></label>
+  <div class="optbar">
+    <button type="button" class="optchip" id="partialchk" aria-pressed="false"><span class="dotx"></span><span id="lbl-partial"></span></button>
+    <button type="button" class="optchip" id="vintagechk" aria-pressed="false"><span class="dotx"></span><span id="lbl-vintage"></span></button>
+    <button type="button" class="optinfo" id="optInfoBtn" aria-expanded="false">ⓘ <span class="oitxt" id="lbl-optinfo"></span></button>
+    <div class="optnote" id="optNote"></div>
   </div>
 
   <div class="parents">
@@ -406,13 +430,9 @@ if(typeof GENES==='undefined'){
   <div class="donate-wrap"><a class="donate" id="donateBtn" href="#" target="_blank" rel="noopener"></a></div>
 
   <div class="bottom-links">
-    <button class="blink" onclick="openUpd()">📢 업데이트 노트</button>
-    <a class="blink" id="acctBtn" href="login.html" style="display:none">👤 로그인</a>
-    <a class="blink" id="proBtn" href="breeding.html" style="display:none">🦎 브리딩 관리</a>
-    <button class="blink" id="premBtn" onclick="openPrem()" style="display:none">💎 프리미엄 코드</button>
-    <a class="blink" id="mailLink" href="mailto:kmc612000@gmail.com">✉️ kmc612000@gmail.com</a>
+    <a class="blink" id="mailLink" href="mailto:kmc612000@gmail.com">✉️ 문의하기</a>
   </div>
-  <div class="mailnote">정보 수정 요청 · 업데이트 건의는 위 이메일로 보내주세요</div>
+  <div class="mailnote">정보 수정 요청 · 업데이트 건의는 <b>문의하기</b>로 보내주세요 (kmc612000@gmail.com)</div>
 
   <div class="note" id="note"></div>
   <div class="legal">
@@ -441,7 +461,7 @@ if(typeof GENES==='undefined'){
           <li><b>로그인 도입</b> — Google 또는 이메일로 로그인하면 <b>기기가 바뀌어도 프리미엄이 유지</b>됩니다</li>
           <li><b>브리딩 관리 전용 페이지</b> 분리 — 내 개체·혈통, 페어링, 클러치, 역산 계산기</li>
           <li>페어링에서 개체를 고르면 계산기로 바로 넘어가 확률 계산</li>
-          <li>결과를 분양글 텍스트·이미지로 내보내기, 프리미엄은 광고 제거</li>
+          <li>결과를 이미지로 저장, 프리미엄은 광고 제거</li>
           <li>프리미엄 코드를 <b>체험판 / 구독</b>으로 구분하고 기간 설정 가능</li>
           <li><b>추억의 모프</b> 토글 — 요즘 보기 힘든 콤보는 켤 때만 표시</li>
           <li>슈퍼 스노우·슈퍼 레몬 프로스트를 각각 별도 칩으로 분리</li>
@@ -512,7 +532,7 @@ const I18N = {
     normal:'노멀', het:'het', comboTag:'콤보',
     visualTag:'비주얼', hetShort:'헷', superShort:'슈퍼폼', colProb:'확률', colVisual:'비주얼 (발현)', colHet:'HET (보인자)', hetNone:'–',
     partialToggle:'가능성 헷 표시 (66·33%)', partialHint:'확률적 보인자(66·33% 등)까지 표로 표시',
-    vintageToggle:'추억의 모프 보기', vintageHint:'요즘 보기 힘든 과거 모프·콤보까지 표시',
+    vintageToggle:'추억의 모프 보기', vintageHint:'요즘 보기 힘든 과거 모프·콤보까지 표시', optInfo:'표시 옵션 설명',
     comboLoad:'콤보 개체 불러오기…', donate:'☕ 개발자 후원하기', adLabel:'광고', adHint:'이 자리에 광고 코드를 넣을 수 있어요',
     secCombo:'콤보 (탭하면 자동 세팅)', secGene:'유전 모프 (확률 계산)',
     comboNote:'<b>콤보 이름</b> — 계산 결과가 알려진 콤보와 일치하면 디자이너 명칭(예: 갤럭시, 레이다)을 함께 표시합니다. 다만 탠저린·하이포·TUG 스노우 등 라인브리딩이 필요한 콤보(앱터/랩터/노바 등)는 자동 인식되지 않습니다.',
@@ -524,7 +544,7 @@ const I18N = {
     inh:{rec:'열성', incdom:'불완전우성', dom:'우성', poly:'다인자'},
     optRec:{nn:'정상', het:'het 보인자', mm:'비주얼'},
     optDom:{nn:'정상', het:'비주얼', mm:'슈퍼폼'},
-    note:'<b>참고</b> — 트램퍼·벨·레인워터 알비노는 서로 <b>다른 유전자</b>라서, 한쪽 알비노 het와 다른 알비노 het를 교배하면 알비노가 나오지 않습니다(더블 het). 맥스노우는 불완전우성(호모 = 슈퍼 스노우, 건강함)이고, 에니그마·W&Y는 우성입니다. <b>일부 모프는 슈퍼폼이나 특정 조합에서 심각한 건강 문제·치사성이 나타납니다</b>(예: 슈퍼 레몬 프로스트의 종양, 에니그마의 신경 증상). 위험 조합은 결과 상단에 경고로 표시됩니다.',
+    note:'<b>참고</b> — 트램퍼·벨·레인워터 알비노는 서로 <b>다른 유전자</b>라서, 한쪽 알비노 het와 다른 알비노 het를 교배하면 알비노가 나오지 않습니다(더블 het). 맥스노우는 불완전우성(슈퍼폼 = 슈퍼 스노우, 건강함)이고, 에니그마·W&Y는 우성입니다. <b>일부 모프는 슈퍼폼이나 특정 조합에서 심각한 건강 문제·치사성이 나타납니다</b>(예: 슈퍼 레몬 프로스트의 종양, 에니그마의 신경 증상). 위험 조합은 결과 상단에 경고로 표시됩니다.',
     footer:'확률은 멘델 유전 법칙에 따른 이론값입니다 · 라인브리딩(폴리제닉) 형질은 확률 계산 대상이 아닙니다',
   },
   en:{
@@ -543,7 +563,7 @@ const I18N = {
     normal:'Normal', het:'het', comboTag:'COMBO',
     visualTag:'Visual', hetShort:'het', superShort:'Super form', colProb:'Prob.', colVisual:'Visual (expressed)', colHet:'Het (carrier)', hetNone:'–',
     partialToggle:'Show possible hets (66·33%)', partialHint:'Include probabilistic carriers (66·33%, etc.) in the table',
-    vintageToggle:'Show vintage morphs', vintageHint:'Include older, rarely-seen morphs and combos',
+    vintageToggle:'Show vintage morphs', vintageHint:'Include older, rarely-seen morphs and combos', optInfo:'About these options',
     comboLoad:'Load a combo animal…', donate:'☕ Support the developer', adLabel:'Advertisement', adHint:'Place your ad code here',
     secCombo:'Combos (tap to auto-set)', secGene:'Genetic morphs (calculated)',
     comboNote:'<b>Combo names</b> — when an outcome matches a known combo, its designer name (e.g. Galaxy, Radar) is shown. Combos requiring line-bred traits (Tangerine, Hypo, TUG snow) such as APTOR/RAPTOR/Nova aren’t auto-detected.',
@@ -574,7 +594,7 @@ const I18N = {
     normal:'普通', het:'het', comboTag:'组合',
     visualTag:'表现', hetShort:'het', superShort:'超级', colProb:'概率', colVisual:'表现型', colHet:'Het (携带)', hetNone:'–',
     partialToggle:'显示可能 het（66·33%）', partialHint:'在表格中包含概率性携带（66·33% 等）',
-    vintageToggle:'显示怀旧形态', vintageHint:'包含现在少见的旧形态与组合',
+    vintageToggle:'显示怀旧形态', vintageHint:'包含现在少见的旧形态与组合', optInfo:'选项说明',
     comboLoad:'载入组合个体…', donate:'☕ 支持开发者', adLabel:'广告', adHint:'可在此处放置广告代码',
     secCombo:'组合（点击自动设置）', secGene:'遗传形态（可计算）',
     comboNote:'<b>组合名称</b> — 当结果与已知组合一致时，会显示其商品名（如 Galaxy、Radar）。需要线育性状（橘化、Hypo、TUG 雪花）的组合（如 APTOR/RAPTOR/Nova）不会自动识别。',
@@ -605,7 +625,7 @@ const I18N = {
     normal:'ノーマル', het:'het', comboTag:'コンボ',
     visualTag:'ビジュアル', hetShort:'het', superShort:'スーパーフォーム', colProb:'確率', colVisual:'ビジュアル（発現）', colHet:'Het（保因）', hetNone:'–',
     partialToggle:'可能性 het を表示（66・33%）', partialHint:'66・33% など確率的な保因も表に表示',
-    vintageToggle:'懐かしのモルフを表示', vintageHint:'今では見かけない古いモルフ・コンボも表示',
+    vintageToggle:'懐かしのモルフを表示', vintageHint:'今では見かけない古いモルフ・コンボも表示', optInfo:'表示オプションの説明',
     comboLoad:'コンボ個体を読み込む…', donate:'☕ 開発者を支援', adLabel:'広告', adHint:'ここに広告コードを配置できます',
     secCombo:'コンボ（タップで自動設定）', secGene:'遺伝モルフ（確率計算）',
     comboNote:'<b>コンボ名</b> — 結果が既知のコンボと一致すると、そのデザイナー名（例：Galaxy、Radar）を表示します。ラインブリード形質（タンジェリン・ハイポ・TUGスノー）が必要なコンボ（APTOR/RAPTOR/Nova等）は自動判別されません。',
@@ -689,7 +709,7 @@ function subsegOptions(g){
   const t=L();
   if(g.type==='rec')    return [['het', t.hetShort], ['mm', t.visualTag]];   // 헷 / 비주얼
   if(g.type==='incdom') return [['het', gName(g)], ['mm', gSuper(g)]];        // 맥스노우 / 슈퍼 스노우
-  return [['het', t.visualTag], ['mm', t.superShort]];                       // 비주얼 / 슈퍼(호모)
+  return [['het', t.visualTag], ['mm', t.superShort]];                       // 비주얼 / 슈퍼폼
 }
 // 불완전우성 전용: 상태(het=비주얼 / mm=슈퍼)별 독립 칩
 function incdomChip(g, side, state, label){
@@ -747,8 +767,11 @@ function applyLang(){
   document.getElementById('lbl-pb').textContent=t.parentB;
   document.getElementById('btn-reset').textContent=t.reset;
   document.getElementById('btn-calc').textContent=t.calc;
-  document.getElementById('lbl-partial').innerHTML=escapeHtml(t.partialToggle)+'<small>'+escapeHtml(t.partialHint)+'</small>';
-  document.getElementById('lbl-vintage').innerHTML=escapeHtml(t.vintageToggle)+'<small>'+escapeHtml(t.vintageHint)+'</small>';
+  document.getElementById('lbl-partial').textContent=t.partialToggle;
+  document.getElementById('lbl-vintage').textContent=t.vintageToggle;
+  document.getElementById('lbl-optinfo').textContent=t.optInfo;
+  document.getElementById('optNote').innerHTML='<b>'+escapeHtml(t.partialToggle)+'</b> — '+escapeHtml(t.partialHint)
+    +'<br><b>'+escapeHtml(t.vintageToggle)+'</b> — '+escapeHtml(t.vintageHint);
   document.getElementById('note').innerHTML=t.note+'<br><br>'+t.comboNote;
   document.getElementById('footer').textContent=t.footer;
   document.getElementById('lbl-langtitle').textContent=t.langLabel;
@@ -853,7 +876,7 @@ function render(payload){
         +'<td class="c-het">'+hcell+'</td></tr>';
     });
     html+='</tbody></table>';
-    if(window.__isPrem) html+='<div class="abar" style="margin-top:10px"><button class="abtn sm ghost" onclick="exportText()">📋 분양글 복사</button><button class="abtn sm ghost" onclick="exportImage()">🖼️ 이미지 저장</button></div>';
+    if(window.__isPrem) html+='<div class="abar" style="margin-top:10px"><button class="abtn sm ghost" onclick="exportImage()">🖼️ 이미지 저장</button></div>';
   }
   if(payload.poly && payload.poly.length){
     html+='<div class="polyblock"><h3>'+t.polyH+'</h3><div class="pdesc">'+t.polyDesc+'</div>';
@@ -869,14 +892,15 @@ const langMenuEl=document.getElementById('langMenu'), langBtnEl=document.getElem
 langBtnEl.addEventListener('click',e=>{ e.stopPropagation(); langMenuEl.classList.toggle('open'); });
 document.querySelectorAll('#langMenu button').forEach(b=>b.addEventListener('click',()=>{ setLang(b.dataset.lang); langMenuEl.classList.remove('open'); }));
 document.addEventListener('click',e=>{ if(langMenuEl.classList.contains('open') && !langMenuEl.contains(e.target) && !langBtnEl.contains(e.target)) langMenuEl.classList.remove('open'); });
-document.getElementById('partialchk').addEventListener('change',e=>{
-  showPartialHet=e.target.checked;
-  if(hasResult) calculate();
-});
-document.getElementById('vintagechk').addEventListener('change',e=>{
-  showVintage=e.target.checked;
-  buildParent('A'); buildParent('B');
-});
+(function(){
+  const pc=document.getElementById('partialchk'), vc=document.getElementById('vintagechk');
+  const set=(el,on)=>el.setAttribute('aria-pressed', on?'true':'false');
+  pc.addEventListener('click',()=>{ showPartialHet=!showPartialHet; set(pc,showPartialHet); if(hasResult) calculate(); });
+  vc.addEventListener('click',()=>{ showVintage=!showVintage; set(vc,showVintage); buildParent('A'); buildParent('B'); });
+  const ib=document.getElementById('optInfoBtn'), nt=document.getElementById('optNote');
+  ib.addEventListener('click',()=>{ const on=!nt.classList.contains('show');
+    nt.classList.toggle('show',on); ib.setAttribute('aria-expanded', on?'true':'false'); });
+})();
 
 /* ===== 쿠키 안내 ===== */
 window.okCookie=function(){ try{ localStorage.setItem('leoCookieOk','1'); }catch(e){} document.getElementById('cookieBar').classList.remove('show'); };
@@ -956,7 +980,7 @@ applyLang();
     if(btn) btn.textContent = isPrem? (premKind==='sub'?'💎 구독 중':'💎 체험판 이용중') : '💎 프리미엄 코드';
     window.__isPrem = isPrem;
     const ab=document.getElementById('acctBtn');
-    if(ab){ ab.style.display=''; ab.textContent = USER? ('👤 '+String(USER.email||'내 계정').split('@')[0]) : '👤 로그인'; }
+    if(ab){ ab.style.display=''; ab.textContent = USER? '👤 내 정보' : '👤 로그인'; }
     if(pro) pro.style.display = isPrem? '' : 'none';
     const ad=document.getElementById('adSlot'); if(ad && isPrem) ad.style.display='none';   // 프리미엄 = 광고 제거
   }
@@ -995,20 +1019,6 @@ applyLang();
 
 
   /* ---- 결과 내보내기 (프리미엄) ---- */
-  window.exportText=function(){
-    const rowsEl=[...document.querySelectorAll('.rtable tbody tr')];
-    if(!rowsEl.length){ alert('먼저 계산해 주세요.'); return; }
-    const pa=[...document.querySelectorAll('#parentA .chip.on')].map(c=>c.textContent.trim()).join(' ');
-    const pb=[...document.querySelectorAll('#parentB .chip.on')].map(c=>c.textContent.trim()).join(' ');
-    let t='🦎 레오파드 게코 브리딩 예상\n\n';
-    t+='부모 ♂ '+(pa||'노멀')+'\n부모 ♀ '+(pb||'노멀')+'\n\n[예상 새끼]\n';
-    rowsEl.forEach(tr=>{ const c=tr.children;
-      t+='· '+c[0].innerText.trim().replace(/\s+/g,' ')+'  '+c[1].innerText.trim().replace(/\s+/g,' ')
-        +(c[2].innerText.trim()!=='–'? '  ('+c[2].innerText.trim().replace(/\s+/g,' ')+')':'')+'\n'; });
-    t+='\n※ 멘델 유전 이론 확률입니다.\nart-lyang.github.io/REPTILE';
-    if(navigator.clipboard){ navigator.clipboard.writeText(t).then(()=>alert('분양글이 복사되었습니다.'),()=>prompt('복사해 주세요',t)); }
-    else prompt('복사해 주세요',t);
-  };
   window.exportImage=function(){
     const el=document.querySelector('.results');
     if(!el){ alert('먼저 계산해 주세요.'); return; }
@@ -1104,7 +1114,22 @@ applyLang();
       +'<div class="aformbtns"><button class="abtn" id="mSave">저장</button><button class="abtn ghost" id="mCancel">취소</button></div><div id="mErr" class="aerr"></div>';
     document.getElementById('mf_kind').value=r.kind||'rec';
     let imgUrl=r.image_url||null;
-    document.getElementById('mf_img').onchange=async(e)=>{ const file=e.target.files[0]; if(!file)return; const pv=document.getElementById('mf_imgprev'); pv.textContent='업로드 중…'; try{ const blob=await resizeImage(file,512); const path='m/'+((document.getElementById('mf_id').value||'x')+'_'+Date.now())+'.jpg'; const up=await SB.storage.from('morph-images').upload(path,blob,{contentType:'image/jpeg',upsert:true}); if(up.error){pv.textContent='업로드 실패: '+up.error.message;return;} imgUrl=SB.storage.from('morph-images').getPublicUrl(path).data.publicUrl; pv.innerHTML='<img src="'+esc(imgUrl)+'" class="aimg">'; }catch(x){ pv.textContent='실패: '+x.message; } };
+    document.getElementById('mf_img').onchange=async(e)=>{ const file=e.target.files[0]; if(!file)return;
+      const pv=document.getElementById('mf_imgprev');
+      pv.textContent = file.size>1048576 ? '사진을 줄이는 중… ('+(file.size/1048576).toFixed(1)+'MB)' : '업로드 중…';
+      try{ const blob=await resizeImage(file,640);
+        pv.textContent='업로드 중… ('+Math.round(blob.size/1024)+'KB로 축소됨)';
+        const path='m/'+((document.getElementById('mf_id').value||'x')+'_'+Date.now())+'.jpg';
+        const up=await SB.storage.from('morph-images').upload(path,blob,{contentType:'image/jpeg',upsert:true});
+        if(up.error){
+          const m=up.error.message||'';
+          pv.textContent = /row-level security|Unauthorized|policy/i.test(m)
+            ? '업로드 권한이 없어요. supabase_setup.sql 의 F) Storage 정책을 실행했는지 확인하세요.'
+            : '업로드 실패: '+m;
+          return; }
+        imgUrl=SB.storage.from('morph-images').getPublicUrl(path).data.publicUrl;
+        pv.innerHTML='<img src="'+esc(imgUrl)+'" class="aimg">';
+      }catch(x){ pv.textContent='실패: '+(x.message||'사진을 처리하지 못했어요.'); } };
     document.getElementById('mCancel').onclick=()=>tabMorph();
     document.getElementById('mSave').onclick=async()=>{ const g=id=>document.getElementById('mf_'+id).value.trim();
       const rec={ id:g('id'), kind:document.getElementById('mf_kind').value, family:g('family')||'albino', ko:g('ko'),en:g('en'),zh:g('zh'),ja:g('ja'), super_ko:g('super_ko')||null,super_en:g('super_en')||null,super_zh:g('super_zh')||null,super_ja:g('super_ja')||null, color:g('color')||null, image_url:imgUrl, risk:document.getElementById('mf_risk').checked, active:true, updated_at:new Date().toISOString() };

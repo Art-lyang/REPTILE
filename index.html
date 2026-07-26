@@ -261,7 +261,7 @@
   .alabel2{font-size:12px;font-weight:700;color:var(--ink2);margin:14px 0 6px}
   .ahint{font-size:11px;color:var(--ink2);margin:8px 0 4px}
   .ain{width:100%;box-sizing:border-box;padding:11px 12px;border:1.5px solid var(--chipbd);border-radius:10px;background:var(--card2);color:var(--ink);font-size:14px;font-family:inherit;margin-bottom:8px}
-  .abtn{background:var(--teal);color:#fff;border:none;border-radius:11px;padding:12px 18px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit}
+  .abtn{background:var(--teal);color:#fff;border:none;border-radius:11px;padding:12px 18px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;flex:0 0 auto}
   .abtn.sm{padding:9px 14px;font-size:13px;margin-bottom:10px}
   .abtn.ghost{background:rgba(120,120,128,.15);color:var(--ink)}
   .aformbtns{display:flex;gap:8px;margin-top:12px}
@@ -283,13 +283,24 @@
   .tokgrid{display:grid;grid-template-columns:1fr 1fr;gap:4px}
   .tokchk{display:flex;align-items:center;gap:6px;font-size:12.5px;padding:5px}
   .tokchk input{accent-color:var(--teal)}
-  .codegen{display:flex;gap:8px;margin-bottom:12px}
+  .codegen{display:flex;gap:8px;margin-bottom:12px;align-items:stretch;flex-wrap:wrap}
+  .codegen .ain{flex:1 1 180px;min-width:0}
   .codegen .ain{margin-bottom:0}
   .mono{font-family:ui-monospace,Menlo,monospace;letter-spacing:.5px}
   .statrow{display:flex;gap:8px;margin-bottom:6px}
   .statcard{flex:1;background:var(--card2);border-radius:12px;padding:14px 10px;text-align:center}
   .statn{font-size:24px;font-weight:800;color:var(--teal)}
   .statl{font-size:11px;color:var(--ink2);margin-top:2px}
+  .abar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;align-items:center}
+  .abar .ain{flex:1 1 160px;margin-bottom:0}
+  .aempty{font-size:13px;color:var(--ink2);line-height:1.6;background:var(--card2);border-radius:11px;padding:14px}
+  .arow.off{opacity:.5}
+  .ordbtns{display:flex;flex-direction:column;gap:2px}
+  .ordbtns button{border:none;background:rgba(120,120,128,.15);color:var(--ink);border-radius:5px;width:24px;height:17px;font-size:9px;cursor:pointer;line-height:1;padding:0}
+  .daybar{display:flex;align-items:center;gap:8px;font-size:12px;margin:3px 0}
+  .daybar .dl{width:74px;color:var(--ink2);flex:0 0 auto}
+  .daybar .dt{height:9px;border-radius:5px;background:var(--teal);min-width:3px}
+  .daybar .dn{color:var(--ink2);font-size:11px}
   /* 광고 영역 */
   .adslot{margin-top:20px;border:1px dashed var(--hair);border-radius:14px;min-height:96px;
     display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
@@ -327,6 +338,10 @@
   <div class="polytoggle">
     <span class="pt-txt" id="lbl-partial"></span>
     <label class="switch"><input type="checkbox" id="partialchk"><span class="slider"></span></label>
+  </div>
+  <div class="polytoggle">
+    <span class="pt-txt" id="lbl-vintage"></span>
+    <label class="switch"><input type="checkbox" id="vintagechk"><span class="slider"></span></label>
   </div>
 
   <div class="parents">
@@ -372,22 +387,25 @@
       <div class="upd-section">
         <div class="upd-title done">✅ 업데이트 됨</div>
         <ul>
-          <li>콤보 · 유전 모프 · 라인브리딩을 칩으로 선택하는 방식으로 개편</li>
-          <li>맥스노우 / 슈퍼 스노우 등 슈퍼 형태를 각각 별도 칩으로 분리</li>
-          <li>선택 조합이 명칭 있는 콤보면 부모·결과에 이름 자동 표기</li>
-          <li>100HET(확정) · 비주얼 표기, 66·33% 가능성 헷은 옵션으로 표시</li>
+          <li><b>추억의 모프</b> 토글 추가 — 갤럭시 이니그마·블랙홀·볼텍스 등 요즘 보기 힘든 콤보는 켤 때만 표시</li>
+          <li>슈퍼 스노우·슈퍼 레몬 프로스트를 각각 별도 칩으로 분리</li>
+          <li>콤보·유전 모프·라인브리딩을 칩으로 선택하는 방식으로 개편 (열성/우성 구분 없이 한 묶음)</li>
+          <li>만다린·블러드·블랙나이트·인페르노 등 라인브리딩 명칭 대폭 추가</li>
+          <li>콤보 칩을 누르면 구성 유전자가 자동 세팅되고, 부모·결과에 콤보 이름 자동 표기</li>
+          <li>100HET(확정)·비주얼 표기, 66·33% 가능성 헷은 옵션으로 표시</li>
           <li>새끼 모습 게코 일러스트 + 도넛 차트 + 결과 표</li>
-          <li>한국어 · English · 中文 · 日本語 4개 언어, 라이트/다크 모드</li>
-          <li>레몬 프로스트 · 에니그마 등 위험 조합 경고</li>
+          <li>한국어·English·中文·日本語 4개 언어, 라이트/다크 모드</li>
+          <li>레몬 프로스트·에니그마 등 위험 조합 경고</li>
+          <li>디아블로 블랑코 표기 오타 수정</li>
         </ul>
       </div>
       <div class="upd-section">
         <div class="upd-title soon">🔜 업데이트 예정</div>
         <ul>
-          <li>랩터 · 앱터 · 노바 등 라인브리딩 패턴리스가 필요한 콤보 표기 검토</li>
-          <li>탠저린 · 만다린 등 폴리제닉 색 계열을 일러스트에 반영</li>
-          <li>모프별 실물 예시 사진 · 상세 설명</li>
-          <li>웹 링크(라이브) 배포</li>
+          <li>모프별 실물 사진 적용 (관리자에서 업로드 후 순차 반영)</li>
+          <li>랩터·앱터·노바 등 라인브리딩 패턴리스가 필요한 콤보 표기 검토</li>
+          <li>탠저린·만다린 등 폴리제닉 색 계열을 일러스트에 반영</li>
+          <li>브리딩 프로젝트·클러치 관리 등 프리미엄 기능</li>
         </ul>
       </div>
       <div class="modal-mail">문의 · 건의: <a href="mailto:kmc612000@gmail.com">kmc612000@gmail.com</a></div>
@@ -532,35 +550,35 @@ const COMBOS = [
   {tokens:['super_macksnow','eclipse'], ko:'갤럭시 (토탈 이클립스)', en:'Galaxy (Total Eclipse)'},
   {tokens:['super_macksnow','eclipse','wy'], ko:'유니버스', en:'Universe'},
   {tokens:['super_macksnow','eclipse','blizzard'], ko:'갤럭시 블리자드', en:'Galaxy Blizzard'},
-  {tokens:['super_macksnow','eclipse','enigma'], ko:'갤럭시 이니그마', en:'Galaxy Enigma'},
-  {tokens:['super_macksnow','eclipse','wy','enigma'], ko:'유니그마', en:'Unigma'},
-  {tokens:['macksnow','eclipse','enigma'], ko:'블랙홀', en:'Black Hole'},
+  {tokens:['super_macksnow','eclipse','enigma'], ko:'갤럭시 이니그마', en:'Galaxy Enigma', vintage:true},
+  {tokens:['super_macksnow','eclipse','wy','enigma'], ko:'유니그마', en:'Unigma', vintage:true},
+  {tokens:['macksnow','eclipse','enigma'], ko:'블랙홀', en:'Black Hole', vintage:true},
   {tokens:['super_macksnow','murphy'], ko:'슈퍼 플래티넘', en:'Super Platinum'},
-  {tokens:['super_macksnow','enigma'], ko:'달마시안', en:'Dalmatian'},
-  {tokens:['eclipse','enigma'], ko:'비 (Bee)', en:'Bee'},
+  {tokens:['super_macksnow','enigma'], ko:'달마시안', en:'Dalmatian', vintage:true},
+  {tokens:['eclipse','enigma'], ko:'비 (Bee)', en:'Bee', vintage:true},
   {tokens:['blizzard','murphy'], ko:'바나나 블리자드', en:'Banana Blizzard'},
   {tokens:['tremper','blizzard'], ko:'블레이징 블리자드', en:'Blazing Blizzard'},
   {tokens:['tremper','blizzard','eclipse'], ko:'디아블로 블랑코', en:'Diablo Blanco'},
-  {tokens:['tremper','murphy'], ko:'알비노 루시스틱', en:'Albino Patternless'},
+  {tokens:['tremper','murphy'], ko:'알비노 루시스틱', en:'Albino Patternless', vintage:true},
   {tokens:['tremper','murphy','eclipse'], ko:'앰버', en:'Amber'},
-  {tokens:['tremper','murphy','eclipse','macksnow'], ko:'스노우 플레이크', en:'Snowflake'},
+  {tokens:['tremper','murphy','eclipse','macksnow'], ko:'스노우 플레이크', en:'Snowflake', vintage:true},
   {tokens:['bell','eclipse'], ko:'레이다 (레이더)', en:'Raida (Radar)'},
   {tokens:['bell','eclipse','macksnow'], ko:'스노우 레이다', en:'Snow Raida'},
   {tokens:['bell','eclipse','super_macksnow'], ko:'슈퍼 레이다', en:'Super Raida'},
-  {tokens:['bell','eclipse','macksnow','enigma'], ko:'소나 (스텔스)', en:'Sona (Stealth)'},
-  {tokens:['bell','eclipse','macksnow','enigma','wy'], ko:'칼사이트', en:'Calcite'},
+  {tokens:['bell','eclipse','macksnow','enigma'], ko:'소나 (스텔스)', en:'Sona (Stealth)', vintage:true},
+  {tokens:['bell','eclipse','macksnow','enigma','wy'], ko:'칼사이트', en:'Calcite', vintage:true},
   {tokens:['bell','eclipse','murphy'], ko:'프레데터', en:'Predator'},
   {tokens:['bell','blizzard'], ko:'벨 블레이징 블리자드', en:'Bell Blazing Blizzard'},
   {tokens:['bell','blizzard','eclipse'], ko:'화이트 나이트', en:'White Knight'},
-  {tokens:['bell','wy'], ko:'오로라', en:'Aurora'},
+  {tokens:['bell','wy'], ko:'오로라', en:'Aurora', vintage:true},
   {tokens:['rainwater','eclipse'], ko:'타이푼', en:'Typhoon'},
   {tokens:['rainwater','eclipse','macksnow'], ko:'스노우 타이푼', en:'Snow Typhoon'},
   {tokens:['rainwater','eclipse','super_macksnow'], ko:'슈퍼 타이푼', en:'Super Typhoon'},
-  {tokens:['rainwater','eclipse','macksnow','enigma'], ko:'크리스탈', en:'Crystal'},
+  {tokens:['rainwater','eclipse','macksnow','enigma'], ko:'크리스탈', en:'Crystal', vintage:true},
   {tokens:['rainwater','blizzard'], ko:'레인워터 블리자드', en:'Rainwater Blizzard'},
-  {tokens:['rainwater','eclipse','blizzard'], ko:'허리케인', en:'Hurricane'},
-  {tokens:['rainwater','eclipse','murphy'], ko:'싸이클론', en:'Cyclone'},
-  {tokens:['rainwater','eclipse','murphy','enigma'], ko:'볼텍스', en:'Vortex'},
+  {tokens:['rainwater','eclipse','blizzard'], ko:'허리케인', en:'Hurricane', vintage:true},
+  {tokens:['rainwater','eclipse','murphy'], ko:'싸이클론', en:'Cyclone', vintage:true},
+  {tokens:['rainwater','eclipse','murphy','enigma'], ko:'볼텍스', en:'Vortex', vintage:true},
 ];
 function partToken(p){
   const g=p.g, geno=p.geno;
@@ -660,6 +678,7 @@ const I18N = {
     normal:'노멀', het:'het', comboTag:'콤보',
     visualTag:'비주얼', hetShort:'헷', superShort:'슈퍼', colProb:'확률', colVisual:'비주얼 (발현)', colHet:'HET (보인자)', hetNone:'–',
     partialToggle:'가능성 헷 표시 (66·33%)', partialHint:'확률적 보인자(66·33% 등)까지 표로 표시',
+    vintageToggle:'추억의 모프 보기', vintageHint:'요즘 보기 힘든 과거 모프·콤보까지 표시',
     comboLoad:'콤보 개체 불러오기…', donate:'☕ 개발자 후원하기', adLabel:'광고', adHint:'이 자리에 광고 코드를 넣을 수 있어요',
     secCombo:'콤보 (탭하면 자동 세팅)', secGene:'유전 모프 (확률 계산)',
     comboNote:'<b>콤보 이름</b> — 계산 결과가 알려진 콤보와 일치하면 디자이너 명칭(예: 갤럭시, 레이다)을 함께 표시합니다. 다만 탠저린·하이포·TUG 스노우 등 라인브리딩이 필요한 콤보(앱터/랩터/노바 등)는 자동 인식되지 않습니다.',
@@ -690,6 +709,7 @@ const I18N = {
     normal:'Normal', het:'het', comboTag:'COMBO',
     visualTag:'Visual', hetShort:'het', superShort:'Super', colProb:'Prob.', colVisual:'Visual (expressed)', colHet:'Het (carrier)', hetNone:'–',
     partialToggle:'Show possible hets (66·33%)', partialHint:'Include probabilistic carriers (66·33%, etc.) in the table',
+    vintageToggle:'Show vintage morphs', vintageHint:'Include older, rarely-seen morphs and combos',
     comboLoad:'Load a combo animal…', donate:'☕ Support the developer', adLabel:'Advertisement', adHint:'Place your ad code here',
     secCombo:'Combos (tap to auto-set)', secGene:'Genetic morphs (calculated)',
     comboNote:'<b>Combo names</b> — when an outcome matches a known combo, its designer name (e.g. Galaxy, Radar) is shown. Combos requiring line-bred traits (Tangerine, Hypo, TUG snow) such as APTOR/RAPTOR/Nova aren’t auto-detected.',
@@ -720,6 +740,7 @@ const I18N = {
     normal:'普通', het:'het', comboTag:'组合',
     visualTag:'表现', hetShort:'het', superShort:'超级', colProb:'概率', colVisual:'表现型', colHet:'Het (携带)', hetNone:'–',
     partialToggle:'显示可能 het（66·33%）', partialHint:'在表格中包含概率性携带（66·33% 等）',
+    vintageToggle:'显示怀旧形态', vintageHint:'包含现在少见的旧形态与组合',
     comboLoad:'载入组合个体…', donate:'☕ 支持开发者', adLabel:'广告', adHint:'可在此处放置广告代码',
     secCombo:'组合（点击自动设置）', secGene:'遗传形态（可计算）',
     comboNote:'<b>组合名称</b> — 当结果与已知组合一致时，会显示其商品名（如 Galaxy、Radar）。需要线育性状（橘化、Hypo、TUG 雪花）的组合（如 APTOR/RAPTOR/Nova）不会自动识别。',
@@ -750,6 +771,7 @@ const I18N = {
     normal:'ノーマル', het:'het', comboTag:'コンボ',
     visualTag:'ビジュアル', hetShort:'het', superShort:'スーパー', colProb:'確率', colVisual:'ビジュアル（発現）', colHet:'Het（保因）', hetNone:'–',
     partialToggle:'可能性 het を表示（66・33%）', partialHint:'66・33% など確率的な保因も表に表示',
+    vintageToggle:'懐かしのモルフを表示', vintageHint:'今では見かけない古いモルフ・コンボも表示',
     comboLoad:'コンボ個体を読み込む…', donate:'☕ 開発者を支援', adLabel:'広告', adHint:'ここに広告コードを配置できます',
     secCombo:'コンボ（タップで自動設定）', secGene:'遺伝モルフ（確率計算）',
     comboNote:'<b>コンボ名</b> — 結果が既知のコンボと一致すると、そのデザイナー名（例：Galaxy、Radar）を表示します。ラインブリード形質（タンジェリン・ハイポ・TUGスノー）が必要なコンボ（APTOR/RAPTOR/Nova等）は自動判別されません。',
@@ -766,7 +788,7 @@ const I18N = {
   },
 };
 
-let LANG='ko', showPoly=true, showPartialHet=false, hasResult=false;
+let LANG='ko', showPoly=true, showPartialHet=false, showVintage=false, hasResult=false;
 function L(){ return I18N[LANG]; }
 function gName(g){ return g[LANG]; }
 function gSuper(g){ return g['super'+LANG.charAt(0).toUpperCase()+LANG.slice(1)]; }
@@ -820,7 +842,7 @@ function buildParent(side){
   // 콤보 칩 (탭하면 구성 유전자 자동 세팅)
   host.appendChild(secHeader(L().secCombo));
   const cgrid=document.createElement('div'); cgrid.className='chipgrid';
-  COMBOS.forEach(c=>cgrid.appendChild(comboChip(c, side, matched)));
+  COMBOS.filter(c=>!c.vintage||showVintage||c===matched).forEach(c=>cgrid.appendChild(comboChip(c, side, matched)));
   host.appendChild(cgrid);
   // 유전 모프 (열성/우성 구분 없이 하나의 칩셋)
   host.appendChild(secHeader(L().secGene));
@@ -907,6 +929,7 @@ function applyLang(){
   document.getElementById('btn-reset').textContent=t.reset;
   document.getElementById('btn-calc').textContent=t.calc;
   document.getElementById('lbl-partial').innerHTML=escapeHtml(t.partialToggle)+'<small>'+escapeHtml(t.partialHint)+'</small>';
+  document.getElementById('lbl-vintage').innerHTML=escapeHtml(t.vintageToggle)+'<small>'+escapeHtml(t.vintageHint)+'</small>';
   document.getElementById('note').innerHTML=t.note+'<br><br>'+t.comboNote;
   document.getElementById('footer').textContent=t.footer;
   document.getElementById('lbl-langtitle').textContent=t.langLabel;
@@ -1118,9 +1141,13 @@ document.getElementById('partialchk').addEventListener('change',e=>{
   showPartialHet=e.target.checked;
   if(hasResult) calculate();
 });
+document.getElementById('vintagechk').addEventListener('change',e=>{
+  showVintage=e.target.checked;
+  buildParent('A'); buildParent('B');
+});
 
 /* ===== 업데이트 노트 모달 ===== */
-const UPD_VER='2026-07'; // 버전 바뀌면 '오늘 하루 안 보기' 무관하게 다시 노출
+const UPD_VER='2026-07-26b'; // 버전 바뀌면 '오늘 하루 안 보기' 무관하게 다시 노출
 function todayKey(){ try{ return new Date().toISOString().slice(0,10); }catch(e){ return 'x'; } }
 function openUpd(){ document.getElementById('updModal').classList.add('show'); }
 function closeUpd(){ document.getElementById('updModal').classList.remove('show'); }
@@ -1135,7 +1162,8 @@ applyLang();
 (function(){
   let dismissed=false;
   try{ dismissed = (localStorage.getItem('leoUpdDismiss')===UPD_VER+'|'+todayKey()); }catch(e){ dismissed=false; }
-  if(!dismissed) openUpd();
+  const onAdmin = (location.hash==='#admin') || /\/admin\/?$/.test(location.pathname);
+  if(!dismissed && !onAdmin) openUpd();
 })();
 </script>
 
@@ -1171,7 +1199,7 @@ applyLang();
       const c=await SB.from('combos').select('*').order('sort');
       let changed=false;
       if(m.data&&m.data.length){ applyMorphRows(m.data); changed=true; }
-      if(c.data&&c.data.length){ COMBOS.length=0; c.data.forEach(r=>COMBOS.push({tokens:r.tokens||[], ko:r.ko, en:r.en})); changed=true; }
+      if(c.data&&c.data.length){ COMBOS.length=0; c.data.forEach(r=>COMBOS.push({tokens:r.tokens||[], ko:r.ko, en:r.en, vintage:!!r.vintage})); changed=true; }
       if(changed){ hasResult=false; applyLang(); }
     }catch(e){}
   }
@@ -1188,6 +1216,26 @@ applyLang();
   function resizeImage(file, max){ return new Promise((res,rej)=>{ const img=new Image(); img.onload=()=>{ let w=img.width,h=img.height; if(w>h&&w>max){h=Math.round(h*max/w);w=max;} else if(h>=w&&h>max){w=Math.round(w*max/h);h=max;} const c=document.createElement('canvas'); c.width=w;c.height=h; c.getContext('2d').drawImage(img,0,0,w,h); c.toBlob(b=>b?res(b):rej(new Error('blob')),'image/jpeg',0.85); }; img.onerror=()=>rej(new Error('img')); img.src=URL.createObjectURL(file); }); }
   function genCode(){ const s='ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; let o=''; for(let i=0;i<9;i++){ o+=s[Math.floor(Math.random()*s.length)]; if(i===4)o+='-'; } return o; }
   function tokenOptions(){ const o=[]; GENES.forEach(g=>{ if(g.type==='incdom'){ o.push([g.id,gName(g)]); o.push(['super_'+g.id,gSuper(g)]); } else { o.push([g.id, gName(g)]); } }); return o; }
+
+
+  /* ---------- 현재 앱 데이터를 DB로 가져오기 ---------- */
+  async function seedMorphs(){
+    const rows=[];
+    GENES.forEach((g,i)=>rows.push({id:g.id,kind:g.type,family:g.family||'albino',ko:g.ko,en:g.en,zh:g.zh,ja:g.ja,
+      super_ko:g.superKo||null,super_en:g.superEn||null,super_zh:g.superZh||null,super_ja:g.superJa||null,
+      risk:!!g.risk,color:GCOLOR[g.id]||null,image_url:MORPH_IMG[g.id]||null,sort:i+1,active:true}));
+    POLY.forEach((x,i)=>rows.push({id:x.id,kind:'poly',family:'poly',ko:x.ko,en:x.en,zh:x.zh,ja:x.ja,
+      risk:false,color:GCOLOR[x.id]||null,image_url:MORPH_IMG[x.id]||null,sort:100+i,active:true}));
+    const r=await SB.from('morphs').upsert(rows); if(r.error) throw r.error; return rows.length;
+  }
+  async function seedCombos(){
+    const ex=await SB.from('combos').select('id');
+    if(ex.data&&ex.data.length){ if(!confirm('콤보 '+ex.data.length+'개가 이미 있습니다. 모두 지우고 현재 앱 목록으로 덮어쓸까요?')) return -1;
+      await SB.from('combos').delete().neq('id','00000000-0000-0000-0000-000000000000'); }
+    const rows=COMBOS.map((c,i)=>({tokens:c.tokens,ko:c.ko,en:c.en,vintage:!!c.vintage,sort:i+1}));
+    const r=await SB.from('combos').insert(rows); if(r.error) throw r.error; return rows.length;
+  }
+  function download(name, text){ const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([text],{type:'application/json'})); a.download=name; a.click(); }
 
   /* ---------- 라우팅 ---------- */
   function isAdminRoute(){ return location.hash==='#admin' || /\/admin\/?$/.test(location.pathname); }
@@ -1215,13 +1263,35 @@ applyLang();
     ({morph:tabMorph,combo:tabCombo,stat:tabStat,code:tabCode}[adTab])();
   }
 
+  let morphQ='';
   async function tabMorph(){
     const body=document.getElementById('adBody'); body.innerHTML='불러오는 중…';
-    const m=await SB.from('morphs').select('*').order('sort'); const rows=m.data||[];
-    body.innerHTML='<button class="abtn sm" id="mNew">+ 새 모프</button><div class="ahint">DB에 모프를 넣으면 앱의 기본 목록을 대체합니다. (비어 있으면 내장 기본값 사용)</div><div class="alist">'+rows.map(r=>'<div class="arow"><div class="arow-main"><b>'+esc(r.ko||r.id)+'</b><span class="atag">'+esc(r.kind)+'</span><div class="asub">'+esc(r.en||'')+' · '+esc(r.id)+'</div></div><div class="arow-act"><button class="mini" data-e="'+esc(r.id)+'">수정</button><button class="mini del" data-d="'+esc(r.id)+'">삭제</button></div></div>').join('')+'</div>';
+    const m=await SB.from('morphs').select('*').order('sort'); const all=m.data||[];
+    const rows=morphQ? all.filter(r=>((r.ko||'')+(r.en||'')+r.id).toLowerCase().includes(morphQ.toLowerCase())) : all;
+    let html='<div class="abar"><button class="abtn sm" id="mNew">+ 새 모프</button><button class="abtn sm ghost" id="mSeed">현재 앱 목록 가져오기</button><button class="abtn sm ghost" id="mExp">백업</button></div>'
+      +'<div class="abar"><input class="ain" id="mQ" placeholder="이름·ID 검색" value="'+esc(morphQ)+'"></div>';
+    if(!all.length){ html+='<div class="aempty"><b>아직 DB에 모프가 없습니다.</b><br>지금은 앱에 내장된 기본 목록('+(GENES.length+POLY.length)+'개)이 쓰이고 있어요.<br><br><b>현재 앱 목록 가져오기</b>를 누르면 지금 화면에 보이는 모프가 그대로 DB에 들어가고, 그때부터 여기서 추가·수정할 수 있습니다.</div>'; }
+    else { html+='<div class="alist">'+rows.map(r=>'<div class="arow'+(r.active===false?' off':'')+'">'
+      +'<div class="ordbtns"><button data-u="'+esc(r.id)+'">▲</button><button data-dn="'+esc(r.id)+'">▼</button></div>'
+      +'<div class="arow-main"><b>'+esc(r.ko||r.id)+'</b><span class="atag">'+esc(r.kind)+'</span>'+(r.risk?'<span class="atag rev">⚠</span>':'')
+      +'<div class="asub">'+esc(r.en||'')+' · '+esc(r.id)+'</div></div>'
+      +'<div class="arow-act"><button class="mini" data-t="'+esc(r.id)+'">'+(r.active===false?'켜기':'끄기')+'</button>'
+      +'<button class="mini" data-e="'+esc(r.id)+'">수정</button><button class="mini del" data-d="'+esc(r.id)+'">삭제</button></div></div>').join('')+'</div>'; }
+    body.innerHTML=html;
     document.getElementById('mNew').onclick=()=>morphForm(null);
-    body.querySelectorAll('[data-e]').forEach(b=>b.onclick=()=>morphForm(rows.find(x=>x.id===b.dataset.e)));
+    document.getElementById('mExp').onclick=()=>download('morphs-backup.json',JSON.stringify(all,null,1));
+    document.getElementById('mSeed').onclick=async(e)=>{ e.target.textContent='가져오는 중…'; try{ const n=await seedMorphs(); await loadOverrides(); alert(n+'개를 DB에 넣었습니다.'); }catch(x){ alert('실패: '+x.message); } tabMorph(); };
+    const q=document.getElementById('mQ'); q.oninput=()=>{ morphQ=q.value; };
+    q.onkeydown=(e)=>{ if(e.key==='Enter') tabMorph(); };
+    body.querySelectorAll('[data-e]').forEach(b=>b.onclick=()=>morphForm(all.find(x=>x.id===b.dataset.e)));
+    body.querySelectorAll('[data-t]').forEach(b=>b.onclick=async()=>{ const r=all.find(x=>x.id===b.dataset.t); await SB.from('morphs').update({active:!(r.active!==false)}).eq('id',r.id); await loadOverrides(); tabMorph(); });
     body.querySelectorAll('[data-d]').forEach(b=>b.onclick=async()=>{ if(!confirm('삭제할까요?'))return; await SB.from('morphs').delete().eq('id',b.dataset.d); await loadOverrides(); tabMorph(); });
+    const move=async(id,dir)=>{ const i=all.findIndex(x=>x.id===id), j=i+dir; if(j<0||j>=all.length)return;
+      await SB.from('morphs').update({sort:all[j].sort||j+1}).eq('id',all[i].id);
+      await SB.from('morphs').update({sort:all[i].sort||i+1}).eq('id',all[j].id);
+      await loadOverrides(); tabMorph(); };
+    body.querySelectorAll('[data-u]').forEach(b=>b.onclick=()=>move(b.dataset.u,-1));
+    body.querySelectorAll('[data-dn]').forEach(b=>b.onclick=()=>move(b.dataset.dn,1));
   }
   function morphForm(r){
     r=r||{kind:'rec',family:'albino'}; const body=document.getElementById('adBody');
@@ -1246,16 +1316,31 @@ applyLang();
   async function tabCombo(){
     const body=document.getElementById('adBody'); body.innerHTML='불러오는 중…';
     const c=await SB.from('combos').select('*').order('sort'); const rows=c.data||[];
-    body.innerHTML='<button class="abtn sm" id="cNew">+ 새 콤보</button><div class="alist">'+rows.map(r=>'<div class="arow"><div class="arow-main"><b>'+esc(r.ko||r.en||'-')+'</b><div class="asub">'+esc((r.tokens||[]).join(' + '))+'</div></div><div class="arow-act"><button class="mini" data-e="'+esc(r.id)+'">수정</button><button class="mini del" data-d="'+esc(r.id)+'">삭제</button></div></div>').join('')+'</div>';
+    let html='<div class="abar"><button class="abtn sm" id="cNew">+ 새 콤보</button><button class="abtn sm ghost" id="cSeed">현재 앱 목록 가져오기</button><button class="abtn sm ghost" id="cExp">백업</button></div>';
+    if(!rows.length){ html+='<div class="aempty"><b>아직 DB에 콤보가 없습니다.</b><br>지금은 앱에 내장된 기본 콤보 '+COMBOS.length+'개가 쓰이고 있어요.<br><br><b>현재 앱 목록 가져오기</b>를 누르면 갤럭시·레이다·타이푼 등 지금 목록이 그대로 DB에 들어가고, 여기서 이름·구성·추억 여부를 수정할 수 있습니다.</div>'; }
+    else { html+='<div class="alist">'+rows.map(r=>'<div class="arow">'
+      +'<div class="ordbtns"><button data-u="'+esc(r.id)+'">▲</button><button data-dn="'+esc(r.id)+'">▼</button></div>'
+      +'<div class="arow-main"><b>'+esc(r.ko||r.en||'-')+'</b>'+(r.vintage?'<span class="atag">추억</span>':'')
+      +'<div class="asub">'+esc((r.tokens||[]).join(' + '))+'</div></div>'
+      +'<div class="arow-act"><button class="mini" data-e="'+esc(r.id)+'">수정</button><button class="mini del" data-d="'+esc(r.id)+'">삭제</button></div></div>').join('')+'</div>'; }
+    body.innerHTML=html;
     document.getElementById('cNew').onclick=()=>comboForm(null);
-    body.querySelectorAll('[data-e]').forEach(b=>b.onclick=()=>comboForm(rows.find(x=>x.id===b.dataset.e)));
-    body.querySelectorAll('[data-d]').forEach(b=>b.onclick=async()=>{ if(!confirm('삭제?'))return; await SB.from('combos').delete().eq('id',b.dataset.d); await loadOverrides(); tabCombo(); });
+    document.getElementById('cExp').onclick=()=>download('combos-backup.json',JSON.stringify(rows,null,1));
+    document.getElementById('cSeed').onclick=async(e)=>{ e.target.textContent='가져오는 중…'; try{ const n=await seedCombos(); if(n>=0){ await loadOverrides(); alert(n+'개를 DB에 넣었습니다.'); } }catch(x){ alert('실패: '+x.message); } tabCombo(); };
+    body.querySelectorAll('[data-e]').forEach(x=>x.onclick=()=>comboForm(rows.find(y=>y.id===x.dataset.e)));
+    body.querySelectorAll('[data-d]').forEach(x=>x.onclick=async()=>{ if(!confirm('삭제?'))return; await SB.from('combos').delete().eq('id',x.dataset.d); await loadOverrides(); tabCombo(); });
+    const move=async(id,dir)=>{ const i=rows.findIndex(x=>x.id===id), j=i+dir; if(j<0||j>=rows.length)return;
+      await SB.from('combos').update({sort:rows[j].sort||j+1}).eq('id',rows[i].id);
+      await SB.from('combos').update({sort:rows[i].sort||i+1}).eq('id',rows[j].id);
+      await loadOverrides(); tabCombo(); };
+    body.querySelectorAll('[data-u]').forEach(x=>x.onclick=()=>move(x.dataset.u,-1));
+    body.querySelectorAll('[data-dn]').forEach(x=>x.onclick=()=>move(x.dataset.dn,1));
   }
   function comboForm(r){
     r=r||{tokens:[]}; const body=document.getElementById('adBody'); const sel=new Set(r.tokens||[]);
-    body.innerHTML='<div class="alabel">'+(r.id?'콤보 수정':'새 콤보')+'</div><input class="ain" id="cf_ko" placeholder="한국어 명칭" value="'+esc(r.ko||'')+'"><input class="ain" id="cf_en" placeholder="English" value="'+esc(r.en||'')+'"><div class="alabel2">구성 (비주얼 토큰 선택)</div><div class="tokgrid">'+tokenOptions().map(t=>'<label class="tokchk"><input type="checkbox" value="'+esc(t[0])+'" '+(sel.has(t[0])?'checked':'')+'>'+esc(t[1])+'</label>').join('')+'</div><div class="aformbtns"><button class="abtn" id="cSave">저장</button><button class="abtn ghost" id="cCancel">취소</button></div><div id="cErr" class="aerr"></div>';
+    body.innerHTML='<div class="alabel">'+(r.id?'콤보 수정':'새 콤보')+'</div><input class="ain" id="cf_ko" placeholder="한국어 명칭" value="'+esc(r.ko||'')+'"><input class="ain" id="cf_en" placeholder="English" value="'+esc(r.en||'')+'"><label class="achk"><input type="checkbox" id="cf_vint" '+(r.vintage?'checked':'')+'> 추억의 모프 (기본 숨김)</label><div class="alabel2">구성 (비주얼 토큰 선택)</div><div class="tokgrid">'+tokenOptions().map(t=>'<label class="tokchk"><input type="checkbox" value="'+esc(t[0])+'" '+(sel.has(t[0])?'checked':'')+'>'+esc(t[1])+'</label>').join('')+'</div><div class="aformbtns"><button class="abtn" id="cSave">저장</button><button class="abtn ghost" id="cCancel">취소</button></div><div id="cErr" class="aerr"></div>';
     document.getElementById('cCancel').onclick=()=>tabCombo();
-    document.getElementById('cSave').onclick=async()=>{ const tk=[...document.querySelectorAll('.tokchk input:checked')].map(x=>x.value); if(!tk.length){document.getElementById('cErr').textContent='토큰을 하나 이상 선택하세요.';return;} const rec={ ko:document.getElementById('cf_ko').value.trim(), en:document.getElementById('cf_en').value.trim(), tokens:tk, updated_at:new Date().toISOString() }; if(r.id)rec.id=r.id; const res=await SB.from('combos').upsert(rec); if(res.error){document.getElementById('cErr').textContent=res.error.message;return;} await loadOverrides(); tabCombo(); };
+    document.getElementById('cSave').onclick=async()=>{ const tk=[...document.querySelectorAll('.tokchk input:checked')].map(x=>x.value); if(!tk.length){document.getElementById('cErr').textContent='토큰을 하나 이상 선택하세요.';return;} const rec={ ko:document.getElementById('cf_ko').value.trim(), en:document.getElementById('cf_en').value.trim(), tokens:tk, vintage:document.getElementById('cf_vint').checked, updated_at:new Date().toISOString() }; if(r.id)rec.id=r.id; const res=await SB.from('combos').upsert(rec); if(res.error){document.getElementById('cErr').textContent=res.error.message;return;} await loadOverrides(); tabCombo(); };
   }
 
   async function tabStat(){
@@ -1267,7 +1352,12 @@ applyLang();
       const dv=await SB.from('visits').select('device').limit(5000);
       const uniq=new Set((dv.data||[]).map(x=>x.device)).size;
       const tc=await SB.from('top_combos').select('*').limit(20);
-      body.innerHTML='<div class="statrow"><div class="statcard"><div class="statn">'+(tot.count||0)+'</div><div class="statl">누적 접속</div></div><div class="statcard"><div class="statn">'+(td.count||0)+'</div><div class="statl">오늘 접속</div></div><div class="statcard"><div class="statn">'+uniq+'</div><div class="statl">순 방문자</div></div></div><div class="alabel2">자주 확인한 조합</div><div class="alist">'+(((tc.data||[]).map((r,i)=>'<div class="arow"><div class="arow-main"><b>'+(i+1)+'. '+esc(r.label||r.ckey)+'</b></div><div class="atag">'+r.cnt+'회</div></div>').join(''))||'<div class="asub">아직 데이터가 없어요.</div>')+'</div>';
+      const dv2=await SB.from('visits').select('day').limit(5000);
+      const byDay={}; (dv2.data||[]).forEach(x=>{ if(x.day) byDay[x.day]=(byDay[x.day]||0)+1; });
+      const days=Object.keys(byDay).sort().slice(-7);
+      const mx=Math.max(1,...days.map(d=>byDay[d]));
+      const trend=days.length? '<div class="alabel2">최근 7일 접속</div>'+days.map(d=>'<div class="daybar"><span class="dl">'+d.slice(5)+'</span><span class="dt" style="width:'+Math.round(byDay[d]/mx*60)+'%"></span><span class="dn">'+byDay[d]+'</span></div>').join('') : '';
+      body.innerHTML='<div class="statrow"><div class="statcard"><div class="statn">'+(tot.count||0)+'</div><div class="statl">누적 접속</div></div><div class="statcard"><div class="statn">'+(td.count||0)+'</div><div class="statl">오늘 접속</div></div><div class="statcard"><div class="statn">'+uniq+'</div><div class="statl">순 방문자</div></div></div>'+trend+'<div class="alabel2">자주 확인한 조합</div><div class="alist">'+(((tc.data||[]).map((r,i)=>'<div class="arow"><div class="arow-main"><b>'+(i+1)+'. '+esc(r.label||r.ckey)+'</b></div><div class="atag">'+r.cnt+'회</div></div>').join(''))||'<div class="asub">아직 데이터가 없어요.</div>')+'</div>';
     }catch(e){ body.innerHTML='<div class="aerr">통계를 불러오지 못했어요. (권한/네트워크 확인)</div>'; }
   }
 

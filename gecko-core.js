@@ -5,10 +5,10 @@ function escapeHtml(s){return String(s).replace(/[&<>"]/g,function(x){return {'&
 function gName(g){ return g[LANG]||g.en; }
 function gSuper(g){ return g['super'+LANG.charAt(0).toUpperCase()+LANG.slice(1)]||g.superEn; }
 function pName(p){ return p[LANG]||p.en; }
-var CORE_T = { ko:{normal:'노멀',visualTag:'비주얼',hetShort:'헷',superShort:'슈퍼'},
-               en:{normal:'Normal',visualTag:'Visual',hetShort:'het',superShort:'Super'},
-               zh:{normal:'普通',visualTag:'表现',hetShort:'het',superShort:'超级'},
-               ja:{normal:'ノーマル',visualTag:'ビジュアル',hetShort:'het',superShort:'スーパー'} };
+var CORE_T = { ko:{normal:'노멀',visualTag:'비주얼',hetShort:'헷',superShort:'슈퍼폼'},
+               en:{normal:'Normal',visualTag:'Visual',hetShort:'het',superShort:'Super form'},
+               zh:{normal:'普通',visualTag:'表现',hetShort:'het',superShort:'超级形态'},
+               ja:{normal:'ノーマル',visualTag:'ビジュアル',hetShort:'het',superShort:'スーパーフォーム'} };
 if(typeof L!=='function'){ var L=function(){ return CORE_T[LANG]||CORE_T.ko; }; }
 function tokenOptions(){ var o=[]; GENES.forEach(function(g){
   if(g.type==='incdom'){ o.push([g.id,gName(g)]); o.push(['super_'+g.id,gSuper(g)]); }

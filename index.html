@@ -131,9 +131,9 @@ if(typeof GENES==='undefined'){
   .combochip.b::before{color:var(--patina)}
   .combochip.on::before{color:#fff}
   /* 모프 선택 칩 + 헷/비주얼 서브 토글 */
-  .chipgrid{display:flex;flex-wrap:wrap;gap:5px;margin-top:1px}
-  .chipwrap{display:flex;flex-direction:column;gap:4px;align-items:flex-start}
-  .chip{border:1.5px solid var(--chipbd);background:var(--card);color:var(--ink);border-radius:18px;padding:6px 11px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;line-height:1.1;transition:.12s;white-space:nowrap;display:inline-flex;align-items:center}
+  .chipgrid{display:flex;flex-wrap:wrap;align-items:flex-start;gap:5px;margin-top:1px}
+  .chipwrap{display:flex;flex-direction:column;gap:4px;align-items:flex-start;flex:0 0 auto;align-self:flex-start}
+  .chip{border:1.5px solid var(--chipbd);background:var(--card);color:var(--ink);border-radius:18px;padding:6px 11px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;line-height:1.1;transition:.12s;white-space:nowrap;display:inline-flex;align-items:center;flex:0 0 auto;align-self:flex-start}
   .sw{width:11px;height:11px;border-radius:50%;display:inline-block;margin-right:6px;border:1px solid rgba(0,0,0,.16);flex:0 0 auto}
   .chip.on .sw{border-color:rgba(255,255,255,.7)}
   /* 게코 일러스트 타일 */
@@ -259,6 +259,15 @@ if(typeof GENES==='undefined'){
   .btn-today{background:rgba(120,120,128,.15);color:var(--ink)}
   .btn-close{background:var(--teal);color:#fff}
   .sw.img{background-size:cover;background-position:center}
+  .legal{text-align:center;margin-top:14px;font-size:11.5px;color:var(--ink2)}
+  .legal a{color:var(--ink2);text-decoration:underline;margin:0 2px}
+  .cookiebar{position:fixed;left:0;right:0;bottom:0;z-index:90;display:none;align-items:center;gap:12px;
+    background:var(--card);border-top:1px solid var(--hair);padding:13px 16px;box-shadow:0 -4px 20px rgba(0,0,0,.09)}
+  .cookiebar.show{display:flex}
+  .cb-txt{flex:1;font-size:12px;color:var(--ink2);line-height:1.55}
+  .cb-txt a{color:var(--teal);font-weight:700}
+  .cb-ok{flex:0 0 auto;background:var(--teal);color:#fff;border:none;border-radius:10px;padding:10px 18px;
+    font-size:13px;font-weight:700;cursor:pointer;font-family:inherit}
   /* ===== 관리자 페이지 ===== */
   .admin-root{display:none;min-height:100vh}
   .admin-wrap{max-width:720px;margin:0 auto;padding:16px}
@@ -406,7 +415,16 @@ if(typeof GENES==='undefined'){
   <div class="mailnote">정보 수정 요청 · 업데이트 건의는 위 이메일로 보내주세요</div>
 
   <div class="note" id="note"></div>
+  <div class="legal">
+    <a href="terms.html#terms">이용약관</a> · <a href="terms.html#privacy">개인정보처리방침</a>
+  </div>
   <footer id="footer"></footer>
+</div>
+
+<div class="cookiebar" id="cookieBar">
+  <div class="cb-txt">이 사이트는 로그인 유지와 이용 통계를 위해 쿠키 및 브라우저 저장소를 사용합니다.
+    <a href="terms.html#privacy">자세히</a></div>
+  <button class="cb-ok" onclick="okCookie()">확인</button>
 </div>
 
 <!-- 업데이트 노트 모달 -->
@@ -492,7 +510,7 @@ const I18N = {
     resultsH:'새끼 모프 확률',
     summary:function(n){return '총 '+n+'가지 조합 · 확률 내림차순';},
     normal:'노멀', het:'het', comboTag:'콤보',
-    visualTag:'비주얼', hetShort:'헷', superShort:'슈퍼', colProb:'확률', colVisual:'비주얼 (발현)', colHet:'HET (보인자)', hetNone:'–',
+    visualTag:'비주얼', hetShort:'헷', superShort:'슈퍼폼', colProb:'확률', colVisual:'비주얼 (발현)', colHet:'HET (보인자)', hetNone:'–',
     partialToggle:'가능성 헷 표시 (66·33%)', partialHint:'확률적 보인자(66·33% 등)까지 표로 표시',
     vintageToggle:'추억의 모프 보기', vintageHint:'요즘 보기 힘든 과거 모프·콤보까지 표시',
     comboLoad:'콤보 개체 불러오기…', donate:'☕ 개발자 후원하기', adLabel:'광고', adHint:'이 자리에 광고 코드를 넣을 수 있어요',
@@ -505,8 +523,8 @@ const I18N = {
     cat:{rec:'열성 (Recessive)', incdom:'불완전우성 (Incomplete Dominant)', dom:'우성 (Dominant)', poly:'라인브리딩 (Line-bred)'},
     inh:{rec:'열성', incdom:'불완전우성', dom:'우성', poly:'다인자'},
     optRec:{nn:'정상', het:'het 보인자', mm:'비주얼'},
-    optDom:{nn:'정상', het:'비주얼', mm:'슈퍼(호모)'},
-    note:'<b>참고</b> — 트램퍼·벨·레인워터 알비노는 서로 <b>다른 유전자</b>라서, 한쪽 알비노 het와 다른 알비노 het를 교배하면 알비노가 나오지 않습니다(더블 het). 맥스노우는 불완전우성(호모 = 슈퍼 스노우, 건강함)이고, 에니그마·W&Y는 우성입니다. <b>일부 모프는 슈퍼(호모)나 특정 조합에서 심각한 건강 문제·치사성이 나타납니다</b>(예: 슈퍼 레몬 프로스트의 종양, 에니그마의 신경 증상). 위험 조합은 결과 상단에 경고로 표시됩니다.',
+    optDom:{nn:'정상', het:'비주얼', mm:'슈퍼폼'},
+    note:'<b>참고</b> — 트램퍼·벨·레인워터 알비노는 서로 <b>다른 유전자</b>라서, 한쪽 알비노 het와 다른 알비노 het를 교배하면 알비노가 나오지 않습니다(더블 het). 맥스노우는 불완전우성(호모 = 슈퍼 스노우, 건강함)이고, 에니그마·W&Y는 우성입니다. <b>일부 모프는 슈퍼폼이나 특정 조합에서 심각한 건강 문제·치사성이 나타납니다</b>(예: 슈퍼 레몬 프로스트의 종양, 에니그마의 신경 증상). 위험 조합은 결과 상단에 경고로 표시됩니다.',
     footer:'확률은 멘델 유전 법칙에 따른 이론값입니다 · 라인브리딩(폴리제닉) 형질은 확률 계산 대상이 아닙니다',
   },
   en:{
@@ -523,7 +541,7 @@ const I18N = {
     resultsH:'Offspring Morph Probabilities',
     summary:function(n){return n+' possible combination'+(n===1?'':'s')+' · sorted by probability';},
     normal:'Normal', het:'het', comboTag:'COMBO',
-    visualTag:'Visual', hetShort:'het', superShort:'Super', colProb:'Prob.', colVisual:'Visual (expressed)', colHet:'Het (carrier)', hetNone:'–',
+    visualTag:'Visual', hetShort:'het', superShort:'Super form', colProb:'Prob.', colVisual:'Visual (expressed)', colHet:'Het (carrier)', hetNone:'–',
     partialToggle:'Show possible hets (66·33%)', partialHint:'Include probabilistic carriers (66·33%, etc.) in the table',
     vintageToggle:'Show vintage morphs', vintageHint:'Include older, rarely-seen morphs and combos',
     comboLoad:'Load a combo animal…', donate:'☕ Support the developer', adLabel:'Advertisement', adHint:'Place your ad code here',
@@ -536,7 +554,7 @@ const I18N = {
     cat:{rec:'Recessive', incdom:'Incomplete Dominant', dom:'Dominant', poly:'Line-bred / Polygenic'},
     inh:{rec:'Recessive', incdom:'Inc. dominant', dom:'Dominant', poly:'Polygenic'},
     optRec:{nn:'Normal', het:'het (carrier)', mm:'Visual'},
-    optDom:{nn:'Normal', het:'Visual', mm:'Super (homo)'},
+    optDom:{nn:'Normal', het:'Visual', mm:'Super form'},
     note:'<b>Note</b> — Tremper, Bell and Rainwater albino are <b>separate genes</b>, so crossing a het of one with a het of another yields no albinos (double het). Mack Snow is incomplete dominant (homozygous = Super Snow, healthy); Enigma and W&Y are dominant. <b>Some morphs cause serious health issues or lethality in their super (homozygous) form or in certain pairings</b> (e.g. tumors in Super Lemon Frost, neurological symptoms in Enigma). Risky pairings are flagged at the top of the results.',
     footer:'Probabilities are theoretical values from Mendelian inheritance · line-bred (polygenic) traits are not probability-based',
   },
@@ -567,7 +585,7 @@ const I18N = {
     cat:{rec:'隐性 (Recessive)', incdom:'不完全显性 (Incomplete Dominant)', dom:'显性 (Dominant)', poly:'线育 (Line-bred)'},
     inh:{rec:'隐性', incdom:'不完全显性', dom:'显性', poly:'多基因'},
     optRec:{nn:'普通', het:'het 携带', mm:'表现型'},
-    optDom:{nn:'普通', het:'表现型', mm:'超级(纯合)'},
+    optDom:{nn:'普通', het:'表现型', mm:'超级形态'},
     note:'<b>注意</b> — 特伦伯、贝尔、雨水白化是<b>不同的基因</b>，因此一方白化 het 与另一方白化 het 交配不会产生白化（双 het）。麦克雪花为不完全显性（纯合 = 超级雪花，健康），Enigma 与 W&Y 为显性。<b>部分形态在超级（纯合）形式或特定配对中会出现严重健康问题或致死</b>（例如超级柠檬霜的肿瘤、Enigma 的神经症状）。有风险的配对会在结果顶部以警告显示。',
     footer:'概率为基于孟德尔遗传的理论值 · 线育（多基因）性状不在概率计算范围内',
   },
@@ -585,7 +603,7 @@ const I18N = {
     resultsH:'仔のモルフ確率',
     summary:function(n){return '全 '+n+' 通りの組み合わせ · 確率の高い順';},
     normal:'ノーマル', het:'het', comboTag:'コンボ',
-    visualTag:'ビジュアル', hetShort:'het', superShort:'スーパー', colProb:'確率', colVisual:'ビジュアル（発現）', colHet:'Het（保因）', hetNone:'–',
+    visualTag:'ビジュアル', hetShort:'het', superShort:'スーパーフォーム', colProb:'確率', colVisual:'ビジュアル（発現）', colHet:'Het（保因）', hetNone:'–',
     partialToggle:'可能性 het を表示（66・33%）', partialHint:'66・33% など確率的な保因も表に表示',
     vintageToggle:'懐かしのモルフを表示', vintageHint:'今では見かけない古いモルフ・コンボも表示',
     comboLoad:'コンボ個体を読み込む…', donate:'☕ 開発者を支援', adLabel:'広告', adHint:'ここに広告コードを配置できます',
@@ -598,7 +616,7 @@ const I18N = {
     cat:{rec:'劣性 (Recessive)', incdom:'不完全優性 (Incomplete Dominant)', dom:'優性 (Dominant)', poly:'ラインブリード (Line-bred)'},
     inh:{rec:'劣性', incdom:'不完全優性', dom:'優性', poly:'多因子'},
     optRec:{nn:'ノーマル', het:'het（保因）', mm:'ビジュアル'},
-    optDom:{nn:'ノーマル', het:'ビジュアル', mm:'スーパー（ホモ）'},
+    optDom:{nn:'ノーマル', het:'ビジュアル', mm:'スーパーフォーム'},
     note:'<b>参考</b> — トレンパー・ベル・レインウォーターアルビノは<b>別々の遺伝子</b>のため、片方のアルビノ het と別のアルビノ het を交配してもアルビノは出ません（ダブル het）。マックスノーは不完全優性（ホモ = スーパースノー、健康）、エニグマ・W&Y は優性です。<b>一部のモルフはスーパー（ホモ）や特定の組み合わせで深刻な健康問題や致死性が生じます</b>（例：スーパーレモンフロストの腫瘍、エニグマの神経症状）。リスクのある組み合わせは結果上部に警告表示されます。',
     footer:'確率はメンデル遺伝に基づく理論値です · ラインブリード（ポリジェニック）形質は確率計算の対象外です',
   },
@@ -860,6 +878,11 @@ document.getElementById('vintagechk').addEventListener('change',e=>{
   buildParent('A'); buildParent('B');
 });
 
+/* ===== 쿠키 안내 ===== */
+window.okCookie=function(){ try{ localStorage.setItem('leoCookieOk','1'); }catch(e){} document.getElementById('cookieBar').classList.remove('show'); };
+(function(){ let ok=false; try{ ok=localStorage.getItem('leoCookieOk')==='1'; }catch(e){ ok=true; }
+  if(!ok && !(location.hash==='#admin')) setTimeout(()=>document.getElementById('cookieBar').classList.add('show'), 1400); })();
+
 /* ===== 업데이트 노트 모달 ===== */
 const UPD_VER='2026-07-26d'; // 버전 바뀌면 '오늘 하루 안 보기' 무관하게 다시 노출
 function todayKey(){ try{ return new Date().toISOString().slice(0,10); }catch(e){ return 'x'; } }
@@ -952,7 +975,10 @@ applyLang();
     }
     document.getElementById('premStatus').textContent = isPrem
       ? ((premKind==='sub'?'구독':'체험판')+' 이용 중' + (exp? ' · '+exp+'까지' : ' · 무기한'))
-      : '발급받은 일회성 코드를 입력하세요. (한 명당 1회)';
+      : (USER? '발급받은 일회성 코드를 입력하세요. (1인 1회)' : '프리미엄 코드는 로그인 후 사용할 수 있어요.');
+    const pin=document.getElementById('premInput'), pbtn=document.querySelector('#premModal .btn-close');
+    if(pin) pin.disabled=!USER;
+    if(pbtn) pbtn.style.opacity=USER?'1':'.5';
     document.getElementById('premMsg').textContent=''; document.getElementById('premInput').value='';
     document.getElementById('premModal').classList.add('show');
   };
@@ -962,7 +988,9 @@ applyLang();
     try{ await SB.rpc('claim_device',{p_device:dev(), p_user:uid()}); }catch(e){}
   }
   window.closePrem=function(){ document.getElementById('premModal').classList.remove('show'); };
-  window.redeemPrem=async function(){ const code=document.getElementById('premInput').value.trim(); const msg=document.getElementById('premMsg'); if(!code){msg.style.color='var(--warn-hi-fg)';msg.textContent='코드를 입력하세요.';return;} msg.style.color='var(--ink2)';msg.textContent='확인 중…'; try{ const r=await SB.rpc('redeem_code',{p_code:code,p_device:uid()}); const v=r.data; if(v==='ok'){ msg.style.color='var(--teal)';msg.textContent='활성화되었습니다! 🎉'; isPrem=true; refreshPrem(); setTimeout(closePrem,900);} else { msg.style.color='var(--warn-hi-fg)'; msg.textContent = v==='not_found'?'존재하지 않는 코드예요.':v==='revoked'?'사용이 중지된 코드예요.':v==='used'?'이미 다른 사용자가 사용한 코드예요.':'사용할 수 없는 코드예요.'; } }catch(e){ msg.style.color='var(--warn-hi-fg)'; msg.textContent='오류가 발생했어요.'; } };
+  window.redeemPrem=async function(){
+    if(!USER){ location.href='login.html'; return; }
+    const code=document.getElementById('premInput').value.trim(); const msg=document.getElementById('premMsg'); if(!code){msg.style.color='var(--warn-hi-fg)';msg.textContent='코드를 입력하세요.';return;} msg.style.color='var(--ink2)';msg.textContent='확인 중…'; try{ const r=await SB.rpc('redeem_code',{p_code:code,p_device:uid()}); const v=r.data; if(v==='ok'){ msg.style.color='var(--teal)';msg.textContent='활성화되었습니다! 🎉'; isPrem=true; refreshPrem(); setTimeout(closePrem,900);} else { msg.style.color='var(--warn-hi-fg)'; msg.textContent = v==='login_required'?'로그인 후 사용할 수 있어요.':v==='not_found'?'존재하지 않는 코드예요.':v==='revoked'?'사용이 중지된 코드예요.':v==='used'?'이미 다른 회원이 사용한 코드예요.':'사용할 수 없는 코드예요.'; } }catch(e){ msg.style.color='var(--warn-hi-fg)'; msg.textContent='오류가 발생했어요.'; } };
   document.getElementById('premModal').addEventListener('click',e=>{ if(e.target.id==='premModal') closePrem(); });
 
 
@@ -1025,11 +1053,11 @@ applyLang();
     document.getElementById('adLogin').onclick=async()=>{ const e=document.getElementById('adEmail').value.trim(),p=document.getElementById('adPw').value,err=document.getElementById('adErr'); err.textContent='로그인 중…'; try{ const r=await SB.auth.signInWithPassword({email:e,password:p}); if(r.error)err.textContent='로그인 실패: '+r.error.message; else { adminUser=r.data.user; renderPanel(); } }catch(x){ err.textContent='오류'; } };
   }
   function renderPanel(){
-    const tabs=[['morph','모프'],['combo','콤보'],['stat','통계'],['code','코드']];
+    const tabs=[['morph','모프'],['combo','콤보'],['stat','통계'],['code','코드'],['member','회원']];
     document.getElementById('adminRoot').innerHTML=shell('<div class="atabs">'+tabs.map(t=>'<button class="atab'+(adTab===t[0]?' on':'')+'" data-t="'+t[0]+'">'+t[1]+'</button>').join('')+'<button class="atab logout" id="adLogout">로그아웃</button></div><div id="adBody" class="apad"></div>');
     document.querySelectorAll('.atab[data-t]').forEach(b=>b.onclick=()=>{ adTab=b.dataset.t; renderPanel(); });
     document.getElementById('adLogout').onclick=async()=>{ await SB.auth.signOut(); adminUser=null; renderLogin(); };
-    ({morph:tabMorph,combo:tabCombo,stat:tabStat,code:tabCode}[adTab])();
+    ({morph:tabMorph,combo:tabCombo,stat:tabStat,code:tabCode,member:tabMember}[adTab])();
   }
 
   let morphQ='';
@@ -1176,6 +1204,36 @@ applyLang();
     body.querySelectorAll('[data-cp]').forEach(b2=>b2.onclick=()=>{ navigator.clipboard&&navigator.clipboard.writeText(b2.dataset.cp); b2.textContent='복사됨'; setTimeout(()=>b2.textContent='복사',1200); });
     body.querySelectorAll('[data-rv]').forEach(b2=>b2.onclick=async()=>{ const r=rows.find(x=>x.code===b2.dataset.rv); await SB.from('access_codes').update({revoked:!r.revoked}).eq('code',r.code); tabCode(); });
     body.querySelectorAll('[data-d]').forEach(b2=>b2.onclick=async()=>{ if(!confirm('이 코드를 삭제하면 사용한 사용자의 권한도 박탈됩니다. 진행할까요?'))return; await SB.from('access_codes').delete().eq('code',b2.dataset.d); tabCode(); });
+  }
+
+  async function tabMember(){
+    const body=document.getElementById('adBody'); body.innerHTML='불러오는 중…';
+    const r=await SB.from('profiles').select('*').order('created_at',{ascending:false});
+    if(r.error){ body.innerHTML='<div class="aerr">회원 정보를 볼 권한이 없습니다.<br>SQL의 admins 테이블에 현재 로그인 이메일이 등록되어 있는지 확인하세요.</div>'; return; }
+    const rows=r.data||[];
+    const n=k=>rows.filter(x=>x[k]).length;
+    const fmt=d=>d? new Date(d).toLocaleDateString('ko-KR',{year:'2-digit',month:'2-digit',day:'2-digit'}) : '-';
+    let html='<div class="statrow"><div class="statcard"><div class="statn">'+rows.length+'</div><div class="statl">전체 회원</div></div>'
+      +'<div class="statcard"><div class="statn">'+n('agree_mkt_email')+'</div><div class="statl">이메일 수신</div></div>'
+      +'<div class="statcard"><div class="statn">'+n('agree_mkt_sms')+'</div><div class="statl">문자 수신</div></div>'
+      +'<div class="statcard"><div class="statn">'+n('agree_third')+'</div><div class="statl">제3자 제공</div></div></div>'
+      +'<div class="abar"><button class="abtn sm ghost" id="expMkt">마케팅 동의자 CSV</button>'
+      +'<button class="abtn sm ghost" id="expAll">전체 회원 CSV</button></div>'
+      +'<div class="ahint">CSV는 <b>동의한 회원만</b> 내려받도록 되어 있습니다. 광고성 정보 전송 시 제목에 (광고) 표기와 수신거부 방법을 반드시 포함해야 합니다.</div>';
+    html+='<div class="alist">'+rows.map(x=>{
+      const tags=(x.agree_mkt_email?'<span class="atag used">메일</span>':'')+(x.agree_mkt_sms?'<span class="atag used">문자</span>':'')
+        +(x.agree_third?'<span class="atag">제3자</span>':'');
+      return '<div class="arow"><div class="arow-main"><b>'+esc(x.email||'-')+'</b>'+tags
+        +'<div class="asub">가입 '+fmt(x.created_at)+(x.phone?' · '+esc(x.phone):'')+(x.mkt_at?' · 마케팅동의 '+fmt(x.mkt_at):'')+'</div></div></div>'; }).join('')+'</div>';
+    body.innerHTML=html;
+    const csv=(list,name)=>{
+      const head=['email','nickname','phone','mkt_email','mkt_sms','third_party','mkt_at','created_at'];
+      const esc2=v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"';
+      const lines=[head.join(',')].concat(list.map(x=>[x.email,x.nickname,x.phone,x.agree_mkt_email,x.agree_mkt_sms,x.agree_third,x.mkt_at,x.created_at].map(esc2).join(',')));
+      download(name, '\ufeff'+lines.join('\n'));
+    };
+    document.getElementById('expMkt').onclick=()=>csv(rows.filter(x=>x.agree_mkt_email||x.agree_mkt_sms),'marketing-optin.csv');
+    document.getElementById('expAll').onclick=()=>csv(rows,'members.csv');
   }
 
   /* ---------- 초기화 ---------- */

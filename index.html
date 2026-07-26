@@ -277,6 +277,7 @@
   .atag.used{background:var(--b-inc-bg);color:var(--b-inc-fg)}
   .atag.new{background:rgba(14,124,123,.16);color:var(--teal)}
   .atag.rev{background:var(--warn-hi-bg);color:var(--warn-hi-fg)}
+  .atag.sub{background:rgba(234,195,106,.22);color:#9A6A12;border:1px solid rgba(197,146,32,.4)}
   .achk{display:flex;align-items:center;gap:8px;font-size:13.5px;margin:6px 0}
   .achk input{width:18px;height:18px;accent-color:var(--teal)}
   .aimg{max-width:120px;border-radius:10px;margin-top:6px}
@@ -291,6 +292,22 @@
   .statcard{flex:1;background:var(--card2);border-radius:12px;padding:14px 10px;text-align:center}
   .statn{font-size:24px;font-weight:800;color:var(--teal)}
   .statl{font-size:11px;color:var(--ink2);margin-top:2px}
+  .proempty{text-align:center;color:var(--ink2);font-size:13.5px;padding:26px 12px;line-height:1.7}
+  .procard{background:var(--card2);border-radius:12px;padding:12px 13px;margin-bottom:8px;display:flex;gap:11px;align-items:center}
+  .prothumb{width:52px;height:52px;border-radius:10px;background:var(--gtile);flex:0 0 auto;display:flex;align-items:center;justify-content:center;overflow:hidden}
+  .prothumb img{width:100%;height:100%;object-fit:cover}
+  .proinfo{flex:1;min-width:0}
+  .proname{font-weight:700;font-size:14.5px}
+  .promorph{font-size:11.5px;color:var(--ink2);margin-top:2px;word-break:keep-all}
+  .prohet{font-size:11.5px;color:var(--eggplant);margin-top:1px}
+  .sexb{display:inline-block;font-size:10px;font-weight:800;padding:1px 6px;border-radius:20px;margin-left:5px}
+  .sexb.m{background:rgba(59,141,160,.18);color:var(--patina)}
+  .sexb.f{background:rgba(192,132,252,.18);color:var(--eggplant)}
+  .gradedot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--butter);margin-right:2px}
+  .pathbox{background:var(--card2);border-radius:12px;padding:13px;margin-bottom:9px;font-size:13px;line-height:1.6}
+  .pathstep{display:flex;gap:9px;margin:6px 0}
+  .pathnum{flex:0 0 22px;height:22px;border-radius:50%;background:var(--teal);color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center}
+  .lockbox{background:var(--note-bg);border:1px solid var(--note-bd);border-radius:12px;padding:16px;text-align:center;font-size:13.5px;color:var(--note-fg);line-height:1.7}
   .abar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;align-items:center}
   .abar .ain{flex:1 1 160px;margin-bottom:0}
   .aempty{font-size:13px;color:var(--ink2);line-height:1.6;background:var(--card2);border-radius:11px;padding:14px}
@@ -367,6 +384,7 @@
 
   <div class="bottom-links">
     <button class="blink" onclick="openUpd()">📢 업데이트 노트</button>
+    <button class="blink" id="proBtn" onclick="openPro()" style="display:none">🦎 브리딩 관리</button>
     <button class="blink" id="premBtn" onclick="openPrem()" style="display:none">💎 프리미엄 코드</button>
     <a class="blink" id="mailLink" href="mailto:kmc612000@gmail.com">✉️ kmc612000@gmail.com</a>
   </div>
@@ -387,25 +405,30 @@
       <div class="upd-section">
         <div class="upd-title done">✅ 업데이트 됨</div>
         <ul>
-          <li><b>추억의 모프</b> 토글 추가 — 갤럭시 이니그마·블랙홀·볼텍스 등 요즘 보기 힘든 콤보는 켤 때만 표시</li>
+          <li><b>💎 브리딩 관리 오픈</b> — 내 개체 등록·혈통, 페어링 플래너, 클러치(부화 예정일) 관리, 목표 모프 역산 계산기</li>
+          <li>결과를 <b>분양글 텍스트·이미지</b>로 내보내기</li>
+          <li>프리미엄 이용 시 광고 제거</li>
+          <li>프리미엄 코드를 <b>체험판 / 구독</b> 두 종류로 구분, 기간제 지원</li>
+          <li><b>추억의 모프</b> 토글 — 갤럭시 이니그마·블랙홀·볼텍스 등 요즘 보기 힘든 콤보는 켤 때만 표시</li>
           <li>슈퍼 스노우·슈퍼 레몬 프로스트를 각각 별도 칩으로 분리</li>
-          <li>콤보·유전 모프·라인브리딩을 칩으로 선택하는 방식으로 개편 (열성/우성 구분 없이 한 묶음)</li>
+          <li>콤보·유전 모프·라인브리딩을 칩으로 선택하는 방식으로 개편</li>
           <li>만다린·블러드·블랙나이트·인페르노 등 라인브리딩 명칭 대폭 추가</li>
-          <li>콤보 칩을 누르면 구성 유전자가 자동 세팅되고, 부모·결과에 콤보 이름 자동 표기</li>
-          <li>100HET(확정)·비주얼 표기, 66·33% 가능성 헷은 옵션으로 표시</li>
+          <li>콤보 칩을 누르면 구성 유전자가 자동 세팅, 부모·결과에 콤보 이름 자동 표기</li>
+          <li>100HET(확정)·비주얼 표기, 66·33% 가능성 헷은 옵션 표시</li>
           <li>새끼 모습 게코 일러스트 + 도넛 차트 + 결과 표</li>
           <li>한국어·English·中文·日本語 4개 언어, 라이트/다크 모드</li>
           <li>레몬 프로스트·에니그마 등 위험 조합 경고</li>
-          <li>디아블로 블랑코 표기 오타 수정</li>
         </ul>
       </div>
       <div class="upd-section">
         <div class="upd-title soon">🔜 업데이트 예정</div>
         <ul>
-          <li>모프별 실물 사진 적용 (관리자에서 업로드 후 순차 반영)</li>
-          <li>랩터·앱터·노바 등 라인브리딩 패턴리스가 필요한 콤보 표기 검토</li>
-          <li>탠저린·만다린 등 폴리제닉 색 계열을 일러스트에 반영</li>
-          <li>브리딩 프로젝트·클러치 관리 등 프리미엄 기능</li>
+          <li>모프별 실물 사진 순차 적용</li>
+          <li>부화 임박 알림 (푸시/메일)</li>
+          <li>혈통도(가계도) 시각화</li>
+          <li>랩터·앱터·노바 등 라인브리딩 패턴리스 콤보 표기 검토</li>
+          <li>계산기 위젯 임베드 (분양샵용)</li>
+          <li>구독 결제 연동</li>
         </ul>
       </div>
       <div class="modal-mail">문의 · 건의: <a href="mailto:kmc612000@gmail.com">kmc612000@gmail.com</a></div>
@@ -431,6 +454,23 @@
       <button class="btn-today" onclick="closePrem()">닫기</button>
       <button class="btn-close" onclick="redeemPrem()">활성화</button>
     </div>
+  </div>
+</div>
+
+<!-- 프리미엄 패널 -->
+<div class="modal-overlay" id="proModal">
+  <div class="modal" style="max-width:640px;max-height:90vh">
+    <div class="modal-head">
+      <h3 id="proTitle">💎 브리딩 관리</h3>
+      <button class="modal-x" onclick="closePro()">✕</button>
+    </div>
+    <div class="atabs" style="padding:10px 16px 0;margin:0">
+      <button class="atab on" data-p="animals">내 개체</button>
+      <button class="atab" data-p="pair">페어링</button>
+      <button class="atab" data-p="clutch">클러치</button>
+      <button class="atab" data-p="goal">역산</button>
+    </div>
+    <div class="modal-body" id="proBody"></div>
   </div>
 </div>
 
@@ -937,7 +977,7 @@ function applyLang(){
   // 후원 버튼 + 광고 영역
   const dn=document.getElementById('donateBtn'); dn.textContent=t.donate; dn.href=DONATE_URL;
   const ad=document.getElementById('adSlot');
-  if(AD_ENABLED){ ad.style.display='flex'; ad.innerHTML = AD_HTML || ('<div class="adlbl">'+escapeHtml(t.adLabel)+'</div><div class="adhint">'+escapeHtml(t.adHint)+'</div>'); }
+  if(AD_ENABLED && !window.__isPrem){ ad.style.display='flex'; ad.innerHTML = AD_HTML || ('<div class="adlbl">'+escapeHtml(t.adLabel)+'</div><div class="adhint">'+escapeHtml(t.adHint)+'</div>'); }
   else ad.style.display='none';
   buildParent('A'); buildParent('B');
   if(hasResult) calculate();
@@ -1122,6 +1162,7 @@ function render(payload){
         +'<td class="c-het">'+hcell+'</td></tr>';
     });
     html+='</tbody></table>';
+    if(window.__isPrem) html+='<div class="abar" style="margin-top:10px"><button class="abtn sm ghost" onclick="exportText()">📋 분양글 복사</button><button class="abtn sm ghost" onclick="exportImage()">🖼️ 이미지 저장</button></div>';
   }
   if(payload.poly && payload.poly.length){
     html+='<div class="polyblock"><h3>'+t.polyH+'</h3><div class="pdesc">'+t.polyDesc+'</div>';
@@ -1147,7 +1188,7 @@ document.getElementById('vintagechk').addEventListener('change',e=>{
 });
 
 /* ===== 업데이트 노트 모달 ===== */
-const UPD_VER='2026-07-26b'; // 버전 바뀌면 '오늘 하루 안 보기' 무관하게 다시 노출
+const UPD_VER='2026-07-26c'; // 버전 바뀌면 '오늘 하루 안 보기' 무관하게 다시 노출
 function todayKey(){ try{ return new Date().toISOString().slice(0,10); }catch(e){ return 'x'; } }
 function openUpd(){ document.getElementById('updModal').classList.add('show'); }
 function closeUpd(){ document.getElementById('updModal').classList.remove('show'); }
@@ -1205,12 +1246,233 @@ applyLang();
   }
 
   /* ---------- 프리미엄 코드 ---------- */
-  let isPrem=false;
-  async function refreshPrem(){ const btn=document.getElementById('premBtn'); if(!SB){ if(btn)btn.style.display='none'; return; } if(btn)btn.style.display=''; try{ const r=await SB.rpc('is_premium',{p_device:dev()}); isPrem=!!r.data; }catch(e){ isPrem=false; } if(btn)btn.textContent=isPrem?'💎 프리미엄 활성':'💎 프리미엄 코드'; }
-  window.openPrem=function(){ if(!SB){alert('백엔드(Supabase)가 아직 설정되지 않았습니다.');return;} document.getElementById('premStatus').textContent=isPrem?'현재 프리미엄이 활성화되어 있어요.':'발급받은 일회성 코드를 입력하세요. (한 명당 1회)'; document.getElementById('premMsg').textContent=''; document.getElementById('premInput').value=''; document.getElementById('premModal').classList.add('show'); };
+  let isPrem=false, premKind=null, premExp=null;
+  async function refreshPrem(){
+    const btn=document.getElementById('premBtn'), pro=document.getElementById('proBtn');
+    if(!SB){ if(btn)btn.style.display='none'; if(pro)pro.style.display='none'; return; }
+    if(btn)btn.style.display='';
+    try{ const r=await SB.rpc('premium_status',{p_device:dev()}); const d=r.data||{};
+         isPrem=!!d.active; premKind=d.kind||null; premExp=d.expires_at||null; }
+    catch(e){ try{ const r2=await SB.rpc('is_premium',{p_device:dev()}); isPrem=!!r2.data; }catch(x){ isPrem=false; } }
+    if(btn) btn.textContent = isPrem? (premKind==='sub'?'💎 구독 중':'💎 체험판 이용중') : '💎 프리미엄 코드';
+    window.__isPrem = isPrem;
+    if(pro) pro.style.display = isPrem? '' : 'none';
+    const ad=document.getElementById('adSlot'); if(ad && isPrem) ad.style.display='none';   // 프리미엄 = 광고 제거
+  }
+  window.openPrem=function(){ if(!SB){alert('백엔드(Supabase)가 아직 설정되지 않았습니다.');return;} const exp=premExp? new Date(premExp).toLocaleDateString('ko-KR') : null;
+  document.getElementById('premStatus').textContent = isPrem
+    ? ((premKind==='sub'?'구독':'체험판')+' 이용 중' + (exp? ' · '+exp+'까지' : ' · 무기한'))
+    : '발급받은 일회성 코드를 입력하세요. (한 명당 1회)'; document.getElementById('premMsg').textContent=''; document.getElementById('premInput').value=''; document.getElementById('premModal').classList.add('show'); };
   window.closePrem=function(){ document.getElementById('premModal').classList.remove('show'); };
   window.redeemPrem=async function(){ const code=document.getElementById('premInput').value.trim(); const msg=document.getElementById('premMsg'); if(!code){msg.style.color='var(--warn-hi-fg)';msg.textContent='코드를 입력하세요.';return;} msg.style.color='var(--ink2)';msg.textContent='확인 중…'; try{ const r=await SB.rpc('redeem_code',{p_code:code,p_device:dev()}); const v=r.data; if(v==='ok'){ msg.style.color='var(--teal)';msg.textContent='활성화되었습니다! 🎉'; isPrem=true; refreshPrem(); setTimeout(closePrem,900);} else { msg.style.color='var(--warn-hi-fg)'; msg.textContent = v==='not_found'?'존재하지 않는 코드예요.':v==='revoked'?'사용이 중지된 코드예요.':v==='used'?'이미 다른 사용자가 사용한 코드예요.':'사용할 수 없는 코드예요.'; } }catch(e){ msg.style.color='var(--warn-hi-fg)'; msg.textContent='오류가 발생했어요.'; } };
   document.getElementById('premModal').addEventListener('click',e=>{ if(e.target.id==='premModal') closePrem(); });
+
+
+  /* ================= 프리미엄: 브리딩 관리 ================= */
+  let proTab='animals', myAnimals=[], myPairs=[], myClutches=[];
+  const nameOf=(id)=>{const g=GENES.find(x=>x.id===id); if(g) return gName(g); const q=POLY.find(x=>x.id===id); if(q) return pName(q);
+    if(String(id).indexOf('super_')===0){const g2=GENES.find(x=>x.id===String(id).slice(6)); if(g2) return gSuper(g2);} return id; };
+  async function loadMine(){
+    if(!SB) return;
+    const g=async t=>{ try{ const r=await SB.rpc('my_rows',{p_device:dev(),p_table:t}); return r.data||[]; }catch(e){ return []; } };
+    myAnimals=await g('animals'); myPairs=await g('pairings'); myClutches=await g('clutches');
+  }
+  async function saveRow(t,row){ const r=await SB.rpc('save_row',{p_device:dev(),p_table:t,p_row:row}); if(r.error) throw r.error; return r.data; }
+  async function delRow(t,id){ await SB.rpc('delete_row',{p_device:dev(),p_table:t,p_id:id}); }
+
+  window.openPro=async function(){
+    if(!isPrem){ openPrem(); return; }
+    document.getElementById('proModal').classList.add('show');
+    document.getElementById('proBody').innerHTML='<div class="proempty">불러오는 중…</div>';
+    await loadMine(); renderPro();
+  };
+  window.closePro=function(){ document.getElementById('proModal').classList.remove('show'); };
+  document.getElementById('proModal').addEventListener('click',e=>{ if(e.target.id==='proModal') closePro(); });
+  document.querySelectorAll('#proModal .atab[data-p]').forEach(b=>b.onclick=()=>{
+    proTab=b.dataset.p;
+    document.querySelectorAll('#proModal .atab').forEach(x=>x.classList.toggle('on',x.dataset.p===proTab));
+    renderPro();
+  });
+  function renderPro(){ ({animals:proAnimals,pair:proPair,clutch:proClutch,goal:proGoal}[proTab])(); }
+
+  /* ---- 내 개체 ---- */
+  function animalCard(a){
+    const vis=(a.morphs||[]).map(nameOf).join(' ')||'노멀';
+    const het=(a.hets||[]).map(nameOf);
+    const sx=a.sex==='male'?'<span class="sexb m">♂</span>':a.sex==='female'?'<span class="sexb f">♀</span>':'';
+    const grade=a.color_grade? '<div class="promorph">'+'<span class="gradedot"></span>'.repeat(a.color_grade)+' 색 강도 '+a.color_grade+'/5</div>':'';
+    const thumb=a.photo_url? '<img src="'+esc(a.photo_url)+'">' : geckoSVG(geckoProfile(a.morphs||[]),46);
+    return '<div class="procard"><div class="prothumb">'+thumb+'</div><div class="proinfo">'
+      +'<div class="proname">'+esc(a.name||'이름없음')+sx+'</div>'
+      +'<div class="promorph">'+esc(vis)+'</div>'
+      +(het.length?'<div class="prohet">het '+esc(het.join(', '))+'</div>':'')+grade
+      +(a.hatch_date?'<div class="promorph">해칭 '+esc(a.hatch_date)+'</div>':'')
+      +'</div><div class="arow-act"><button class="mini" data-ae="'+a.id+'">수정</button><button class="mini del" data-ad="'+a.id+'">삭제</button></div></div>';
+  }
+  function proAnimals(){
+    const b=document.getElementById('proBody');
+    b.innerHTML='<div class="abar"><button class="abtn sm" id="aNew">+ 개체 등록</button><span class="ahint">'+myAnimals.length+'마리</span></div>'
+      +(myAnimals.length? myAnimals.map(animalCard).join('') : '<div class="proempty">등록된 개체가 없어요.<br>보유 중인 게코를 등록하면 페어링·클러치 관리를 할 수 있습니다.</div>');
+    document.getElementById('aNew').onclick=()=>animalForm(null);
+    b.querySelectorAll('[data-ae]').forEach(x=>x.onclick=()=>animalForm(myAnimals.find(y=>y.id===x.dataset.ae)));
+    b.querySelectorAll('[data-ad]').forEach(x=>x.onclick=async()=>{ if(!confirm('삭제할까요?'))return; await delRow('animals',x.dataset.ad); await loadMine(); proAnimals(); });
+  }
+  function animalForm(a){
+    a=a||{morphs:[],hets:[]}; const b=document.getElementById('proBody');
+    const visTok=tokenOptions(), recG=GENES.filter(g=>g.type==='rec');
+    const selV=new Set(a.morphs||[]), selH=new Set(a.hets||[]);
+    b.innerHTML='<div class="alabel">'+(a.id?'개체 수정':'개체 등록')+'</div>'
+      +'<input class="ain" id="af_name" placeholder="이름 / 개체번호" value="'+esc(a.name||'')+'">'
+      +'<div class="tokgrid"><select class="ain" id="af_sex"><option value="">성별 미상</option><option value="male">수컷 ♂</option><option value="female">암컷 ♀</option></select>'
+      +'<input class="ain" id="af_hatch" type="date" value="'+esc(a.hatch_date||'')+'"></div>'
+      +'<div class="alabel2">비주얼 (발현 모프)</div><div class="tokgrid">'
+      +visTok.map(t=>'<label class="tokchk"><input type="checkbox" class="vchk" value="'+esc(t[0])+'" '+(selV.has(t[0])?'checked':'')+'>'+esc(t[1])+'</label>').join('')
+      +POLY.map(x=>'<label class="tokchk"><input type="checkbox" class="vchk" value="'+esc(x.id)+'" '+(selV.has(x.id)?'checked':'')+'>'+esc(pName(x))+'</label>').join('')+'</div>'
+      +'<div class="alabel2">het 보유 (열성)</div><div class="tokgrid">'
+      +recG.map(g=>'<label class="tokchk"><input type="checkbox" class="hchk" value="'+esc(g.id)+'" '+(selH.has(g.id)?'checked':'')+'>'+esc(gName(g))+'</label>').join('')+'</div>'
+      +'<div class="alabel2">라인브리딩 색 강도</div><select class="ain" id="af_grade"><option value="">기록 안 함</option>'
+      +[1,2,3,4,5].map(n=>'<option value="'+n+'">'+n+' / 5</option>').join('')+'</select>'
+      +'<div class="alabel2">사진</div><input type="file" id="af_img" accept="image/*"><div id="af_prev">'+(a.photo_url?'<img src="'+esc(a.photo_url)+'" class="aimg">':'')+'</div>'
+      +'<input class="ain" id="af_note" placeholder="메모" value="'+esc(a.note||'')+'" style="margin-top:8px">'
+      +'<div class="aformbtns"><button class="abtn" id="aSave">저장</button><button class="abtn ghost" id="aCancel">취소</button></div><div id="aErr" class="aerr"></div>';
+    document.getElementById('af_sex').value=a.sex||'';
+    document.getElementById('af_grade').value=a.color_grade||'';
+    let photo=a.photo_url||null;
+    document.getElementById('af_img').onchange=async e=>{ const f=e.target.files[0]; if(!f)return; const pv=document.getElementById('af_prev'); pv.textContent='업로드 중…';
+      try{ const blob=await resizeImage(f,700); const path='a/'+dev()+'_'+Date.now()+'.jpg';
+        const up=await SB.storage.from('morph-images').upload(path,blob,{contentType:'image/jpeg',upsert:true});
+        if(up.error){pv.textContent='실패: '+up.error.message;return;}
+        photo=SB.storage.from('morph-images').getPublicUrl(path).data.publicUrl; pv.innerHTML='<img src="'+esc(photo)+'" class="aimg">';
+      }catch(x){ pv.textContent='실패'; } };
+    document.getElementById('aCancel').onclick=()=>proAnimals();
+    document.getElementById('aSave').onclick=async()=>{
+      const row={ id:a.id||null, name:document.getElementById('af_name').value.trim(),
+        sex:document.getElementById('af_sex').value||null,
+        hatch_date:document.getElementById('af_hatch').value||null,
+        morphs:[...b.querySelectorAll('.vchk:checked')].map(x=>x.value),
+        hets:[...b.querySelectorAll('.hchk:checked')].map(x=>x.value),
+        color_grade:parseInt(document.getElementById('af_grade').value||'0',10)||null,
+        photo_url:photo, note:document.getElementById('af_note').value.trim() };
+      try{ await saveRow('animals',row); await loadMine(); proAnimals(); }
+      catch(x){ document.getElementById('aErr').textContent=x.message||'저장 실패'; } };
+  }
+
+  /* ---- 페어링 ---- */
+  function applyAnimalToParent(side,a){
+    GENES.forEach(g=>STATE[side][g.id]='nn'); POLY.forEach(x=>STATE[side][x.id]='no');
+    (a.morphs||[]).forEach(tk=>{
+      if(String(tk).indexOf('super_')===0){ const id=tk.slice(6); if(STATE[side][id]!==undefined) STATE[side][id]='mm'; return; }
+      const g=GENES.find(x=>x.id===tk); if(g){ STATE[side][g.id]= g.type==='rec'?'mm':'het'; return; }
+      if(STATE[side][tk]!==undefined) STATE[side][tk]='yes';
+    });
+    (a.hets||[]).forEach(id=>{ const g=GENES.find(x=>x.id===id); if(g&&STATE[side][g.id]==='nn') STATE[side][g.id]='het'; });
+  }
+  function proPair(){
+    const b=document.getElementById('proBody');
+    if(myAnimals.length<2){ b.innerHTML='<div class="proempty">개체를 2마리 이상 등록하면<br>페어링을 저장하고 바로 계산할 수 있어요.</div>'; return; }
+    const opt=a=>'<option value="'+a.id+'">'+esc(a.name||'이름없음')+' ('+((a.morphs||[]).map(nameOf).join(' ')||'노멀')+')</option>';
+    const males=myAnimals.filter(a=>a.sex!=='female'), females=myAnimals.filter(a=>a.sex!=='male');
+    b.innerHTML='<div class="alabel">새 페어링</div>'
+      +'<select class="ain" id="pf_m"><option value="">수컷 선택</option>'+males.map(opt).join('')+'</select>'
+      +'<select class="ain" id="pf_f"><option value="">암컷 선택</option>'+females.map(opt).join('')+'</select>'
+      +'<input class="ain" id="pf_name" placeholder="페어링 이름 (예: 2026 A라인)">'
+      +'<div class="aformbtns"><button class="abtn" id="pCalc">계산기에 적용</button><button class="abtn ghost" id="pSave">저장</button></div>'
+      +'<div class="alabel2">저장된 페어링</div>'
+      +(myPairs.length? myPairs.map(pp=>{ const m=myAnimals.find(x=>x.id===pp.male),f=myAnimals.find(x=>x.id===pp.female);
+          return '<div class="procard"><div class="proinfo"><div class="proname">'+esc(pp.name||'이름없음')+'</div>'
+          +'<div class="promorph">♂ '+esc(m?m.name:'-')+' × ♀ '+esc(f?f.name:'-')+'</div></div>'
+          +'<div class="arow-act"><button class="mini" data-pl="'+pp.id+'">적용</button><button class="mini del" data-pd="'+pp.id+'">삭제</button></div></div>'; }).join('')
+        : '<div class="proempty">저장된 페어링이 없어요.</div>');
+    const apply=(mid,fid)=>{ const m=myAnimals.find(x=>x.id===mid), f=myAnimals.find(x=>x.id===fid);
+      if(!m||!f){ alert('수컷과 암컷을 모두 선택하세요.'); return false; }
+      applyAnimalToParent('A',m); applyAnimalToParent('B',f);
+      buildParent('A'); buildParent('B'); calcAndLog(); closePro();
+      document.querySelector('.results').scrollIntoView({behavior:'smooth'}); return true; };
+    document.getElementById('pCalc').onclick=()=>apply(document.getElementById('pf_m').value,document.getElementById('pf_f').value);
+    document.getElementById('pSave').onclick=async()=>{
+      const m=document.getElementById('pf_m').value,f=document.getElementById('pf_f').value;
+      if(!m||!f){ alert('수컷과 암컷을 모두 선택하세요.'); return; }
+      await saveRow('pairings',{id:null,name:document.getElementById('pf_name').value.trim()||'페어링',male:m,female:f});
+      await loadMine(); proPair(); };
+    b.querySelectorAll('[data-pl]').forEach(x=>x.onclick=()=>{ const pp=myPairs.find(y=>y.id===x.dataset.pl); apply(pp.male,pp.female); });
+    b.querySelectorAll('[data-pd]').forEach(x=>x.onclick=async()=>{ await delRow('pairings',x.dataset.pd); await loadMine(); proPair(); });
+  }
+
+  /* ---- 클러치 ---- */
+  function hatchDays(t){ t=parseFloat(t)||28; if(t>=31) return 38; if(t>=29.5) return 45; if(t>=28) return 55; if(t>=26.5) return 68; return 80; }
+  function proClutch(){
+    const b=document.getElementById('proBody');
+    const popt=myPairs.map(pp=>'<option value="'+pp.id+'">'+esc(pp.name||'페어링')+'</option>').join('');
+    const today=new Date().toISOString().slice(0,10);
+    b.innerHTML='<div class="alabel">클러치 등록</div>'
+      +(myPairs.length?'<select class="ain" id="cl_p"><option value="">페어링 선택(선택)</option>'+popt+'</select>':'')
+      +'<div class="tokgrid"><input class="ain" id="cl_date" type="date" value="'+today+'">'
+      +'<input class="ain" id="cl_temp" type="number" step="0.5" placeholder="인큐 온도 ℃ (예: 28)" value="28"></div>'
+      +'<input class="ain" id="cl_cnt" type="number" min="1" placeholder="알 개수" value="2">'
+      +'<div class="ahint" id="cl_pred"></div>'
+      +'<div class="aformbtns"><button class="abtn" id="clSave">저장</button></div>'
+      +'<div class="alabel2">진행 중인 클러치</div>'
+      +(myClutches.length? myClutches.map(c=>{
+          const d=c.expected_hatch? Math.ceil((new Date(c.expected_hatch)-new Date())/86400000) : null;
+          const badge = d===null?'' : d>0? '<span class="atag new">D-'+d+'</span>' : '<span class="atag used">부화 예정일 지남</span>';
+          return '<div class="procard"><div class="proinfo"><div class="proname">'+esc(c.laid_date||'')+' 산란'+badge+'</div>'
+          +'<div class="promorph">알 '+(c.egg_count||'-')+'개 · '+(c.temp||'-')+'℃ · 부화예정 '+esc(c.expected_hatch||'-')+'</div></div>'
+          +'<div class="arow-act"><button class="mini del" data-cd="'+c.id+'">삭제</button></div></div>'; }).join('')
+        : '<div class="proempty">등록된 클러치가 없어요.<br>산란일과 온도를 넣으면 부화 예정일을 계산해 드려요.</div>');
+    const upd=()=>{ const t=document.getElementById('cl_temp').value, d=document.getElementById('cl_date').value;
+      const days=hatchDays(t); const dt=d? new Date(new Date(d).getTime()+days*86400000).toISOString().slice(0,10):'-';
+      document.getElementById('cl_pred').innerHTML='예상 부화: <b>'+dt+'</b> (약 '+days+'일) · 온도에 따라 성별 경향이 달라집니다';
+      return dt; };
+    document.getElementById('cl_temp').oninput=upd; document.getElementById('cl_date').onchange=upd; upd();
+    document.getElementById('clSave').onclick=async()=>{
+      const dt=upd();
+      await saveRow('clutches',{id:null, pairing:(document.getElementById('cl_p')||{}).value||null,
+        laid_date:document.getElementById('cl_date').value||null,
+        temp:parseFloat(document.getElementById('cl_temp').value)||null,
+        expected_hatch:dt==='-'?null:dt,
+        egg_count:parseInt(document.getElementById('cl_cnt').value||'0',10)||null});
+      await loadMine(); proClutch(); };
+    b.querySelectorAll('[data-cd]').forEach(x=>x.onclick=async()=>{ await delRow('clutches',x.dataset.cd); await loadMine(); proClutch(); });
+  }
+
+  /* ---- 역산 계산기 ---- */
+  function proGoal(){
+    const b=document.getElementById('proBody');
+    const opts=tokenOptions();
+    b.innerHTML='<div class="alabel">목표 모프 역산</div><div class="ahint">만들고 싶은 모프를 고르면 필요한 부모 조건과 세대 경로를 알려드려요.</div>'
+      +'<div class="tokgrid">'+opts.map(t=>'<label class="tokchk"><input type="checkbox" class="gchk" value="'+esc(t[0])+'">'+esc(t[1])+'</label>').join('')+'</div>'
+      +'<div class="aformbtns"><button class="abtn" id="gRun">경로 계산</button></div><div id="gOut"></div>';
+    document.getElementById('gRun').onclick=()=>{
+      const tk=[...b.querySelectorAll('.gchk:checked')].map(x=>x.value);
+      const out=document.getElementById('gOut');
+      if(!tk.length){ out.innerHTML='<div class="aerr">목표 모프를 하나 이상 고르세요.</div>'; return; }
+      const cb=matchCombo(new Set(tk));
+      const rec=[],inc=[],sup=[],dom=[];
+      tk.forEach(t=>{ if(String(t).indexOf('super_')===0){ sup.push(t.slice(6)); return; }
+        const g=GENES.find(x=>x.id===t); if(!g) return;
+        if(g.type==='rec') rec.push(g.id); else if(g.type==='incdom') inc.push(g.id); else dom.push(g.id); });
+      let html='<div class="pathbox"><b>목표</b><br>'+(cb?'<span class="combotag">콤보</span>'+esc(cb[LANG]||cb.en)+'<br>':'')
+        +esc(tk.map(nameOf).join(' '))+'</div>';
+      html+='<div class="pathbox"><b>부모에게 필요한 조건</b>';
+      rec.forEach(id=>html+='<div class="pathstep"><span class="pathnum">필</span><span><b>'+esc(nameOf(id))+'</b> — 양쪽 부모가 모두 최소 het 이상 (한쪽이 비주얼이면 반대쪽은 het 이상)</span></div>');
+      sup.forEach(id=>html+='<div class="pathstep"><span class="pathnum">필</span><span><b>'+esc(nameOf('super_'+id))+'</b> — 양쪽 부모 모두 최소 '+esc(nameOf(id))+' 이상 (25%로 슈퍼)</span></div>');
+      inc.forEach(id=>html+='<div class="pathstep"><span class="pathnum">필</span><span><b>'+esc(nameOf(id))+'</b> — 한쪽 부모만 있어도 50%</span></div>');
+      dom.forEach(id=>html+='<div class="pathstep"><span class="pathnum">필</span><span><b>'+esc(nameOf(id))+'</b> — 한쪽 부모만 있어도 50%</span></div>');
+      html+='</div>';
+      const nRec=rec.length, nSup=sup.length;
+      html+='<div class="pathbox"><b>추천 경로</b>';
+      if(nRec+nSup===0){ html+='<div class="pathstep"><span class="pathnum">1</span><span>보유한 개체 한쪽에만 형질이 있으면 바로 F1에서 나옵니다.</span></div>'; }
+      else{
+        html+='<div class="pathstep"><span class="pathnum">1</span><span><b>F1</b> — 서로 다른 형질을 가진 비주얼끼리 교배해 <b>더블 het</b>(보인자)를 만듭니다. 이 세대에서는 목표가 나오지 않습니다.</span></div>';
+        html+='<div class="pathstep"><span class="pathnum">2</span><span><b>F2</b> — F1 남매(또는 het끼리) 교배 시 목표가 나옵니다. 확률 약 <b>1/'+Math.pow(4,nRec+nSup)+'</b> ('+(100/Math.pow(4,nRec+nSup)).toFixed(1)+'%)</span></div>';
+        if(nRec+nSup>=2) html+='<div class="pathstep"><span class="pathnum">↺</span><span>확률이 낮으면 F1에서 <b>비주얼 하나 + het</b> 개체를 먼저 만들고 역교배하면 F2 확률이 크게 올라갑니다.</span></div>';
+      }
+      html+='</div>';
+      const owned=myAnimals.filter(a=>tk.some(t=>(a.morphs||[]).includes(t))||rec.some(r=>(a.hets||[]).includes(r)));
+      if(owned.length) html+='<div class="pathbox"><b>보유 개체 중 활용 가능</b><br>'+owned.map(a=>esc(a.name||'이름없음')+' — '+esc((a.morphs||[]).map(nameOf).join(' ')||'노멀')+((a.hets||[]).length?' / het '+esc((a.hets||[]).map(nameOf).join(', ')):'')).join('<br>')+'</div>';
+      out.innerHTML=html;
+    };
+  }
 
   /* ---------- 유틸: 이미지 리사이즈 ---------- */
   function resizeImage(file, max){ return new Promise((res,rej)=>{ const img=new Image(); img.onload=()=>{ let w=img.width,h=img.height; if(w>h&&w>max){h=Math.round(h*max/w);w=max;} else if(h>=w&&h>max){w=Math.round(w*max/h);h=max;} const c=document.createElement('canvas'); c.width=w;c.height=h; c.getContext('2d').drawImage(img,0,0,w,h); c.toBlob(b=>b?res(b):rej(new Error('blob')),'image/jpeg',0.85); }; img.onerror=()=>rej(new Error('img')); img.src=URL.createObjectURL(file); }); }
@@ -1236,6 +1498,47 @@ applyLang();
     const r=await SB.from('combos').insert(rows); if(r.error) throw r.error; return rows.length;
   }
   function download(name, text){ const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([text],{type:'application/json'})); a.download=name; a.click(); }
+
+
+  /* ---- 결과 내보내기 (프리미엄) ---- */
+  window.exportText=function(){
+    const rowsEl=[...document.querySelectorAll('.rtable tbody tr')];
+    if(!rowsEl.length){ alert('먼저 계산해 주세요.'); return; }
+    const pa=[...document.querySelectorAll('#parentA .chip.on')].map(c=>c.textContent.trim()).join(' ');
+    const pb=[...document.querySelectorAll('#parentB .chip.on')].map(c=>c.textContent.trim()).join(' ');
+    let t='🦎 레오파드 게코 브리딩 예상\n\n';
+    t+='부모 ♂ '+(pa||'노멀')+'\n부모 ♀ '+(pb||'노멀')+'\n\n[예상 새끼]\n';
+    rowsEl.forEach(tr=>{ const c=tr.children;
+      t+='· '+c[0].innerText.trim().replace(/\s+/g,' ')+'  '+c[1].innerText.trim().replace(/\s+/g,' ')
+        +(c[2].innerText.trim()!=='–'? '  ('+c[2].innerText.trim().replace(/\s+/g,' ')+')':'')+'\n'; });
+    t+='\n※ 멘델 유전 이론 확률입니다.\nart-lyang.github.io/REPTILE';
+    if(navigator.clipboard){ navigator.clipboard.writeText(t).then(()=>alert('분양글이 복사되었습니다.'),()=>prompt('복사해 주세요',t)); }
+    else prompt('복사해 주세요',t);
+  };
+  window.exportImage=function(){
+    const el=document.querySelector('.results');
+    if(!el){ alert('먼저 계산해 주세요.'); return; }
+    const w=760, rows=[...document.querySelectorAll('.rtable tbody tr')];
+    const h=190+rows.length*46;
+    const c=document.createElement('canvas'); c.width=w*2; c.height=h*2; const x=c.getContext('2d'); x.scale(2,2);
+    x.fillStyle='#EDEAE1'; x.fillRect(0,0,w,h);
+    x.fillStyle='#26221D'; x.font='700 24px sans-serif'; x.fillText('🦎 레오파드 게코 브리딩 예상',28,44);
+    const pa=[...document.querySelectorAll('#parentA .chip.on')].map(v=>v.textContent.trim()).join(' ')||'노멀';
+    const pb=[...document.querySelectorAll('#parentB .chip.on')].map(v=>v.textContent.trim()).join(' ')||'노멀';
+    x.font='14px sans-serif'; x.fillStyle='#6C6452';
+    x.fillText('♂ '+pa.slice(0,52),28,76); x.fillText('♀ '+pb.slice(0,52),28,98);
+    x.fillStyle='#FDFCF9'; x.fillRect(20,118,w-40,h-140);
+    let y=148;
+    rows.forEach(tr=>{ const cells=tr.children;
+      x.fillStyle='#0E7C7B'; x.font='700 15px sans-serif'; x.fillText(cells[0].innerText.trim().replace(/\s+/g,' '),36,y);
+      x.fillStyle='#26221D'; x.font='14px sans-serif';
+      x.fillText(cells[1].innerText.trim().replace(/\s+/g,' ').slice(0,40),110,y);
+      const het=cells[2].innerText.trim().replace(/\s+/g,' ');
+      if(het&&het!=='–'){ x.fillStyle='#6B5686'; x.font='12px sans-serif'; x.fillText(het.slice(0,44),110,y+16); }
+      y+=46; });
+    x.fillStyle='#8A8375'; x.font='11px sans-serif'; x.fillText('art-lyang.github.io/REPTILE',28,h-14);
+    c.toBlob(bl=>{ const a=document.createElement('a'); a.href=URL.createObjectURL(bl); a.download='breeding-result.png'; a.click(); });
+  };
 
   /* ---------- 라우팅 ---------- */
   function isAdminRoute(){ return location.hash==='#admin' || /\/admin\/?$/.test(location.pathname); }
@@ -1364,9 +1667,43 @@ applyLang();
   async function tabCode(){
     const body=document.getElementById('adBody'); body.innerHTML='불러오는 중…';
     const c=await SB.from('access_codes').select('*').order('created_at',{ascending:false}); const rows=c.data||[];
-    body.innerHTML='<div class="codegen"><input class="ain" id="cgNote" placeholder="발급 대상 메모 (예: 홍길동/인스타)"><button class="abtn" id="cgBtn">코드 발급</button></div><div class="ahint">삭제하면 그 코드를 사용한 사용자의 프리미엄 권한도 사라집니다.</div><div class="alist">'+rows.map(r=>{ const st=r.revoked?'<span class="atag rev">차단</span>':(r.redeemed_by?'<span class="atag used">사용됨</span>':'<span class="atag new">미사용</span>'); return '<div class="arow"><div class="arow-main"><b class="mono">'+esc(r.code)+'</b>'+st+'<div class="asub">'+esc(r.note||'-')+(r.redeemed_by?' · 사용자 '+esc(String(r.redeemed_by).slice(0,12)):'')+'</div></div><div class="arow-act"><button class="mini del" data-d="'+esc(r.code)+'">삭제</button></div></div>'; }).join('')+'</div>';
-    document.getElementById('cgBtn').onclick=async()=>{ const note=document.getElementById('cgNote').value.trim(); const res=await SB.from('access_codes').insert({code:genCode(), note}); if(res.error){alert(res.error.message);return;} tabCode(); };
-    body.querySelectorAll('[data-d]').forEach(b=>b.onclick=async()=>{ if(!confirm('이 코드를 삭제하면 사용한 사용자의 권한도 박탈됩니다. 진행할까요?'))return; await SB.from('access_codes').delete().eq('code',b.dataset.d); tabCode(); });
+    const fmt=d=>d? new Date(d).toLocaleDateString('ko-KR',{year:'2-digit',month:'2-digit',day:'2-digit'}) : '무기한';
+    const cnt=k=>rows.filter(r=>r.kind===k).length;
+    let html='<div class="statrow"><div class="statcard"><div class="statn">'+rows.length+'</div><div class="statl">전체 코드</div></div>'
+      +'<div class="statcard"><div class="statn">'+cnt('trial')+'</div><div class="statl">체험판</div></div>'
+      +'<div class="statcard"><div class="statn">'+cnt('sub')+'</div><div class="statl">구독</div></div>'
+      +'<div class="statcard"><div class="statn">'+rows.filter(r=>r.redeemed_by).length+'</div><div class="statl">사용됨</div></div></div>'
+      +'<div class="alabel2">코드 발급</div>'
+      +'<div class="codegen"><select class="ain" id="cgKind" style="flex:0 0 116px"><option value="trial">체험판</option><option value="sub">구독</option></select>'
+      +'<select class="ain" id="cgDays" style="flex:0 0 110px"><option value="7">7일</option><option value="14">14일</option><option value="30">30일</option><option value="90">90일</option><option value="365">1년</option><option value="">무기한</option></select>'
+      +'<input class="ain" id="cgNote" placeholder="발급 대상 메모 (예: 홍길동/인스타)">'
+      +'<input class="ain" id="cgQty" type="number" min="1" max="50" value="1" style="flex:0 0 74px">'
+      +'<button class="abtn" id="cgBtn">발급</button></div>'
+      +'<div class="ahint">기간은 <b>코드를 사용한 시점부터</b> 계산됩니다. 삭제하거나 차단하면 그 코드를 쓴 사용자의 권한도 사라집니다.</div>';
+    html+='<div class="alist">'+rows.map(r=>{
+      const used=!!r.redeemed_by, exp=r.expires_at && new Date(r.expires_at)<new Date();
+      const st = r.revoked? '<span class="atag rev">차단</span>' : exp? '<span class="atag rev">만료</span>' : used? '<span class="atag used">사용중</span>' : '<span class="atag new">미사용</span>';
+      const kind = r.kind==='sub'? '<span class="atag sub">구독</span>' : '<span class="atag">체험 '+(r.days||'-')+'일</span>';
+      return '<div class="arow"><div class="arow-main"><b class="mono">'+esc(r.code)+'</b>'+kind+st
+        +'<div class="asub">'+esc(r.note||'-')+(used? ' · 사용자 '+esc(String(r.redeemed_by).slice(0,10))+' · 만료 '+fmt(r.expires_at) : '')+'</div></div>'
+        +'<div class="arow-act"><button class="mini" data-cp="'+esc(r.code)+'">복사</button>'
+        +'<button class="mini" data-rv="'+esc(r.code)+'">'+(r.revoked?'해제':'차단')+'</button>'
+        +'<button class="mini del" data-d="'+esc(r.code)+'">삭제</button></div></div>'; }).join('')+'</div>';
+    body.innerHTML=html;
+    document.getElementById('cgBtn').onclick=async()=>{
+      const kind=document.getElementById('cgKind').value;
+      const daysV=document.getElementById('cgDays').value;
+      const note=document.getElementById('cgNote').value.trim();
+      const qty=Math.max(1,Math.min(50,parseInt(document.getElementById('cgQty').value||'1',10)));
+      const batch=[]; for(let i=0;i<qty;i++) batch.push({code:genCode(), note, kind, days: daysV===''? null : parseInt(daysV,10)});
+      const res=await SB.from('access_codes').insert(batch);
+      if(res.error){alert(res.error.message);return;}
+      if(qty>1) alert(qty+'개 발급됨:\n'+batch.map(x=>x.code).join('\n'));
+      tabCode();
+    };
+    body.querySelectorAll('[data-cp]').forEach(b2=>b2.onclick=()=>{ navigator.clipboard&&navigator.clipboard.writeText(b2.dataset.cp); b2.textContent='복사됨'; setTimeout(()=>b2.textContent='복사',1200); });
+    body.querySelectorAll('[data-rv]').forEach(b2=>b2.onclick=async()=>{ const r=rows.find(x=>x.code===b2.dataset.rv); await SB.from('access_codes').update({revoked:!r.revoked}).eq('code',r.code); tabCode(); });
+    body.querySelectorAll('[data-d]').forEach(b2=>b2.onclick=async()=>{ if(!confirm('이 코드를 삭제하면 사용한 사용자의 권한도 박탈됩니다. 진행할까요?'))return; await SB.from('access_codes').delete().eq('code',b2.dataset.d); tabCode(); });
   }
 
   /* ---------- 초기화 ---------- */

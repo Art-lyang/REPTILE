@@ -329,10 +329,11 @@ if(typeof GENES==='undefined'){
   .codegen .ain{flex:1 1 180px;min-width:0}
   .codegen .ain{margin-bottom:0}
   .mono{font-family:ui-monospace,Menlo,monospace;letter-spacing:.5px}
-  .statrow{display:flex;gap:8px;margin-bottom:6px}
-  .statcard{flex:1;background:var(--card2);border-radius:12px;padding:14px 10px;text-align:center}
+  .statrow{display:flex;gap:8px;margin-bottom:6px;flex-wrap:wrap}
+  .statcard{flex:1 1 110px;min-width:104px;background:var(--card2);border-radius:12px;padding:14px 10px;text-align:center}
   .statn{font-size:24px;font-weight:800;color:var(--teal)}
   .statl{font-size:11px;color:var(--ink2);margin-top:2px}
+  .statx{font-size:10.5px;color:var(--ink2);margin-top:4px;opacity:.85;line-height:1.4}
   .proempty{text-align:center;color:var(--ink2);font-size:13.5px;padding:26px 12px;line-height:1.7}
   .procard{background:var(--card2);border-radius:12px;padding:12px 13px;margin-bottom:8px;display:flex;gap:11px;align-items:center}
   .prothumb{width:52px;height:52px;border-radius:10px;background:var(--gtile);flex:0 0 auto;display:flex;align-items:center;justify-content:center;overflow:hidden}
@@ -366,11 +367,29 @@ if(typeof GENES==='undefined'){
     color:var(--ink2);background:var(--card2);padding:14px}
   .adslot .adlbl{font-size:10px;letter-spacing:1.4px;text-transform:uppercase;opacity:.65;margin-bottom:5px}
   .adslot .adhint{font-size:11.5px;opacity:.55}
+  /* 프리미엄 혜택 목록 */
+  .perkbox{background:var(--card2);border-radius:13px;padding:13px 14px;margin-bottom:14px}
+  .perkhead{font-size:13px;font-weight:800;margin-bottom:9px}
+  .perk{display:flex;gap:10px;align-items:flex-start;margin:8px 0;font-size:12.5px;line-height:1.5}
+  .perk .pk{flex:0 0 20px;font-size:14px;line-height:1.35}
+  .perk b{display:block;font-size:12.8px}
+  .perk span:not(.pk){display:block;color:var(--ink2);font-size:11.5px;margin-top:1px}
+  .perkfoot{font-size:11.5px;color:var(--ink2);border-top:1px solid var(--hair);margin-top:10px;padding-top:9px;line-height:1.55}
+  /* 후원 안내 */
+  .donatebox{background:rgba(234,195,106,.14);border:1px solid rgba(197,146,32,.28);border-radius:13px;padding:13px 14px;margin-top:16px}
+  .donatebox .dhead{font-size:13px;font-weight:800;margin-bottom:5px}
+  .donatebox .dsub{font-size:11.8px;color:var(--ink2);line-height:1.6}
+  .donatebox .dacct{display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:var(--card);border-radius:10px;padding:9px 11px;margin:9px 0 7px}
+  .donatebox .dbank{font-size:11px;font-weight:800;color:var(--ink2);background:var(--card2);padding:3px 8px;border-radius:6px}
+  .donatebox .dacct b{font-family:ui-monospace,Menlo,monospace;font-size:14px;letter-spacing:.3px}
+  .donatebox .dacct .mini{margin-left:auto;background:var(--card2);border:1px solid var(--hair);color:var(--ink);
+    border-radius:8px;padding:5px 10px;font-size:11.5px;font-weight:700;cursor:pointer;font-family:inherit}
+  .donatebox .dnote{font-size:11px;color:var(--ink2);line-height:1.55}
   /* 개발자 후원 버튼 */
   .donate-wrap{display:flex;justify-content:center;margin-top:18px}
   .donate{display:inline-flex;align-items:center;gap:8px;background:var(--butter);color:#4a3712;
     text-decoration:none;font-weight:700;font-size:14.5px;padding:13px 24px;border-radius:15px;
-    box-shadow:0 5px 16px rgba(234,195,106,.42)}
+    box-shadow:0 5px 16px rgba(234,195,106,.42);border:none;cursor:pointer;font-family:inherit}
   .donate:active{filter:brightness(.96)}
   /* 줄바꿈: 한글은 단어 단위로 끊고, 뱃지는 통째로 유지 */
   .c-vis,.c-het,.warnbox,.note,.polyblock,.famdesc,.pt-txt,.summary,.pdesc,.comboSel{word-break:keep-all;overflow-wrap:break-word}
@@ -427,7 +446,7 @@ if(typeof GENES==='undefined'){
   <div class="results" id="results"></div>
 
   <div class="adslot" id="adSlot"></div>
-  <div class="donate-wrap"><a class="donate" id="donateBtn" href="#" target="_blank" rel="noopener"></a></div>
+  <div class="donate-wrap"><button class="donate" id="donateBtn" type="button" onclick="openPrem()"></button></div>
 
   <div class="bottom-links">
     <a class="blink" id="mailLink" href="mailto:kmc612000@gmail.com">✉️ 문의하기</a>
@@ -498,10 +517,29 @@ if(typeof GENES==='undefined'){
     <div class="modal-head"><h3>💎 프리미엄 코드</h3><button class="modal-x" onclick="closePrem()">✕</button></div>
     <div class="modal-body">
       <div id="premAccount"></div>
+
+      <div class="perkbox">
+        <div class="perkhead">프리미엄으로 열리는 기능</div>
+        <div class="perk"><span class="pk">🦎</span><div><b>브리딩 관리</b><span>내 개체·혈통 등록, 사진 저장, 페어링·클러치 기록 관리</span></div></div>
+        <div class="perk"><span class="pk">🎯</span><div><b>목표 모프 역산</b><span>등록한 개체 기준으로 목표까지 가능한 페어링과 부족한 조건을 찾아줍니다</span></div></div>
+        <div class="perk"><span class="pk">🖼️</span><div><b>결과 이미지 저장</b><span>계산 결과를 이미지로 내려받아 기록·공유</span></div></div>
+        <div class="perk"><span class="pk">🚫</span><div><b>광고 제거</b><span>모든 화면에서 광고가 표시되지 않습니다</span></div></div>
+        <div class="perk"><span class="pk">☁️</span><div><b>계정 동기화</b><span>휴대폰·PC 어디서든 같은 기록을 이어서 사용</span></div></div>
+        <div class="perkfoot">무료로도 <b>모프 확률 계산·콤보 명칭·위험 조합 경고</b>는 계속 이용할 수 있어요.</div>
+      </div>
+
       <div id="premStatus" style="font-size:13px;margin:12px 0 8px;color:var(--ink2)"></div>
       <input id="premInput" placeholder="발급받은 코드 입력" autocomplete="off"
              style="width:100%;padding:12px;border-radius:11px;border:1.5px solid var(--chipbd);background:var(--card);color:var(--ink);font-size:15px;font-family:inherit;box-sizing:border-box">
       <div id="premMsg" style="font-size:12.5px;margin-top:8px;min-height:16px"></div>
+
+      <div class="donatebox">
+        <div class="dhead">☕ 개발자 후원하기</div>
+        <div class="dsub">이 계산기는 개인이 무료로 만들어 운영하고 있어요. 후원해 주시면 서버 비용과 모프 데이터 업데이트에 사용됩니다.</div>
+        <div class="dacct"><span class="dbank">카카오뱅크</span><b id="donAcct">3333-17-6613203</b>
+          <button class="mini" id="donCopy">복사</button></div>
+        <div class="dnote">후원은 자율이며, 후원하지 않아도 모든 무료 기능을 그대로 이용하실 수 있습니다. 후원금은 프리미엄 이용권과 무관합니다.</div>
+      </div>
     </div>
     <div class="modal-foot">
       <button class="btn-today" onclick="closePrem()">닫기</button>
@@ -777,7 +815,7 @@ function applyLang(){
   document.getElementById('lbl-langtitle').textContent=t.langLabel;
   document.querySelectorAll('#langMenu button').forEach(b=>b.classList.toggle('on', b.dataset.lang===LANG));
   // 후원 버튼 + 광고 영역
-  const dn=document.getElementById('donateBtn'); dn.textContent=t.donate; dn.href=DONATE_URL;
+  const dn=document.getElementById('donateBtn'); dn.textContent=t.donate;
   const ad=document.getElementById('adSlot');
   if(AD_ENABLED && !window.__isPrem){ ad.style.display='flex'; ad.innerHTML = AD_HTML || ('<div class="adlbl">'+escapeHtml(t.adLabel)+'</div><div class="adhint">'+escapeHtml(t.adHint)+'</div>'); }
   else ad.style.display='none';
@@ -1004,6 +1042,12 @@ applyLang();
     if(pin) pin.disabled=!USER;
     if(pbtn) pbtn.style.opacity=USER?'1':'.5';
     document.getElementById('premMsg').textContent=''; document.getElementById('premInput').value='';
+    // 후원 계좌 복사
+    const dc=document.getElementById('donCopy');
+    if(dc) dc.onclick=()=>{ const v=document.getElementById('donAcct').textContent.trim();
+      const done=()=>{ dc.textContent='복사됨'; setTimeout(()=>dc.textContent='복사',1400); };
+      if(navigator.clipboard) navigator.clipboard.writeText(v).then(done,()=>prompt('계좌번호',v));
+      else prompt('계좌번호',v); };
     document.getElementById('premModal').classList.add('show');
   };
   // 로그인 시 기기에 있던 코드/데이터를 계정으로 이관
@@ -1050,7 +1094,7 @@ applyLang();
   window.addEventListener('hashchange', route);
 
   /* ---------- 관리자 ---------- */
-  let adminUser=null, adTab='morph';
+  let adminUser=null, adTab='info';
   function shell(inner){ return '<div class="admin-wrap"><div class="admin-top"><h1>🦎 관리자</h1><a class="admin-back" href="#">← 계산기로</a></div>'+inner+'</div>'; }
   async function renderAdmin(){
     const ar=document.getElementById('adminRoot');
@@ -1063,11 +1107,109 @@ applyLang();
     document.getElementById('adLogin').onclick=async()=>{ const e=document.getElementById('adEmail').value.trim(),p=document.getElementById('adPw').value,err=document.getElementById('adErr'); err.textContent='로그인 중…'; try{ const r=await SB.auth.signInWithPassword({email:e,password:p}); if(r.error)err.textContent='로그인 실패: '+r.error.message; else { adminUser=r.data.user; renderPanel(); } }catch(x){ err.textContent='오류'; } };
   }
   function renderPanel(){
-    const tabs=[['morph','모프'],['combo','콤보'],['stat','통계'],['code','코드'],['member','회원']];
+    const tabs=[['info','한눈에'],['member','회원'],['stat','통계'],['code','코드'],['morph','모프'],['combo','콤보']];
     document.getElementById('adminRoot').innerHTML=shell('<div class="atabs">'+tabs.map(t=>'<button class="atab'+(adTab===t[0]?' on':'')+'" data-t="'+t[0]+'">'+t[1]+'</button>').join('')+'<button class="atab logout" id="adLogout">로그아웃</button></div><div id="adBody" class="apad"></div>');
     document.querySelectorAll('.atab[data-t]').forEach(b=>b.onclick=()=>{ adTab=b.dataset.t; renderPanel(); });
     document.getElementById('adLogout').onclick=async()=>{ await SB.auth.signOut(); adminUser=null; renderLogin(); };
-    ({morph:tabMorph,combo:tabCombo,stat:tabStat,code:tabCode,member:tabMember}[adTab])();
+    ({info:tabInfo,morph:tabMorph,combo:tabCombo,stat:tabStat,code:tabCode,member:tabMember}[adTab])();
+  }
+
+  /* ---------- 한눈에 보기 (대시보드) ---------- */
+  async function tabInfo(){
+    const body=document.getElementById('adBody');
+    body.innerHTML='<div class="asub">불러오는 중…</div>';
+    const today=new Date().toISOString().slice(0,10);
+    const d7=new Date(Date.now()-6*864e5).toISOString().slice(0,10);
+    const num=r=>(r&&r.count)||0;
+    const rows=r=>(r&&r.data)||[];
+
+    const [vTot,vToday,vWeek,vDev,prof,codes,anim,pair,clu,cq]=await Promise.all([
+      SB.from('visits').select('*',{count:'exact',head:true}),
+      SB.from('visits').select('*',{count:'exact',head:true}).eq('day',today),
+      SB.from('visits').select('*',{count:'exact',head:true}).gte('day',d7),
+      SB.from('visits').select('device,day').gte('day',d7).limit(5000),
+      SB.from('profiles').select('*'),
+      SB.from('access_codes').select('*'),
+      SB.from('animals').select('id,device,created_at').limit(5000),
+      SB.from('pairings').select('id').limit(5000),
+      SB.from('clutches').select('id,egg_count').limit(5000),
+      SB.from('top_combos').select('*').limit(5),
+    ]);
+
+    // 권한 확인 — profiles 는 관리자만 읽을 수 있음
+    if(prof.error){
+      body.innerHTML='<div class="aerr"><b>관리자 권한이 없습니다.</b><br><br>'
+        +'현재 로그인: '+esc((adminUser&&adminUser.email)||'-')+'<br>'
+        +'Supabase SQL Editor에서 <b>supabase_setup.sql</b> 전체를 실행하고, '
+        +'<code>admins</code> 테이블에 이 이메일이 등록되어 있는지 확인하세요.</div>';
+      return;
+    }
+
+    const P=rows(prof), C=rows(codes), A=rows(anim);
+    const uniqWeek=new Set(rows(vDev).map(x=>x.device)).size;
+    const now=Date.now();
+    const activeCodes=C.filter(c=>c.redeemed_by&&!c.revoked&&(!c.expires_at||new Date(c.expires_at)>now));
+    const newMembers=P.filter(x=>x.created_at&&new Date(x.created_at)>=new Date(d7)).length;
+    const mktCount=P.filter(x=>x.agree_mkt_email||x.agree_mkt_sms).length;
+    const withPhone=P.filter(x=>x.phone).length;
+    const withName=P.filter(x=>x.name||x.nickname).length;
+    const activeUsers=new Set(A.map(x=>x.device)).size;
+    const eggs=rows(clu).reduce((s,x)=>s+(x.egg_count||0),0);
+
+    const card=(n,l,sub)=>'<div class="statcard"><div class="statn">'+n+'</div><div class="statl">'+l+'</div>'
+      +(sub?'<div class="statx">'+sub+'</div>':'')+'</div>';
+    const pct=(a,b)=>b? Math.round(a/b*100)+'%' : '0%';
+
+    // 최근 7일 추이
+    const byDay={}; rows(vDev).forEach(x=>{ if(x.day) byDay[x.day]=(byDay[x.day]||0)+1; });
+    const days=[]; for(let i=6;i>=0;i--) days.push(new Date(Date.now()-i*864e5).toISOString().slice(0,10));
+    const mx=Math.max(1,...days.map(d=>byDay[d]||0));
+
+    let h='<div class="alabel2">📊 오늘</div><div class="statrow">'
+      +card(num(vToday),'오늘 접속')
+      +card(num(vWeek),'최근 7일','순 방문 '+uniqWeek)
+      +card(num(vTot),'누적 접속')
+      +'</div>';
+
+    h+='<div class="alabel2">👥 회원</div><div class="statrow">'
+      +card(P.length,'전체 회원', newMembers? '최근 7일 +'+newMembers : '최근 7일 신규 없음')
+      +card(mktCount,'마케팅 수신 동의', pct(mktCount,P.length)+' 동의')
+      +card(withPhone,'연락처 보유', pct(withPhone,P.length))
+      +card(withName,'이름·닉네임 보유', pct(withName,P.length))
+      +'</div>';
+
+    h+='<div class="alabel2">💎 프리미엄</div><div class="statrow">'
+      +card(activeCodes.length,'이용 중')
+      +card(C.filter(c=>!c.redeemed_by&&!c.revoked).length,'미사용 코드')
+      +card(C.length,'발급 총계')
+      +'</div>';
+
+    h+='<div class="alabel2">🦎 브리딩 데이터</div><div class="statrow">'
+      +card(A.length,'등록 개체', activeUsers+'명이 사용 중')
+      +card(rows(pair).length,'페어링')
+      +card(rows(clu).length,'클러치', eggs? '알 '+eggs+'개':'')
+      +'</div>';
+
+    h+='<div class="alabel2">최근 7일 접속 추이</div>'
+      +days.map(d=>'<div class="daybar"><span class="dl">'+d.slice(5)+'</span>'
+        +'<span class="dt" style="width:'+Math.round((byDay[d]||0)/mx*60)+'%"></span>'
+        +'<span class="dn">'+(byDay[d]||0)+'</span></div>').join('');
+
+    const tc=rows(cq);
+    h+='<div class="alabel2">자주 확인한 조합 TOP 5</div><div class="alist">'
+      +(tc.length? tc.map((r,i)=>'<div class="arow"><div class="arow-main"><b>'+(i+1)+'. '+esc(r.label||r.ckey)+'</b></div><div class="atag">'+r.cnt+'회</div></div>').join('')
+        : '<div class="asub">아직 데이터가 없어요.</div>')+'</div>';
+
+    // 할 일 / 점검
+    const todos=[];
+    if(!P.length) todos.push('아직 가입한 회원이 없어요. 회원가입 흐름이 정상 동작하는지 확인해 보세요.');
+    if(P.length && !mktCount) todos.push('마케팅 수신 동의자가 없습니다. 가입 화면의 선택 동의 문구를 점검해 보세요.');
+    if(C.filter(c=>!c.redeemed_by&&!c.revoked).length===0) todos.push('배포 가능한 미사용 코드가 없습니다. [코드] 탭에서 발급하세요.');
+    if(!A.length) todos.push('등록된 개체가 없습니다. 브리딩 관리 기능 홍보를 검토해 보세요.');
+    if(todos.length) h+='<div class="alabel2">🔔 점검할 것</div><div class="alist">'
+      +todos.map(t=>'<div class="arow"><div class="arow-main">'+esc(t)+'</div></div>').join('')+'</div>';
+
+    body.innerHTML=h;
   }
 
   let morphQ='';
@@ -1231,34 +1373,70 @@ applyLang();
     body.querySelectorAll('[data-d]').forEach(b2=>b2.onclick=async()=>{ if(!confirm('이 코드를 삭제하면 사용한 사용자의 권한도 박탈됩니다. 진행할까요?'))return; await SB.from('access_codes').delete().eq('code',b2.dataset.d); tabCode(); });
   }
 
+  let memQ='', memFilter='all';
   async function tabMember(){
     const body=document.getElementById('adBody'); body.innerHTML='불러오는 중…';
     const r=await SB.from('profiles').select('*').order('created_at',{ascending:false});
-    if(r.error){ body.innerHTML='<div class="aerr">회원 정보를 볼 권한이 없습니다.<br>SQL의 admins 테이블에 현재 로그인 이메일이 등록되어 있는지 확인하세요.</div>'; return; }
-    const rows=r.data||[];
-    const n=k=>rows.filter(x=>x[k]).length;
+    if(r.error){ body.innerHTML='<div class="aerr"><b>회원 정보를 볼 권한이 없습니다.</b><br><br>'
+      +'현재 로그인: '+esc((adminUser&&adminUser.email)||'-')+'<br>'
+      +'Supabase SQL Editor에서 <b>supabase_setup.sql</b> 전체를 실행하고, <code>admins</code> 테이블에 이 이메일이 등록되어 있는지 확인하세요.</div>'; return; }
+    const all=r.data||[];
+    const n=k=>all.filter(x=>x[k]).length;
     const fmt=d=>d? new Date(d).toLocaleDateString('ko-KR',{year:'2-digit',month:'2-digit',day:'2-digit'}) : '-';
-    let html='<div class="statrow"><div class="statcard"><div class="statn">'+rows.length+'</div><div class="statl">전체 회원</div></div>'
+
+    const FILTERS=[['all','전체',x=>true],
+                   ['mail','메일 수신',x=>x.agree_mkt_email],
+                   ['sms','문자 수신',x=>x.agree_mkt_sms],
+                   ['third','제3자 제공',x=>x.agree_third],
+                   ['phone','연락처 보유',x=>!!x.phone]];
+    const f=(FILTERS.filter(z=>z[0]===memFilter)[0]||FILTERS[0])[2];
+    const q=memQ.trim().toLowerCase();
+    const rows=all.filter(f).filter(x=>!q || ((x.email||'')+(x.name||'')+(x.nickname||'')+(x.phone||'')).toLowerCase().includes(q));
+
+    let html='<div class="statrow"><div class="statcard"><div class="statn">'+all.length+'</div><div class="statl">전체 회원</div></div>'
       +'<div class="statcard"><div class="statn">'+n('agree_mkt_email')+'</div><div class="statl">이메일 수신</div></div>'
       +'<div class="statcard"><div class="statn">'+n('agree_mkt_sms')+'</div><div class="statl">문자 수신</div></div>'
       +'<div class="statcard"><div class="statn">'+n('agree_third')+'</div><div class="statl">제3자 제공</div></div></div>'
+      +'<div class="abar">'+FILTERS.map(z=>'<button class="abtn sm '+(memFilter===z[0]?'':'ghost')+'" data-f="'+z[0]+'">'+z[1]+'</button>').join('')+'</div>'
+      +'<div class="abar"><input class="ain" id="memQ" placeholder="이메일·이름·닉네임·번호 검색" value="'+esc(memQ)+'"></div>'
       +'<div class="abar"><button class="abtn sm ghost" id="expMkt">마케팅 동의자 CSV</button>'
+      +'<button class="abtn sm ghost" id="expSms">문자 발송용 CSV</button>'
       +'<button class="abtn sm ghost" id="expAll">전체 회원 CSV</button></div>'
-      +'<div class="ahint">CSV는 <b>동의한 회원만</b> 내려받도록 되어 있습니다. 광고성 정보 전송 시 제목에 (광고) 표기와 수신거부 방법을 반드시 포함해야 합니다.</div>';
-    html+='<div class="alist">'+rows.map(x=>{
-      const tags=(x.agree_mkt_email?'<span class="atag used">메일</span>':'')+(x.agree_mkt_sms?'<span class="atag used">문자</span>':'')
+      +'<div class="ahint">광고성 정보 전송 시 제목에 <b>(광고)</b> 표기와 <b>무료 수신거부 방법</b>을 반드시 포함해야 합니다(정보통신망법). '
+      +'수신 동의는 <b>2년마다 재확인</b> 의무가 있고, 제3자 제공은 실제 제공 시점에 제공받는 자·항목을 다시 고지해야 합니다.</div>'
+      +'<div class="alabel2">회원 목록 <span class="asub">'+rows.length+'명 표시</span></div>';
+
+    html+='<div class="alist">'+(rows.length? rows.map(x=>{
+      const tags=(x.agree_mkt_email?'<span class="atag used">메일</span>':'')
+        +(x.agree_mkt_sms?'<span class="atag used">문자</span>':'')
         +(x.agree_third?'<span class="atag">제3자</span>':'');
+      const who=[x.name, x.nickname&&('@'+x.nickname)].filter(Boolean).join(' ');
+      const meta=['가입 '+fmt(x.created_at)];
+      if(who) meta.push(esc(who));
+      if(x.phone) meta.push(esc(x.phone));
+      if(x.mkt_at) meta.push('마케팅동의 '+fmt(x.mkt_at));
+      else if(x.consent_at) meta.push('최종동의 '+fmt(x.consent_at));
       return '<div class="arow"><div class="arow-main"><b>'+esc(x.email||'-')+'</b>'+tags
-        +'<div class="asub">가입 '+fmt(x.created_at)+(x.phone?' · '+esc(x.phone):'')+(x.mkt_at?' · 마케팅동의 '+fmt(x.mkt_at):'')+'</div></div></div>'; }).join('')+'</div>';
+        +'<div class="asub">'+meta.join(' · ')+'</div></div></div>'; }).join('')
+      : '<div class="asub" style="padding:14px">조건에 맞는 회원이 없습니다.</div>')+'</div>';
     body.innerHTML=html;
+
+    body.querySelectorAll('[data-f]').forEach(b=>b.onclick=()=>{ memFilter=b.dataset.f; tabMember(); });
+    const qi=document.getElementById('memQ');
+    qi.oninput=()=>{ memQ=qi.value; };
+    qi.onkeydown=e=>{ if(e.key==='Enter') tabMember(); };
+
     const csv=(list,name)=>{
-      const head=['email','nickname','phone','mkt_email','mkt_sms','third_party','mkt_at','created_at'];
+      if(!list.length){ alert('내보낼 회원이 없습니다.'); return; }
+      const head=['email','name','nickname','phone','mkt_email','mkt_sms','third_party','consent_at','mkt_at','created_at'];
       const esc2=v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"';
-      const lines=[head.join(',')].concat(list.map(x=>[x.email,x.nickname,x.phone,x.agree_mkt_email,x.agree_mkt_sms,x.agree_third,x.mkt_at,x.created_at].map(esc2).join(',')));
+      const lines=[head.join(',')].concat(list.map(x=>[x.email,x.name,x.nickname,x.phone,
+        x.agree_mkt_email,x.agree_mkt_sms,x.agree_third,x.consent_at,x.mkt_at,x.created_at].map(esc2).join(',')));
       download(name, '\ufeff'+lines.join('\n'));
     };
-    document.getElementById('expMkt').onclick=()=>csv(rows.filter(x=>x.agree_mkt_email||x.agree_mkt_sms),'marketing-optin.csv');
-    document.getElementById('expAll').onclick=()=>csv(rows,'members.csv');
+    document.getElementById('expMkt').onclick=()=>csv(all.filter(x=>x.agree_mkt_email||x.agree_mkt_sms),'marketing-optin.csv');
+    document.getElementById('expSms').onclick=()=>csv(all.filter(x=>x.agree_mkt_sms&&x.phone),'sms-optin.csv');
+    document.getElementById('expAll').onclick=()=>csv(all,'members.csv');
   }
 
   /* ---------- 초기화 ---------- */

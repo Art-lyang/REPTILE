@@ -78,6 +78,19 @@
   .cNote{font-size:11px;color:var(--ink2);line-height:1.6;margin-top:8px;padding-top:8px;border-top:1px solid var(--hair)}
   .why{background:var(--card2);border-radius:12px;padding:13px;font-size:12.5px;color:var(--ink2);line-height:1.65;margin-top:16px}
   .why b{color:var(--ink)}
+  /* 회원탈퇴 */
+  .quit{display:inline-block;color:var(--ink2);font-size:12px;text-decoration:underline;cursor:pointer;padding:6px}
+  .quitbox{background:var(--card2);border-radius:12px;padding:12px 14px;margin-top:10px;font-size:12.5px;line-height:1.6;color:var(--ink2)}
+  .quitbox b{color:var(--ink);display:block;margin-bottom:4px;font-size:13px}
+  .quitbox.warn{background:var(--errbg);border:1px solid var(--errbd)}
+  .quitbox.warn b{color:var(--err)}
+  .quitbox ul{margin:4px 0 0;padding-left:17px}
+  .quitbox li{margin:5px 0}
+  .quitbox li b{display:inline;margin:0;font-size:12.5px}
+  .quitbox .qsub{color:var(--ink2);font-size:11.5px;line-height:1.55}
+  .quitbox a{color:var(--teal);font-weight:700}
+  .btn.danger{background:var(--err);color:#fff;margin-top:14px}
+  .btn.danger[disabled]{opacity:.45}
 </style>
 </head>
 <body>
@@ -129,20 +142,33 @@ function wireConsent(){
   items.forEach(i=>i.onchange=()=>{ all.checked=items.every(x=>x.checked); togglePhone(); });
   function togglePhone(){ const w=$('phoneWrap'); if(w) w.style.display=$('cSms').checked?'block':'none'; }
 }
+// 기본정보 (선택 수집) — 동의 화면과 함께 노출
+function profileHTML(p){
+  p=p||{};
+  return '<div class="consent" id="profBox">'
+    +'<div style="font-size:13px;font-weight:800;padding:2px 2px 8px">기본 정보 <span class="opt">[선택]</span></div>'
+    +'<input class="in" id="pName" placeholder="이름 (선택)" value="'+esc(p.name||'')+'" style="margin-bottom:8px">'
+    +'<input class="in" id="pNick" placeholder="닉네임 (선택 · 커뮤니티 표시명)" value="'+esc(p.nickname||'')+'" style="margin-bottom:0">'
+    +'<div class="cNote">입력하지 않아도 가입할 수 있어요. 이벤트 당첨 안내·문의 응대에만 사용하며, 언제든 계정 화면에서 수정·삭제할 수 있습니다.</div>'
+    +'</div>';
+}
 function consentValues(){
+  const g=id=>{ const el=$(id); return el? el.value.trim() : ''; };
   return { terms:$('cTerms').checked, privacy:$('cPrivacy').checked, age:$('cAge').checked,
            third:$('cThird').checked, mail:$('cMailAd').checked, sms:$('cSms').checked,
-           phone:($('cPhone')&&$('cPhone').value.trim())||null };
+           phone:($('cPhone')&&$('cPhone').value.trim())||null,
+           name:g('pName')||null, nickname:g('pNick')||null };
 }
 async function saveConsent(c){
   return SB.rpc('save_consent',{ p_terms:c.terms, p_privacy:c.privacy, p_age14:c.age,
-    p_third:c.third, p_mkt_email:c.mail, p_mkt_sms:c.sms, p_phone:c.phone, p_nickname:null });
+    p_third:c.third, p_mkt_email:c.mail, p_mkt_sms:c.sms, p_phone:c.phone,
+    p_nickname:c.nickname||null, p_name:c.name||null });
 }
 // 로그인은 됐지만 동의 기록이 없는 경우 (구글 가입 등) 동의 화면
 function renderConsentGate(u){
   $('root').innerHTML='<h2 style="margin:0 0 4px;font-size:17px">서비스 이용 동의</h2>'
     +'<div class="hint">'+esc(u.email||'')+' 계정으로 계속하려면 아래에 동의해 주세요.</div>'
-    +consentHTML()
+    +profileHTML()+consentHTML()
     +'<button class="btn" id="go">동의하고 시작하기</button>'
     +'<button class="btn ghost" id="out" style="margin-top:8px">다른 계정으로</button>'
     +'<div class="msg" id="msg"></div>';
@@ -187,7 +213,7 @@ function render(){
     +'<label class="fl">이메일</label><input class="in" id="email" type="email" autocomplete="email" placeholder="you@example.com">'
     +'<label class="fl">비밀번호</label><input class="in" id="pw" type="password" autocomplete="'+(isUp?'new-password':'current-password')+'" placeholder="6자 이상">'
     +(isUp? '<label class="fl">비밀번호 확인</label><input class="in" id="pw2" type="password" autocomplete="new-password" placeholder="한 번 더 입력">' : '')
-    +(isUp? consentHTML() : '')
+    +(isUp? profileHTML()+consentHTML() : '')
     +'<button class="btn" id="go">'+(isUp?'가입하기':'로그인')+'</button>'
     +'<div class="msg" id="msg"></div>'
     +(isUp? '' : '<div class="sub"><a id="toReset">비밀번호를 잊으셨나요?</a></div>')
@@ -260,23 +286,98 @@ async function renderMe(u){
 async function renderConsentSettings(){
   let c=null; try{ const r=await SB.rpc('my_consent'); c=r.data; }catch(e){}
   if(!c) return;
+
+  // 기본 정보 (이름·닉네임·전화)
+  const info=document.createElement('div');
+  info.className='consent'; info.style.marginTop='16px';
+  info.innerHTML='<div style="font-size:13px;font-weight:800;padding:2px 2px 8px">기본 정보 <span class="opt">[선택]</span></div>'
+    +'<input class="in" id="iName" placeholder="이름" value="'+esc(c.name||'')+'" style="margin-bottom:8px">'
+    +'<input class="in" id="iNick" placeholder="닉네임" value="'+esc(c.nickname||'')+'" style="margin-bottom:0">'
+    +'<div class="cNote">비워두고 저장하면 기존 값이 유지됩니다. 완전히 지우려면 회원탈퇴를 이용해 주세요.</div>';
+  $('root').appendChild(info);
+
   const box=document.createElement('div');
-  box.className='consent'; box.style.marginTop='16px';
+  box.className='consent'; box.style.marginTop='12px';
   box.innerHTML='<div style="font-size:13px;font-weight:800;padding:2px 2px 8px">수신 및 제공 동의 (선택)</div>'
     +'<label class="cRow"><input type="checkbox" id="sThird" '+(c.agree_third?'checked':'')+'><span>개인정보 제3자 제공</span></label>'
     +'<label class="cRow"><input type="checkbox" id="sMail" '+(c.agree_mkt_email?'checked':'')+'><span>이메일로 이벤트·혜택 받기</span></label>'
     +'<label class="cRow"><input type="checkbox" id="sSms" '+(c.agree_mkt_sms?'checked':'')+'><span>문자로 이벤트·혜택 받기</span></label>'
     +'<div id="sPhoneWrap" style="display:'+(c.agree_mkt_sms?'block':'none')+';margin-top:6px">'
     +'<input class="in" id="sPhone" type="tel" placeholder="휴대전화번호" value="'+esc(c.phone||'')+'" style="margin-bottom:0"></div>'
-    +'<button class="btn ghost" id="sSave" style="margin-top:10px">동의 설정 저장</button>'
-    +'<div class="cNote">필수 동의는 서비스 이용에 필요해 해제할 수 없어요. 탈퇴를 원하시면 kmc612000@gmail.com 으로 요청해 주세요.</div>';
+    +'<button class="btn ghost" id="sSave" style="margin-top:10px">기본 정보 · 동의 설정 저장</button>'
+    +'<div class="cNote">필수 동의는 서비스 이용에 필요해 해제할 수 없어요.'
+    +(c.consent_at? ' 최종 동의 '+new Date(c.consent_at).toLocaleDateString('ko-KR')+'.' : '')+'</div>';
   $('root').appendChild(box);
   $('sSms').onchange=()=>{ $('sPhoneWrap').style.display=$('sSms').checked?'block':'none'; };
   $('sSave').onclick=async()=>{
     if($('sSms').checked && !$('sPhone').value.trim()) return say('e','문자 수신을 위해 휴대전화번호를 입력해 주세요.');
     const r=await saveConsent({terms:true,privacy:true,age:true,third:$('sThird').checked,
-      mail:$('sMail').checked, sms:$('sSms').checked, phone:$('sPhone').value.trim()||null});
+      mail:$('sMail').checked, sms:$('sSms').checked, phone:$('sPhone').value.trim()||null,
+      name:$('iName').value.trim()||null, nickname:$('iNick').value.trim()||null});
     if(r.error) say('e',err(r.error)); else say('o','저장되었어요.');
+  };
+
+  // 회원탈퇴
+  const out=document.createElement('div');
+  out.style.marginTop='18px'; out.style.textAlign='center';
+  out.innerHTML='<a class="quit" id="quitLink">회원탈퇴</a>';
+  $('root').appendChild(out);
+  $('quitLink').onclick=()=>renderQuit(c);
+}
+
+/* ---------- 회원탈퇴 ---------- */
+function renderQuit(c){
+  const email=(c&&c.email)||'';
+  $('root').innerHTML='<h2 style="margin:0 0 6px;font-size:17px">회원탈퇴</h2>'
+    +'<div class="hint">탈퇴하기 전에 아래 내용을 꼭 확인해 주세요.</div>'
+
+    +'<div class="quitbox warn"><b>⚠️ 되돌릴 수 없습니다</b>'
+    +'<div>탈퇴하면 계정과 데이터가 삭제되며, 같은 이메일로 다시 가입해도 <b>이전 기록은 복구되지 않습니다.</b></div></div>'
+
+    +'<div class="quitbox"><b>즉시 삭제되는 정보</b>'
+    +'<ul><li>계정 정보 (이메일, 이름, 닉네임, 휴대전화번호)</li>'
+    +'<li>등록한 개체·페어링·클러치 기록과 업로드한 사진</li>'
+    +'<li>마케팅 수신 동의 및 제3자 제공 동의</li></ul></div>'
+
+    +'<div class="quitbox"><b>법령에 따라 보관되는 정보</b>'
+    +'<ul><li><b>약관·개인정보 동의 기록 — 탈퇴 후 5년</b><br>'
+    +'<span class="qsub">전자상거래법상 계약·청약철회 기록 보존 의무. 이름·이메일 등 신원정보는 삭제하고 <b>동의 사실과 일시만</b> 남깁니다.</span></li>'
+    +'<li><b>접속 기록 — 수집일로부터 1년</b><br>'
+    +'<span class="qsub">통신비밀보호법상 보존 의무. 개인을 식별할 수 없는 형태로만 남습니다.</span></li></ul>'
+    +'<div class="qsub" style="margin-top:8px">자세한 내용은 <a href="terms.html#privacy" target="_blank">개인정보처리방침</a>에서 확인하실 수 있어요.</div></div>'
+
+    +'<div class="quitbox"><b>프리미엄을 이용 중이라면</b>'
+    +'<div class="qsub">탈퇴 시 남은 이용 기간은 <b>환불되지 않으며</b>, 사용한 코드는 다시 사용할 수 없습니다. 잠시 쉬어가는 것이라면 탈퇴 대신 로그아웃을 권해드려요.</div></div>'
+
+    +'<label class="cRow" style="margin-top:14px"><input type="checkbox" id="qAgree">'
+    +'<span>위 내용을 모두 확인했으며, 데이터가 삭제되는 것에 동의합니다.</span></label>'
+
+    +'<div class="fl" style="margin-top:10px">확인을 위해 가입 이메일을 입력해 주세요</div>'
+    +'<input class="in" id="qEmail" type="email" placeholder="'+esc(email)+'" autocomplete="off">'
+
+    +'<button class="btn danger" id="qGo" disabled>탈퇴하기</button>'
+    +'<button class="btn ghost" id="qBack" style="margin-top:8px">돌아가기</button>'
+    +'<div class="msg" id="msg"></div>';
+
+  const sync=()=>{ $('qGo').disabled = !($('qAgree').checked
+    && $('qEmail').value.trim().toLowerCase()===String(email).toLowerCase() && email); };
+  $('qAgree').onchange=sync; $('qEmail').oninput=sync;
+  $('qBack').onclick=()=>boot();
+  $('qGo').onclick=async()=>{
+    if(!confirm('정말 탈퇴하시겠어요?\n\n등록한 개체와 사진이 모두 삭제되며 되돌릴 수 없습니다.')) return;
+    $('qGo').disabled=true; $('qGo').textContent='처리 중…'; clearMsg();
+    try{
+      const r=await SB.rpc('delete_my_account');
+      if(r.error) throw r.error;
+      await SB.auth.signOut();
+      $('root').innerHTML='<div class="me"><div class="av">👋</div>'
+        +'<div class="em">탈퇴가 완료되었습니다</div>'
+        +'<div class="hint" style="margin-top:10px">그동안 이용해 주셔서 감사합니다.<br>언제든 다시 찾아와 주세요.</div></div>'
+        +'<div class="links"><a href="index.html">🧮 계산기로 돌아가기</a></div>';
+    }catch(e){
+      $('qGo').disabled=false; $('qGo').textContent='탈퇴하기';
+      say('e','탈퇴 처리 중 문제가 생겼어요.<br>'+esc(err(e))+'<br><br>계속 실패하면 kmc612000@gmail.com 으로 연락 주시면 직접 처리해 드릴게요.');
+    }
   };
 }
 

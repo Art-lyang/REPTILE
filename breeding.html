@@ -69,6 +69,10 @@
   .pathbox{background:var(--card2);border-radius:12px;padding:13px;margin-bottom:9px;font-size:13px;line-height:1.6}
   .step{display:flex;gap:9px;margin:7px 0}
   .num{flex:0 0 22px;height:22px;border-radius:50%;background:var(--teal);color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center}
+  .num.ok{background:var(--teal)}
+  .num.no{background:var(--warn-fg,#B4402A)}
+  .ownb{margin-left:5px;background:var(--teal);color:#fff;font-size:9.5px;font-weight:800;padding:1px 6px;border-radius:6px;white-space:nowrap}
+  .mini-t{color:var(--ink2);font-size:11px;font-weight:700}
   .gate{max-width:420px;margin:40px auto;text-align:center}
   .gate .pad{padding:24px}
   .prev img{max-width:130px;border-radius:10px;margin-top:6px}
@@ -263,26 +267,126 @@ function tabClutch(){
 }
 
 /* ---------- 역산 ---------- */
+/* ---------- 목표 모프 역산 (등록한 개체 기준) ---------- */
+// 개체가 특정 유전자에 대해 무엇을 가졌는지: 'super' | 'visual' | 'het' | null
+function carries(a, geneId){
+  const m=a.morphs||[], h=a.hets||[];
+  if(m.indexOf('super_'+geneId)>=0) return 'super';
+  if(m.indexOf(geneId)>=0) return 'visual';
+  if(h.indexOf(geneId)>=0) return 'het';
+  return null;
+}
+// 목표 토큰 하나에 대해 그 개체가 부모로 쓸 수 있는지
+function meetsReq(a, req){
+  const c=carries(a, req.gene);
+  if(!c) return false;
+  if(req.type==='rec')    return true;                 // het 이상이면 기여 가능
+  if(req.type==='super')  return true;                 // 맥스노우 이상이면 기여 가능
+  return c==='visual'||c==='super';                    // 우성·불완전우성은 발현 개체 필요
+}
+function goalReqs(tk){
+  const reqs=[];
+  tk.forEach(t=>{
+    if(String(t).indexOf('super_')===0){ const id=t.slice(6);
+      reqs.push({gene:id, type:'super', token:t, need:'양쪽 부모 모두 보유 (25%로 슈퍼폼)'}); return; }
+    const g=GENES.filter(x=>x.id===t)[0]; if(!g) return;
+    if(g.type==='rec')        reqs.push({gene:g.id, type:'rec',    token:t, need:'양쪽 부모 모두 최소 het 이상'});
+    else if(g.type==='incdom')reqs.push({gene:g.id, type:'incdom', token:t, need:'한쪽 부모만 발현해도 50%'});
+    else                      reqs.push({gene:g.id, type:'dom',    token:t, need:'한쪽 부모만 발현해도 50%'});
+  });
+  return reqs;
+}
+function ownTag(a, req){
+  const c=carries(a, req.gene);
+  return c==='super'? '슈퍼폼' : c==='visual'? '비주얼' : c==='het'? 'het' : null;
+}
 function tabGoal(){
+  const opts=tokenOptions();
+  // 각 모프 옆에 내가 보유한 개체 수 뱃지
+  const ownCount=tok=>{
+    const gene = String(tok).indexOf('super_')===0 ? tok.slice(6) : tok;
+    return A.filter(a=>carries(a,gene)).length;
+  };
   $('body').innerHTML='<div class="pad"><div class="lbl">목표 모프 역산</div>'
-    +'<div class="hint">만들고 싶은 모프를 고르면 필요한 부모 조건과 세대 경로를 알려드려요.</div>'
-    +'<div class="tokgrid">'+tokenOptions().map(t=>'<label class="tokchk"><input type="checkbox" class="g" value="'+esc(t[0])+'">'+esc(t[1])+'</label>').join('')+'</div>'
+    +'<div class="hint">만들고 싶은 모프를 고르면 <b>내가 등록한 개체</b> 기준으로 가능한지, 무엇이 부족한지 알려드려요.</div>'
+    +(A.length? '<div class="hint">등록된 개체 <b>'+A.length+'마리</b> ('
+        +A.filter(a=>a.sex==='male').length+'♂ / '+A.filter(a=>a.sex==='female').length+'♀'
+        +(A.filter(a=>!a.sex||a.sex==='unknown').length? ' / 성별미상 '+A.filter(a=>!a.sex||a.sex==='unknown').length : '')+')</div>'
+      : '<div class="empty" style="margin:8px 0">등록된 개체가 없어요.<br><b>내 개체</b> 탭에서 보유 게코를 먼저 등록하면, 목표까지 얼마나 왔는지 알려드릴 수 있어요.</div>')
+    +'<div class="tokgrid">'+opts.map(t=>{
+        const n=ownCount(t[0]);
+        return '<label class="tokchk"><input type="checkbox" class="g" value="'+esc(t[0])+'">'
+          +esc(t[1])+(n? '<span class="ownb">보유 '+n+'</span>':'')+'</label>'; }).join('')+'</div>'
     +'<div class="formbtns"><button class="btn" id="run">경로 계산</button></div><div id="out"></div></div>';
   $('run').onclick=()=>{
     const tk=[...document.querySelectorAll('.g:checked')].map(x=>x.value), out=$('out');
     if(!tk.length){ out.innerHTML='<div class="err">목표 모프를 하나 이상 고르세요.</div>'; return; }
-    const cb=matchCombo(new Set(tk)); const rec=[],inc=[],sup=[],dom=[];
-    tk.forEach(t=>{ if(String(t).indexOf('super_')===0){ sup.push(t.slice(6)); return; }
-      const g=GENES.filter(x=>x.id===t)[0]; if(!g)return;
-      if(g.type==='rec')rec.push(g.id); else if(g.type==='incdom')inc.push(g.id); else dom.push(g.id); });
-    let h='<div class="pathbox"><b>목표</b><br>'+(cb?'<span class="combotag">콤보</span>'+esc(cb[LANG]||cb.en)+'<br>':'')+esc(tk.map(morphNameOf).join(' '))+'</div>';
-    h+='<div class="pathbox"><b>부모에게 필요한 조건</b>';
-    rec.forEach(id=>h+='<div class="step"><span class="num">필</span><span><b>'+esc(morphNameOf(id))+'</b> — 양쪽 부모 모두 최소 het 이상</span></div>');
-    sup.forEach(id=>h+='<div class="step"><span class="num">필</span><span><b>'+esc(morphNameOf('super_'+id))+'</b> — 양쪽 부모 모두 '+esc(morphNameOf(id))+' 이상 (25%로 슈퍼)</span></div>');
-    inc.concat(dom).forEach(id=>h+='<div class="step"><span class="num">필</span><span><b>'+esc(morphNameOf(id))+'</b> — 한쪽 부모만 있어도 50%</span></div>');
+    const cb=matchCombo(new Set(tk));
+    const reqs=goalReqs(tk);
+    const recLike=reqs.filter(r=>r.type==='rec'||r.type==='super');   // 확률을 떨어뜨리는 조건
+    const n=recLike.length;
+
+    let h='<div class="pathbox"><b>목표</b><br>'
+      +(cb?'<span class="combotag">콤보</span>'+esc(cb[LANG]||cb.en)+'<br>':'')
+      +esc(tk.map(morphNameOf).join(' '))+'</div>';
+
+    // 1) 조건별로 "내 개체가 충족하는가"
+    h+='<div class="pathbox"><b>조건별 내 개체 현황</b>';
+    const missing=[];
+    reqs.forEach(r=>{
+      const ok=A.filter(a=>meetsReq(a,r));
+      const males=ok.filter(a=>a.sex==='male'), females=ok.filter(a=>a.sex==='female');
+      const both = r.type==='rec'||r.type==='super';        // 양쪽 부모 필요
+      const done = both ? (males.length>0 && females.length>0) : ok.length>0;
+      if(!done) missing.push(r);
+      const badge = done? '<span class="num ok">✓</span>' : '<span class="num no">!</span>';
+      let detail;
+      if(!ok.length) detail='보유 개체 없음 — 새로 들이거나 다른 경로가 필요해요.';
+      else detail = ok.map(a=>esc(a.name||'이름없음')+' <span class="mini-t">'+ownTag(a,r)
+              +(a.sex==='male'?' ♂':a.sex==='female'?' ♀':'')+'</span>').join(', ')
+            + (both && !done ? ' <b>— '+(males.length?'암컷':'수컷')+'이 필요해요.</b>' : '');
+      h+='<div class="step">'+badge+'<span><b>'+esc(morphNameOf(r.token))+'</b> — '+esc(r.need)
+        +'<div class="ms">'+detail+'</div></span></div>';
+    });
     h+='</div>';
-    const n=rec.length+sup.length;
+
+    // 2) 지금 보유 개체로 만들 수 있는 최선의 페어링
+    const males=A.filter(a=>a.sex==='male'), females=A.filter(a=>a.sex==='female');
+    if(males.length && females.length){
+      const scored=[];
+      males.forEach(m=>females.forEach(f=>{
+        let met=0; const gaps=[];
+        reqs.forEach(r=>{
+          const both=r.type==='rec'||r.type==='super';
+          const ok = both ? (meetsReq(m,r)&&meetsReq(f,r)) : (meetsReq(m,r)||meetsReq(f,r));
+          if(ok) met++; else gaps.push(morphNameOf(r.token));
+        });
+        scored.push({m,f,met,gaps});
+      }));
+      scored.sort((x,y)=>y.met-x.met);
+      const top=scored.slice(0,3).filter(s=>s.met>0);
+      if(top.length){
+        h+='<div class="pathbox"><b>내 개체로 가능한 페어링</b>';
+        top.forEach((s,i)=>{
+          const full=s.met===reqs.length;
+          h+='<div class="step"><span class="num'+(full?' ok':'')+'">'+(i+1)+'</span><span>'
+            +'<b>'+esc(s.m.name||'이름없음')+' ♂ × '+esc(s.f.name||'이름없음')+' ♀</b> — 조건 '+s.met+'/'+reqs.length+' 충족'
+            +(full? ' <b>(목표 달성 가능)</b>' : '<div class="ms">부족: '+esc(s.gaps.join(', '))+'</div>')
+            +'</span></div>';
+        });
+        h+='<div class="ms" style="margin-top:6px">페어링 탭에서 등록하면 실제 확률까지 계산됩니다.</div></div>';
+      }
+    } else if(A.length){
+      h+='<div class="pathbox"><b>내 개체로 가능한 페어링</b><div class="ms">'
+        +(males.length? '암컷이 등록되어 있지 않아 페어링을 계산할 수 없어요.'
+         : females.length? '수컷이 등록되어 있지 않아 페어링을 계산할 수 없어요.'
+         : '개체의 성별을 등록하면 가능한 페어링을 찾아드려요.')+'</div></div>';
+    }
+
+    // 3) 세대 경로
     h+='<div class="pathbox"><b>추천 경로</b>';
+    if(!missing.length && A.length)
+      h+='<div class="step"><span class="num ok">✓</span><span>필요한 조건을 <b>이미 모두 보유</b>하고 있어요. 위 페어링으로 바로 시도할 수 있습니다.</span></div>';
     if(!n) h+='<div class="step"><span class="num">1</span><span>한쪽 부모에만 형질이 있으면 F1에서 바로 나옵니다.</span></div>';
     else{
       h+='<div class="step"><span class="num">1</span><span><b>F1</b> — 서로 다른 형질의 비주얼끼리 교배해 <b>더블 het</b>를 만듭니다. 이 세대에선 목표가 안 나옵니다.</span></div>';
@@ -290,8 +394,6 @@ function tabGoal(){
       if(n>=2) h+='<div class="step"><span class="num">↺</span><span>확률이 낮으면 F1에서 <b>비주얼 하나 + het</b>를 먼저 만들고 역교배하면 확률이 크게 올라갑니다.</span></div>';
     }
     h+='</div>';
-    const own=A.filter(a=>tk.some(t=>(a.morphs||[]).includes(t))||rec.some(r=>(a.hets||[]).includes(r)));
-    if(own.length) h+='<div class="pathbox"><b>보유 개체 중 활용 가능</b><br>'+own.map(a=>esc(a.name||'이름없음')+' — '+esc((a.morphs||[]).map(morphNameOf).join(' ')||'노멀')+((a.hets||[]).length?' / het '+esc((a.hets||[]).map(morphNameOf).join(', ')):'')).join('<br>')+'</div>';
     out.innerHTML=h;
   };
 }

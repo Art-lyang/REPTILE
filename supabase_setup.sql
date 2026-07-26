@@ -425,6 +425,68 @@ drop policy if exists mi_delete on storage.objects;
 create policy mi_delete on storage.objects for delete to authenticated
   using (bucket_id = 'morph-images' and public.is_admin());
 
+-- G) 회원탈퇴 -------------------------------------------------
+--    개인정보처리방침과 일치하도록:
+--      · 신원정보(이름/닉네임/전화/이메일) 및 개체·페어링·클러치 데이터 → 즉시 삭제
+--      · 동의 기록(동의 여부·일시) → 신원정보를 지운 채 5년 보존 (전자상거래법)
+--      · 접속 기록(visits) → 이미 개인 식별 불가, 1년 후 자동 정리 대상
+create table if not exists public.consent_archive (
+  id           bigint generated always as identity primary key,
+  user_ref     text,                    -- 원 계정 식별용 해시 (복원 불가)
+  agree_terms  boolean,
+  agree_privacy boolean,
+  agree_age14  boolean,
+  agree_third  boolean,
+  agree_mkt_email boolean,
+  agree_mkt_sms   boolean,
+  consent_at   timestamptz,
+  withdrawn_at timestamptz default now(),
+  purge_after  date                     -- 이 날짜 이후 삭제 가능 (탈퇴 + 5년)
+);
+alter table public.consent_archive enable row level security;
+drop policy if exists ca_admin on public.consent_archive;
+create policy ca_admin on public.consent_archive for select to authenticated using (public.is_admin());
+
+create or replace function public.delete_my_account()
+returns jsonb language plpgsql security definer set search_path = public as $$
+declare uid uuid := auth.uid();
+        dev text;
+        p   public.profiles;
+begin
+  if uid is null then raise exception 'not signed in'; end if;
+  dev := 'u_' || uid::text;
+
+  -- 1) 동의 기록을 익명화해 보존 (법정 5년)
+  select * into p from public.profiles where user_id = uid;
+  if found then
+    insert into public.consent_archive
+      (user_ref, agree_terms, agree_privacy, agree_age14, agree_third,
+       agree_mkt_email, agree_mkt_sms, consent_at, purge_after)
+    values
+      (md5(uid::text || '|reptile-withdrawn'),       -- 되돌릴 수 없는 해시 (내장 md5)
+       p.agree_terms, p.agree_privacy, p.agree_age14, p.agree_third,
+       p.agree_mkt_email, p.agree_mkt_sms, p.consent_at,
+       (now() + interval '5 years')::date);
+  end if;
+
+  -- 2) 사용자 데이터 삭제
+  delete from public.clutches where device = dev;
+  delete from public.pairings where device = dev;
+  delete from public.animals  where device = dev;
+
+  -- 3) 프리미엄 코드 연결 해제 (코드 자체는 재사용 불가로 남김)
+  update public.access_codes set revoked = true where redeemed_by = dev;
+
+  -- 4) 프로필(신원정보) 삭제
+  delete from public.profiles where user_id = uid;
+
+  -- 5) 인증 계정 삭제
+  delete from auth.users where id = uid;
+
+  return jsonb_build_object('ok', true);
+end $$;
+grant execute on function public.delete_my_account() to authenticated;
+
 -- 완료. Storage 버킷은 위 F) 에서 자동 생성됩니다.
 -- v2 적용 후 확인: ① Supabase SQL Editor에서 이 파일 전체 Run
 --                ② #admin 접속 → 회원 탭이 열리는지 확인 (admins에 등록된 이메일로 로그인)

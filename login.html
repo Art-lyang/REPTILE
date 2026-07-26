@@ -160,9 +160,14 @@ function consentValues(){
            name:g('pName')||null, nickname:g('pNick')||null };
 }
 async function saveConsent(c){
-  return SB.rpc('save_consent',{ p_terms:c.terms, p_privacy:c.privacy, p_age14:c.age,
+  const base={ p_terms:c.terms, p_privacy:c.privacy, p_age14:c.age,
     p_third:c.third, p_mkt_email:c.mail, p_mkt_sms:c.sms, p_phone:c.phone,
-    p_nickname:c.nickname||null, p_name:c.name||null });
+    p_nickname:c.nickname||null };
+  const r=await SB.rpc('save_consent', Object.assign({p_name:c.name||null}, base));
+  // 서버에 아직 p_name 파라미터가 없는 구버전이면 이름 없이 재시도 (가입이 막히지 않도록)
+  if(r.error && /p_name|does not exist|function .*save_consent/i.test(r.error.message||''))
+    return SB.rpc('save_consent', base);
+  return r;
 }
 // 로그인은 됐지만 동의 기록이 없는 경우 (구글 가입 등) 동의 화면
 function renderConsentGate(u){
@@ -376,7 +381,13 @@ function renderQuit(c){
         +'<div class="links"><a href="index.html">🧮 계산기로 돌아가기</a></div>';
     }catch(e){
       $('qGo').disabled=false; $('qGo').textContent='탈퇴하기';
-      say('e','탈퇴 처리 중 문제가 생겼어요.<br>'+esc(err(e))+'<br><br>계속 실패하면 kmc612000@gmail.com 으로 연락 주시면 직접 처리해 드릴게요.');
+      const m=(e&&e.message)||'';
+      if(/delete_my_account|does not exist|Could not find the function/i.test(m))
+        say('e','탈퇴 기능이 아직 서버에 적용되지 않았어요.<br>'
+          +'<b>kmc612000@gmail.com</b> 으로 탈퇴를 요청해 주시면 직접 처리해 드리겠습니다.');
+      else
+        say('e','탈퇴 처리 중 문제가 생겼어요.<br>'+esc(err(e))
+          +'<br><br>계속 실패하면 kmc612000@gmail.com 으로 연락 주시면 직접 처리해 드릴게요.');
     }
   };
 }

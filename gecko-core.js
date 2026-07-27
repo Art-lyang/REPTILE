@@ -28,6 +28,13 @@ function morphNameOf(id){
    ※ 프리미엄을 이미 보유한 회원의 [브리딩 관리] 진입은 막지 않습니다.      */
 const SHOW_PREMIUM_UI = false;
 const SHOW_DONATE     = false;
+/* SHOW_ACCOUNT_UI : 로그인 / 내 정보 버튼
+   SHOW_LEGAL_LINKS: 이용약관 · 개인정보처리방침 링크 + 쿠키 안내 바
+   ※ 링크만 감출 뿐 terms.html 은 그대로 접근 가능합니다.
+     개인정보처리방침은 공개 의무가 있으므로 파일을 지우지 마세요.
+     정식 공개(회원가입 오픈) 전에 반드시 true 로 되돌려야 합니다. */
+const SHOW_ACCOUNT_UI  = false;
+const SHOW_LEGAL_LINKS = false;
 
 /* --- 후원 계좌 --- */
 const DONATE_BANK = '카카오뱅크';

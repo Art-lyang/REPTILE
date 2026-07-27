@@ -461,7 +461,7 @@ if(typeof GENES==='undefined'){
   <div class="mailnote">정보 수정 요청 · 업데이트 건의는 <b>문의하기</b>로 보내주세요 (kmc612000@gmail.com)</div>
 
   <div class="note" id="note"></div>
-  <div class="legal">
+  <div class="legal" id="legalLinks">
     <a href="terms.html#terms">이용약관</a> · <a href="terms.html#privacy">개인정보처리방침</a>
   </div>
   <footer id="footer"></footer>
@@ -948,9 +948,17 @@ document.addEventListener('click',e=>{ if(langMenuEl.classList.contains('open') 
     nt.classList.toggle('show',on); ib.setAttribute('aria-expanded', on?'true':'false'); });
 })();
 
+/* ===== 약관·개인정보 링크 노출 스위치 (gecko-core.js) ===== */
+(function(){
+  if(SHOW_LEGAL_LINKS) return;
+  const el=document.getElementById('legalLinks'); if(el) el.style.display='none';
+})();
+
 /* ===== 쿠키 안내 ===== */
 window.okCookie=function(){ try{ localStorage.setItem('leoCookieOk','1'); }catch(e){} document.getElementById('cookieBar').classList.remove('show'); };
 (function(){ let ok=false; try{ ok=localStorage.getItem('leoCookieOk')==='1'; }catch(e){ ok=true; }
+  // 약관 링크를 감춘 테스트 기간에는 쿠키 안내도 함께 숨깁니다 (안내가 가리키는 문서가 안 보이므로)
+  if(!SHOW_LEGAL_LINKS) return;
   if(!ok && !(location.hash==='#admin')) setTimeout(()=>document.getElementById('cookieBar').classList.add('show'), 1400); })();
 
 /* ===== 업데이트 노트 모달 ===== */
@@ -1028,7 +1036,11 @@ applyLang();
     if(btn && !SHOW_PREMIUM_UI) btn.style.display='none';
     window.__isPrem = isPrem;
     const ab=document.getElementById('acctBtn');
-    if(ab){ ab.style.display=''; ab.textContent = USER? '👤 내 정보' : '👤 로그인'; }
+    if(ab){
+      // 노출 스위치 — 테스트 기간에는 로그인 진입 자체를 감춤 (gecko-core.js)
+      ab.style.display = SHOW_ACCOUNT_UI ? '' : 'none';
+      ab.textContent = USER? '👤 내 정보' : '👤 로그인';
+    }
     if(pro) pro.style.display = isPrem? '' : 'none';
     const ad=document.getElementById('adSlot'); if(ad && isPrem) ad.style.display='none';   // 프리미엄 = 광고 제거
   }

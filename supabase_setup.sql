@@ -274,16 +274,39 @@ create or replace view public.top_combos
 -- ============================================================
 
 -- A) 관리자 명단 -----------------------------------------------
+--    ※ 이미 admins 테이블이 있는 경우, 컬럼 구성이 다를 수 있으므로
+--      없는 컬럼만 채워 넣습니다. (없으면 42703 오류로 전체가 취소됩니다)
 create table if not exists public.admins (
   email      text primary key,
   note       text,
   created_at timestamptz default now()
 );
+alter table public.admins add column if not exists note       text;
+alter table public.admins add column if not exists created_at timestamptz default now();
 alter table public.admins enable row level security;
 
 -- 본인 이메일을 관리자에 등록 (필요하면 아래에 추가)
-insert into public.admins(email, note) values ('kmc612000@gmail.com', 'owner')
+insert into public.admins(email) values ('kmc612000@gmail.com')
   on conflict (email) do nothing;
+update public.admins set note = coalesce(note, 'owner') where email = 'kmc612000@gmail.com';
+
+-- 기존 함수를 반환형까지 포함해 통째로 정리합니다.
+-- create or replace 는 반환형이 다르면 42P13 으로 실패하고,
+-- SQL Editor 는 전체를 하나의 트랜잭션으로 돌리므로 스크립트가 통째로 취소됩니다.
+do $drop_fns$
+declare r record;
+begin
+  for r in
+    select p.oid::regprocedure as sig
+      from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+     where n.nspname = 'public'
+       and p.proname in ('is_admin','my_consent','my_identities','delete_my_account')
+  loop
+    execute format('drop function if exists %s cascade', r.sig);
+    raise notice '기존 함수 제거: %', r.sig;
+  end loop;
+end
+$drop_fns$;
 
 create or replace function public.is_admin()
 returns boolean language sql stable security definer set search_path = public as $$
@@ -316,11 +339,38 @@ create table if not exists public.profiles (
   updated_at      timestamptz default now()
 );
 -- 이미 만들어 둔 경우를 위한 컬럼 보강
-alter table public.profiles add column if not exists name       text;
-alter table public.profiles add column if not exists nickname   text;
-alter table public.profiles add column if not exists consent_at timestamptz;
-alter table public.profiles add column if not exists mkt_at     timestamptz;
-alter table public.profiles add column if not exists updated_at timestamptz default now();
+--   save_consent 가 건드리는 컬럼을 전부 나열합니다.
+--   하나라도 없으면 42703 오류로 스크립트 전체가 취소되므로 빠짐없이 둡니다.
+alter table public.profiles add column if not exists email           text;
+alter table public.profiles add column if not exists name            text;
+alter table public.profiles add column if not exists nickname        text;
+alter table public.profiles add column if not exists phone           text;
+alter table public.profiles add column if not exists agree_terms     boolean default false;
+alter table public.profiles add column if not exists agree_privacy   boolean default false;
+alter table public.profiles add column if not exists agree_age14     boolean default false;
+alter table public.profiles add column if not exists agree_third     boolean default false;
+alter table public.profiles add column if not exists agree_mkt_email boolean default false;
+alter table public.profiles add column if not exists agree_mkt_sms   boolean default false;
+alter table public.profiles add column if not exists consent_at      timestamptz;
+alter table public.profiles add column if not exists mkt_at          timestamptz;
+alter table public.profiles add column if not exists created_at      timestamptz default now();
+alter table public.profiles add column if not exists updated_at      timestamptz default now();
+
+-- save_consent 의 on conflict (user_id) 가 동작하려면 user_id 에 유일 제약이 있어야 합니다.
+do $uq$
+begin
+  if not exists (
+    select 1 from pg_constraint c
+     where c.conrelid = 'public.profiles'::regclass
+       and c.contype in ('p','u')
+       and c.conkey = array[(select attnum from pg_attribute
+                              where attrelid='public.profiles'::regclass and attname='user_id')]
+  ) then
+    alter table public.profiles add constraint profiles_user_id_key unique (user_id);
+    raise notice 'profiles.user_id 유일 제약을 추가했습니다.';
+  end if;
+end
+$uq$;
 
 alter table public.profiles enable row level security;
 -- 조회는 관리자만. 쓰기는 아래 save_consent RPC 로만 (직접 insert/update 불가)
@@ -393,35 +443,52 @@ $$;
 grant execute on function public.my_consent() to authenticated;
 
 -- D) 검색(계산) 로그를 기기와 연결 — 동의 회원의 이용 기록 분석용
-alter table public.combo_queries add column if not exists device text;
+--    (combo_queries 가 아직 없는 프로젝트에서도 오류가 나지 않게 존재 확인)
+do $cq$
+begin
+  if to_regclass('public.combo_queries') is not null then
+    alter table public.combo_queries add column if not exists device text;
+  else
+    raise notice '[건너뜀] combo_queries 테이블이 없습니다.';
+  end if;
+end
+$cq$;
 
 -- E) [보안 강화] 관리자 전용 잠금 -------------------------------
 --    기존에는 "로그인한 누구나" 모프 수정·코드 발급·로그 열람이 가능했음.
 --    일반 회원가입이 열렸으므로 관리자(admins 등록 이메일)만 가능하도록 교체.
-drop policy if exists morphs_admin on public.morphs;
-create policy morphs_admin on public.morphs for all to authenticated
-  using (public.is_admin()) with check (public.is_admin());
-
-drop policy if exists combos_admin on public.combos;
-create policy combos_admin on public.combos for all to authenticated
-  using (public.is_admin()) with check (public.is_admin());
-
-drop policy if exists visits_read on public.visits;
-create policy visits_read on public.visits for select to authenticated using (public.is_admin());
-
-drop policy if exists cq_read on public.combo_queries;
-create policy cq_read on public.combo_queries for select to authenticated using (public.is_admin());
-
-drop policy if exists codes_admin on public.access_codes;
-create policy codes_admin on public.access_codes for all to authenticated
-  using (public.is_admin()) with check (public.is_admin());
-
-do $$ declare t text; begin
-  foreach t in array array['animals','pairings','clutches'] loop
-    execute format('drop policy if exists %I_admin on public.%I', t, t);
-    execute format('create policy %I_admin on public.%I for all to authenticated using (public.is_admin()) with check (public.is_admin())', t, t);
+--    테이블이 없는 프로젝트에서도 멈추지 않도록 존재 여부를 먼저 확인합니다.
+do $lock$
+declare
+  spec text[][] := array[
+    ['morphs',        'morphs_admin', 'all',    'authenticated'],
+    ['combos',        'combos_admin', 'all',    'authenticated'],
+    ['access_codes',  'codes_admin',  'all',    'authenticated'],
+    ['animals',       'animals_admin','all',    'authenticated'],
+    ['pairings',      'pairings_admin','all',   'authenticated'],
+    ['clutches',      'clutches_admin','all',   'authenticated'],
+    ['visits',        'visits_read',  'select', 'authenticated'],
+    ['combo_queries', 'cq_read',      'select', 'authenticated']
+  ];
+  i int;
+  tbl text; pol text; act text; rol text;
+begin
+  for i in 1 .. array_length(spec, 1) loop
+    tbl := spec[i][1]; pol := spec[i][2]; act := spec[i][3]; rol := spec[i][4];
+    if to_regclass('public.' || tbl) is null then
+      raise notice '[건너뜀] % 테이블이 없습니다.', tbl;
+      continue;
+    end if;
+    execute format('drop policy if exists %I on public.%I', pol, tbl);
+    if act = 'all' then
+      execute format('create policy %I on public.%I for all to %s using (public.is_admin()) with check (public.is_admin())', pol, tbl, rol);
+    else
+      execute format('create policy %I on public.%I for select to %s using (public.is_admin())', pol, tbl, rol);
+    end if;
   end loop;
-end $$;
+  raise notice '[완료] 관리자 전용 정책을 적용했습니다.';
+end
+$lock$;
 
 -- F) Storage(사진 업로드) 정책 --------------------------------
 --    증상: 사진 업로드 시 "new row violates row-level security policy"
@@ -611,8 +678,8 @@ select 항목, 상태 from (
                                     where n.nspname='public' and p.proname='delete_my_account')   then '✅ 있음' else '❌ 없음' end),
     ('consent_archive 테이블', case when to_regclass('public.consent_archive') is not null then '✅ 있음' else '❌ 없음' end),
     ('unlink_pending 테이블',  case when to_regclass('public.unlink_pending')  is not null then '✅ 있음' else '❌ 없음' end),
-    ('morph-images 버킷',      case when exists(select 1 from storage.buckets where id='morph-images')
-                                                                               then '✅ 있음' else '❌ 없음 (수동 생성 필요)' end),
+    ('morph-images 버킷',      coalesce((select case when exists(select 1 from storage.buckets where id='morph-images')
+                                                    then '✅ 있음' else '❌ 없음 (수동 생성 필요)' end), '❔ 확인 불가')),
     ('Storage 업로드 정책',    case when exists(select 1 from pg_policies where schemaname='storage' and policyname='mi_insert')
                                                                                then '✅ 있음' else '❌ 없음 (수동 생성 필요)' end)
 ) as t(항목, 상태);

@@ -8,10 +8,12 @@
   // 저장소 루트가 아니라 dist/ 를 올립니다. 루트에는 supabase_*.sql 과 docs/ 가
   // 같이 있어서 그대로 배포하면 공개됩니다. dist/ 는 ./build.sh 가 git 목록에서
   // 사이트 파일만 골라 만듭니다. 배포 전에 ./build.sh 를 먼저 실행하세요.
+  // not_found_handling 은 두지 않습니다. single-page-application 으로 두면 없는
+  // 주소가 전부 200 + 메인 페이지가 되어, 검색엔진이 존재하지 않는 URL 을 계속
+  // 색인하고 깨진 링크도 드러나지 않습니다. 여러 페이지로 된 정적 사이트라
+  // 없는 주소는 그냥 404 가 맞습니다. 옛 경로는 _redirects 가 처리합니다.
   "assets": {
-    "directory": "./dist",
-    // 없는 경로는 404 페이지 대신 스튜디오 메인으로 보냅니다.
-    "not_found_handling": "single-page-application"
+    "directory": "./dist"
   },
 
   // 대시보드에서 이미 붙여둔 커스텀 도메인. 명시해 두지 않으면 배포하면서

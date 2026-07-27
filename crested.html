@@ -249,6 +249,20 @@ if(typeof CR_ALL_GENES==='undefined'){
       radial-gradient(420px 200px at 88% 8%, rgba(14,124,123,.10), transparent 70%),
       radial-gradient(320px 180px at 4% 96%, rgba(234,195,106,.13), transparent 70%);
   }
+  /* 장식 이미지 — 순수 장식이라 클릭·스크린리더 대상에서 제외합니다.
+     ※ 모프를 나타내는 그림이 아닙니다. 실제 모프 사진은 결과 표에서만 씁니다. */
+  .hd-deco{position:absolute;pointer-events:none;user-select:none;z-index:1}
+  .hd-deco.leaf{left:-30px;top:-22px;width:158px;transform:rotate(-14deg);opacity:.42}
+  .hd-deco.hero{right:-10px;bottom:-34px;width:236px;opacity:.95;z-index:2}
+  @media (prefers-color-scheme:dark){
+    .hd-deco.leaf{opacity:.26} .hd-deco.hero{opacity:.7}
+  }
+  /* 좁은 화면에서는 글자와 겹치지 않게 줄이고, 아주 좁으면 게코를 숨깁니다.
+     .hd 가 z-index:2 이므로 겹쳐도 글자·버튼이 항상 위에 옵니다. */
+  @media (max-width:760px){ .hd-deco.hero{width:172px;right:-22px;bottom:-24px;opacity:.4} }
+  @media (max-width:560px){ .hd-deco.hero{display:none} .hd-deco.leaf{width:112px;opacity:.3} }
+  /* 장식과 겹치는 구간에서도 버튼이 눌리도록 위로 올립니다 */
+  .hd-btns{position:relative;z-index:4}
 
   /* langbtn 을 헤더 흐름 안으로 (기존 절대배치 해제) */
   .langbtn{position:static;top:auto;right:auto;height:36px;padding:0 12px;font-size:12.5px;box-shadow:var(--shadow)}
@@ -349,6 +363,8 @@ if(typeof CR_ALL_GENES==='undefined'){
 </head>
 <body>
 <header>
+  <img class="hd-deco leaf" src="../assets/leaf.svg" alt="" aria-hidden="true">
+  <img class="hd-deco hero" src="../assets/crested-hero.png" alt="" aria-hidden="true" loading="lazy">
   <div class="hd">
     <div class="hd-mark"><img src="../assets/logo-paw.svg" alt=""></div>
     <div class="hd-txt">

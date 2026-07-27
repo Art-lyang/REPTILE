@@ -173,10 +173,13 @@
   select.b.set{color:var(--patina)}
 
   .actions{display:flex;gap:10px;margin:22px 0 6px}
-  button.act{flex:1;border:none;border-radius:14px;padding:15px;font-size:16px;font-weight:600;cursor:pointer;font-family:inherit;transition:.15s}
-  .btn-calc{background:var(--teal);color:#fff;box-shadow:0 6px 18px rgba(14,124,123,.32)}
-  .btn-calc:active{background:var(--teal-press);transform:scale(.99)}
-  .btn-reset{background:rgba(120,120,128,.14);color:var(--ink);flex:0 0 100px}
+  /* 실행 버튼의 크기·색은 assets/theme.css 가 가집니다. 여기 있던
+     button.act{...} 는 선택자가 요소+클래스(0,1,1)라서 theme 의 좁은 화면
+     규칙 .act{...}(0,1,0) 를 우선순위로 눌러버렸습니다. 그 결과 375px 에서
+     계산 버튼이 360px 폭을 그대로 유지해 가로 스크롤이 생겼습니다.
+     transition 만 남깁니다. */
+  .act{transition:.15s}
+  .btn-calc:active{transform:scale(.99)}
 
   .results{margin-top:20px}
   .results h2{font-size:17px;font-weight:700;margin:0 0 4px}

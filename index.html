@@ -68,20 +68,20 @@ if(typeof GENES==='undefined'){
     font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Apple SD Gothic Neo","Malgun Gothic","Hiragino Sans","Microsoft YaHei",system-ui,sans-serif;
     -webkit-font-smoothing:antialiased; line-height:1.5; padding:0 0 64px;
   }
-  header{padding:24px 60px 18px;text-align:center;position:relative}
-  /* Language 버튼이 글자를 갖게 되면서 제목과 겹치지 않도록 위쪽 여백 확보 */
-  @media (max-width:560px){ header{padding:62px 16px 16px} }
+  header{padding:16px 16px 18px;text-align:center;position:relative;max-width:920px;margin:0 auto}
   header h1{margin:0;font-size:26px;font-weight:800;letter-spacing:-.5px}
   header .sub{color:var(--ink2);font-size:13.5px;margin-top:6px;max-width:420px;margin-left:auto;margin-right:auto}
   /* 우측 상단 언어 버튼(햄버거) + 드롭다운 */
-  .langbtn{position:absolute;top:16px;right:16px;height:42px;border-radius:13px;background:var(--card);box-shadow:var(--shadow);border:none;
-    display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;color:var(--ink);z-index:40;padding:0 13px;
-    font-family:inherit;font-size:13px;font-weight:700;letter-spacing:-.2px}
-  .langbtn svg{width:18px;height:18px;flex:0 0 auto}
+  /* 상단 바 — 메뉴들이 Language 버튼 왼쪽에 나란히 오도록 우측 정렬 */
+  .topbar{display:flex;justify-content:flex-end;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:14px}
+  .langbtn{height:38px;border-radius:12px;background:var(--card);box-shadow:var(--shadow);border:none;flex:0 0 auto;
+    display:inline-flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;color:var(--ink);padding:0 13px;
+    font-family:inherit;font-size:12.5px;font-weight:700;letter-spacing:-.2px}
+  .langbtn svg{width:17px;height:17px;flex:0 0 auto}
   .langbtn .lgtxt{white-space:nowrap}
   /* 좁은 화면에서도 글자를 남긴다 — 아이콘만 두면 언어 변경인 줄 모른다는 피드백 */
-  @media (max-width:420px){ .langbtn{height:38px;padding:0 10px;font-size:12px;gap:5px;top:14px;right:12px}
-    .langbtn svg{width:16px;height:16px} }
+  @media (max-width:420px){ .langbtn{height:34px;padding:0 10px;font-size:11.5px;gap:5px}
+    .langbtn svg{width:15px;height:15px} }
   .langmenu{position:absolute;top:64px;right:16px;background:var(--card);border-radius:15px;box-shadow:0 10px 34px rgba(38,34,29,.2);padding:6px;min-width:158px;z-index:50;display:none;text-align:left}
   .langmenu.open{display:block}
   .langmenu button{display:flex;align-items:center;justify-content:space-between;width:100%;background:transparent;border:none;padding:11px 13px;font-size:14.5px;font-weight:500;color:var(--ink);cursor:pointer;font-family:inherit;border-radius:10px}
@@ -249,9 +249,10 @@ if(typeof GENES==='undefined'){
   .empty{color:var(--ink2);font-size:14px;text-align:center;padding:30px 10px}
   footer{text-align:center;color:var(--ink2);font-size:11.5px;margin-top:26px}
   /* 하단 링크(업데이트 노트 · 이메일) */
-  /* 상단 내비게이션 (내 정보 · 브리딩 관리 · 업데이트 노트) */
-  .topnav{display:flex;gap:7px;justify-content:center;flex-wrap:wrap;margin:14px auto 0;max-width:760px;padding:0 4px}
-  .topnav .blink{font-size:12.5px;padding:8px 13px}
+  /* 상단 내비게이션 (내 정보 · 브리딩 관리 · 업데이트 노트) — Language 버튼 왼쪽 */
+  .topnav{display:flex;gap:7px;justify-content:flex-end;align-items:center;flex-wrap:wrap;margin:0}
+  .topnav .blink{font-size:12.5px;padding:0 13px;height:38px}
+  @media (max-width:420px){ .topnav .blink{font-size:11.5px;padding:0 10px;height:34px} }
   .bottom-links{display:flex;gap:9px;justify-content:center;flex-wrap:wrap;margin-top:18px}
   .blink{display:inline-flex;align-items:center;gap:6px;background:var(--card);border:1px solid var(--hair);color:var(--ink);text-decoration:none;font-weight:600;font-size:13px;padding:10px 15px;border-radius:12px;cursor:pointer;font-family:inherit;box-shadow:var(--shadow)}
   .blink:active{filter:brightness(.97)}
@@ -402,18 +403,20 @@ if(typeof GENES==='undefined'){
 </head>
 <body>
 <header>
-  <button class="langbtn" id="langBtn" aria-label="Language" title="Language">
-    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.7 3.8 9S14.5 18.4 12 21c-2.5-2.6-3.8-5.7-3.8-9S9.5 5.6 12 3z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
-    <span class="lgtxt">Language</span>
-  </button>
+  <div class="topbar">
+    <nav class="topnav">
+      <a class="blink" id="acctBtn" href="login.html" style="display:none">👤 내 정보</a>
+      <a class="blink" id="proBtn" href="breeding.html" style="display:none">🦎 브리딩 관리</a>
+      <button class="blink prem" id="premBtn" onclick="openPrem()" style="display:none">💎 프리미엄 코드</button>
+      <button class="blink" onclick="openUpd()">📢 업데이트 노트</button>
+    </nav>
+    <button class="langbtn" id="langBtn" aria-label="Language" title="Language">
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.7 3.8 9S14.5 18.4 12 21c-2.5-2.6-3.8-5.7-3.8-9S9.5 5.6 12 3z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+      <span class="lgtxt">Language</span>
+    </button>
+  </div>
   <h1 id="h-title">🦎 Leopard Gecko Morph Calculator</h1>
   <div class="sub" id="h-sub"></div>
-  <nav class="topnav">
-    <a class="blink" id="acctBtn" href="login.html" style="display:none">👤 로그인</a>
-    <a class="blink" id="proBtn" href="breeding.html" style="display:none">🦎 브리딩 관리</a>
-    <button class="blink prem" id="premBtn" onclick="openPrem()" style="display:none">💎 프리미엄 코드</button>
-    <button class="blink" onclick="openUpd()">📢 업데이트 노트</button>
-  </nav>
   <div class="langmenu" id="langMenu">
     <div class="mtitle" id="lbl-langtitle">Language</div>
     <button data-lang="ko">한국어</button>

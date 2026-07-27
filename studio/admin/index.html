@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>관리자 · 량 스튜디오</title>
+<meta name="robots" content="noindex, nofollow">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- GENES / POLY / COMBOS / tokenOptions 를 쓰기 위해 게코 코어를 그대로 불러옵니다 -->
+<script src="../gecko/gecko-core.js"></script>
+<style>
+  :root{
+    --bg:#EDEAE1;            /* Cloud Dancer 톤 그룹 배경 */
+    --card:#FDFCF9;          /* 카드/리스트 화이트 */
+    --card2:#F4F1E9;         /* 부모 컨테이너 */
+    --ink:#26221D;           /* 따뜻한 잉크 */
+    --ink2:#8A8375;          /* 보조 텍스트 */
+    --hair:rgba(38,34,29,.08);
+    --chipbd:rgba(38,34,29,.16);
+    --gtile:#E7E2D6;
+    --teal:#0E7C7B;          /* Transformative Teal (주 인터랙션) */
+    --teal-press:#0A6160;
+    --patina:#3B8DA0;        /* Patina Blue (부모 B) */
+    --butter:#EAC36A;        /* Butter Yellow (하이라이트) */
+    --eggplant:#6B5686;      /* Eggplant (열성 배지·het) */
+    --shadow:0 1px 2px rgba(38,34,29,.05), 0 6px 18px rgba(38,34,29,.05);
+    --b-rec-bg:rgba(107,86,134,.13); --b-rec-fg:#6B5686; --b-rec-bd:rgba(107,86,134,.34);
+    --b-inc-bg:rgba(59,141,160,.15); --b-inc-fg:#2C7A8C; --b-inc-bd:rgba(59,141,160,.4);
+    --b-dom-bg:rgba(197,146,32,.16); --b-dom-fg:#9A6A12; --b-dom-bd:rgba(197,146,32,.42);
+    --b-poly-bg:rgba(138,131,117,.14); --b-poly-fg:#736C5E; --b-poly-bd:rgba(38,34,29,.14);
+    --warn-hi-bg:#FBEAE3; --warn-hi-bd:#F0C3B2; --warn-hi-fg:#B4402A;
+    --warn-md-bg:#FBF2DA; --warn-md-bd:#EAD6A2; --warn-md-fg:#8A6410;
+    --note-bg:#F3EEE0; --note-bd:#E4DCC7; --note-fg:#6C6452;
+    --radius:16px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#141310; --card:#211E1A; --card2:#1B1915; --ink:#F3EFE7; --ink2:#A49D8F;
+      --hair:rgba(255,255,255,.08);
+      --chipbd:rgba(255,255,255,.18);
+      --gtile:#2C2822;
+      --teal:#3FB8B2; --teal-press:#57C8C2; --patina:#5FB0C1; --butter:#EAC36A; --eggplant:#B9A3D6;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.28);
+      --b-rec-bg:rgba(185,163,214,.16); --b-rec-fg:#C9B6E4; --b-rec-bd:rgba(185,163,214,.36);
+      --b-inc-bg:rgba(95,176,193,.16); --b-inc-fg:#8FCEDB; --b-inc-bd:rgba(95,176,193,.4);
+      --b-dom-bg:rgba(234,195,106,.16); --b-dom-fg:#EAC36A; --b-dom-bd:rgba(234,195,106,.4);
+      --b-poly-bg:rgba(164,157,143,.16); --b-poly-fg:#BDB6A6; --b-poly-bd:rgba(255,255,255,.14);
+      --warn-hi-bg:#2E1713; --warn-hi-bd:#6E2E22; --warn-hi-fg:#F3A594;
+      --warn-md-bg:#2A2210; --warn-md-bd:#6B531A; --warn-md-fg:#EBC873;
+      --note-bg:#201D16; --note-bd:#3A3427; --note-fg:#BDB49E;
+    }
+  }
+  *{box-sizing:border-box} html,body{margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);line-height:1.55;min-height:100vh;
+    font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased}
+  a{color:var(--teal)}
+  .admin-root{display:none;min-height:100vh}
+  .admin-wrap{max-width:720px;margin:0 auto;padding:16px}
+  .admin-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+  .admin-top h1{font-size:20px;font-weight:800;margin:0}
+  .admin-back{color:var(--teal);text-decoration:none;font-weight:700;font-size:13px}
+  .atabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+  .atab{border:1px solid var(--hair);background:var(--card);color:var(--ink);border-radius:10px;padding:9px 14px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit}
+  .atab.on{background:var(--teal);border-color:var(--teal);color:#fff}
+  .atab.logout{margin-left:auto;color:var(--warn-hi-fg)}
+  .apad{background:var(--card);border-radius:14px;padding:16px;box-shadow:var(--shadow)}
+  .alabel{font-size:15px;font-weight:800;margin-bottom:10px}
+  .alabel2{font-size:12px;font-weight:700;color:var(--ink2);margin:14px 0 6px}
+  .ahint{font-size:11px;color:var(--ink2);margin:8px 0 4px}
+  .ain{width:100%;box-sizing:border-box;padding:11px 12px;border:1.5px solid var(--chipbd);border-radius:10px;background:var(--card2);color:var(--ink);font-size:14px;font-family:inherit;margin-bottom:8px}
+  .abtn{background:var(--teal);color:#fff;border:none;border-radius:11px;padding:12px 18px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;flex:0 0 auto}
+  .abtn.sm{padding:9px 14px;font-size:13px;margin-bottom:10px}
+  .abtn.ghost{background:rgba(120,120,128,.15);color:var(--ink)}
+  .aformbtns{display:flex;gap:8px;margin-top:12px}
+  .aerr{color:var(--warn-hi-fg);font-size:12.5px;margin-top:8px;min-height:16px}
+  .alist{display:flex;flex-direction:column;gap:7px;margin-top:4px}
+  .arow{display:flex;align-items:center;gap:10px;background:var(--card2);border-radius:11px;padding:11px 13px}
+  .arow-main{flex:1;min-width:0;font-size:14px}
+  .arow-main .asub{font-size:11.5px;color:var(--ink2);margin-top:2px}
+  .arow-act{display:flex;gap:6px;flex:0 0 auto}
+  .mini{border:1px solid var(--hair);background:var(--card);color:var(--ink);border-radius:8px;padding:6px 10px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit}
+  .mini.del{color:var(--warn-hi-fg)}
+  .atag{display:inline-block;font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:20px;background:rgba(120,120,128,.16);color:var(--ink2);margin-left:4px}
+  .atag.used{background:var(--b-inc-bg);color:var(--b-inc-fg)}
+  .atag.new{background:rgba(14,124,123,.16);color:var(--teal)}
+  .atag.rev{background:var(--warn-hi-bg);color:var(--warn-hi-fg)}
+  .atag.sub{background:rgba(234,195,106,.22);color:#9A6A12;border:1px solid rgba(197,146,32,.4)}
+  .achk{display:flex;align-items:center;gap:8px;font-size:13.5px;margin:6px 0}
+  .achk input{width:18px;height:18px;accent-color:var(--teal)}
+  .aimg{max-width:120px;border-radius:10px;margin-top:6px}
+  .tokgrid{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+  .tokchk{display:flex;align-items:center;gap:6px;font-size:12.5px;padding:5px}
+  .tokchk input{accent-color:var(--teal)}
+  .codegen{display:flex;gap:8px;margin-bottom:12px;align-items:stretch;flex-wrap:wrap}
+  .codegen .ain{flex:1 1 180px;min-width:0}
+  .codegen .ain{margin-bottom:0}
+  .mono{font-family:ui-monospace,Menlo,monospace;letter-spacing:.5px}
+  .statrow{display:flex;gap:8px;margin-bottom:6px;flex-wrap:wrap}
+  .statcard{flex:1 1 110px;min-width:104px;background:var(--card2);border-radius:12px;padding:14px 10px;text-align:center}
+  .statn{font-size:24px;font-weight:800;color:var(--teal)}
+  .statl{font-size:11px;color:var(--ink2);margin-top:2px}
+  .statx{font-size:10.5px;color:var(--ink2);margin-top:4px;opacity:.85;line-height:1.4}
+  .proempty{text-align:center;color:var(--ink2);font-size:13.5px;padding:26px 12px;line-height:1.7}
+  .acctbox{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--card2);border-radius:12px;padding:12px 13px;font-size:13.5px}
+  .abar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;align-items:center}
+  .abar .ain{flex:1 1 160px;margin-bottom:0}
+  .aempty{font-size:13px;color:var(--ink2);line-height:1.6;background:var(--card2);border-radius:11px;padding:14px}
+  .arow.off{opacity:.5}
+  .ordbtns{display:flex;flex-direction:column;gap:2px}
+  .ordbtns button{border:none;background:rgba(120,120,128,.15);color:var(--ink);border-radius:5px;width:24px;height:17px;font-size:9px;cursor:pointer;line-height:1;padding:0}
+  .daybar{display:flex;align-items:center;gap:8px;font-size:12px;margin:3px 0}
+  .daybar .dl{width:74px;color:var(--ink2);flex:0 0 auto}
+  .daybar .dt{height:9px;border-radius:5px;background:var(--teal);min-width:3px}
+  .daybar .dn{color:var(--ink2);font-size:11px}
+  /* 스튜디오 관리자 전용 */
+  .admin-root{display:block;min-height:100vh}
+  .svc-head{display:flex;align-items:center;gap:9px;margin:18px 0 8px;font-size:13px;font-weight:800}
+  .svc-head .dot{width:9px;height:9px;border-radius:50%;background:var(--teal);flex:0 0 auto}
+  .backlink{color:var(--ink2);text-decoration:none;font-size:13px;font-weight:700}
+</style>
+</head>
+<body>
+<div id="adminRoot" class="admin-root"></div>
+<script>
+const SB = (typeof SUPABASE_URL!=='undefined' && SUPABASE_URL && window.supabase)
+  ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON) : null;
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function download(name,txt){ const b=new Blob([txt],{type:'text/plain;charset=utf-8'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download=name; a.click(); }
+function genCode(){ const s='ABCDEFGHJKMNPQRSTUVWXYZ23456789'; let o='';
+  for(let i=0;i<10;i++){ o+=s[Math.floor(Math.random()*s.length)]; if(i===4)o+='-'; } return o; }
+async function loadOverrides(){ /* 관리자에서는 앱 화면 갱신이 필요 없습니다 */ }
+
+/* 앱에 내장된 기본 목록을 DB 로 옮깁니다.
+   기존 게코 페이지에서는 이 두 함수가 호출만 되고 정의가 없어
+   [현재 앱 목록 가져오기] 버튼이 ReferenceError 로 죽어 있었습니다. */
+async function seedMorphs(){
+  if(!SB) throw new Error('백엔드가 설정되지 않았습니다.');
+  const rows=[];
+  GENES.forEach((g,i)=>{
+    const r={ id:g.id, kind:g.type, family:g.family||'albino',
+              ko:g.ko, en:g.en, zh:g.zh, ja:g.ja,
+              risk:!!g.risk, sort:i+1, active:true, updated_at:new Date().toISOString() };
+    if(g.type==='incdom'){ r.super_ko=g.superKo; r.super_en=g.superEn; r.super_zh=g.superZh; r.super_ja=g.superJa; }
+    rows.push(r);
+  });
+  POLY.forEach((p,i)=>rows.push({ id:p.id, kind:'poly', family:'poly',
+    ko:p.ko, en:p.en, zh:p.zh, ja:p.ja, risk:false,
+    sort:GENES.length+i+1, active:true, updated_at:new Date().toISOString() }));
+  const r=await SB.from('morphs').upsert(rows);
+  if(r.error) throw r.error;
+  return rows.length;
+}
+async function seedCombos(){
+  if(!SB) throw new Error('백엔드가 설정되지 않았습니다.');
+  const ex=await SB.from('combos').select('id').limit(1);
+  if(ex.error) throw ex.error;
+  if((ex.data||[]).length){
+    if(!confirm('이미 DB에 콤보가 있습니다. 중복으로 더 들어갈 수 있는데 계속할까요?')) return -1;
+  }
+  const rows=COMBOS.map((c,i)=>({ tokens:c.tokens||[], ko:c.ko, en:c.en,
+    vintage:!!c.vintage, risk:!!c.risk, sort:i+1, updated_at:new Date().toISOString() }));
+  const r=await SB.from('combos').insert(rows);
+  if(r.error) throw r.error;
+  return rows.length;
+}
+  /* ---------- 관리자 ---------- */
+  let adminUser=null, adTab='info';
+  function shell(inner){
+    return '<div class="admin-wrap"><div class="admin-top">'
+      +'<h1>🛠 량 스튜디오 관리자</h1>'
+      +'<a class="backlink" href="/">← 스튜디오</a></div>'+inner+'</div>'; }
+  async function renderAdmin(){
+    const ar=document.getElementById('adminRoot');
+    if(!SB){ ar.innerHTML=shell('<div class="apad">백엔드(Supabase)가 설정되지 않았습니다.<br><br><b>gecko/gecko-core.js</b> 의 SUPABASE_URL / SUPABASE_ANON 을 확인해 주세요.</div>'); return; }
+    try{ const s=await SB.auth.getSession(); adminUser=s.data.session?s.data.session.user:null; }catch(e){ adminUser=null; }
+    if(!adminUser) renderLogin(); else renderPanel();
+  }
+  function renderLogin(){
+    document.getElementById('adminRoot').innerHTML=shell('<div class="apad"><div class="alabel">관리자 로그인</div><input id="adEmail" class="ain" placeholder="이메일" type="email"><input id="adPw" class="ain" placeholder="비밀번호" type="password"><button class="abtn" id="adLogin">로그인</button><div id="adErr" class="aerr"></div></div>');
+    document.getElementById('adLogin').onclick=async()=>{ const e=document.getElementById('adEmail').value.trim(),p=document.getElementById('adPw').value,err=document.getElementById('adErr'); err.textContent='로그인 중…'; try{ const r=await SB.auth.signInWithPassword({email:e,password:p}); if(r.error)err.textContent='로그인 실패: '+r.error.message; else { adminUser=r.data.user; renderPanel(); } }catch(x){ err.textContent='오류'; } };
+  }
+  function renderPanel(){
+    // 서비스가 늘면 여기에 탭을 추가하세요 (docs/STUDIO.md)
+    const tabs=[['info','한눈에'],['member','회원'],['stat','통계'],['code','코드'],['morph','모프'],['combo','콤보']];
+    document.getElementById('adminRoot').innerHTML=shell('<div class="atabs">'+tabs.map(t=>'<button class="atab'+(adTab===t[0]?' on':'')+'" data-t="'+t[0]+'">'+t[1]+'</button>').join('')+'<button class="atab logout" id="adLogout">로그아웃</button></div><div id="adBody" class="apad"></div>');
+    document.querySelectorAll('.atab[data-t]').forEach(b=>b.onclick=()=>{ adTab=b.dataset.t; renderPanel(); });
+    document.getElementById('adLogout').onclick=async()=>{ await SB.auth.signOut(); adminUser=null; renderLogin(); };
+    ({info:tabInfo,morph:tabMorph,combo:tabCombo,stat:tabStat,code:tabCode,member:tabMember}[adTab])();
+  }
+
+  /* ---------- 한눈에 보기 (대시보드) ---------- */
+  async function tabInfo(){
+    const body=document.getElementById('adBody');
+    body.innerHTML='<div class="asub">불러오는 중…</div>';
+    const today=new Date().toISOString().slice(0,10);
+    const d7=new Date(Date.now()-6*864e5).toISOString().slice(0,10);
+    const num=r=>(r&&r.count)||0;
+    const rows=r=>(r&&r.data)||[];
+
+    const [vTot,vToday,vWeek,vDev,prof,codes,anim,pair,clu,cq]=await Promise.all([
+      SB.from('visits').select('*',{count:'exact',head:true}),
+      SB.from('visits').select('*',{count:'exact',head:true}).eq('day',today),
+      SB.from('visits').select('*',{count:'exact',head:true}).gte('day',d7),
+      SB.from('visits').select('device,day,service').gte('day',d7).limit(5000),
+      SB.from('profiles').select('*'),
+      SB.from('access_codes').select('*'),
+      SB.from('animals').select('id,device,created_at').limit(5000),
+      SB.from('pairings').select('id').limit(5000),
+      SB.from('clutches').select('id,egg_count').limit(5000),
+      SB.from('top_combos').select('*').limit(5),
+    ]);
+
+    // 권한 확인 — profiles 는 관리자만 읽을 수 있음
+    if(prof.error){
+      body.innerHTML='<div class="aerr"><b>관리자 권한이 없습니다.</b><br><br>'
+        +'현재 로그인: '+esc((adminUser&&adminUser.email)||'-')+'<br>'
+        +'Supabase SQL Editor에서 <b>supabase_setup.sql</b> 전체를 실행하고, '
+        +'<code>admins</code> 테이블에 이 이메일이 등록되어 있는지 확인하세요.</div>';
+      return;
+    }
+
+    const P=rows(prof), C=rows(codes), A=rows(anim);
+    const uniqWeek=new Set(rows(vDev).map(x=>x.device)).size;
+    const now=Date.now();
+    const activeCodes=C.filter(c=>c.redeemed_by&&!c.revoked&&(!c.expires_at||new Date(c.expires_at)>now));
+    const newMembers=P.filter(x=>x.created_at&&new Date(x.created_at)>=new Date(d7)).length;
+    const mktCount=P.filter(x=>x.agree_mkt_email||x.agree_mkt_sms).length;
+    const withPhone=P.filter(x=>x.phone).length;
+    const withName=P.filter(x=>x.name||x.nickname).length;
+    const activeUsers=new Set(A.map(x=>x.device)).size;
+    const eggs=rows(clu).reduce((s,x)=>s+(x.egg_count||0),0);
+
+    const card=(n,l,sub)=>'<div class="statcard"><div class="statn">'+n+'</div><div class="statl">'+l+'</div>'
+      +(sub?'<div class="statx">'+sub+'</div>':'')+'</div>';
+    const pct=(a,b)=>b? Math.round(a/b*100)+'%' : '0%';
+
+    // 최근 7일 추이
+    const byDay={}; rows(vDev).forEach(x=>{ if(x.day) byDay[x.day]=(byDay[x.day]||0)+1; });
+    const days=[]; for(let i=6;i>=0;i--) days.push(new Date(Date.now()-i*864e5).toISOString().slice(0,10));
+    const mx=Math.max(1,...days.map(d=>byDay[d]||0));
+
+    let h='<div class="alabel2">📊 오늘</div><div class="statrow">'
+      +card(num(vToday),'오늘 접속')
+      +card(num(vWeek),'최근 7일','순 방문 '+uniqWeek)
+      +card(num(vTot),'누적 접속')
+      +'</div>';
+
+    h+='<div class="alabel2">👥 회원</div><div class="statrow">'
+      +card(P.length,'전체 회원', newMembers? '최근 7일 +'+newMembers : '최근 7일 신규 없음')
+      +card(mktCount,'마케팅 수신 동의', pct(mktCount,P.length)+' 동의')
+      +card(withPhone,'연락처 보유', pct(withPhone,P.length))
+      +card(withName,'이름·닉네임 보유', pct(withName,P.length))
+      +'</div>';
+
+    h+='<div class="alabel2">💎 프리미엄</div><div class="statrow">'
+      +card(activeCodes.length,'이용 중')
+      +card(C.filter(c=>!c.redeemed_by&&!c.revoked).length,'미사용 코드')
+      +card(C.length,'발급 총계')
+      +'</div>';
+
+    h+='<div class="alabel2">🦎 브리딩 데이터</div><div class="statrow">'
+      +card(A.length,'등록 개체', activeUsers+'명이 사용 중')
+      +card(rows(pair).length,'페어링')
+      +card(rows(clu).length,'클러치', eggs? '알 '+eggs+'개':'')
+      +'</div>';
+
+    // 서비스별 접속 (docs/STUDIO.md) — service 컬럼이 아직 없으면 이 구역은 생략
+    const SVC={gecko:'🦎 게코 계산기', crested:'🦎 크레스티드', pygmy:'🐿 피그미 테스트', studio:'🏠 스튜디오 허브'};
+    const bySvc={}; let hasSvc=false;
+    rows(vDev).forEach(x=>{ if(x.service){ hasSvc=true; bySvc[x.service]=(bySvc[x.service]||0)+1; } });
+    if(hasSvc){
+      h+='<div class="alabel2">서비스별 접속 <span class="asub">최근 7일</span></div><div class="statrow">'
+        +Object.keys(bySvc).sort((a,b)=>bySvc[b]-bySvc[a])
+           .map(k=>card(bySvc[k], SVC[k]||k)).join('')
+        +'</div>';
+    }
+
+    h+='<div class="alabel2">최근 7일 접속 추이</div>'
+      +days.map(d=>'<div class="daybar"><span class="dl">'+d.slice(5)+'</span>'
+        +'<span class="dt" style="width:'+Math.round((byDay[d]||0)/mx*60)+'%"></span>'
+        +'<span class="dn">'+(byDay[d]||0)+'</span></div>').join('');
+
+    const tc=rows(cq);
+    h+='<div class="alabel2">자주 확인한 조합 TOP 5</div><div class="alist">'
+      +(tc.length? tc.map((r,i)=>'<div class="arow"><div class="arow-main"><b>'+(i+1)+'. '+esc(r.label||r.ckey)+'</b></div><div class="atag">'+r.cnt+'회</div></div>').join('')
+        : '<div class="asub">아직 데이터가 없어요.</div>')+'</div>';
+
+    // 할 일 / 점검
+    const todos=[];
+    if(!P.length) todos.push('아직 가입한 회원이 없어요. 회원가입 흐름이 정상 동작하는지 확인해 보세요.');
+    if(P.length && !mktCount) todos.push('마케팅 수신 동의자가 없습니다. 가입 화면의 선택 동의 문구를 점검해 보세요.');
+    if(C.filter(c=>!c.redeemed_by&&!c.revoked).length===0) todos.push('배포 가능한 미사용 코드가 없습니다. [코드] 탭에서 발급하세요.');
+    if(!A.length) todos.push('등록된 개체가 없습니다. 브리딩 관리 기능 홍보를 검토해 보세요.');
+    if(todos.length) h+='<div class="alabel2">🔔 점검할 것</div><div class="alist">'
+      +todos.map(t=>'<div class="arow"><div class="arow-main">'+esc(t)+'</div></div>').join('')+'</div>';
+
+    body.innerHTML=h;
+  }
+
+  let morphQ='';
+  async function tabMorph(){
+    const body=document.getElementById('adBody'); body.innerHTML='불러오는 중…';
+    const m=await SB.from('morphs').select('*').order('sort'); const all=m.data||[];
+    const rows=morphQ? all.filter(r=>((r.ko||'')+(r.en||'')+r.id).toLowerCase().includes(morphQ.toLowerCase())) : all;
+    let html='<div class="abar"><button class="abtn sm" id="mNew">+ 새 모프</button><button class="abtn sm ghost" id="mSeed">현재 앱 목록 가져오기</button><button class="abtn sm ghost" id="mExp">백업</button></div>'
+      +'<div class="abar"><input class="ain" id="mQ" placeholder="이름·ID 검색" value="'+esc(morphQ)+'"></div>';
+    if(!all.length){ html+='<div class="aempty"><b>아직 DB에 모프가 없습니다.</b><br>지금은 앱에 내장된 기본 목록('+(GENES.length+POLY.length)+'개)이 쓰이고 있어요.<br><br><b>현재 앱 목록 가져오기</b>를 누르면 지금 화면에 보이는 모프가 그대로 DB에 들어가고, 그때부터 여기서 추가·수정할 수 있습니다.</div>'; }
+    else { html+='<div class="alist">'+rows.map(r=>'<div class="arow'+(r.active===false?' off':'')+'">'
+      +'<div class="ordbtns"><button data-u="'+esc(r.id)+'">▲</button><button data-dn="'+esc(r.id)+'">▼</button></div>'
+      +'<div class="arow-main"><b>'+esc(r.ko||r.id)+'</b><span class="atag">'+esc(r.kind)+'</span>'+(r.risk?'<span class="atag rev">⚠</span>':'')
+      +'<div class="asub">'+esc(r.en||'')+' · '+esc(r.id)+'</div></div>'
+      +'<div class="arow-act"><button class="mini" data-rk="'+esc(r.id)+'">'+(r.risk?'⚠ 해제':'⚠ 설정')+'</button>'
+      +'<button class="mini" data-t="'+esc(r.id)+'">'+(r.active===false?'켜기':'끄기')+'</button>'
+      +'<button class="mini" data-e="'+esc(r.id)+'">수정</button><button class="mini del" data-d="'+esc(r.id)+'">삭제</button></div></div>').join('')+'</div>'; }
+    body.innerHTML=html;
+    document.getElementById('mNew').onclick=()=>morphForm(null);
+    document.getElementById('mExp').onclick=()=>download('morphs-backup.json',JSON.stringify(all,null,1));
+    document.getElementById('mSeed').onclick=async(e)=>{ e.target.textContent='가져오는 중…'; try{ const n=await seedMorphs(); await loadOverrides(); alert(n+'개를 DB에 넣었습니다.'); }catch(x){ alert('실패: '+x.message); } tabMorph(); };
+    const q=document.getElementById('mQ'); q.oninput=()=>{ morphQ=q.value; };
+    q.onkeydown=(e)=>{ if(e.key==='Enter') tabMorph(); };
+    body.querySelectorAll('[data-e]').forEach(b=>b.onclick=()=>morphForm(all.find(x=>x.id===b.dataset.e)));
+    body.querySelectorAll('[data-t]').forEach(b=>b.onclick=async()=>{ const r=all.find(x=>x.id===b.dataset.t); await SB.from('morphs').update({active:!(r.active!==false)}).eq('id',r.id); await loadOverrides(); tabMorph(); });
+    body.querySelectorAll('[data-rk]').forEach(b=>b.onclick=async()=>{ const r=all.find(x=>x.id===b.dataset.rk); await SB.from('morphs').update({risk:!r.risk}).eq('id',r.id); await loadOverrides(); tabMorph(); });
+    body.querySelectorAll('[data-d]').forEach(b=>b.onclick=async()=>{ if(!confirm('삭제할까요?'))return; await SB.from('morphs').delete().eq('id',b.dataset.d); await loadOverrides(); tabMorph(); });
+    const move=async(id,dir)=>{ const i=all.findIndex(x=>x.id===id), j=i+dir; if(j<0||j>=all.length)return;
+      await SB.from('morphs').update({sort:all[j].sort||j+1}).eq('id',all[i].id);
+      await SB.from('morphs').update({sort:all[i].sort||i+1}).eq('id',all[j].id);
+      await loadOverrides(); tabMorph(); };
+    body.querySelectorAll('[data-u]').forEach(b=>b.onclick=()=>move(b.dataset.u,-1));
+    body.querySelectorAll('[data-dn]').forEach(b=>b.onclick=()=>move(b.dataset.dn,1));
+  }
+  function morphForm(r){
+    r=r||{kind:'rec',family:'albino'}; const body=document.getElementById('adBody');
+    const f=(k,ph,v)=>'<input class="ain" id="mf_'+k+'" placeholder="'+ph+'" value="'+esc(v||'')+'">';
+    body.innerHTML='<div class="alabel">'+(r.id?'모프 수정':'새 모프')+'</div>'+f('id','ID (영문, 예: tremper)',r.id)
+      +'<select class="ain" id="mf_kind"><option value="rec">열성</option><option value="incdom">불완전우성</option><option value="dom">우성</option><option value="poly">라인브리딩</option></select>'
+      +f('family','계열 family (예: albino)',r.family)+f('ko','한국어 이름',r.ko)+f('en','English',r.en)+f('zh','中文',r.zh)+f('ja','日本語',r.ja)
+      +'<div class="ahint">불완전우성이면 슈퍼 이름도 입력 (예: 슈퍼 스노우)</div>'+f('super_ko','슈퍼 한국어',r.super_ko)+f('super_en','Super EN',r.super_en)+f('super_zh','超级 中文',r.super_zh)+f('super_ja','スーパー 日本語',r.super_ja)
+      +f('color','대표색 #RRGGBB',r.color)+'<label class="achk"><input type="checkbox" id="mf_risk" '+(r.risk?'checked':'')+'> 위험(⚠) 표시</label>'
+      +'<div class="alabel2">실물 이미지 (자동 리사이즈)</div><input type="file" id="mf_img" accept="image/*"><div id="mf_imgprev">'+(r.image_url?'<img src="'+esc(r.image_url)+'" class="aimg">':'')+'</div>'
+      +'<div class="aformbtns"><button class="abtn" id="mSave">저장</button><button class="abtn ghost" id="mCancel">취소</button></div><div id="mErr" class="aerr"></div>';
+    document.getElementById('mf_kind').value=r.kind||'rec';
+    let imgUrl=r.image_url||null;
+    document.getElementById('mf_img').onchange=async(e)=>{ const file=e.target.files[0]; if(!file)return;
+      const pv=document.getElementById('mf_imgprev');
+      pv.textContent = file.size>1048576 ? '사진을 줄이는 중… ('+(file.size/1048576).toFixed(1)+'MB)' : '업로드 중…';
+      try{ const blob=await resizeImage(file,640);
+        pv.textContent='업로드 중… ('+Math.round(blob.size/1024)+'KB로 축소됨)';
+        const path='m/'+((document.getElementById('mf_id').value||'x')+'_'+Date.now())+'.jpg';
+        const up=await SB.storage.from('morph-images').upload(path,blob,{contentType:'image/jpeg',upsert:true});
+        if(up.error){
+          const m=up.error.message||'';
+          pv.textContent = /row-level security|Unauthorized|policy/i.test(m)
+            ? '업로드 권한이 없어요. supabase_setup.sql 의 F) Storage 정책을 실행했는지 확인하세요.'
+            : '업로드 실패: '+m;
+          return; }
+        imgUrl=SB.storage.from('morph-images').getPublicUrl(path).data.publicUrl;
+        pv.innerHTML='<img src="'+esc(imgUrl)+'" class="aimg">';
+      }catch(x){ pv.textContent='실패: '+(x.message||'사진을 처리하지 못했어요.'); } };
+    document.getElementById('mCancel').onclick=()=>tabMorph();
+    document.getElementById('mSave').onclick=async()=>{ const g=id=>document.getElementById('mf_'+id).value.trim();
+      const rec={ id:g('id'), kind:document.getElementById('mf_kind').value, family:g('family')||'albino', ko:g('ko'),en:g('en'),zh:g('zh'),ja:g('ja'), super_ko:g('super_ko')||null,super_en:g('super_en')||null,super_zh:g('super_zh')||null,super_ja:g('super_ja')||null, color:g('color')||null, image_url:imgUrl, risk:document.getElementById('mf_risk').checked, active:true, updated_at:new Date().toISOString() };
+      if(!rec.id){document.getElementById('mErr').textContent='ID는 필수예요.';return;}
+      const res=await SB.from('morphs').upsert(rec); if(res.error){document.getElementById('mErr').textContent=res.error.message;return;} await loadOverrides(); tabMorph(); };
+  }
+
+  async function tabCombo(){
+    const body=document.getElementById('adBody'); body.innerHTML='불러오는 중…';
+    const c=await SB.from('combos').select('*').order('sort'); const rows=c.data||[];
+    let html='<div class="abar"><button class="abtn sm" id="cNew">+ 새 콤보</button><button class="abtn sm ghost" id="cSeed">현재 앱 목록 가져오기</button><button class="abtn sm ghost" id="cExp">백업</button></div>';
+    if(!rows.length){ html+='<div class="aempty"><b>아직 DB에 콤보가 없습니다.</b><br>지금은 앱에 내장된 기본 콤보 '+COMBOS.length+'개가 쓰이고 있어요.<br><br><b>현재 앱 목록 가져오기</b>를 누르면 갤럭시·레이다·타이푼 등 지금 목록이 그대로 DB에 들어가고, 여기서 이름·구성·추억 여부를 수정할 수 있습니다.</div>'; }
+    else { html+='<div class="alist">'+rows.map(r=>'<div class="arow">'
+      +'<div class="ordbtns"><button data-u="'+esc(r.id)+'">▲</button><button data-dn="'+esc(r.id)+'">▼</button></div>'
+      +'<div class="arow-main"><b>'+esc(r.ko||r.en||'-')+'</b>'+(r.vintage?'<span class="atag">추억</span>':'')+(r.risk?'<span class="atag rev">⚠</span>':'')
+      +'<div class="asub">'+esc((r.tokens||[]).join(' + '))+'</div></div>'
+      +'<div class="arow-act"><button class="mini" data-crk="'+esc(r.id)+'">'+(r.risk?'⚠ 해제':'⚠ 설정')+'</button>'
+      +'<button class="mini" data-cvt="'+esc(r.id)+'">'+(r.vintage?'추억 해제':'추억')+'</button>'
+      +'<button class="mini" data-e="'+esc(r.id)+'">수정</button><button class="mini del" data-d="'+esc(r.id)+'">삭제</button></div></div>').join('')+'</div>'; }
+    body.innerHTML=html;
+    document.getElementById('cNew').onclick=()=>comboForm(null);
+    document.getElementById('cExp').onclick=()=>download('combos-backup.json',JSON.stringify(rows,null,1));
+    document.getElementById('cSeed').onclick=async(e)=>{ e.target.textContent='가져오는 중…'; try{ const n=await seedCombos(); if(n>=0){ await loadOverrides(); alert(n+'개를 DB에 넣었습니다.'); } }catch(x){ alert('실패: '+x.message); } tabCombo(); };
+    body.querySelectorAll('[data-crk]').forEach(x=>x.onclick=async()=>{ const r=rows.find(y=>y.id===x.dataset.crk); await SB.from('combos').update({risk:!r.risk}).eq('id',r.id); await loadOverrides(); tabCombo(); });
+    body.querySelectorAll('[data-cvt]').forEach(x=>x.onclick=async()=>{ const r=rows.find(y=>y.id===x.dataset.cvt); await SB.from('combos').update({vintage:!r.vintage}).eq('id',r.id); await loadOverrides(); tabCombo(); });
+    body.querySelectorAll('[data-e]').forEach(x=>x.onclick=()=>comboForm(rows.find(y=>y.id===x.dataset.e)));
+    body.querySelectorAll('[data-d]').forEach(x=>x.onclick=async()=>{ if(!confirm('삭제?'))return; await SB.from('combos').delete().eq('id',x.dataset.d); await loadOverrides(); tabCombo(); });
+    const move=async(id,dir)=>{ const i=rows.findIndex(x=>x.id===id), j=i+dir; if(j<0||j>=rows.length)return;
+      await SB.from('combos').update({sort:rows[j].sort||j+1}).eq('id',rows[i].id);
+      await SB.from('combos').update({sort:rows[i].sort||i+1}).eq('id',rows[j].id);
+      await loadOverrides(); tabCombo(); };
+    body.querySelectorAll('[data-u]').forEach(x=>x.onclick=()=>move(x.dataset.u,-1));
+    body.querySelectorAll('[data-dn]').forEach(x=>x.onclick=()=>move(x.dataset.dn,1));
+  }
+  function comboForm(r){
+    r=r||{tokens:[]}; const body=document.getElementById('adBody'); const sel=new Set(r.tokens||[]);
+    body.innerHTML='<div class="alabel">'+(r.id?'콤보 수정':'새 콤보')+'</div><input class="ain" id="cf_ko" placeholder="한국어 명칭" value="'+esc(r.ko||'')+'"><input class="ain" id="cf_en" placeholder="English" value="'+esc(r.en||'')+'"><label class="achk"><input type="checkbox" id="cf_vint" '+(r.vintage?'checked':'')+'> 추억의 모프 (기본 숨김)</label><label class="achk"><input type="checkbox" id="cf_risk" '+(r.risk?'checked':'')+'> ⚠ 위험 표시</label><div class="alabel2">구성 (비주얼 토큰 선택)</div><div class="tokgrid">'+tokenOptions().map(t=>'<label class="tokchk"><input type="checkbox" value="'+esc(t[0])+'" '+(sel.has(t[0])?'checked':'')+'>'+esc(t[1])+'</label>').join('')+'</div><div class="aformbtns"><button class="abtn" id="cSave">저장</button><button class="abtn ghost" id="cCancel">취소</button></div><div id="cErr" class="aerr"></div>';
+    document.getElementById('cCancel').onclick=()=>tabCombo();
+    document.getElementById('cSave').onclick=async()=>{ const tk=[...document.querySelectorAll('.tokchk input:checked')].map(x=>x.value); if(!tk.length){document.getElementById('cErr').textContent='토큰을 하나 이상 선택하세요.';return;} const rec={ ko:document.getElementById('cf_ko').value.trim(), en:document.getElementById('cf_en').value.trim(), tokens:tk, vintage:document.getElementById('cf_vint').checked, risk:document.getElementById('cf_risk').checked, updated_at:new Date().toISOString() }; if(r.id)rec.id=r.id; const res=await SB.from('combos').upsert(rec); if(res.error){document.getElementById('cErr').textContent=res.error.message;return;} await loadOverrides(); tabCombo(); };
+  }
+
+  async function tabStat(){
+    const body=document.getElementById('adBody'); body.innerHTML='불러오는 중…';
+    try{
+      const today=new Date().toISOString().slice(0,10);
+      const tot=await SB.from('visits').select('*',{count:'exact',head:true});
+      const td=await SB.from('visits').select('*',{count:'exact',head:true}).eq('day',today);
+      const dv=await SB.from('visits').select('device').limit(5000);
+      const uniq=new Set((dv.data||[]).map(x=>x.device)).size;
+      const tc=await SB.from('top_combos').select('*').limit(20);
+      const dv2=await SB.from('visits').select('day').limit(5000);
+      const byDay={}; (dv2.data||[]).forEach(x=>{ if(x.day) byDay[x.day]=(byDay[x.day]||0)+1; });
+      const days=Object.keys(byDay).sort().slice(-7);
+      const mx=Math.max(1,...days.map(d=>byDay[d]));
+      const trend=days.length? '<div class="alabel2">최근 7일 접속</div>'+days.map(d=>'<div class="daybar"><span class="dl">'+d.slice(5)+'</span><span class="dt" style="width:'+Math.round(byDay[d]/mx*60)+'%"></span><span class="dn">'+byDay[d]+'</span></div>').join('') : '';
+      body.innerHTML='<div class="statrow"><div class="statcard"><div class="statn">'+(tot.count||0)+'</div><div class="statl">누적 접속</div></div><div class="statcard"><div class="statn">'+(td.count||0)+'</div><div class="statl">오늘 접속</div></div><div class="statcard"><div class="statn">'+uniq+'</div><div class="statl">순 방문자</div></div></div>'+trend+'<div class="alabel2">자주 확인한 조합</div><div class="alist">'+(((tc.data||[]).map((r,i)=>'<div class="arow"><div class="arow-main"><b>'+(i+1)+'. '+esc(r.label||r.ckey)+'</b></div><div class="atag">'+r.cnt+'회</div></div>').join(''))||'<div class="asub">아직 데이터가 없어요.</div>')+'</div>';
+    }catch(e){ body.innerHTML='<div class="aerr">통계를 불러오지 못했어요. (권한/네트워크 확인)</div>'; }
+  }
+
+  async function tabCode(){
+    const body=document.getElementById('adBody'); body.innerHTML='불러오는 중…';
+    const c=await SB.from('access_codes').select('*').order('created_at',{ascending:false}); const rows=c.data||[];
+    const fmt=d=>d? new Date(d).toLocaleDateString('ko-KR',{year:'2-digit',month:'2-digit',day:'2-digit'}) : '무기한';
+    const cnt=k=>rows.filter(r=>r.kind===k).length;
+    let html='<div class="statrow"><div class="statcard"><div class="statn">'+rows.length+'</div><div class="statl">전체 코드</div></div>'
+      +'<div class="statcard"><div class="statn">'+cnt('trial')+'</div><div class="statl">체험판</div></div>'
+      +'<div class="statcard"><div class="statn">'+cnt('sub')+'</div><div class="statl">구독</div></div>'
+      +'<div class="statcard"><div class="statn">'+rows.filter(r=>r.redeemed_by).length+'</div><div class="statl">사용됨</div></div></div>'
+      +'<div class="alabel2">코드 발급</div>'
+      +'<div class="codegen"><select class="ain" id="cgKind" style="flex:0 0 116px"><option value="trial">체험판</option><option value="sub">구독</option></select>'
+      +'<select class="ain" id="cgDays" style="flex:0 0 110px"><option value="7">7일</option><option value="14">14일</option><option value="30">30일</option><option value="90">90일</option><option value="365">1년</option><option value="">무기한</option></select>'
+      +'<input class="ain" id="cgNote" placeholder="발급 대상 메모 (예: 홍길동/인스타)">'
+      +'<input class="ain" id="cgQty" type="number" min="1" max="50" value="1" style="flex:0 0 74px">'
+      +'<button class="abtn" id="cgBtn">발급</button></div>'
+      +'<div class="ahint">기간은 <b>코드를 사용한 시점부터</b> 계산됩니다. 삭제하거나 차단하면 그 코드를 쓴 사용자의 권한도 사라집니다.</div>';
+    html+='<div class="alist">'+rows.map(r=>{
+      const used=!!r.redeemed_by, exp=r.expires_at && new Date(r.expires_at)<new Date();
+      const st = r.revoked? '<span class="atag rev">차단</span>' : exp? '<span class="atag rev">만료</span>' : used? '<span class="atag used">사용중</span>' : '<span class="atag new">미사용</span>';
+      const kind = r.kind==='sub'? '<span class="atag sub">구독</span>' : '<span class="atag">체험 '+(r.days||'-')+'일</span>';
+      return '<div class="arow"><div class="arow-main"><b class="mono">'+esc(r.code)+'</b>'+kind+st
+        +'<div class="asub">'+esc(r.note||'-')+(used? ' · 사용자 '+esc(String(r.redeemed_by).slice(0,10))+' · 만료 '+fmt(r.expires_at) : '')+'</div></div>'
+        +'<div class="arow-act"><button class="mini" data-cp="'+esc(r.code)+'">복사</button>'
+        +'<button class="mini" data-rv="'+esc(r.code)+'">'+(r.revoked?'해제':'차단')+'</button>'
+        +'<button class="mini del" data-d="'+esc(r.code)+'">삭제</button></div></div>'; }).join('')+'</div>';
+    body.innerHTML=html;
+    document.getElementById('cgBtn').onclick=async()=>{
+      const kind=document.getElementById('cgKind').value;
+      const daysV=document.getElementById('cgDays').value;
+      const note=document.getElementById('cgNote').value.trim();
+      const qty=Math.max(1,Math.min(50,parseInt(document.getElementById('cgQty').value||'1',10)));
+      const batch=[]; for(let i=0;i<qty;i++) batch.push({code:genCode(), note, kind, days: daysV===''? null : parseInt(daysV,10)});
+      const res=await SB.from('access_codes').insert(batch);
+      if(res.error){alert(res.error.message);return;}
+      if(qty>1) alert(qty+'개 발급됨:\n'+batch.map(x=>x.code).join('\n'));
+      tabCode();
+    };
+    body.querySelectorAll('[data-cp]').forEach(b2=>b2.onclick=()=>{ navigator.clipboard&&navigator.clipboard.writeText(b2.dataset.cp); b2.textContent='복사됨'; setTimeout(()=>b2.textContent='복사',1200); });
+    body.querySelectorAll('[data-rv]').forEach(b2=>b2.onclick=async()=>{ const r=rows.find(x=>x.code===b2.dataset.rv); await SB.from('access_codes').update({revoked:!r.revoked}).eq('code',r.code); tabCode(); });
+    body.querySelectorAll('[data-d]').forEach(b2=>b2.onclick=async()=>{ if(!confirm('이 코드를 삭제하면 사용한 사용자의 권한도 박탈됩니다. 진행할까요?'))return; await SB.from('access_codes').delete().eq('code',b2.dataset.d); tabCode(); });
+  }
+
+  let memQ='', memFilter='all';
+  async function tabMember(){
+    const body=document.getElementById('adBody'); body.innerHTML='불러오는 중…';
+    const r=await SB.from('profiles').select('*').order('created_at',{ascending:false});
+    if(r.error){ body.innerHTML='<div class="aerr"><b>회원 정보를 볼 권한이 없습니다.</b><br><br>'
+      +'현재 로그인: '+esc((adminUser&&adminUser.email)||'-')+'<br>'
+      +'Supabase SQL Editor에서 <b>supabase_setup.sql</b> 전체를 실행하고, <code>admins</code> 테이블에 이 이메일이 등록되어 있는지 확인하세요.</div>'; return; }
+    const all=r.data||[];
+    const n=k=>all.filter(x=>x[k]).length;
+    const fmt=d=>d? new Date(d).toLocaleDateString('ko-KR',{year:'2-digit',month:'2-digit',day:'2-digit'}) : '-';
+
+    const FILTERS=[['all','전체',x=>true],
+                   ['mail','메일 수신',x=>x.agree_mkt_email],
+                   ['sms','문자 수신',x=>x.agree_mkt_sms],
+                   ['third','제3자 제공',x=>x.agree_third],
+                   ['phone','연락처 보유',x=>!!x.phone]];
+    const f=(FILTERS.filter(z=>z[0]===memFilter)[0]||FILTERS[0])[2];
+    const q=memQ.trim().toLowerCase();
+    const rows=all.filter(f).filter(x=>!q || ((x.email||'')+(x.name||'')+(x.nickname||'')+(x.phone||'')).toLowerCase().includes(q));
+
+    let html='<div class="statrow"><div class="statcard"><div class="statn">'+all.length+'</div><div class="statl">전체 회원</div></div>'
+      +'<div class="statcard"><div class="statn">'+n('agree_mkt_email')+'</div><div class="statl">이메일 수신</div></div>'
+      +'<div class="statcard"><div class="statn">'+n('agree_mkt_sms')+'</div><div class="statl">문자 수신</div></div>'
+      +'<div class="statcard"><div class="statn">'+n('agree_third')+'</div><div class="statl">제3자 제공</div></div></div>'
+      +'<div class="abar">'+FILTERS.map(z=>'<button class="abtn sm '+(memFilter===z[0]?'':'ghost')+'" data-f="'+z[0]+'">'+z[1]+'</button>').join('')+'</div>'
+      +'<div class="abar"><input class="ain" id="memQ" placeholder="이메일·이름·닉네임·번호 검색" value="'+esc(memQ)+'"></div>'
+      +'<div class="abar"><button class="abtn sm ghost" id="expMkt">마케팅 동의자 CSV</button>'
+      +'<button class="abtn sm ghost" id="expSms">문자 발송용 CSV</button>'
+      +'<button class="abtn sm ghost" id="expAll">전체 회원 CSV</button></div>'
+      +'<div class="ahint">광고성 정보 전송 시 제목에 <b>(광고)</b> 표기와 <b>무료 수신거부 방법</b>을 반드시 포함해야 합니다(정보통신망법). '
+      +'수신 동의는 <b>2년마다 재확인</b> 의무가 있고, 제3자 제공은 실제 제공 시점에 제공받는 자·항목을 다시 고지해야 합니다.</div>'
+      +'<div class="alabel2">회원 목록 <span class="asub">'+rows.length+'명 표시</span></div>';
+
+    html+='<div class="alist">'+(rows.length? rows.map(x=>{
+      const tags=(x.agree_mkt_email?'<span class="atag used">메일</span>':'')
+        +(x.agree_mkt_sms?'<span class="atag used">문자</span>':'')
+        +(x.agree_third?'<span class="atag">제3자</span>':'');
+      const who=[x.name, x.nickname&&('@'+x.nickname)].filter(Boolean).join(' ');
+      const meta=['가입 '+fmt(x.created_at)];
+      if(who) meta.push(esc(who));
+      if(x.phone) meta.push(esc(x.phone));
+      if(x.mkt_at) meta.push('마케팅동의 '+fmt(x.mkt_at));
+      else if(x.consent_at) meta.push('최종동의 '+fmt(x.consent_at));
+      return '<div class="arow"><div class="arow-main"><b>'+esc(x.email||'-')+'</b>'+tags
+        +'<div class="asub">'+meta.join(' · ')+'</div></div></div>'; }).join('')
+      : '<div class="asub" style="padding:14px">조건에 맞는 회원이 없습니다.</div>')+'</div>';
+    body.innerHTML=html;
+
+    body.querySelectorAll('[data-f]').forEach(b=>b.onclick=()=>{ memFilter=b.dataset.f; tabMember(); });
+    const qi=document.getElementById('memQ');
+    qi.oninput=()=>{ memQ=qi.value; };
+    qi.onkeydown=e=>{ if(e.key==='Enter') tabMember(); };
+
+    const csv=(list,name)=>{
+      if(!list.length){ alert('내보낼 회원이 없습니다.'); return; }
+      const head=['email','name','nickname','phone','mkt_email','mkt_sms','third_party','consent_at','mkt_at','created_at'];
+      const esc2=v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"';
+      const lines=[head.join(',')].concat(list.map(x=>[x.email,x.name,x.nickname,x.phone,
+        x.agree_mkt_email,x.agree_mkt_sms,x.agree_third,x.consent_at,x.mkt_at,x.created_at].map(esc2).join(',')));
+      download(name, '\ufeff'+lines.join('\n'));
+    };
+    document.getElementById('expMkt').onclick=()=>csv(all.filter(x=>x.agree_mkt_email||x.agree_mkt_sms),'marketing-optin.csv');
+    document.getElementById('expSms').onclick=()=>csv(all.filter(x=>x.agree_mkt_sms&&x.phone),'sms-optin.csv');
+    document.getElementById('expAll').onclick=()=>csv(all,'members.csv');
+  }
+
+  // 이 페이지는 관리자 전용이므로 곧바로 렌더합니다 (해시 라우팅 불필요)
+  renderAdmin();
+  if(SB) SB.auth.onAuthStateChange(()=>renderAdmin());
+</script>
+</body>
+</html>

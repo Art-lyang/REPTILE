@@ -78,6 +78,17 @@
   .cNote{font-size:11px;color:var(--ink2);line-height:1.6;margin-top:8px;padding-top:8px;border-top:1px solid var(--hair)}
   .why{background:var(--card2);border-radius:12px;padding:13px;font-size:12.5px;color:var(--ink2);line-height:1.65;margin-top:16px}
   .why b{color:var(--ink)}
+  /* 로그인 수단 목록 */
+  .idrow{display:flex;align-items:center;gap:10px;padding:9px 2px;border-bottom:1px solid var(--hair)}
+  .idrow:last-of-type{border-bottom:none}
+  .idic{flex:0 0 22px;font-size:15px;text-align:center}
+  .idmain{flex:1;min-width:0}
+  .idmain b{font-size:13px;font-weight:700}
+  .idsub{color:var(--ink2);font-size:11px;margin-top:1px;word-break:break-all}
+  .idlast{flex:0 0 auto;font-size:10.5px;font-weight:700;color:var(--ink2);background:var(--card);
+    border:1px solid var(--hair);border-radius:6px;padding:4px 8px;white-space:nowrap}
+  .idrow .mini{flex:0 0 auto;background:var(--card);border:1px solid var(--hair);color:var(--ink);
+    border-radius:8px;padding:5px 11px;font-size:11.5px;font-weight:700;cursor:pointer;font-family:inherit}
   /* 회원탈퇴 */
   .quit{display:inline-block;color:var(--ink2);font-size:12px;text-decoration:underline;cursor:pointer;padding:6px}
   .quitbox{background:var(--card2);border-radius:12px;padding:12px 14px;margin-top:10px;font-size:12.5px;line-height:1.6;color:var(--ink2)}
@@ -322,12 +333,93 @@ async function renderConsentSettings(){
     if(r.error) say('e',err(r.error)); else say('o','저장되었어요.');
   };
 
+  // 연결된 로그인 수단 (docs/AUTH.md 5장)
+  await renderIdentities();
+
   // 회원탈퇴
   const out=document.createElement('div');
   out.style.marginTop='18px'; out.style.textAlign='center';
   out.innerHTML='<a class="quit" id="quitLink">회원탈퇴</a>';
   $('root').appendChild(out);
   $('quitLink').onclick=()=>renderQuit(c);
+}
+
+/* ---------- 연결된 로그인 수단 ----------
+   설계 근거는 docs/AUTH.md 5장. 핵심 규칙:
+   "사용 가능한 로그인 수단"은 소셜 identity 수 + (비밀번호 설정됨 ? 1 : 0) 이며,
+   해제 후 1개 이상 남을 때만 해제를 허용한다. identity 개수만 세면 안 된다 —
+   구글로만 가입한 계정도 email identity 를 갖지만 비밀번호는 없기 때문. */
+const PROVIDERS={
+  email:  {ko:'이메일 + 비밀번호', icon:'✉️'},
+  google: {ko:'Google',           icon:'🔵'},
+  kakao:  {ko:'카카오',            icon:'💛'},
+  apple:  {ko:'Apple',            icon:'🍎'},
+};
+function providerLabel(p){ return (PROVIDERS[p]&&PROVIDERS[p].ko)||p; }
+function providerIcon(p){ return (PROVIDERS[p]&&PROVIDERS[p].icon)||'🔑'; }
+
+// 해제 후에도 남는 "사용 가능한" 로그인 수단 개수
+function usableCount(list, hasPassword, excludeProvider){
+  let n=list.filter(i=>i.provider!=='email' && i.provider!==excludeProvider).length;
+  if(hasPassword && excludeProvider!=='email') n++;
+  return n;
+}
+
+async function renderIdentities(){
+  let d=null;
+  try{ const r=await SB.rpc('my_identities'); if(r.error) throw r.error; d=r.data; }catch(e){ d=null; }
+
+  const box=document.createElement('div');
+  box.className='consent'; box.style.marginTop='12px';
+
+  if(!d){
+    box.innerHTML='<div style="font-size:13px;font-weight:800;padding:2px 2px 8px">로그인 수단</div>'
+      +'<div class="cNote">로그인 수단 정보를 불러오지 못했어요. '
+      +'서버에 <b>supabase_setup.sql</b> 의 H) 항목이 적용됐는지 확인해 주세요.</div>';
+    $('root').appendChild(box); return;
+  }
+
+  const list=d.identities||[], hasPw=!!d.has_password;
+  const total=usableCount(list, hasPw, null);
+
+  let h='<div style="font-size:13px;font-weight:800;padding:2px 2px 8px">로그인 수단 '
+    +'<span class="opt">'+total+'개</span></div>';
+
+  // 이메일+비밀번호는 identity 목록이 아니라 비밀번호 설정 여부로 판단
+  const rows=[];
+  if(hasPw) rows.push({provider:'email', email:(list.filter(i=>i.provider==='email')[0]||{}).email});
+  list.filter(i=>i.provider!=='email').forEach(i=>rows.push(i));
+
+  h+=rows.map(i=>{
+    const last = usableCount(list, hasPw, i.provider)===0;
+    return '<div class="idrow"><span class="idic">'+providerIcon(i.provider)+'</span>'
+      +'<div class="idmain"><b>'+esc(providerLabel(i.provider))+'</b>'
+      +(i.email? '<div class="idsub">'+esc(i.email)+'</div>':'')
+      +'</div>'
+      +(last? '<span class="idlast">유일한 수단</span>'
+            : '<button class="mini" data-unlink="'+esc(i.provider)+'">해제</button>')
+      +'</div>'; }).join('');
+
+  h+='<div class="cNote">로그인 수단을 여러 개 연결해 두면 하나를 못 쓰게 돼도 계정에 들어올 수 있어요. '
+    +'<b>마지막 하나는 해제할 수 없습니다.</b></div>';
+
+  // 아직 연결하지 않은 provider 안내 (연동 UI 는 다음 단계에서 구현)
+  const linked=new Set(rows.map(i=>i.provider));
+  const missing=Object.keys(PROVIDERS).filter(p=>!linked.has(p) && p!=='kakao' && p!=='apple');
+  if(missing.length) h+='<div class="cNote" style="border-top:none;padding-top:0">'
+    +'아직 연결하지 않음: '+missing.map(p=>esc(providerLabel(p))).join(', ')
+    +' <span class="opt">(연결 기능 준비 중)</span></div>';
+
+  box.innerHTML=h;
+  $('root').appendChild(box);
+
+  box.querySelectorAll('[data-unlink]').forEach(b=>b.onclick=()=>{
+    const p=b.dataset.unlink;
+    if(usableCount(list, hasPw, p)===0)
+      return say('e','이 계정의 유일한 로그인 방법이에요. 다른 방법을 먼저 추가해 주세요.');
+    say('e','로그인 수단 해제 기능은 준비 중이에요. '
+      +'지금 필요하시면 kmc612000@gmail.com 으로 요청해 주세요.');
+  });
 }
 
 /* ---------- 회원탈퇴 ---------- */

@@ -487,6 +487,44 @@ begin
 end $$;
 grant execute on function public.delete_my_account() to authenticated;
 
+-- H) 로그인 수단(identity) 조회 ---------------------------------
+--    docs/AUTH.md 참고. auth.identities 는 클라이언트가 직접 못 읽으므로
+--    "내 것만" 안전하게 돌려주는 RPC 를 둡니다.
+--    has_password: 이메일 identity 가 있어도 비밀번호가 없으면 로그인 수단이 아님.
+--                  마지막 로그인 수단 판정에 반드시 필요합니다.
+create or replace function public.my_identities()
+returns jsonb language sql security definer set search_path = public, auth as $$
+  select jsonb_build_object(
+    'identities', coalesce((
+      select jsonb_agg(jsonb_build_object(
+        'provider',   i.provider,
+        'email',      i.identity_data->>'email',
+        'created_at', i.created_at
+      ) order by i.created_at)
+      from auth.identities i where i.user_id = auth.uid()
+    ), '[]'::jsonb),
+    'has_password', exists(
+      select 1 from auth.users u
+      where u.id = auth.uid()
+        and coalesce(u.encrypted_password, '') <> ''
+    )
+  );
+$$;
+grant execute on function public.my_identities() to authenticated;
+
+-- 탈퇴 시 provider 연결 해제 실패분 기록 (나중에 재시도/수동 처리)
+create table if not exists public.unlink_pending (
+  id         bigint generated always as identity primary key,
+  provider   text not null,
+  ref        text,                     -- provider 측 사용자 식별자
+  reason     text,
+  created_at timestamptz default now(),
+  resolved   boolean default false
+);
+alter table public.unlink_pending enable row level security;
+drop policy if exists ul_admin on public.unlink_pending;
+create policy ul_admin on public.unlink_pending for select to authenticated using (public.is_admin());
+
 -- 완료. Storage 버킷은 위 F) 에서 자동 생성됩니다.
 -- v2 적용 후 확인: ① Supabase SQL Editor에서 이 파일 전체 Run
 --                ② #admin 접속 → 회원 탭이 열리는지 확인 (admins에 등록된 이메일로 로그인)

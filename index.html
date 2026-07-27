@@ -518,7 +518,7 @@ if(typeof GENES==='undefined'){
     <div class="modal-body">
       <div id="premAccount"></div>
 
-      <div class="perkbox">
+      <div class="perkbox" id="perkBox">
         <div class="perkhead">프리미엄으로 열리는 기능</div>
         <div class="perk"><span class="pk">🦎</span><div><b>브리딩 관리</b><span>내 개체·혈통 등록, 사진 저장, 페어링·클러치 기록 관리</span></div></div>
         <div class="perk"><span class="pk">🎯</span><div><b>목표 모프 역산</b><span>등록한 개체 기준으로 목표까지 가능한 페어링과 부족한 조건을 찾아줍니다</span></div></div>
@@ -533,7 +533,7 @@ if(typeof GENES==='undefined'){
              style="width:100%;padding:12px;border-radius:11px;border:1.5px solid var(--chipbd);background:var(--card);color:var(--ink);font-size:15px;font-family:inherit;box-sizing:border-box">
       <div id="premMsg" style="font-size:12.5px;margin-top:8px;min-height:16px"></div>
 
-      <div class="donatebox">
+      <div class="donatebox" id="donateBox">
         <div class="dhead">☕ 개발자 후원하기</div>
         <div class="dsub">이 계산기는 개인이 무료로 만들어 운영하고 있어요. 후원해 주시면 서버 비용과 모프 데이터 업데이트에 사용됩니다.</div>
         <div class="dacct"><span class="dbank" id="donBank">카카오뱅크</span><b id="donAcct">3333-17-6613203</b>
@@ -816,6 +816,7 @@ function applyLang(){
   document.querySelectorAll('#langMenu button').forEach(b=>b.classList.toggle('on', b.dataset.lang===LANG));
   // 후원 버튼 + 광고 영역
   const dn=document.getElementById('donateBtn'); dn.textContent=t.donate;
+  dn.closest('.donate-wrap').style.display = SHOW_DONATE? '' : 'none';
   const ad=document.getElementById('adSlot');
   if(AD_ENABLED && !window.__isPrem){ ad.style.display='flex'; ad.innerHTML = AD_HTML || ('<div class="adlbl">'+escapeHtml(t.adLabel)+'</div><div class="adhint">'+escapeHtml(t.adHint)+'</div>'); }
   else ad.style.display='none';
@@ -1016,6 +1017,8 @@ applyLang();
          isPrem=!!d.active; premKind=d.kind||null; premExp=d.expires_at||null; }
     catch(e){ try{ const r2=await SB.rpc('is_premium',{p_device:uid()}); isPrem=!!r2.data; }catch(x){ isPrem=false; } }
     if(btn) btn.textContent = isPrem? (premKind==='sub'?'💎 구독 중':'💎 체험판 이용중') : '💎 프리미엄 코드';
+    // 노출 스위치 — 준비 중이면 버튼 자체를 숨김 (gecko-core.js 참고)
+    if(btn && !SHOW_PREMIUM_UI) btn.style.display='none';
     window.__isPrem = isPrem;
     const ab=document.getElementById('acctBtn');
     if(ab){ ab.style.display=''; ab.textContent = USER? '👤 내 정보' : '👤 로그인'; }
@@ -1042,6 +1045,9 @@ applyLang();
     if(pin) pin.disabled=!USER;
     if(pbtn) pbtn.style.opacity=USER?'1':'.5';
     document.getElementById('premMsg').textContent=''; document.getElementById('premInput').value='';
+    // 노출 스위치 (gecko-core.js) — 준비 중인 영역은 감춤
+    const pkb=document.getElementById('perkBox');   if(pkb) pkb.style.display = SHOW_PREMIUM_UI? '' : 'none';
+    const dnb=document.getElementById('donateBox'); if(dnb) dnb.style.display = SHOW_DONATE? '' : 'none';
     // 후원 계좌
     try{ document.getElementById('donBank').textContent=DONATE_BANK;
          document.getElementById('donAcct').textContent=DONATE_ACCT; }catch(e){}

@@ -21,6 +21,14 @@ function morphNameOf(id){
 
 /* ===== 레오파드 모프 계산기 · 공용 코어 (index.html / breeding.html 공용) ===== */
 
+/* --- 화면 노출 스위치 ------------------------------------------------------
+   기능은 그대로 살아 있고 화면에서만 감춥니다. true 로 바꾸면 즉시 다시 보입니다.
+   SHOW_PREMIUM_UI : 프리미엄 코드 버튼 + 프리미엄 혜택 안내
+   SHOW_DONATE     : 개발자 후원 버튼 + 후원 계좌 안내
+   ※ 프리미엄을 이미 보유한 회원의 [브리딩 관리] 진입은 막지 않습니다.      */
+const SHOW_PREMIUM_UI = false;
+const SHOW_DONATE     = false;
+
 /* --- 후원 계좌 --- */
 const DONATE_BANK = '카카오뱅크';
 const DONATE_ACCT = '3333-17-6613203';

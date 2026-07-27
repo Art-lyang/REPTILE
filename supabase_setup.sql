@@ -311,8 +311,22 @@ drop policy if exists profiles_admin_read on public.profiles;
 create policy profiles_admin_read on public.profiles for select to authenticated using (public.is_admin());
 
 -- C) 동의 저장 / 조회 RPC --------------------------------------
--- 이전 버전(이름 파라미터 없던 시그니처)이 있으면 제거 → 호출 모호성 방지
-drop function if exists public.save_consent(boolean,boolean,boolean,boolean,boolean,boolean,text,text);
+-- 이전 버전 save_consent 를 시그니처와 무관하게 전부 제거합니다.
+-- 남겨두면 새 버전(이름 포함)과 함께 둘 다 호출 후보가 되어
+-- PostgREST 가 "함수가 모호하다(PGRST203)"며 거부합니다.
+do $drop_sc$
+declare r record;
+begin
+  for r in
+    select p.oid::regprocedure as sig
+      from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+     where n.nspname = 'public' and p.proname = 'save_consent'
+  loop
+    execute format('drop function if exists %s', r.sig);
+    raise notice '기존 save_consent 제거: %', r.sig;
+  end loop;
+end
+$drop_sc$;
 
 create or replace function public.save_consent(
   p_terms boolean, p_privacy boolean, p_age14 boolean,
@@ -395,35 +409,66 @@ end $$;
 -- F) Storage(사진 업로드) 정책 --------------------------------
 --    증상: 사진 업로드 시 "new row violates row-level security policy"
 --    원인: morph-images 버킷에 INSERT 정책이 없어서 업로드가 막힘.
---    (버킷이 없으면 자동 생성 · Public 읽기)
-insert into storage.buckets (id, name, public)
-  values ('morph-images','morph-images', true)
-  on conflict (id) do update set public = true;
+--
+--    ⚠️ 중요 — 이 구역은 storage 스키마를 건드리므로 프로젝트 설정에 따라
+--       "must be owner of table objects" (42501) 오류가 날 수 있습니다.
+--       SQL Editor 는 스크립트 전체를 하나의 트랜잭션으로 실행하기 때문에,
+--       여기서 오류가 나면 앞뒤의 모든 작업이 통째로 취소됩니다.
+--       그래서 실패해도 나머지가 살아남도록 예외를 삼키게 감싸 두었습니다.
+--       실패 시에는 아래 [수동 대체 방법]을 따라 주세요.
+do $storage$
+begin
+  -- 버킷 생성 (없을 때만)
+  begin
+    insert into storage.buckets (id, name, public)
+      values ('morph-images','morph-images', true)
+      on conflict (id) do update set public = true;
+  exception when others then
+    raise notice '[건너뜀] 버킷 생성 실패: % — Storage 화면에서 직접 만들어 주세요.', sqlerrm;
+  end;
 
--- 누구나 읽기 (이미지가 사이트에 표시되어야 하므로)
-drop policy if exists mi_read on storage.objects;
-create policy mi_read on storage.objects for select
-  using (bucket_id = 'morph-images');
+  -- 정책 4종
+  begin
+    drop policy if exists mi_read   on storage.objects;
+    drop policy if exists mi_insert on storage.objects;
+    drop policy if exists mi_update on storage.objects;
+    drop policy if exists mi_delete on storage.objects;
 
--- 업로드: 관리자는 모프 이미지(m/), 로그인 회원은 개체 사진(a/)
-drop policy if exists mi_insert on storage.objects;
-create policy mi_insert on storage.objects for insert to anon, authenticated
-  with check (
-    bucket_id = 'morph-images'
-    and ( public.is_admin()                                   -- 관리자: 전체 허용
-       or (auth.uid() is not null and name like 'a/%')        -- 회원: 개체 사진만
-       or name like 'a/%' )                                   -- 비로그인 기기(device) 사용자
-  );
+    -- 누구나 읽기 (이미지가 사이트에 표시되어야 하므로)
+    create policy mi_read on storage.objects for select
+      using (bucket_id = 'morph-images');
 
--- 수정/삭제: 관리자만 (실수로 남의 사진을 지우지 못하게)
-drop policy if exists mi_update on storage.objects;
-create policy mi_update on storage.objects for update to authenticated
-  using (bucket_id = 'morph-images' and public.is_admin())
-  with check (bucket_id = 'morph-images' and public.is_admin());
+    -- 업로드: 관리자는 모프 이미지(m/), 그 외에는 개체 사진(a/) 만
+    create policy mi_insert on storage.objects for insert to anon, authenticated
+      with check (
+        bucket_id = 'morph-images'
+        and ( public.is_admin() or name like 'a/%' )
+      );
 
-drop policy if exists mi_delete on storage.objects;
-create policy mi_delete on storage.objects for delete to authenticated
-  using (bucket_id = 'morph-images' and public.is_admin());
+    -- 수정/삭제: 관리자만 (실수로 남의 사진을 지우지 못하게)
+    create policy mi_update on storage.objects for update to authenticated
+      using      (bucket_id = 'morph-images' and public.is_admin())
+      with check (bucket_id = 'morph-images' and public.is_admin());
+
+    create policy mi_delete on storage.objects for delete to authenticated
+      using (bucket_id = 'morph-images' and public.is_admin());
+
+    raise notice '[완료] Storage 정책이 적용되었습니다.';
+  exception when others then
+    raise notice '[건너뜀] Storage 정책 적용 실패: % — 아래 수동 방법을 따라 주세요.', sqlerrm;
+  end;
+end
+$storage$;
+
+-- ── [수동 대체 방법] 위에서 "건너뜀" 메시지가 나왔다면 ──────────────
+--  1. Supabase 좌측 메뉴 → Storage → New bucket
+--       Name: morph-images   /   Public bucket: 켜기   → Save
+--  2. Storage → morph-images → Policies → New policy → For full customization
+--       ① 이름 mi_read    / SELECT / Target roles 비움  / USING:  bucket_id = 'morph-images'
+--       ② 이름 mi_insert  / INSERT / anon, authenticated
+--          WITH CHECK:  bucket_id = 'morph-images' and ( public.is_admin() or name like 'a/%' )
+--  3. 저장 후 브리딩 관리에서 개체 사진 업로드가 되는지 확인하세요.
+-- ──────────────────────────────────────────────────────────────
 
 -- G) 회원탈퇴 -------------------------------------------------
 --    개인정보처리방침과 일치하도록:
@@ -525,7 +570,38 @@ alter table public.unlink_pending enable row level security;
 drop policy if exists ul_admin on public.unlink_pending;
 create policy ul_admin on public.unlink_pending for select to authenticated using (public.is_admin());
 
--- 완료. Storage 버킷은 위 F) 에서 자동 생성됩니다.
--- v2 적용 후 확인: ① Supabase SQL Editor에서 이 파일 전체 Run
---                ② #admin 접속 → 회원 탭이 열리는지 확인 (admins에 등록된 이메일로 로그인)
---                ③ 브리딩 관리에서 개체 사진 업로드가 되는지 확인
+-- ============================================================
+--  적용 확인 — 이 파일을 Run 하면 마지막에 아래 표가 나옵니다.
+--  모든 줄이 '✅ 있음' 이어야 정상입니다.
+-- ============================================================
+select 항목, 상태 from (
+  values
+    ('is_admin() 함수',        case when exists(select 1 from pg_proc p join pg_namespace n on n.oid=p.pronamespace
+                                    where n.nspname='public' and p.proname='is_admin')            then '✅ 있음' else '❌ 없음' end),
+    ('admins 테이블',          case when to_regclass('public.admins')          is not null then '✅ 있음' else '❌ 없음' end),
+    ('profiles 테이블',        case when to_regclass('public.profiles')        is not null then '✅ 있음' else '❌ 없음' end),
+    ('profiles.name 컬럼',     case when exists(select 1 from information_schema.columns
+                                    where table_schema='public' and table_name='profiles' and column_name='name')
+                                                                               then '✅ 있음' else '❌ 없음' end),
+    ('save_consent(이름포함)', case when exists(select 1 from pg_proc p join pg_namespace n on n.oid=p.pronamespace
+                                    where n.nspname='public' and p.proname='save_consent' and p.pronargs=9)
+                                                                               then '✅ 있음' else '❌ 없음' end),
+    ('my_consent()',           case when exists(select 1 from pg_proc p join pg_namespace n on n.oid=p.pronamespace
+                                    where n.nspname='public' and p.proname='my_consent')          then '✅ 있음' else '❌ 없음' end),
+    ('my_identities()',        case when exists(select 1 from pg_proc p join pg_namespace n on n.oid=p.pronamespace
+                                    where n.nspname='public' and p.proname='my_identities')       then '✅ 있음' else '❌ 없음' end),
+    ('delete_my_account()',    case when exists(select 1 from pg_proc p join pg_namespace n on n.oid=p.pronamespace
+                                    where n.nspname='public' and p.proname='delete_my_account')   then '✅ 있음' else '❌ 없음' end),
+    ('consent_archive 테이블', case when to_regclass('public.consent_archive') is not null then '✅ 있음' else '❌ 없음' end),
+    ('unlink_pending 테이블',  case when to_regclass('public.unlink_pending')  is not null then '✅ 있음' else '❌ 없음' end),
+    ('morph-images 버킷',      case when exists(select 1 from storage.buckets where id='morph-images')
+                                                                               then '✅ 있음' else '❌ 없음 (수동 생성 필요)' end),
+    ('Storage 업로드 정책',    case when exists(select 1 from pg_policies where schemaname='storage' and policyname='mi_insert')
+                                                                               then '✅ 있음' else '❌ 없음 (수동 생성 필요)' end)
+) as t(항목, 상태);
+
+-- 확인 순서
+--   ① 위 표가 전부 ✅ 인지 확인 (Storage 두 줄만 ❌ 라면 F) 구역의 수동 방법 사용)
+--   ② #admin 접속 → [한눈에] 탭이 열리는지 (admins 에 등록된 이메일로 로그인)
+--   ③ 계정 화면에 '로그인 수단' 목록과 '회원탈퇴' 가 보이는지
+--   ④ 브리딩 관리에서 개체 사진 업로드가 되는지

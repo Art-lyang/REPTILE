@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Leopard Gecko Morph Calculator</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="gecko-core.js"></script>
+<script src="gecko-boot.js?v=014345"></script>
+<link rel="stylesheet" href="../assets/base.css?v=014345">
+<link rel="stylesheet" href="gecko.css?v=014345">
+</head>
+<body>
+<header>
+  <img class="hd-deco leaf" src="../assets/leaf.svg" alt="" aria-hidden="true">
+  <img class="hd-deco hero" src="../assets/leopard-hero-v1.png" alt="" aria-hidden="true" loading="eager">
+  <div class="hd">
+    <div class="hd-mark"><img src="../assets/logo-paw.svg" alt=""></div>
+    <div class="hd-txt">
+      <h1 id="h-title">Leopard Gecko Morph Calculator</h1>
+      <div class="sub" id="h-sub"></div>
+    </div>
+    <div class="hd-btns">
+      <nav class="topnav">
+        <a class="blink" id="acctBtn" href="login.html" style="display:none"><i class="bi bi-person" aria-hidden="true"></i><span>내 정보</span></a>
+        <a class="blink" id="proBtn" href="breeding.html" style="display:none"><i class="bi bi-journal-check" aria-hidden="true"></i><span>브리딩 관리</span></a>
+        <button class="blink prem" id="premBtn" onclick="openPrem()" style="display:none"><i class="bi bi-gem" aria-hidden="true"></i><span>프리미엄 코드</span></button>
+        <button class="blink update-btn" onclick="openUpd()"><i class="bi bi-file-earmark-text" aria-hidden="true"></i><span>업데이트 노트</span></button>
+      </nav>
+      <button class="langbtn" id="langBtn" aria-label="Language" title="Language">
+        <i class="bi bi-globe2" aria-hidden="true"></i>
+        <span class="lgtxt">Language</span>
+        <i class="bi bi-chevron-down lang-chevron" aria-hidden="true"></i>
+      </button>
+    </div>
+  </div>
+  <div class="langmenu" id="langMenu">
+    <div class="mtitle" id="lbl-langtitle">Language</div>
+    <button data-lang="ko">한국어</button>
+    <button data-lang="en">English</button>
+    <button data-lang="zh">中文</button>
+    <button data-lang="ja">日本語</button>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="optbar filterbar gecko-filterbar">
+    <button type="button" class="optchip fseg" id="partialchk" aria-pressed="false"><i class="bi bi-percent fico" aria-hidden="true"></i><span id="lbl-partial"></span></button>
+    <button type="button" class="optchip fseg" id="vintagechk" aria-pressed="false"><i class="bi bi-clock-history fico" aria-hidden="true"></i><span id="lbl-vintage"></span></button>
+    <button type="button" class="optinfo" id="optInfoBtn" aria-expanded="false"><i class="bi bi-info-circle" aria-hidden="true"></i><span class="oitxt" id="lbl-optinfo"></span></button>
+    <div class="optnote" id="optNote"></div>
+  </div>
+
+  <div class="parents">
+    <div class="card a">
+      <div class="card-top">
+        <div class="avatar"><img src="../assets/leopard-hero-v1.png" alt="" aria-hidden="true"></div>
+        <div class="card-name"><h2><span id="lbl-pa"></span></h2><div class="card-role" id="lbl-pa-role-leo">유전 형질 선택</div></div>
+        <button type="button" class="helpbtn" onclick="toggleLeoOptNote()"><i class="bi bi-info-circle" aria-hidden="true"></i><span id="lbl-help-leo">선택 도움말</span></button>
+      </div>
+      <div id="parentA"></div>
+    </div>
+    <div class="card b">
+      <div class="card-top">
+        <div class="avatar"><img src="../assets/leopard-hero-v1.png" alt="" aria-hidden="true"></div>
+        <div class="card-name"><h2><span id="lbl-pb"></span></h2><div class="card-role" id="lbl-pb-role-leo">유전 형질 선택</div></div>
+        <button type="button" class="helpbtn" onclick="toggleLeoOptNote()"><i class="bi bi-info-circle" aria-hidden="true"></i><span id="lbl-help2-leo">선택 도움말</span></button>
+      </div>
+      <div id="parentB"></div>
+    </div>
+  </div>
+
+  <div class="selbar">
+    <div class="sel-left">
+      <div class="sel-label" id="lbl-selected">선택된 형질</div>
+      <div class="sel-lines">
+        <div class="sel-line"><span class="sel-who a"><i class="bi bi-person" aria-hidden="true"></i><span id="lbl-sel-a">부모 A</span></span><span id="leoSelA"></span></div>
+        <div class="sel-line"><span class="sel-who b"><i class="bi bi-person" aria-hidden="true"></i><span id="lbl-sel-b">부모 B</span></span><span id="leoSelB"></span></div>
+      </div>
+    </div>
+    <div class="sel-right actions">
+      <button class="act btn-reset" id="btn-reset" onclick="resetAll()"></button>
+      <button class="act btn-calc" id="btn-calc" onclick="calcAndLog()"></button>
+    </div>
+  </div>
+
+  <div class="results" id="results"></div>
+
+  <div class="adslot" id="adSlot"></div>
+  <div class="donate-wrap"><button class="donate" id="donateBtn" type="button" onclick="openPrem()"></button></div>
+
+  <div class="bottom-links">
+    <a class="blink" id="mailLink" href="mailto:kmc612000@gmail.com"><i class="bi bi-envelope" aria-hidden="true"></i><span>문의하기</span></a>
+  </div>
+  <div class="mailnote">정보 수정 요청 · 업데이트 건의는 <b>문의하기</b>로 보내주세요 (kmc612000@gmail.com)</div>
+
+  <div class="note" id="note"></div>
+  <div class="legal" id="legalLinks">
+    <a href="../terms.html#terms">이용약관</a> · <a href="../terms.html#privacy">개인정보처리방침</a>
+  </div>
+  <footer id="footer"></footer>
+</div>
+
+<div class="cookiebar" id="cookieBar">
+  <div class="cb-txt">이 사이트는 로그인 유지와 이용 통계를 위해 쿠키 및 브라우저 저장소를 사용합니다.
+    <a href="../terms.html#privacy">자세히</a></div>
+  <button class="cb-ok" onclick="okCookie()">확인</button>
+</div>
+
+<!-- 업데이트 노트 모달 -->
+<div class="modal-overlay" id="updModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>📢 업데이트 노트</h3>
+      <button class="modal-x" onclick="closeUpd()" aria-label="close">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="upd-section">
+        <div class="upd-title done">✅ 업데이트 됨</div>
+        <ul>
+          <li>V1.0 테스트버전 출시</li>
+        </ul>
+      </div>
+      <div class="upd-section">
+        <div class="upd-title soon">🔜 업데이트 예정</div>
+        <ul>
+          <li>리스트 준비중</li>
+        </ul>
+      </div>
+      <div class="modal-mail">문의 · 건의: <a href="mailto:kmc612000@gmail.com">kmc612000@gmail.com</a></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-today" onclick="dismissToday()">오늘 하루 안 보기</button>
+      <button class="btn-close" onclick="closeUpd()">닫기</button>
+    </div>
+  </div>
+</div>
+
+<!-- 프리미엄 코드 모달 -->
+<div class="modal-overlay" id="premModal">
+  <div class="modal" style="max-width:400px">
+    <div class="modal-head"><h3>💎 프리미엄 코드</h3><button class="modal-x" onclick="closePrem()">✕</button></div>
+    <div class="modal-body">
+      <div id="premAccount"></div>
+
+      <div class="perkbox" id="perkBox">
+        <div class="perkhead">프리미엄으로 열리는 기능</div>
+        <div class="perk"><span class="pk">🦎</span><div><b>브리딩 관리</b><span>내 개체·혈통 등록, 사진 저장, 페어링·클러치 기록 관리</span></div></div>
+        <div class="perk"><span class="pk">🎯</span><div><b>목표 모프 역산</b><span>등록한 개체 기준으로 목표까지 가능한 페어링과 부족한 조건을 찾아줍니다</span></div></div>
+        <div class="perk"><span class="pk">🖼️</span><div><b>결과 이미지 저장</b><span>계산 결과를 이미지로 내려받아 기록·공유</span></div></div>
+        <div class="perk"><span class="pk">🚫</span><div><b>광고 제거</b><span>모든 화면에서 광고가 표시되지 않습니다</span></div></div>
+        <div class="perk"><span class="pk">☁️</span><div><b>계정 동기화</b><span>휴대폰·PC 어디서든 같은 기록을 이어서 사용</span></div></div>
+        <div class="perkfoot">무료로도 <b>모프 확률 계산·콤보 명칭·위험 조합 경고</b>는 계속 이용할 수 있어요.</div>
+      </div>
+
+      <div id="premStatus" style="font-size:13px;margin:12px 0 8px;color:var(--ink2)"></div>
+      <input id="premInput" placeholder="발급받은 코드 입력" autocomplete="off"
+             style="width:100%;padding:12px;border-radius:11px;border:1.5px solid var(--chipbd);background:var(--card);color:var(--ink);font-size:15px;font-family:inherit;box-sizing:border-box">
+      <div id="premMsg" style="font-size:12.5px;margin-top:8px;min-height:16px"></div>
+
+      <div class="donatebox" id="donateBox">
+        <div class="dhead">☕ 개발자 후원하기</div>
+        <div class="dsub">이 계산기는 개인이 무료로 만들어 운영하고 있어요. 후원해 주시면 서버 비용과 모프 데이터 업데이트에 사용됩니다.</div>
+        <div class="dacct"><span class="dbank" id="donBank">카카오뱅크</span><b id="donAcct">3333-17-6613203</b>
+          <button class="mini" id="donCopy">복사</button></div>
+        <div class="dnote">후원은 자율이며, 후원하지 않아도 모든 무료 기능을 그대로 이용하실 수 있습니다. 후원금은 프리미엄 이용권과 무관합니다.</div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-today" onclick="closePrem()">닫기</button>
+      <button class="btn-close" onclick="redeemPrem()">활성화</button>
+    </div>
+  </div>
+</div>
+
+<!-- 관리자 페이지 (#admin) -->
+<div id="adminRoot" class="admin-root"></div>
+
+<script src="gecko-ui.js?v=014345"></script>
+
+<script src="gecko-app.js?v=014345"></script>
+</body>
+</html>

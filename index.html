@@ -1,1154 +1,235 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Leopard Gecko Morph Calculator</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="gecko-core.js"></script>
-<script>
-if(typeof GENES==='undefined'){
-  document.addEventListener('DOMContentLoaded',function(){
-    document.body.innerHTML='<div style="max-width:520px;margin:60px auto;padding:24px;font-family:-apple-system,BlinkMacSystemFont,\'Apple SD Gothic Neo\',sans-serif;background:#FDFCF9;border-radius:16px;box-shadow:0 6px 18px rgba(0,0,0,.08);line-height:1.7;color:#26221D">'
-      +'<div style="font-size:34px;text-align:center">⚠️</div>'
-      +'<h2 style="text-align:center;font-size:18px;margin:10px 0">필수 파일이 없습니다</h2>'
-      +'<p style="font-size:14px;color:#6C6452"><b>gecko-core.js</b> 파일을 찾을 수 없어요. 이 파일에 모프 데이터와 계산 엔진이 들어 있습니다.</p>'
-      +'<p style="font-size:14px;color:#6C6452"><b>해결 방법</b><br>GitHub 저장소에 <b>gecko-core.js</b> 를 <b>index.html 과 같은 위치</b>에 업로드한 뒤 새로고침해 주세요.</p>'
-      +'</div>';
-  });
-}
-</script>
-<style>
-  /* ===== 2026 트렌드 팔레트 (Cloud Dancer · Transformative Teal · Patina Blue · Butter · Eggplant) ===== */
-  :root{
-    --bg:#EDEAE1;            /* Cloud Dancer 톤 그룹 배경 */
-    --card:#FDFCF9;          /* 카드/리스트 화이트 */
-    --card2:#F4F1E9;         /* 부모 컨테이너 */
-    --ink:#26221D;           /* 따뜻한 잉크 */
-    --ink2:#8A8375;          /* 보조 텍스트 */
-    --hair:rgba(38,34,29,.08);
-    --chipbd:rgba(38,34,29,.16);
-    --gtile:#E7E2D6;
-    --teal:#0E7C7B;          /* Transformative Teal (주 인터랙션) */
-    --teal-press:#0A6160;
-    --patina:#3B8DA0;        /* Patina Blue (부모 B) */
-    --butter:#EAC36A;        /* Butter Yellow (하이라이트) */
-    --eggplant:#6B5686;      /* Eggplant (열성 배지·het) */
-    --shadow:0 1px 2px rgba(38,34,29,.05), 0 6px 18px rgba(38,34,29,.05);
-    --b-rec-bg:rgba(107,86,134,.13); --b-rec-fg:#6B5686; --b-rec-bd:rgba(107,86,134,.34);
-    --b-inc-bg:rgba(59,141,160,.15); --b-inc-fg:#2C7A8C; --b-inc-bd:rgba(59,141,160,.4);
-    --b-dom-bg:rgba(197,146,32,.16); --b-dom-fg:#9A6A12; --b-dom-bd:rgba(197,146,32,.42);
-    --b-poly-bg:rgba(138,131,117,.14); --b-poly-fg:#736C5E; --b-poly-bd:rgba(38,34,29,.14);
-    --warn-hi-bg:#FBEAE3; --warn-hi-bd:#F0C3B2; --warn-hi-fg:#B4402A;
-    --warn-md-bg:#FBF2DA; --warn-md-bd:#EAD6A2; --warn-md-fg:#8A6410;
-    --note-bg:#F3EEE0; --note-bd:#E4DCC7; --note-fg:#6C6452;
-    --radius:16px;
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>RYANG STUDIO — 도구와 세계를 만드는 1인 스튜디오</title>
+  <meta name="description" content="반려동물 웹 도구, TIU 세계관과 카드게임, 작지만 오래 쓰이는 디지털 경험을 만드는 RYANG STUDIO입니다.">
+  <meta name="keywords" content="RYANG STUDIO, 량 스튜디오, TIU, Terminal Session, 레오파드 게코, 크레스티드 게코, 피그미다람쥐, 모프 계산기">
+  <meta name="author" content="RYANG STUDIO">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://ryangstudio.com/">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="RYANG STUDIO">
+  <meta property="og:description" content="실제로 쓸모 있는 도구와 오래 남는 세계를 만듭니다.">
+  <meta property="og:url" content="https://ryangstudio.com/">
+  <meta property="og:locale" content="ko_KR">
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/static/pretendard.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="./home-redesign.css?v=020025">
+  <script type="application/ld+json">
+  {
+    "@context":"https://schema.org",
+    "@type":"Organization",
+    "name":"RYANG STUDIO",
+    "alternateName":"량 스튜디오",
+    "url":"https://ryangstudio.com/",
+    "description":"반려동물 웹 도구와 게임, 독창적인 세계를 만드는 1인 스튜디오",
+    "email":"kmc612000@gmail.com"
   }
-  @media (prefers-color-scheme: dark){
-    :root{
-      --bg:#141310; --card:#211E1A; --card2:#1B1915; --ink:#F3EFE7; --ink2:#A49D8F;
-      --hair:rgba(255,255,255,.08);
-      --chipbd:rgba(255,255,255,.18);
-      --gtile:#2C2822;
-      --teal:#3FB8B2; --teal-press:#57C8C2; --patina:#5FB0C1; --butter:#EAC36A; --eggplant:#B9A3D6;
-      --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.28);
-      --b-rec-bg:rgba(185,163,214,.16); --b-rec-fg:#C9B6E4; --b-rec-bd:rgba(185,163,214,.36);
-      --b-inc-bg:rgba(95,176,193,.16); --b-inc-fg:#8FCEDB; --b-inc-bd:rgba(95,176,193,.4);
-      --b-dom-bg:rgba(234,195,106,.16); --b-dom-fg:#EAC36A; --b-dom-bd:rgba(234,195,106,.4);
-      --b-poly-bg:rgba(164,157,143,.16); --b-poly-fg:#BDB6A6; --b-poly-bd:rgba(255,255,255,.14);
-      --warn-hi-bg:#2E1713; --warn-hi-bd:#6E2E22; --warn-hi-fg:#F3A594;
-      --warn-md-bg:#2A2210; --warn-md-bd:#6B531A; --warn-md-fg:#EBC873;
-      --note-bg:#201D16; --note-bd:#3A3427; --note-fg:#BDB49E;
-    }
-  }
-  *{box-sizing:border-box}
-  html,body{margin:0;padding:0}
-  body{
-    background:var(--bg); color:var(--ink);
-    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Apple SD Gothic Neo","Malgun Gothic","Hiragino Sans","Microsoft YaHei",system-ui,sans-serif;
-    -webkit-font-smoothing:antialiased; line-height:1.5; padding:0 0 64px;
-  }
-  header{padding:16px 16px 18px;text-align:center;position:relative;max-width:920px;margin:0 auto}
-  header h1{margin:0;font-size:26px;font-weight:800;letter-spacing:-.5px}
-  header .sub{color:var(--ink2);font-size:13.5px;margin-top:6px;max-width:420px;margin-left:auto;margin-right:auto}
-  /* 우측 상단 언어 버튼(햄버거) + 드롭다운 */
-  /* 상단 바 — 메뉴들이 Language 버튼 왼쪽에 나란히 오도록 우측 정렬 */
-  .topbar{display:flex;justify-content:flex-end;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:14px}
-  .langbtn{height:38px;border-radius:12px;background:var(--card);box-shadow:var(--shadow);border:none;flex:0 0 auto;
-    display:inline-flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;color:var(--ink);padding:0 13px;
-    font-family:inherit;font-size:12.5px;font-weight:700;letter-spacing:-.2px}
-  .langbtn svg{width:17px;height:17px;flex:0 0 auto}
-  .langbtn .lgtxt{white-space:nowrap}
-  /* 좁은 화면에서도 글자를 남긴다 — 아이콘만 두면 언어 변경인 줄 모른다는 피드백 */
-  @media (max-width:420px){ .langbtn{height:34px;padding:0 10px;font-size:11.5px;gap:5px}
-    .langbtn svg{width:15px;height:15px} }
-  .langmenu{position:absolute;top:64px;right:16px;background:var(--card);border-radius:15px;box-shadow:0 10px 34px rgba(38,34,29,.2);padding:6px;min-width:158px;z-index:50;display:none;text-align:left}
-  .langmenu.open{display:block}
-  .langmenu button{display:flex;align-items:center;justify-content:space-between;width:100%;background:transparent;border:none;padding:11px 13px;font-size:14.5px;font-weight:500;color:var(--ink);cursor:pointer;font-family:inherit;border-radius:10px}
-  .langmenu button:active{background:rgba(120,120,128,.14)}
-  .langmenu button.on{color:var(--teal);font-weight:700}
-  .langmenu button.on::after{content:"✓";margin-left:12px;font-weight:800}
-  .langmenu .mtitle{font-size:11px;color:var(--ink2);font-weight:600;padding:4px 13px 6px;letter-spacing:.3px}
-  .wrap{max-width:880px;margin:0 auto;padding:8px 16px}
-
-  /* iOS 행 + 스위치 */
-  /* 표시 옵션 — 한 줄짜리 컴팩트 바 (설명은 ⓘ 툴팁) */
-  .optbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;background:var(--card);border-radius:var(--radius);
-    padding:8px 10px;margin-bottom:14px;box-shadow:var(--shadow)}
-  .optchip{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--chipbd);background:transparent;
-    border-radius:999px;padding:6px 12px;font-size:12.5px;font-weight:600;color:var(--ink);cursor:pointer;
-    font-family:inherit;line-height:1.3;transition:background .12s,border-color .12s}
-  .optchip .dotx{width:8px;height:8px;border-radius:50%;background:var(--chipbd);flex:0 0 auto;transition:background .12s}
-  .optchip[aria-pressed="true"]{background:var(--teal);border-color:var(--teal);color:#fff}
-  .optchip[aria-pressed="true"] .dotx{background:#fff}
-  .optchip:active{filter:brightness(.97)}
-  .optinfo{margin-left:auto;display:flex;align-items:center;gap:5px;font-size:11.5px;color:var(--ink2);cursor:help;padding:4px 2px}
-  .optnote{flex-basis:100%;font-size:11.5px;color:var(--ink2);line-height:1.55;margin:2px 2px 0;display:none}
-  .optnote.show{display:block}
-  @media (max-width:420px){ .optinfo span.oitxt{display:none} }
-  .switch{position:relative;display:inline-block;width:51px;height:31px;flex:0 0 auto}
-  .switch input{opacity:0;width:0;height:0}
-  .slider{position:absolute;inset:0;background:rgba(120,120,128,.3);border-radius:31px;transition:.25s;cursor:pointer}
-  .slider:before{content:"";position:absolute;height:27px;width:27px;left:2px;top:2px;background:#fff;border-radius:50%;transition:.25s;box-shadow:0 1px 3px rgba(0,0,0,.25)}
-  .switch input:checked + .slider{background:var(--teal)}
-  .switch input:checked + .slider:before{transform:translateX(20px)}
-
-  .parents{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-  @media(max-width:620px){.parents{grid-template-columns:1fr}}
-  .card{background:var(--card2);border-radius:var(--radius);padding:12px 12px 13px}
-  .card h2{margin:2px 2px 12px;font-size:16px;font-weight:700;display:flex;align-items:center;gap:8px}
-  .dot{width:10px;height:10px;border-radius:50%}
-  .dot.a{background:var(--teal)} .dot.b{background:var(--patina)}
-  /* 콤보 개체 불러오기 */
-  .comboload{margin:0 0 6px}
-  .comboSel{width:100%;background:var(--card);border:1px dashed var(--b-inc-bd);color:var(--teal);
-    border-radius:11px;padding:9px 30px 9px 12px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;
-    appearance:none;-webkit-appearance:none;
-    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='7'><path d='M1 1l5 5 5-5' fill='none' stroke='%230E7C7B' stroke-width='1.6' stroke-linecap='round'/></svg>");
-    background-repeat:no-repeat;background-position:right 11px center}
-  .comboSel.b{color:var(--patina);border-color:var(--b-inc-bd);
-    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='7'><path d='M1 1l5 5 5-5' fill='none' stroke='%233B8DA0' stroke-width='1.6' stroke-linecap='round'/></svg>")}
-
-  .famhead{margin:11px 4px 5px}
-  .famhead:first-child{margin-top:2px}
-  .famname{font-size:13px;font-weight:700;letter-spacing:-.1px}
-  .fambadge{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;margin-left:8px;vertical-align:middle;letter-spacing:.2px}
-  .badge-rec{background:var(--b-rec-bg);color:var(--b-rec-fg);border:1px solid var(--b-rec-bd)}
-  .badge-incdom{background:var(--b-inc-bg);color:var(--b-inc-fg);border:1px solid var(--b-inc-bd)}
-  .badge-dom{background:var(--b-dom-bg);color:var(--b-dom-fg);border:1px solid var(--b-dom-bd)}
-  .badge-poly{background:var(--b-poly-bg);color:var(--b-poly-fg);border:1px solid var(--b-poly-bd)}
-  .famdesc{font-size:11px;color:var(--ink2);margin-top:3px}
-  /* 부모 콤보 명칭 배지 */
-  .parentcombo{display:inline-block;background:var(--teal);color:#fff;font-weight:800;font-size:13.5px;padding:6px 14px;border-radius:20px;margin-bottom:9px;letter-spacing:-.2px}
-  .parentcombo.b{background:var(--patina)}
-  /* 섹션 헤더 (콤보 / 유전 모프) */
-  .sechead{font-size:12px;font-weight:700;color:var(--ink2);letter-spacing:.2px;margin:11px 2px 5px}
-  .sechead:first-child{margin-top:2px}
-  /* 콤보 칩 */
-  .combochip{border-style:dashed}
-  .combochip::before{content:"✦";color:var(--teal);font-weight:800;font-size:11px;margin-right:5px}
-  .combochip.b::before{color:var(--patina)}
-  .combochip.on::before{color:#fff}
-  /* 모프 선택 칩 + 헷/비주얼 서브 토글 */
-  .chipgrid{display:flex;flex-wrap:wrap;align-items:flex-start;gap:5px;margin-top:1px}
-  .chipwrap{display:flex;flex-direction:column;gap:4px;align-items:flex-start;flex:0 0 auto;align-self:flex-start}
-  .chip{border:1.5px solid var(--chipbd);background:var(--card);color:var(--ink);border-radius:18px;padding:6px 11px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;line-height:1.1;transition:.12s;white-space:nowrap;display:inline-flex;align-items:center;flex:0 0 auto;align-self:flex-start}
-  .sw{width:11px;height:11px;border-radius:50%;display:inline-block;margin-right:6px;border:1px solid rgba(0,0,0,.16);flex:0 0 auto}
-  .chip.on .sw{border-color:rgba(255,255,255,.7)}
-  /* 게코 일러스트 타일 */
-  .gecko{display:block;filter:drop-shadow(0 1px 1px rgba(0,0,0,.16)) drop-shadow(0 0 .5px rgba(0,0,0,.32))}
-  .geckothumb{background:var(--gtile);border-radius:9px;display:inline-flex;align-items:center;justify-content:center;padding:3px 5px;flex:0 0 auto}
-  .geckothumb.gbig{border-radius:14px;padding:6px 8px;background:transparent}
-  .visrow{display:flex;align-items:center;gap:9px}
-  .vtext{min-width:0;font-weight:600}
-  .vtext.isnorm{color:var(--ink2);font-weight:500}
-  .chip:active{transform:scale(.96)}
-  .chip.on{background:var(--teal);border-color:var(--teal);color:#fff}
-  .chip.b.on{background:var(--patina);border-color:var(--patina)}
-  .chiprisk{margin-left:2px;color:var(--warn-hi-fg)}
-  .chip.on .chiprisk{color:#ffe08a}
-  .subseg{display:inline-flex;background:var(--card2);border:1px solid var(--hair);border-radius:9px;padding:2px}
-  .subseg button{border:none;background:transparent;font-size:11.5px;font-weight:700;padding:5px 11px;border-radius:7px;color:var(--ink2);cursor:pointer;font-family:inherit;white-space:nowrap}
-  .subseg button.on{background:var(--card);color:var(--teal);box-shadow:0 1px 2px rgba(38,34,29,.14)}
-  .subseg.b button.on{color:var(--patina)}
-
-  /* iOS 인셋 그룹 리스트 */
-  .glist{background:var(--card);border-radius:13px;overflow:hidden;box-shadow:var(--shadow)}
-  .generow{display:flex;align-items:center;gap:8px;padding:11px 14px;border-bottom:1px solid var(--hair)}
-  .generow:last-child{border-bottom:none}
-  .generow .gname{flex:1;font-size:14px;min-width:0}
-  .generow .gname small{display:block;color:var(--ink2);font-size:11px;margin-top:1px}
-  .generow .gname .risk{color:var(--warn-hi-fg);font-size:11px;margin-left:4px}
-  select{
-    background:transparent;color:var(--ink2);border:none;
-    font-size:14.5px;font-family:inherit;text-align:right;text-align-last:right;
-    appearance:none;-webkit-appearance:none;cursor:pointer;
-    max-width:140px;padding:2px 18px 2px 4px;
-    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='7'><path d='M1 1l5 5 5-5' fill='none' stroke='%238A8375' stroke-width='1.6' stroke-linecap='round'/></svg>");
-    background-repeat:no-repeat;background-position:right 2px center;
-  }
-  select.set{color:var(--teal);font-weight:600}
-  select.b.set{color:var(--patina)}
-
-  .actions{display:flex;gap:10px;margin:22px 0 6px}
-  button.act{flex:1;border:none;border-radius:14px;padding:15px;font-size:16px;font-weight:600;cursor:pointer;font-family:inherit;transition:.15s}
-  .btn-calc{background:var(--teal);color:#fff;box-shadow:0 6px 18px rgba(14,124,123,.32)}
-  .btn-calc:active{background:var(--teal-press);transform:scale(.99)}
-  .btn-reset{background:rgba(120,120,128,.14);color:var(--ink);flex:0 0 100px}
-
-  .results{margin-top:20px}
-  .results h2{font-size:17px;font-weight:700;margin:0 0 4px}
-  .summary{color:var(--ink2);font-size:13px;margin-bottom:12px}
-
-  .warnhead{font-size:14.5px;font-weight:700;margin:0 0 8px}
-  .warnbox{border-radius:13px;padding:12px 14px;margin-bottom:8px;font-size:12.8px;line-height:1.5}
-  .warn-high{background:var(--warn-hi-bg);border:1px solid var(--warn-hi-bd);color:var(--warn-hi-fg)}
-  .warn-med{background:var(--warn-md-bg);border:1px solid var(--warn-md-bd);color:var(--warn-md-fg)}
-
-  /* 도넛 차트 */
-  .pie-wrap{display:flex;justify-content:center;margin:8px 0 20px}
-  .pie{width:196px;height:196px;border-radius:50%;position:relative;box-shadow:var(--shadow)}
-  .pie-hole{position:absolute;inset:30px;background:var(--bg);border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:0 12px}
-  .pie-top{font-size:32px;font-weight:800;color:var(--ink);letter-spacing:-1px;line-height:1}
-  .pie-toplbl{font-size:11px;color:var(--ink2);margin-top:4px;max-width:118px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  /* 결과 표 */
-  .rtable{width:100%;border-collapse:collapse;background:var(--card);border-radius:14px;overflow:hidden;box-shadow:var(--shadow)}
-  .rtable th{font-size:11px;color:var(--ink2);font-weight:600;text-align:left;padding:10px 12px;border-bottom:1px solid var(--hair);background:var(--card2)}
-  .rtable td{font-size:13px;padding:11px 12px;border-bottom:1px solid var(--hair);vertical-align:top}
-  .rtable tr:last-child td{border-bottom:none}
-  .rtable th:first-child,.c-prob{width:76px}
-  .c-prob{white-space:nowrap;font-weight:700;color:var(--ink)}
-  .cdot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:middle}
-  .c-vis{font-weight:600}
-  .c-vis.isnorm{color:var(--ink2);font-weight:500}
-  .c-vis .submorph{font-weight:500;font-size:11px;color:var(--ink2);margin-top:2px}
-  .het100{display:inline-block;font-size:11px;font-weight:700;color:#fff;background:var(--eggplant);border-radius:6px;padding:2px 7px;margin:2px 4px 0 0}
-  .hetp{display:inline-block;font-size:11px;font-weight:600;color:var(--eggplant);background:var(--b-rec-bg);border:1px solid var(--b-rec-bd);border-radius:6px;padding:2px 6px;margin:2px 4px 0 0}
-  .hetnone{color:var(--ink2)}
-  .outcome{background:var(--card);border-radius:14px;padding:13px 15px;margin-bottom:10px;display:flex;align-items:center;gap:13px;box-shadow:var(--shadow)}
-  .pct{flex:0 0 64px;text-align:center}
-  .pct .big{font-size:20px;font-weight:800;color:var(--teal);letter-spacing:-.5px}
-  .pct .frac{font-size:11px;color:var(--ink2)}
-  .obody{flex:1;min-width:0}
-  .obody .morphs{font-size:15px;font-weight:600}
-  .combotag{display:inline-block;background:var(--teal);color:#fff;font-size:9.5px;font-weight:800;letter-spacing:.4px;padding:2px 7px;border-radius:6px;vertical-align:middle;margin-right:6px}
-  .obody .submorph{font-size:12px;color:var(--ink2);margin-top:2px}
-  .obody .hets{font-size:12.5px;color:var(--eggplant);margin-top:2px}
-  .bar{height:6px;border-radius:4px;background:rgba(120,120,128,.16);margin-top:9px;overflow:hidden}
-  .bar > i{display:block;height:100%;border-radius:4px;background:linear-gradient(90deg,var(--teal),var(--butter))}
-  .badge-normal .morphs{color:var(--ink2);font-weight:500}
-
-  .polyblock{background:var(--card);border-radius:14px;padding:13px 15px;margin-top:14px;font-size:12.8px;box-shadow:var(--shadow)}
-  .polyblock h3{margin:0 0 6px;font-size:14.5px;font-weight:700;color:var(--patina)}
-  .polyblock .pdesc{color:var(--ink2);margin-bottom:8px;line-height:1.5}
-  .polychip{display:inline-block;background:var(--b-inc-bg);border:1px solid var(--b-inc-bd);color:var(--b-inc-fg);border-radius:20px;padding:4px 12px;font-size:12.5px;margin:3px 5px 0 0;font-weight:500}
-  .polychip.both{background:var(--teal);border-color:var(--teal);color:#fff}
-
-  .note{background:var(--note-bg);border:1px solid var(--note-bd);border-radius:14px;padding:13px 15px;margin-top:18px;font-size:12.5px;color:var(--note-fg);line-height:1.55}
-  .note b{color:var(--teal)}
-  .empty{color:var(--ink2);font-size:14px;text-align:center;padding:30px 10px}
-  footer{text-align:center;color:var(--ink2);font-size:11.5px;margin-top:26px}
-  /* 하단 링크(업데이트 노트 · 이메일) */
-  /* 상단 내비게이션 (내 정보 · 브리딩 관리 · 업데이트 노트) — Language 버튼 왼쪽 */
-  .topnav{display:flex;gap:7px;justify-content:flex-end;align-items:center;flex-wrap:wrap;margin:0}
-  .topnav .blink{font-size:12.5px;padding:0 13px;height:38px}
-  @media (max-width:420px){ .topnav .blink{font-size:11.5px;padding:0 10px;height:34px} }
-  .bottom-links{display:flex;gap:9px;justify-content:center;flex-wrap:wrap;margin-top:18px}
-  .blink{display:inline-flex;align-items:center;gap:6px;background:var(--card);border:1px solid var(--hair);color:var(--ink);text-decoration:none;font-weight:600;font-size:13px;padding:10px 15px;border-radius:12px;cursor:pointer;font-family:inherit;box-shadow:var(--shadow)}
-  .blink:active{filter:brightness(.97)}
-  .blink.prem{background:rgba(234,195,106,.2);border-color:rgba(197,146,32,.35)}
-  .mailnote{text-align:center;color:var(--ink2);font-size:11.5px;margin-top:8px}
-  /* 업데이트 노트 모달 */
-  .modal-overlay{position:fixed;inset:0;background:rgba(20,17,14,.55);display:none;align-items:flex-end;justify-content:center;z-index:100}
-  .modal-overlay.show{display:flex}
-  @media(min-width:620px){.modal-overlay{align-items:center;padding:20px}}
-  .modal{background:var(--bg);width:100%;max-width:520px;max-height:84vh;border-radius:22px 22px 0 0;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 -8px 44px rgba(0,0,0,.34)}
-  @media(min-width:620px){.modal{border-radius:20px}}
-  .modal-head{display:flex;align-items:center;justify-content:space-between;padding:17px 18px 13px;border-bottom:1px solid var(--hair)}
-  .modal-head h3{margin:0;font-size:17px;font-weight:800}
-  .modal-x{background:rgba(120,120,128,.15);border:none;width:30px;height:30px;border-radius:50%;font-size:13px;color:var(--ink);cursor:pointer;flex:0 0 auto}
-  .modal-body{padding:15px 18px;overflow-y:auto}
-  .upd-section{margin-bottom:18px}
-  .upd-title{font-size:14.5px;font-weight:800;margin-bottom:8px;display:flex;align-items:center;gap:6px}
-  .upd-title.soon{color:var(--patina)}
-  .upd-title.done{color:var(--teal)}
-  .upd-section ul{margin:0;padding:0;list-style:none}
-  .upd-section li{font-size:13px;color:var(--ink);padding:6px 0 6px 18px;position:relative;line-height:1.45;border-bottom:1px solid var(--hair)}
-  .upd-section li:last-child{border-bottom:none}
-  .upd-section li::before{content:"·";position:absolute;left:5px;top:5px;color:var(--ink2);font-weight:800}
-  .modal-mail{font-size:12px;color:var(--ink2);text-align:center;padding-top:4px}
-  .modal-mail a{color:var(--teal);font-weight:700;text-decoration:none}
-  .modal-foot{display:flex;gap:9px;padding:12px 18px 16px;border-top:1px solid var(--hair)}
-  .modal-foot button{flex:1;border:none;border-radius:12px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit}
-  .btn-today{background:rgba(120,120,128,.15);color:var(--ink)}
-  .btn-close{background:var(--teal);color:#fff}
-  .sw.img{background-size:cover;background-position:center}
-  .legal{text-align:center;margin-top:14px;font-size:11.5px;color:var(--ink2)}
-  .legal a{color:var(--ink2);text-decoration:underline;margin:0 2px}
-  .cookiebar{position:fixed;left:0;right:0;bottom:0;z-index:90;display:none;align-items:center;gap:12px;
-    background:var(--card);border-top:1px solid var(--hair);padding:13px 16px;box-shadow:0 -4px 20px rgba(0,0,0,.09)}
-  .cookiebar.show{display:flex}
-  .cb-txt{flex:1;font-size:12px;color:var(--ink2);line-height:1.55}
-  .cb-txt a{color:var(--teal);font-weight:700}
-  .cb-ok{flex:0 0 auto;background:var(--teal);color:#fff;border:none;border-radius:10px;padding:10px 18px;
-    font-size:13px;font-weight:700;cursor:pointer;font-family:inherit}
-  /* ===== 관리자 페이지 ===== */
-  .admin-root{display:none;min-height:100vh}
-  .admin-wrap{max-width:720px;margin:0 auto;padding:16px}
-  .admin-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
-  .admin-top h1{font-size:20px;font-weight:800;margin:0}
-  .admin-back{color:var(--teal);text-decoration:none;font-weight:700;font-size:13px}
-  .atabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
-  .atab{border:1px solid var(--hair);background:var(--card);color:var(--ink);border-radius:10px;padding:9px 14px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit}
-  .atab.on{background:var(--teal);border-color:var(--teal);color:#fff}
-  .atab.logout{margin-left:auto;color:var(--warn-hi-fg)}
-  .apad{background:var(--card);border-radius:14px;padding:16px;box-shadow:var(--shadow)}
-  .alabel{font-size:15px;font-weight:800;margin-bottom:10px}
-  .alabel2{font-size:12px;font-weight:700;color:var(--ink2);margin:14px 0 6px}
-  .ahint{font-size:11px;color:var(--ink2);margin:8px 0 4px}
-  .ain{width:100%;box-sizing:border-box;padding:11px 12px;border:1.5px solid var(--chipbd);border-radius:10px;background:var(--card2);color:var(--ink);font-size:14px;font-family:inherit;margin-bottom:8px}
-  .abtn{background:var(--teal);color:#fff;border:none;border-radius:11px;padding:12px 18px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;flex:0 0 auto}
-  .abtn.sm{padding:9px 14px;font-size:13px;margin-bottom:10px}
-  .abtn.ghost{background:rgba(120,120,128,.15);color:var(--ink)}
-  .aformbtns{display:flex;gap:8px;margin-top:12px}
-  .aerr{color:var(--warn-hi-fg);font-size:12.5px;margin-top:8px;min-height:16px}
-  .alist{display:flex;flex-direction:column;gap:7px;margin-top:4px}
-  .arow{display:flex;align-items:center;gap:10px;background:var(--card2);border-radius:11px;padding:11px 13px}
-  .arow-main{flex:1;min-width:0;font-size:14px}
-  .arow-main .asub{font-size:11.5px;color:var(--ink2);margin-top:2px}
-  .arow-act{display:flex;gap:6px;flex:0 0 auto}
-  .mini{border:1px solid var(--hair);background:var(--card);color:var(--ink);border-radius:8px;padding:6px 10px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit}
-  .mini.del{color:var(--warn-hi-fg)}
-  .atag{display:inline-block;font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:20px;background:rgba(120,120,128,.16);color:var(--ink2);margin-left:4px}
-  .atag.used{background:var(--b-inc-bg);color:var(--b-inc-fg)}
-  .atag.new{background:rgba(14,124,123,.16);color:var(--teal)}
-  .atag.rev{background:var(--warn-hi-bg);color:var(--warn-hi-fg)}
-  .atag.sub{background:rgba(234,195,106,.22);color:#9A6A12;border:1px solid rgba(197,146,32,.4)}
-  .achk{display:flex;align-items:center;gap:8px;font-size:13.5px;margin:6px 0}
-  .achk input{width:18px;height:18px;accent-color:var(--teal)}
-  .aimg{max-width:120px;border-radius:10px;margin-top:6px}
-  .tokgrid{display:grid;grid-template-columns:1fr 1fr;gap:4px}
-  .tokchk{display:flex;align-items:center;gap:6px;font-size:12.5px;padding:5px}
-  .tokchk input{accent-color:var(--teal)}
-  .codegen{display:flex;gap:8px;margin-bottom:12px;align-items:stretch;flex-wrap:wrap}
-  .codegen .ain{flex:1 1 180px;min-width:0}
-  .codegen .ain{margin-bottom:0}
-  .mono{font-family:ui-monospace,Menlo,monospace;letter-spacing:.5px}
-  .statrow{display:flex;gap:8px;margin-bottom:6px;flex-wrap:wrap}
-  .statcard{flex:1 1 110px;min-width:104px;background:var(--card2);border-radius:12px;padding:14px 10px;text-align:center}
-  .statn{font-size:24px;font-weight:800;color:var(--teal)}
-  .statl{font-size:11px;color:var(--ink2);margin-top:2px}
-  .statx{font-size:10.5px;color:var(--ink2);margin-top:4px;opacity:.85;line-height:1.4}
-  .proempty{text-align:center;color:var(--ink2);font-size:13.5px;padding:26px 12px;line-height:1.7}
-  .procard{background:var(--card2);border-radius:12px;padding:12px 13px;margin-bottom:8px;display:flex;gap:11px;align-items:center}
-  .prothumb{width:52px;height:52px;border-radius:10px;background:var(--gtile);flex:0 0 auto;display:flex;align-items:center;justify-content:center;overflow:hidden}
-  .prothumb img{width:100%;height:100%;object-fit:cover}
-  .proinfo{flex:1;min-width:0}
-  .proname{font-weight:700;font-size:14.5px}
-  .promorph{font-size:11.5px;color:var(--ink2);margin-top:2px;word-break:keep-all}
-  .prohet{font-size:11.5px;color:var(--eggplant);margin-top:1px}
-  .sexb{display:inline-block;font-size:10px;font-weight:800;padding:1px 6px;border-radius:20px;margin-left:5px}
-  .sexb.m{background:rgba(59,141,160,.18);color:var(--patina)}
-  .sexb.f{background:rgba(192,132,252,.18);color:var(--eggplant)}
-  .gradedot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--butter);margin-right:2px}
-  .pathbox{background:var(--card2);border-radius:12px;padding:13px;margin-bottom:9px;font-size:13px;line-height:1.6}
-  .pathstep{display:flex;gap:9px;margin:6px 0}
-  .pathnum{flex:0 0 22px;height:22px;border-radius:50%;background:var(--teal);color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center}
-  .acctbox{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--card2);border-radius:12px;padding:12px 13px;font-size:13.5px}
-  .lockbox{background:var(--note-bg);border:1px solid var(--note-bd);border-radius:12px;padding:16px;text-align:center;font-size:13.5px;color:var(--note-fg);line-height:1.7}
-  .abar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;align-items:center}
-  .abar .ain{flex:1 1 160px;margin-bottom:0}
-  .aempty{font-size:13px;color:var(--ink2);line-height:1.6;background:var(--card2);border-radius:11px;padding:14px}
-  .arow.off{opacity:.5}
-  .ordbtns{display:flex;flex-direction:column;gap:2px}
-  .ordbtns button{border:none;background:rgba(120,120,128,.15);color:var(--ink);border-radius:5px;width:24px;height:17px;font-size:9px;cursor:pointer;line-height:1;padding:0}
-  .daybar{display:flex;align-items:center;gap:8px;font-size:12px;margin:3px 0}
-  .daybar .dl{width:74px;color:var(--ink2);flex:0 0 auto}
-  .daybar .dt{height:9px;border-radius:5px;background:var(--teal);min-width:3px}
-  .daybar .dn{color:var(--ink2);font-size:11px}
-  /* 광고 영역 */
-  .adslot{margin-top:20px;border:1px dashed var(--hair);border-radius:14px;min-height:96px;
-    display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
-    color:var(--ink2);background:var(--card2);padding:14px}
-  .adslot .adlbl{font-size:10px;letter-spacing:1.4px;text-transform:uppercase;opacity:.65;margin-bottom:5px}
-  .adslot .adhint{font-size:11.5px;opacity:.55}
-  /* 프리미엄 혜택 목록 */
-  .perkbox{background:var(--card2);border-radius:13px;padding:13px 14px;margin-bottom:14px}
-  .perkhead{font-size:13px;font-weight:800;margin-bottom:9px}
-  .perk{display:flex;gap:10px;align-items:flex-start;margin:8px 0;font-size:12.5px;line-height:1.5}
-  .perk .pk{flex:0 0 20px;font-size:14px;line-height:1.35}
-  .perk b{display:block;font-size:12.8px}
-  .perk span:not(.pk){display:block;color:var(--ink2);font-size:11.5px;margin-top:1px}
-  .perkfoot{font-size:11.5px;color:var(--ink2);border-top:1px solid var(--hair);margin-top:10px;padding-top:9px;line-height:1.55}
-  /* 후원 안내 */
-  .donatebox{background:rgba(234,195,106,.14);border:1px solid rgba(197,146,32,.28);border-radius:13px;padding:13px 14px;margin-top:16px}
-  .donatebox .dhead{font-size:13px;font-weight:800;margin-bottom:5px}
-  .donatebox .dsub{font-size:11.8px;color:var(--ink2);line-height:1.6}
-  .donatebox .dacct{display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:var(--card);border-radius:10px;padding:9px 11px;margin:9px 0 7px}
-  .donatebox .dbank{font-size:11px;font-weight:800;color:var(--ink2);background:var(--card2);padding:3px 8px;border-radius:6px}
-  .donatebox .dacct b{font-family:ui-monospace,Menlo,monospace;font-size:14px;letter-spacing:.3px}
-  .donatebox .dacct .mini{margin-left:auto;background:var(--card2);border:1px solid var(--hair);color:var(--ink);
-    border-radius:8px;padding:5px 10px;font-size:11.5px;font-weight:700;cursor:pointer;font-family:inherit}
-  .donatebox .dnote{font-size:11px;color:var(--ink2);line-height:1.55}
-  /* 개발자 후원 버튼 */
-  .donate-wrap{display:flex;justify-content:center;margin-top:18px}
-  .donate{display:inline-flex;align-items:center;gap:8px;background:var(--butter);color:#4a3712;
-    text-decoration:none;font-weight:700;font-size:14.5px;padding:13px 24px;border-radius:15px;
-    box-shadow:0 5px 16px rgba(234,195,106,.42);border:none;cursor:pointer;font-family:inherit}
-  .donate:active{filter:brightness(.96)}
-  /* 줄바꿈: 한글은 단어 단위로 끊고, 뱃지는 통째로 유지 */
-  .c-vis,.c-het,.warnbox,.note,.polyblock,.famdesc,.pt-txt,.summary,.pdesc,.comboSel{word-break:keep-all;overflow-wrap:break-word}
-  .het100,.hetp,.fambadge,.combotag{white-space:nowrap}
-</style>
+  </script>
 </head>
 <body>
-<header>
-  <div class="topbar">
-    <nav class="topnav">
-      <a class="blink" id="acctBtn" href="login.html" style="display:none">👤 내 정보</a>
-      <a class="blink" id="proBtn" href="breeding.html" style="display:none">🦎 브리딩 관리</a>
-      <button class="blink prem" id="premBtn" onclick="openPrem()" style="display:none">💎 프리미엄 코드</button>
-      <button class="blink" onclick="openUpd()">📢 업데이트 노트</button>
-    </nav>
-    <button class="langbtn" id="langBtn" aria-label="Language" title="Language">
-      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.7 3.8 9S14.5 18.4 12 21c-2.5-2.6-3.8-5.7-3.8-9S9.5 5.6 12 3z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
-      <span class="lgtxt">Language</span>
-    </button>
-  </div>
-  <h1 id="h-title">🦎 Leopard Gecko Morph Calculator</h1>
-  <div class="sub" id="h-sub"></div>
-  <div class="langmenu" id="langMenu">
-    <div class="mtitle" id="lbl-langtitle">Language</div>
-    <button data-lang="ko">한국어</button>
-    <button data-lang="en">English</button>
-    <button data-lang="zh">中文</button>
-    <button data-lang="ja">日本語</button>
-  </div>
-</header>
-
-<div class="wrap">
-  <div class="optbar">
-    <button type="button" class="optchip" id="partialchk" aria-pressed="false"><span class="dotx"></span><span id="lbl-partial"></span></button>
-    <button type="button" class="optchip" id="vintagechk" aria-pressed="false"><span class="dotx"></span><span id="lbl-vintage"></span></button>
-    <button type="button" class="optinfo" id="optInfoBtn" aria-expanded="false">ⓘ <span class="oitxt" id="lbl-optinfo"></span></button>
-    <div class="optnote" id="optNote"></div>
-  </div>
-
-  <div class="parents">
-    <div class="card">
-      <h2><span class="dot a"></span> <span id="lbl-pa"></span></h2>
-      <div id="parentA"></div>
-    </div>
-    <div class="card">
-      <h2><span class="dot b"></span> <span id="lbl-pb"></span></h2>
-      <div id="parentB"></div>
-    </div>
-  </div>
-
-  <div class="actions">
-    <button class="act btn-reset" id="btn-reset" onclick="resetAll()"></button>
-    <button class="act btn-calc" id="btn-calc" onclick="calcAndLog()"></button>
-  </div>
-
-  <div class="results" id="results"></div>
-
-  <div class="adslot" id="adSlot"></div>
-  <div class="donate-wrap"><button class="donate" id="donateBtn" type="button" onclick="openPrem()"></button></div>
-
-  <div class="bottom-links">
-    <a class="blink" id="mailLink" href="mailto:kmc612000@gmail.com">✉️ 문의하기</a>
-  </div>
-  <div class="mailnote">정보 수정 요청 · 업데이트 건의는 <b>문의하기</b>로 보내주세요 (kmc612000@gmail.com)</div>
-
-  <div class="note" id="note"></div>
-  <div class="legal" id="legalLinks">
-    <a href="terms.html#terms">이용약관</a> · <a href="terms.html#privacy">개인정보처리방침</a>
-  </div>
-  <footer id="footer"></footer>
-</div>
-
-<div class="cookiebar" id="cookieBar">
-  <div class="cb-txt">이 사이트는 로그인 유지와 이용 통계를 위해 쿠키 및 브라우저 저장소를 사용합니다.
-    <a href="terms.html#privacy">자세히</a></div>
-  <button class="cb-ok" onclick="okCookie()">확인</button>
-</div>
-
-<!-- 업데이트 노트 모달 -->
-<div class="modal-overlay" id="updModal">
-  <div class="modal">
-    <div class="modal-head">
-      <h3>📢 업데이트 노트</h3>
-      <button class="modal-x" onclick="closeUpd()" aria-label="close">✕</button>
-    </div>
-    <div class="modal-body">
-      <div class="upd-section">
-        <div class="upd-title done">✅ 업데이트 됨</div>
-        <ul>
-          <li>V1.0 테스트버전 출시</li>
-        </ul>
+  <nav class="site-nav" aria-label="주요 메뉴">
+    <div class="nav-inner">
+      <a class="brand" href="#top" aria-label="RYANG STUDIO 홈">
+        <span class="brand-mark"><img src="./assets/logo-paw.svg" alt=""></span>
+        <span>RYANG STUDIO</span>
+      </a>
+      <div class="nav-links">
+        <a href="#projects">프로젝트</a>
+        <a href="#tiu">TIU</a>
+        <a href="#roadmap">제작 중</a>
+        <a href="#contact">문의</a>
       </div>
-      <div class="upd-section">
-        <div class="upd-title soon">🔜 업데이트 예정</div>
-        <ul>
-          <li>리스트 준비중</li>
-        </ul>
-      </div>
-      <div class="modal-mail">문의 · 건의: <a href="mailto:kmc612000@gmail.com">kmc612000@gmail.com</a></div>
+      <a class="nav-cta" href="#projects">공개 도구 보기 <i class="bi bi-arrow-right"></i></a>
+      <button class="menu-btn" type="button" aria-label="메뉴 열기" aria-expanded="false"><i class="bi bi-list"></i></button>
     </div>
-    <div class="modal-foot">
-      <button class="btn-today" onclick="dismissToday()">오늘 하루 안 보기</button>
-      <button class="btn-close" onclick="closeUpd()">닫기</button>
+    <div class="mobile-menu">
+      <a href="#projects">프로젝트</a>
+      <a href="#tiu">TIU 세계관</a>
+      <a href="#roadmap">제작 중</a>
+      <a href="#contact">문의</a>
     </div>
-  </div>
-</div>
+  </nav>
 
-<!-- 프리미엄 코드 모달 -->
-<div class="modal-overlay" id="premModal">
-  <div class="modal" style="max-width:400px">
-    <div class="modal-head"><h3>💎 프리미엄 코드</h3><button class="modal-x" onclick="closePrem()">✕</button></div>
-    <div class="modal-body">
-      <div id="premAccount"></div>
-
-      <div class="perkbox" id="perkBox">
-        <div class="perkhead">프리미엄으로 열리는 기능</div>
-        <div class="perk"><span class="pk">🦎</span><div><b>브리딩 관리</b><span>내 개체·혈통 등록, 사진 저장, 페어링·클러치 기록 관리</span></div></div>
-        <div class="perk"><span class="pk">🎯</span><div><b>목표 모프 역산</b><span>등록한 개체 기준으로 목표까지 가능한 페어링과 부족한 조건을 찾아줍니다</span></div></div>
-        <div class="perk"><span class="pk">🖼️</span><div><b>결과 이미지 저장</b><span>계산 결과를 이미지로 내려받아 기록·공유</span></div></div>
-        <div class="perk"><span class="pk">🚫</span><div><b>광고 제거</b><span>모든 화면에서 광고가 표시되지 않습니다</span></div></div>
-        <div class="perk"><span class="pk">☁️</span><div><b>계정 동기화</b><span>휴대폰·PC 어디서든 같은 기록을 이어서 사용</span></div></div>
-        <div class="perkfoot">무료로도 <b>모프 확률 계산·콤보 명칭·위험 조합 경고</b>는 계속 이용할 수 있어요.</div>
+  <main id="top">
+    <header class="hero shell">
+      <div class="hero-copy">
+        <p class="kicker"><span></span> INDEPENDENT DIGITAL STUDIO</p>
+        <h1>RYANG<br>STUDIO</h1>
+        <p class="hero-lead">실제로 쓸모 있는 도구와<br><strong>오래 남는 세계를 만듭니다.</strong></p>
+        <p class="hero-desc">반려동물을 직접 키우며 필요한 웹 도구를 만들고, TIU 세계관과 카드게임을 제작합니다. 기획부터 디자인, 개발, 운영까지 한곳에서 이어갑니다.</p>
+        <div class="hero-actions">
+          <a class="button light" href="#projects">지금 도구 사용하기 <i class="bi bi-arrow-right"></i></a>
+          <a class="text-link" href="#studio">스튜디오 둘러보기 <i class="bi bi-arrow-down"></i></a>
+        </div>
+        <div class="studio-status" aria-label="스튜디오 현황">
+          <span>STUDIO STATUS</span>
+          <span><i class="dot amber"></i> 공개 4</span>
+          <span><i class="dot mint"></i> 제작 중 3</span>
+          <span><i class="dot gray"></i> 세계관 1</span>
+        </div>
       </div>
 
-      <div id="premStatus" style="font-size:13px;margin:12px 0 8px;color:var(--ink2)"></div>
-      <input id="premInput" placeholder="발급받은 코드 입력" autocomplete="off"
-             style="width:100%;padding:12px;border-radius:11px;border:1.5px solid var(--chipbd);background:var(--card);color:var(--ink);font-size:15px;font-family:inherit;box-sizing:border-box">
-      <div id="premMsg" style="font-size:12.5px;margin-top:8px;min-height:16px"></div>
-
-      <div class="donatebox" id="donateBox">
-        <div class="dhead">☕ 개발자 후원하기</div>
-        <div class="dsub">이 계산기는 개인이 무료로 만들어 운영하고 있어요. 후원해 주시면 서버 비용과 모프 데이터 업데이트에 사용됩니다.</div>
-        <div class="dacct"><span class="dbank" id="donBank">카카오뱅크</span><b id="donAcct">3333-17-6613203</b>
-          <button class="mini" id="donCopy">복사</button></div>
-        <div class="dnote">후원은 자율이며, 후원하지 않아도 모든 무료 기능을 그대로 이용하실 수 있습니다. 후원금은 프리미엄 이용권과 무관합니다.</div>
+      <div class="hero-product" aria-label="레오파드 게코 모프 계산기 미리보기">
+        <div class="product-head">
+          <span class="live-badge">LIVE</span>
+          <strong>레오파드 게코 모프 계산기</strong>
+          <a href="./gecko/index.html" aria-label="계산기 열기"><i class="bi bi-box-arrow-up-right"></i></a>
+        </div>
+        <div class="mini-calc">
+          <div class="calc-fields">
+            <label>부모 개체 정보
+              <select id="mini-parent-a"><option>부모 A 모프 선택</option><option>Mack Snow</option><option>Albino</option></select>
+            </label>
+            <label>
+              <select id="mini-parent-b"><option>부모 B 모프 선택</option><option>Mack Snow</option><option>Albino</option></select>
+            </label>
+            <span class="field-label">주요 개체</span>
+            <div class="mini-donut"><b>50%</b></div>
+          </div>
+          <div class="calc-result">
+            <span class="field-label">예상 자손 결과</span>
+            <p>가능한 조합</p>
+            <div><i class="swatch mint"></i><span>50% 확률 모프</span></div>
+            <div><i class="swatch amber"></i><span>25% 확률 모프</span></div>
+            <div><i class="swatch gray"></i><span>25% 확률 모프</span></div>
+            <a class="mini-open" href="./gecko/index.html">도구 열기 <i class="bi bi-arrow-right"></i></a>
+          </div>
+        </div>
+        <img class="hero-gecko" src="./assets/leopard-hero-v1.png" alt="레오파드 게코">
+        <div class="product-foot"><span>최근 업데이트 2026.07</span><span>한 · 영 · 중 · 일 지원</span></div>
       </div>
+    </header>
+
+    <section class="studio-pillars" id="studio">
+      <div class="shell">
+        <div class="section-heading compact">
+          <div><p class="section-kicker">WHAT WE MAKE</p><h2>스튜디오의 네 가지 작업</h2></div>
+          <p>서로 다른 프로젝트도 결국<br>‘직접 쓰이는 경험’으로 연결됩니다.</p>
+        </div>
+        <div class="pillar-grid">
+          <article><i class="bi bi-tools"></i><span>BUILD</span><h3>웹 도구 제작</h3><p>실제 사용 환경에서 필요한 기능을 직접 설계하고 운영합니다.</p></article>
+          <article><i class="bi bi-heart-pulse"></i><span>CARE</span><h3>동물 관리</h3><p>사육, 브리딩, 건강 기록을 더 정확하고 편하게 만듭니다.</p></article>
+          <article><i class="bi bi-controller"></i><span>PLAY</span><h3>게임과 상호작용</h3><p>카드, 선택, 기록이 서사로 이어지는 경험을 만듭니다.</p></article>
+          <article><i class="bi bi-globe-asia-australia"></i><span>WORLD</span><h3>창작과 세계관</h3><p>TIU를 중심으로 세계, 인물, 사건을 장기적으로 확장합니다.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="releases shell" id="projects">
+      <div class="section-heading">
+        <div><p class="section-kicker">STUDIO RELEASES</p><h2>지금 사용할 수 있는 프로젝트</h2></div>
+        <p>포트폴리오가 아니라 지금도 쓰이고,<br>계속 업데이트되는 스튜디오의 제품입니다.</p>
+      </div>
+
+      <div class="release-grid">
+        <a class="release-card release-leopard" href="./gecko/index.html">
+          <div class="release-copy">
+            <span class="state live">운영 중</span><small>ANIMAL CARE</small>
+            <h3>레오파드 게코<br>모프 계산기</h3>
+            <p>멘델 유전 확률, 유전 조합 가이드와 브리딩 관리 기능을 한곳에 담았습니다.</p>
+            <span class="card-link">도구 열기 <i class="bi bi-arrow-right"></i></span>
+          </div>
+          <div class="animal-stage"><img src="./assets/leopard-hero-v1.png" alt="레오파드 게코"></div>
+        </a>
+
+        <a class="release-card release-crested" href="./crested/index.html">
+          <div class="release-copy">
+            <span class="state live">운영 중</span><small>ANIMAL CARE</small>
+            <h3>크레스티드 게코<br>모프 계산기</h3>
+            <p>표현형과 유전자형을 나눠 보고, 복합 형질과 위험 조합까지 확인합니다.</p>
+            <span class="card-link">도구 열기 <i class="bi bi-arrow-right"></i></span>
+          </div>
+          <div class="animal-stage"><img src="./assets/crested-hero-v2.png" alt="크레스티드 게코"></div>
+        </a>
+
+        <a class="release-card release-pygmy" href="https://pygmytest.com/" target="_blank" rel="noopener">
+          <img class="cover" src="./assets/pygmy-studio-v1.png" alt="피그미다람쥐">
+          <div class="cover-shade"></div>
+          <div class="release-copy on-cover">
+            <span class="state live">운영 중</span><small>INTERACTIVE TEST</small>
+            <h3>피그미다람쥐<br>모프 테스트</h3>
+            <p>10개의 질문으로 나와 닮은 모프를 찾는 가벼운 인터랙티브 테스트입니다.</p>
+            <span class="card-link">테스트 시작 <i class="bi bi-box-arrow-up-right"></i></span>
+          </div>
+        </a>
+      </div>
+    </section>
+
+    <section class="tiu-feature shell" id="tiu">
+      <img src="./assets/tiu-oracle-v1.png" alt="ORACLE 전 지구 관측망">
+      <div class="tiu-overlay"></div>
+      <div class="tiu-copy">
+        <p class="terminal-label"><span></span> ORIGINAL IP / KOREAN BRANCH</p>
+        <h2>TIU UNIVERSE</h2>
+        <h3>TERMINAL SESSION</h3>
+        <p>ORACLE 관측망 아래에서 한국 지부를 지휘하는 SF 카드 내러티브 게임. 하나의 선택이 기지의 생존, 인물 관계, 세계의 진실을 바꿉니다.</p>
+        <div class="tiu-meta"><span>카드 스와이프</span><span>다중 엔딩</span><span>한국 SF</span><span>세계관 확장</span></div>
+        <div class="tiu-actions">
+          <a class="button terminal" href="https://art-lyang.github.io/TIU/" target="_blank" rel="noopener">관측망 접속 <i class="bi bi-arrow-right"></i></a>
+          <a class="text-link terminal-link" href="https://tiu-art.itch.io/terminal-session-demo" target="_blank" rel="noopener">무료 데모 플레이 <i class="bi bi-box-arrow-up-right"></i></a>
+        </div>
+      </div>
+      <div class="tiu-readout"><span>OBS NODES 07</span><span>CONTAINMENT 97.3%</span><span class="live-feed"><i></i> LIVE FEED</span></div>
+    </section>
+
+    <section class="roadmap shell" id="roadmap">
+      <div class="section-heading">
+        <div><p class="section-kicker">NOW IN PRODUCTION</p><h2>스튜디오에서 지금 만들고 있어요</h2></div>
+        <p>연구실이 아니라 실제로 진행 중인<br>제작 상태를 간단히 공개합니다.</p>
+      </div>
+      <div class="roadmap-grid">
+        <article>
+          <span class="road-state building">개선 중</span>
+          <h3>게코 계산기 고도화</h3>
+          <p>모바일 UI와 개체 관리 흐름을 다듬고 있습니다.</p>
+          <div class="progress"><i style="width:72%"></i></div><small>72%</small>
+        </article>
+        <article>
+          <span class="road-state planning">기획 중</span>
+          <h3>통합 사육 기록 도구</h3>
+          <p>개체, 급여, 체중, 브리딩 기록을 한 화면으로 연결합니다.</p>
+          <div class="progress"><i style="width:28%"></i></div><small>28%</small>
+        </article>
+        <article>
+          <span class="road-state world">확장 중</span>
+          <h3>TIU 한국 지부</h3>
+          <p>사건, 인물, 기관과 카드 시나리오를 계속 확장합니다.</p>
+          <div class="progress"><i style="width:54%"></i></div><small>54%</small>
+        </article>
+      </div>
+    </section>
+
+    <section class="principles">
+      <div class="shell principle-grid">
+        <div><p class="section-kicker">STUDIO PRINCIPLES</p><h2>작게 만들고,<br>정확하게 오래 씁니다.</h2></div>
+        <article><i class="bi bi-check2-circle"></i><h3>실제로 쓰이는 기능</h3><p>필요에서 시작하고 사용 환경에서 검증합니다.</p></article>
+        <article><i class="bi bi-compass"></i><h3>명확한 정보</h3><p>복잡한 정보도 처음 쓰는 사람이 이해하게 만듭니다.</p></article>
+        <article><i class="bi bi-arrow-repeat"></i><h3>지속적인 개선</h3><p>출시로 끝내지 않고 실제 피드백을 반영합니다.</p></article>
+      </div>
+    </section>
+
+    <section class="contact shell" id="contact">
+      <div>
+        <p class="section-kicker">CONTACT</p>
+        <h2>새로운 도구나 협업을<br>함께 이야기해요.</h2>
+        <p>오류 제보, 프로젝트 문의, 협업 제안은 언제든 환영합니다.</p>
+      </div>
+      <a class="email-card" href="mailto:kmc612000@gmail.com"><i class="bi bi-envelope"></i><span><small>EMAIL</small>kmc612000@gmail.com</span><i class="bi bi-arrow-up-right"></i></a>
+    </section>
+  </main>
+
+  <footer>
+    <div class="shell footer-inner">
+      <div class="brand footer-brand"><span class="brand-mark"><img src="./assets/logo-paw.svg" alt=""></span><span>RYANG STUDIO</span></div>
+      <p>반려동물 도구와 게임, 작은 세계를 만드는 1인 스튜디오.</p>
+      <div><a href="#projects">프로젝트</a><a href="#tiu">TIU</a><a href="#contact">문의</a></div>
+      <small>© 2026 RYANG STUDIO. All rights reserved.</small>
     </div>
-    <div class="modal-foot">
-      <button class="btn-today" onclick="closePrem()">닫기</button>
-      <button class="btn-close" onclick="redeemPrem()">활성화</button>
-    </div>
-  </div>
-</div>
-
-<!-- 관리자 페이지 (#admin) -->
-<div id="adminRoot" class="admin-root"></div>
-
-<script>
-/* ================= 다국어 사전 ================= */
-const I18N = {
-  ko:{
-    htmlLang:'ko',
-    title:'🦎 레오파드 모프 계산기',
-    sub:'테스트 버전',
-    langLabel:'언어',
-    parentA:'부모 A', parentB:'부모 B',
-    reset:'초기화', calc:'모프 계산하기',
-    polyToggle:'라인브리딩(폴리제닉) 형질 포함', polyToggleHint:'탠저린·볼드 등 — 확률 계산 불가, 참고용으로만 표시',
-    polyPresent:'있음', polyAbsent:'없음',
-    emptyStart:'부모의 형질을 선택하고 <b>모프 계산하기</b>를 눌러주세요.',
-    emptyNone:'선택된 형질이 없어요.<br>부모의 형질을 하나 이상 골라주세요.',
-    resultsH:'새끼 모프 확률',
-    summary:function(n){return '총 '+n+'가지 조합 · 확률 내림차순';},
-    normal:'노멀', het:'het', comboTag:'콤보',
-    visualTag:'비주얼', hetShort:'헷', superShort:'슈퍼폼', colProb:'확률', colVisual:'비주얼 (발현)', colHet:'HET (보인자)', hetNone:'–',
-    partialToggle:'가능성 헷 표시 (66·33%)', partialHint:'확률적 보인자(66·33% 등)까지 표로 표시',
-    vintageToggle:'추억의 모프 보기', vintageHint:'요즘 보기 힘든 과거 모프·콤보까지 표시', optInfo:'표시 옵션 설명',
-    comboLoad:'콤보 개체 불러오기…', donate:'☕ 개발자 후원하기', adLabel:'광고', adHint:'이 자리에 광고 코드를 넣을 수 있어요',
-    secCombo:'콤보 (탭하면 자동 세팅)', secGene:'유전 모프 (확률 계산)',
-    comboNote:'<b>콤보 이름</b> — 계산 결과가 알려진 콤보와 일치하면 디자이너 명칭(예: 갤럭시, 레이다)을 함께 표시합니다. 다만 탠저린·하이포·TUG 스노우 등 라인브리딩이 필요한 콤보(앱터/랩터/노바 등)는 자동 인식되지 않습니다.',
-    warnH:'⚠️ 주의가 필요한 유전 조합',
-    polyH:'라인브리딩 형질 (확률 계산 불가)',
-    polyDesc:'폴리제닉(다인자) 형질이라 정확한 확률을 낼 수 없습니다. 아래 형질은 부모가 지녀 새끼에 나타날 수 있으며 발현 정도는 개체마다 다릅니다. ‘(양쪽)’은 부모 둘 다 지닌 형질로, 더 강하게 발현될 가능성이 있습니다.',
-    polyBoth:'양쪽',
-    cat:{rec:'열성 (Recessive)', incdom:'불완전우성 (Incomplete Dominant)', dom:'우성 (Dominant)', poly:'라인브리딩 (Line-bred)'},
-    inh:{rec:'열성', incdom:'불완전우성', dom:'우성', poly:'다인자'},
-    optRec:{nn:'정상', het:'het 보인자', mm:'비주얼'},
-    optDom:{nn:'정상', het:'비주얼', mm:'슈퍼폼'},
-    note:'<b>참고</b> — 트램퍼·벨·레인워터 알비노는 서로 <b>다른 유전자</b>라서, 한쪽 알비노 het와 다른 알비노 het를 교배하면 알비노가 나오지 않습니다(더블 het). 맥스노우는 불완전우성(슈퍼폼 = 슈퍼 스노우, 건강함)이고, 에니그마·W&Y는 우성입니다. <b>일부 모프는 슈퍼폼이나 특정 조합에서 심각한 건강 문제·치사성이 나타납니다</b>(예: 슈퍼 레몬 프로스트의 종양, 에니그마의 신경 증상). 위험 조합은 결과 상단에 경고로 표시됩니다.',
-    footer:'확률은 멘델 유전 법칙에 따른 이론값입니다 · 라인브리딩(폴리제닉) 형질은 확률 계산 대상이 아닙니다',
-  },
-  en:{
-    htmlLang:'en',
-    title:'🦎 Leopard Gecko Morph Calculator',
-    sub:'Pick each parent’s genetics to see the probability of each offspring morph',
-    langLabel:'Language',
-    parentA:'Parent A', parentB:'Parent B',
-    reset:'Reset', calc:'Calculate Morphs',
-    polyToggle:'Include line-bred (polygenic) traits', polyToggleHint:'Tangerine, Bold, etc. — not probability-based, shown for reference only',
-    polyPresent:'Present', polyAbsent:'None',
-    emptyStart:'Set the parents’ traits and tap <b>Calculate Morphs</b>.',
-    emptyNone:'No traits selected.<br>Choose at least one trait on a parent.',
-    resultsH:'Offspring Morph Probabilities',
-    summary:function(n){return n+' possible combination'+(n===1?'':'s')+' · sorted by probability';},
-    normal:'Normal', het:'het', comboTag:'COMBO',
-    visualTag:'Visual', hetShort:'het', superShort:'Super form', colProb:'Prob.', colVisual:'Visual (expressed)', colHet:'Het (carrier)', hetNone:'–',
-    partialToggle:'Show possible hets (66·33%)', partialHint:'Include probabilistic carriers (66·33%, etc.) in the table',
-    vintageToggle:'Show vintage morphs', vintageHint:'Include older, rarely-seen morphs and combos', optInfo:'About these options',
-    comboLoad:'Load a combo animal…', donate:'☕ Support the developer', adLabel:'Advertisement', adHint:'Place your ad code here',
-    secCombo:'Combos (tap to auto-set)', secGene:'Genetic morphs (calculated)',
-    comboNote:'<b>Combo names</b> — when an outcome matches a known combo, its designer name (e.g. Galaxy, Radar) is shown. Combos requiring line-bred traits (Tangerine, Hypo, TUG snow) such as APTOR/RAPTOR/Nova aren’t auto-detected.',
-    warnH:'⚠️ Genetics that need caution',
-    polyH:'Line-bred traits (not probability-based)',
-    polyDesc:'These are polygenic traits, so exact probabilities can’t be calculated. The traits below are carried by a parent and may appear in offspring to varying degrees. “(both)” means both parents carry it, so it may express more strongly.',
-    polyBoth:'both',
-    cat:{rec:'Recessive', incdom:'Incomplete Dominant', dom:'Dominant', poly:'Line-bred / Polygenic'},
-    inh:{rec:'Recessive', incdom:'Inc. dominant', dom:'Dominant', poly:'Polygenic'},
-    optRec:{nn:'Normal', het:'het (carrier)', mm:'Visual'},
-    optDom:{nn:'Normal', het:'Visual', mm:'Super form'},
-    note:'<b>Note</b> — Tremper, Bell and Rainwater albino are <b>separate genes</b>, so crossing a het of one with a het of another yields no albinos (double het). Mack Snow is incomplete dominant (homozygous = Super Snow, healthy); Enigma and W&Y are dominant. <b>Some morphs cause serious health issues or lethality in their super (homozygous) form or in certain pairings</b> (e.g. tumors in Super Lemon Frost, neurological symptoms in Enigma). Risky pairings are flagged at the top of the results.',
-    footer:'Probabilities are theoretical values from Mendelian inheritance · line-bred (polygenic) traits are not probability-based',
-  },
-  zh:{
-    htmlLang:'zh-Hans',
-    title:'🦎 豹纹守宫基因计算器',
-    sub:'选择父母双方的基因，即可计算后代各形态的概率',
-    langLabel:'语言',
-    parentA:'亲本 A', parentB:'亲本 B',
-    reset:'重置', calc:'计算形态',
-    polyToggle:'包含线育（多基因）性状', polyToggleHint:'橘化、粗条纹等 — 无法计算概率，仅供参考',
-    polyPresent:'有', polyAbsent:'无',
-    emptyStart:'设置父母的性状后，点击<b>计算形态</b>。',
-    emptyNone:'未选择任何性状。<br>请至少为一方选择一个性状。',
-    resultsH:'后代形态概率',
-    summary:function(n){return '共 '+n+' 种组合 · 按概率降序';},
-    normal:'普通', het:'het', comboTag:'组合',
-    visualTag:'表现', hetShort:'het', superShort:'超级', colProb:'概率', colVisual:'表现型', colHet:'Het (携带)', hetNone:'–',
-    partialToggle:'显示可能 het（66·33%）', partialHint:'在表格中包含概率性携带（66·33% 等）',
-    vintageToggle:'显示怀旧形态', vintageHint:'包含现在少见的旧形态与组合', optInfo:'选项说明',
-    comboLoad:'载入组合个体…', donate:'☕ 支持开发者', adLabel:'广告', adHint:'可在此处放置广告代码',
-    secCombo:'组合（点击自动设置）', secGene:'遗传形态（可计算）',
-    comboNote:'<b>组合名称</b> — 当结果与已知组合一致时，会显示其商品名（如 Galaxy、Radar）。需要线育性状（橘化、Hypo、TUG 雪花）的组合（如 APTOR/RAPTOR/Nova）不会自动识别。',
-    warnH:'⚠️ 需要注意的基因组合',
-    polyH:'线育性状（非概率计算）',
-    polyDesc:'这是多基因（polygenic）性状，无法计算精确概率。以下性状由父母携带，可能以不同程度出现在后代中。「(双方)」表示父母双方都携带，可能表现更强。',
-    polyBoth:'双方',
-    cat:{rec:'隐性 (Recessive)', incdom:'不完全显性 (Incomplete Dominant)', dom:'显性 (Dominant)', poly:'线育 (Line-bred)'},
-    inh:{rec:'隐性', incdom:'不完全显性', dom:'显性', poly:'多基因'},
-    optRec:{nn:'普通', het:'het 携带', mm:'表现型'},
-    optDom:{nn:'普通', het:'表现型', mm:'超级形态'},
-    note:'<b>注意</b> — 特伦伯、贝尔、雨水白化是<b>不同的基因</b>，因此一方白化 het 与另一方白化 het 交配不会产生白化（双 het）。麦克雪花为不完全显性（纯合 = 超级雪花，健康），Enigma 与 W&Y 为显性。<b>部分形态在超级（纯合）形式或特定配对中会出现严重健康问题或致死</b>（例如超级柠檬霜的肿瘤、Enigma 的神经症状）。有风险的配对会在结果顶部以警告显示。',
-    footer:'概率为基于孟德尔遗传的理论值 · 线育（多基因）性状不在概率计算范围内',
-  },
-  ja:{
-    htmlLang:'ja',
-    title:'🦎 ヒョウモントカゲモドキ モルフ計算機',
-    sub:'両親の遺伝形質を選ぶと、仔のモルフ確率を計算します',
-    langLabel:'言語',
-    parentA:'親 A', parentB:'親 B',
-    reset:'リセット', calc:'モルフを計算',
-    polyToggle:'ラインブリード（ポリジェニック）形質を含める', polyToggleHint:'タンジェリン・ボールド等 — 確率計算は不可、参考表示のみ',
-    polyPresent:'あり', polyAbsent:'なし',
-    emptyStart:'両親の形質を選んで<b>モルフを計算</b>を押してください。',
-    emptyNone:'選択された形質がありません。<br>片方に1つ以上選んでください。',
-    resultsH:'仔のモルフ確率',
-    summary:function(n){return '全 '+n+' 通りの組み合わせ · 確率の高い順';},
-    normal:'ノーマル', het:'het', comboTag:'コンボ',
-    visualTag:'ビジュアル', hetShort:'het', superShort:'スーパーフォーム', colProb:'確率', colVisual:'ビジュアル（発現）', colHet:'Het（保因）', hetNone:'–',
-    partialToggle:'可能性 het を表示（66・33%）', partialHint:'66・33% など確率的な保因も表に表示',
-    vintageToggle:'懐かしのモルフを表示', vintageHint:'今では見かけない古いモルフ・コンボも表示', optInfo:'表示オプションの説明',
-    comboLoad:'コンボ個体を読み込む…', donate:'☕ 開発者を支援', adLabel:'広告', adHint:'ここに広告コードを配置できます',
-    secCombo:'コンボ（タップで自動設定）', secGene:'遺伝モルフ（確率計算）',
-    comboNote:'<b>コンボ名</b> — 結果が既知のコンボと一致すると、そのデザイナー名（例：Galaxy、Radar）を表示します。ラインブリード形質（タンジェリン・ハイポ・TUGスノー）が必要なコンボ（APTOR/RAPTOR/Nova等）は自動判別されません。',
-    warnH:'⚠️ 注意が必要な遺伝の組み合わせ',
-    polyH:'ラインブリード形質（確率計算不可）',
-    polyDesc:'ポリジェニック（多因子）形質のため正確な確率は出せません。以下の形質は親が持ち、仔に程度の差はあれ現れる可能性があります。「(両方)」は両親とも持つ形質で、より強く発現する可能性があります。',
-    polyBoth:'両方',
-    cat:{rec:'劣性 (Recessive)', incdom:'不完全優性 (Incomplete Dominant)', dom:'優性 (Dominant)', poly:'ラインブリード (Line-bred)'},
-    inh:{rec:'劣性', incdom:'不完全優性', dom:'優性', poly:'多因子'},
-    optRec:{nn:'ノーマル', het:'het（保因）', mm:'ビジュアル'},
-    optDom:{nn:'ノーマル', het:'ビジュアル', mm:'スーパーフォーム'},
-    note:'<b>参考</b> — トレンパー・ベル・レインウォーターアルビノは<b>別々の遺伝子</b>のため、片方のアルビノ het と別のアルビノ het を交配してもアルビノは出ません（ダブル het）。マックスノーは不完全優性（ホモ = スーパースノー、健康）、エニグマ・W&Y は優性です。<b>一部のモルフはスーパー（ホモ）や特定の組み合わせで深刻な健康問題や致死性が生じます</b>（例：スーパーレモンフロストの腫瘍、エニグマの神経症状）。リスクのある組み合わせは結果上部に警告表示されます。',
-    footer:'確率はメンデル遺伝に基づく理論値です · ラインブリード（ポリジェニック）形質は確率計算の対象外です',
-  },
-};
-
-LANG='ko';
-let showPoly=true, showPartialHet=false, showVintage=false, hasResult=false;
-function L(){ return I18N[LANG]; }
-function gName(g){ return g[LANG]; }
-function gSuper(g){ return g['super'+LANG.charAt(0).toUpperCase()+LANG.slice(1)]; }
-function pName(p){ return p[LANG]; }
-
-/* ================= UI ================= */
-function famHeader(fam){
-  const d=document.createElement('div'); d.className='famhead';
-  const desc=fam.desc[LANG];
-  d.innerHTML='<span class="famname">'+escapeHtml(fam[LANG])+'</span>'
-    +'<span class="fambadge badge-'+fam.type+'">'+escapeHtml(L().inh[fam.type])+'</span>'
-    +(desc?'<div class="famdesc">'+escapeHtml(desc)+'</div>':'');
-  return d;
-}
-function secHeader(text){ const d=document.createElement('div'); d.className='sechead'; d.textContent=text; return d; }
-function comboChip(combo, side, matched){
-  const on = (matched===combo);
-  const chip=document.createElement('button');
-  chip.className='chip combochip'+(side==='B'?' b':'')+(on?' on':'');
-  chip.innerHTML=escapeHtml(combo[LANG]||combo.en)+(combo.risk?' <span class="chiprisk">⚠</span>':'');
-  chip.onclick=()=>{
-    if(on){ GENES.forEach(g=>STATE[side][g.id]='nn'); }
-    else { applyComboToParent(side, combo); }
-    buildParent(side);
-    if(hasResult) calculate();
-  };
-  return chip;
-}
-function buildParent(side){
-  const host=document.getElementById(side==='A'?'parentA':'parentB');
-  host.innerHTML='';
-  const matched=matchCombo(parentTokens(side));
-  // 명칭 있는 콤보면 부모 카드에 명칭 표시 (예: = 갤럭시)
-  if(matched){ const badge=document.createElement('div'); badge.className='parentcombo'+(side==='B'?' b':''); badge.textContent='= '+(matched[LANG]||matched.en); host.appendChild(badge); }
-  // 콤보 칩 (탭하면 구성 유전자 자동 세팅)
-  host.appendChild(secHeader(L().secCombo));
-  const cgrid=document.createElement('div'); cgrid.className='chipgrid';
-  COMBOS.filter(c=>!c.vintage||showVintage||c===matched).forEach(c=>cgrid.appendChild(comboChip(c, side, matched)));
-  host.appendChild(cgrid);
-  // 유전 모프 (열성/우성 구분 없이 하나의 칩셋)
-  host.appendChild(secHeader(L().secGene));
-  const grid=document.createElement('div'); grid.className='chipgrid';
-  GENES.forEach(g=>{
-    if(g.type==='incdom'){          // 불완전우성: 비주얼/슈퍼를 각각 별도 칩으로
-      grid.appendChild(incdomChip(g, side, 'het', gName(g)));
-      grid.appendChild(incdomChip(g, side, 'mm', gSuper(g)));
-    } else {
-      grid.appendChild(chipFor(g, side, false));
-    }
-  });
-  host.appendChild(grid);
-  // 라인브리딩(폴리제닉) — 확률 계산 불가, 참고용
-  const pf=FAMILIES.find(f=>f.id==='poly');
-  host.appendChild(famHeader(pf));
-  const pgrid=document.createElement('div'); pgrid.className='chipgrid';
-  POLY.forEach(p=>pgrid.appendChild(chipFor(p, side, true)));
-  host.appendChild(pgrid);
-}
-// 칩을 처음 켤 때 기본값 (rec=비주얼, incdom/dom=첫 비주얼 상태)
-function defaultOn(g){ return g.type==='rec'? 'mm' : 'het'; }
-// 켜진 칩 아래 서브 토글 옵션
-function subsegOptions(g){
-  const t=L();
-  if(g.type==='rec')    return [['het', t.hetShort], ['mm', t.visualTag]];   // 헷 / 비주얼
-  if(g.type==='incdom') return [['het', gName(g)], ['mm', gSuper(g)]];        // 맥스노우 / 슈퍼 스노우
-  return [['het', t.visualTag], ['mm', t.superShort]];                       // 비주얼 / 슈퍼폼
-}
-// 불완전우성 전용: 상태(het=비주얼 / mm=슈퍼)별 독립 칩
-function incdomChip(g, side, state, label){
-  const on = STATE[side][g.id]===state;
-  const chip=document.createElement('button');
-  chip.className='chip'+(side==='B'?' b':'')+(on?' on':'');
-  const col = (state==='mm'? (GCOLOR['super_'+g.id]||'#EFEEEA') : (GCOLOR[g.id]||'#CFC7A0'));
-  chip.innerHTML='<span class="sw" style="background:'+col+'"></span>'+escapeHtml(label)+(g.risk?' <span class="chiprisk">⚠</span>':'');
-  chip.onclick=()=>{ STATE[side][g.id]= on? 'nn' : state; buildParent(side); if(hasResult) calculate(); };
-  return chip;
-}
-function chipFor(g, side, isPoly){
-  const wrap=document.createElement('div'); wrap.className='chipwrap';
-  const off= isPoly? 'no':'nn';
-  const on = STATE[side][g.id]!==off;
-  const chip=document.createElement('button');
-  chip.className='chip'+(side==='B'?' b':'')+(on?' on':'');
-  const col=GCOLOR[g.id]||'#CFC7A0';
-  const sw = MORPH_IMG[g.id]? '<span class="sw img" style="background-image:url('+MORPH_IMG[g.id]+')"></span>' : '<span class="sw" style="background:'+col+'"></span>';
-  chip.innerHTML=sw+escapeHtml(isPoly? pName(g) : gName(g))+(g.risk?' <span class="chiprisk">⚠</span>':'');
-  chip.onclick=()=>{
-    STATE[side][g.id]= on? off : (isPoly? 'yes' : defaultOn(g));
-    buildParent(side);
-    if(hasResult) calculate();
-  };
-  wrap.appendChild(chip);
-  if(on && !isPoly){
-    const seg=document.createElement('div'); seg.className='subseg'+(side==='B'?' b':'');
-    subsegOptions(g).forEach(([val,lab])=>{
-      const b=document.createElement('button'); b.textContent=lab;
-      if(STATE[side][g.id]===val) b.classList.add('on');
-      b.onclick=(e)=>{ e.stopPropagation(); STATE[side][g.id]=val; buildParent(side); if(hasResult) calculate(); };
-      seg.appendChild(b);
-    });
-    wrap.appendChild(seg);
-  }
-  return wrap;
-}
-
-/* 콤보 개체를 부모에 적용 — 콤보 토큰을 유전자 상태로 변환 */
-function applyComboToParent(side, combo){
-  GENES.forEach(g=>STATE[side][g.id]='nn'); // 멘델 형질 초기화
-  combo.tokens.forEach(tk=>{
-    if(tk.indexOf('super_')===0){ const id=tk.slice(6); if(STATE[side][id]!==undefined) STATE[side][id]='mm'; return; }
-    const g=GENES.find(x=>x.id===tk); if(!g) return;
-    STATE[side][g.id]= (g.type==='rec')? 'mm' : 'het'; // rec=비주얼(mm), incdom Nm / dom 비주얼
-  });
-}
-function applyLang(){
-  const t=L();
-  document.documentElement.lang=t.htmlLang;
-  document.getElementById('h-title').textContent=t.title;
-  document.getElementById('h-sub').textContent=t.sub;
-  document.getElementById('lbl-pa').textContent=t.parentA;
-  document.getElementById('lbl-pb').textContent=t.parentB;
-  document.getElementById('btn-reset').textContent=t.reset;
-  document.getElementById('btn-calc').textContent=t.calc;
-  document.getElementById('lbl-partial').textContent=t.partialToggle;
-  document.getElementById('lbl-vintage').textContent=t.vintageToggle;
-  document.getElementById('lbl-optinfo').textContent=t.optInfo;
-  document.getElementById('optNote').innerHTML='<b>'+escapeHtml(t.partialToggle)+'</b> — '+escapeHtml(t.partialHint)
-    +'<br><b>'+escapeHtml(t.vintageToggle)+'</b> — '+escapeHtml(t.vintageHint);
-  document.getElementById('note').innerHTML=t.note+'<br><br>'+t.comboNote;
-  document.getElementById('footer').textContent=t.footer;
-  document.getElementById('lbl-langtitle').textContent=t.langLabel;
-  document.querySelectorAll('#langMenu button').forEach(b=>b.classList.toggle('on', b.dataset.lang===LANG));
-  // 후원 버튼 + 광고 영역
-  const dn=document.getElementById('donateBtn'); dn.textContent=t.donate;
-  dn.closest('.donate-wrap').style.display = SHOW_DONATE? '' : 'none';
-  const ad=document.getElementById('adSlot');
-  if(AD_ENABLED && !window.__isPrem){ ad.style.display='flex'; ad.innerHTML = AD_HTML || ('<div class="adlbl">'+escapeHtml(t.adLabel)+'</div><div class="adhint">'+escapeHtml(t.adHint)+'</div>'); }
-  else ad.style.display='none';
-  buildParent('A'); buildParent('B');
-  if(hasResult) calculate();
-  else document.getElementById('results').innerHTML='<div class="empty">'+t.emptyStart+'</div>';
-}
-function setLang(lang){ if(lang===LANG) return; LANG=lang; applyLang(); }
-
-function resetAll(){
-  GENES.forEach(g=>{STATE.A[g.id]='nn';STATE.B[g.id]='nn';});
-  POLY.forEach(p=>{STATE.A[p.id]='no';STATE.B[p.id]='no';});
-  hasResult=false;
-  buildParent('A'); buildParent('B');
-  document.getElementById('results').innerHTML='<div class="empty">'+L().emptyStart+'</div>';
-}
-
-function calculate(){
-  const active=GENES.filter(g=>STATE.A[g.id]!=='nn'||STATE.B[g.id]!=='nn');
-  let rows=null, dists=[];
-  if(active.length>0){
-    dists=active.map(g=>({g, dist:geneDist(g)}));
-    const buckets=active.map(g=>geneVisualBuckets(g));
-    let combos=[{prob:1, recVis:[], othVis:[], hets:[], tokens:new Set()}];
-    buckets.forEach(list=>{
-      const next=[];
-      combos.forEach(c=>list.forEach(bk=>{
-        const recVis=c.recVis.slice(), othVis=c.othVis.slice(), hets=c.hets.slice(), tokens=new Set(c.tokens);
-        if(bk.visualName){ (bk.rec?recVis:othVis).push(bk.visualName); if(bk.token) tokens.add(bk.token); }
-        if(bk.het) hets.push(bk.het);
-        next.push({prob:c.prob*bk.prob, recVis, othVis, hets, tokens});
-      }));
-      combos=next;
-    });
-    rows=combos.filter(c=>c.prob>1e-9).map(c=>{
-      const cb=matchCombo(c.tokens);
-      const guaranteed=c.hets.filter(h=>h.p>=0.999).map(h=>h.name);
-      const partial=c.hets.filter(h=>h.p<0.999).map(h=>({name:h.name, pct:Math.floor(h.p*100+1e-9)}));
-      return {
-        prob:c.prob,
-        combo: cb?(cb[LANG]||cb.en):null,
-        visualLabel: buildVisualLabel(c.recVis, c.othVis),
-        isNormal: (c.recVis.length+c.othVis.length)===0,
-        tokens:[...c.tokens],
-        guaranteed, partial
-      };
-    }).sort((a,b)=>b.prob-a.prob);
-  }
-  const warnings=computeWarnings(dists);
-  const poly=gatherPoly();
-  const anything = (rows&&rows.length) || warnings.length || poly.length;
-  hasResult=!!anything;
-  render({rows, warnings, poly, anything});
-}
-
-/* ================= 결과 렌더 ================= */
-function fracStr(prob){
-  let best={n:0,d:1,err:1};
-  for(let d=1; d<=256; d++){
-    const n=Math.round(prob*d), err=Math.abs(prob-n/d);
-    if(err<best.err-1e-9){best={n,d,err};}
-    if(err<1e-9) break;
-  }
-  const gg=gcd(best.n,best.d);
-  return (best.n/gg)+'/'+(best.d/gg);
-}
-function render(payload){
-  const host=document.getElementById('results'), t=L();
-  if(!payload || !payload.anything){
-    host.innerHTML='<div class="empty">'+t.emptyNone+'</div>';
-    return;
-  }
-  let html='';
-  if(payload.warnings && payload.warnings.length){
-    html+='<div class="warnhead">'+t.warnH+'</div>';
-    payload.warnings.forEach(w=>{ html+='<div class="warnbox warn-'+w.level+'">'+w.text+'</div>'; });
-  }
-  if(payload.rows && payload.rows.length){
-    const rows=payload.rows;
-    html+='<h2>'+t.resultsH+'</h2><div class="summary">'+t.summary(rows.length)+'</div>';
-    html+=buildPie(rows);
-    html+='<table class="rtable"><thead><tr><th>'+t.colProb+'</th><th>'+t.colVisual+'</th><th>'+t.colHet+'</th></tr></thead><tbody>';
-    rows.forEach(r=>{
-      const pctNum=r.prob*100, pct= pctNum>=9.95? pctNum.toFixed(0):pctNum.toFixed(1);
-      let vtext;
-      if(r.combo) vtext='<span class="combotag">'+t.comboTag+'</span>'+escapeHtml(r.combo)+'<div class="submorph">'+escapeHtml(r.visualLabel)+'</div>';
-      else vtext=escapeHtml(r.visualLabel);
-      const vcell='<div class="visrow"><span class="geckothumb">'+geckoSVG(geckoProfile(r.tokens),46)+'</span>'
-        +'<span class="vtext'+(r.isNormal?' isnorm':'')+'">'+vtext+'</span></div>';
-      const hetParts=[];
-      r.guaranteed.forEach(n=>hetParts.push('<span class="het100">100HET '+escapeHtml(n)+'</span>'));
-      if(showPartialHet) r.partial.forEach(p=>hetParts.push('<span class="hetp">'+p.pct+'HET '+escapeHtml(p.name)+'</span>'));
-      const hcell = hetParts.length? hetParts.join('') : '<span class="hetnone">'+t.hetNone+'</span>';
-      html+='<tr><td class="c-prob"><span class="cdot" style="background:'+r._color+'"></span>'+pct+'%</td>'
-        +'<td class="c-vis">'+vcell+'</td>'
-        +'<td class="c-het">'+hcell+'</td></tr>';
-    });
-    html+='</tbody></table>';
-    if(window.__isPrem) html+='<div class="abar" style="margin-top:10px"><button class="abtn sm ghost" onclick="exportImage()">🖼️ 이미지 저장</button></div>';
-  }
-  if(payload.poly && payload.poly.length){
-    html+='<div class="polyblock"><h3>'+t.polyH+'</h3><div class="pdesc">'+t.polyDesc+'</div>';
-    payload.poly.forEach(p=>{ html+='<span class="polychip'+(p.both?' both':'')+'">'+escapeHtml(p.name)+(p.both?' ('+t.polyBoth+')':'')+'</span>'; });
-    html+='</div>';
-  }
-  host.innerHTML=html;
-}
-function escapeHtml(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
-
-/* ================= 초기화 ================= */
-const langMenuEl=document.getElementById('langMenu'), langBtnEl=document.getElementById('langBtn');
-langBtnEl.addEventListener('click',e=>{ e.stopPropagation(); langMenuEl.classList.toggle('open'); });
-document.querySelectorAll('#langMenu button').forEach(b=>b.addEventListener('click',()=>{ setLang(b.dataset.lang); langMenuEl.classList.remove('open'); }));
-document.addEventListener('click',e=>{ if(langMenuEl.classList.contains('open') && !langMenuEl.contains(e.target) && !langBtnEl.contains(e.target)) langMenuEl.classList.remove('open'); });
-(function(){
-  const pc=document.getElementById('partialchk'), vc=document.getElementById('vintagechk');
-  const set=(el,on)=>el.setAttribute('aria-pressed', on?'true':'false');
-  pc.addEventListener('click',()=>{ showPartialHet=!showPartialHet; set(pc,showPartialHet); if(hasResult) calculate(); });
-  vc.addEventListener('click',()=>{ showVintage=!showVintage; set(vc,showVintage); buildParent('A'); buildParent('B'); });
-  const ib=document.getElementById('optInfoBtn'), nt=document.getElementById('optNote');
-  ib.addEventListener('click',()=>{ const on=!nt.classList.contains('show');
-    nt.classList.toggle('show',on); ib.setAttribute('aria-expanded', on?'true':'false'); });
-})();
-
-/* ===== 약관·개인정보 링크 노출 스위치 (gecko-core.js) ===== */
-(function(){
-  if(SHOW_LEGAL_LINKS) return;
-  const el=document.getElementById('legalLinks'); if(el) el.style.display='none';
-})();
-
-/* ===== 쿠키 안내 ===== */
-window.okCookie=function(){ try{ localStorage.setItem('leoCookieOk','1'); }catch(e){} document.getElementById('cookieBar').classList.remove('show'); };
-(function(){ let ok=false; try{ ok=localStorage.getItem('leoCookieOk')==='1'; }catch(e){ ok=true; }
-  // 약관 링크를 감춘 테스트 기간에는 쿠키 안내도 함께 숨깁니다 (안내가 가리키는 문서가 안 보이므로)
-  if(!SHOW_LEGAL_LINKS) return;
-  if(!ok && !(location.hash==='#admin')) setTimeout(()=>document.getElementById('cookieBar').classList.add('show'), 1400); })();
-
-/* ===== 업데이트 노트 모달 ===== */
-const UPD_VER='2026-07-27-v1.0'; // 버전 바뀌면 '오늘 하루 안 보기' 무관하게 다시 노출
-function todayKey(){ try{ return new Date().toISOString().slice(0,10); }catch(e){ return 'x'; } }
-function openUpd(){ document.getElementById('updModal').classList.add('show'); }
-function closeUpd(){ document.getElementById('updModal').classList.remove('show'); }
-function dismissToday(){ try{ localStorage.setItem('leoUpdDismiss', UPD_VER+'|'+todayKey()); }catch(e){} closeUpd(); }
-document.getElementById('updModal').addEventListener('click',e=>{ if(e.target.id==='updModal') closeUpd(); });
-// 문의 이메일 (제목 포함)
-document.getElementById('mailLink').href='mailto:kmc612000@gmail.com?subject='+encodeURIComponent('레오파드 모프 계산기 - 정보수정/업데이트 건의');
-
-applyLang();
-
-// 오늘 하루 안 보기 처리 후 첫 방문 시 자동 노출
-(function(){
-  let dismissed=false;
-  try{ dismissed = (localStorage.getItem('leoUpdDismiss')===UPD_VER+'|'+todayKey()); }catch(e){ dismissed=false; }
-  const onAdmin = (location.hash==='#admin') || /\/admin\/?$/.test(location.pathname);
-  if(!dismissed && !onAdmin) openUpd();
-})();
-</script>
-
-<script>
-/* ================= 백엔드(Supabase) + 관리자 페이지 ================= */
-(function(){
-  const SB = (SUPABASE_URL && window.supabase) ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON) : null;
-  const esc = escapeHtml;
-  function dev(){ try{ let d=localStorage.getItem('leoDevice'); if(!d){ d='dev_'+Math.random().toString(36).slice(2,10)+Date.now().toString(36); localStorage.setItem('leoDevice',d); } return d; }catch(e){ return 'dev_anon'; } }
-  let USER=null;                       // 로그인한 사용자
-  function uid(){ return USER? 'u_'+USER.id : dev(); }   // 프리미엄·데이터 소유 키
-  async function refreshUser(){ if(!SB) return null; try{ const r=await SB.auth.getSession(); USER=r.data.session? r.data.session.user : null; }catch(e){ USER=null; } return USER; }
-
-  /* ---------- 통계 ---------- */
-  // service 값을 함께 남깁니다 — 관리자에서 서비스별로 나눠 보기 위함 (docs/STUDIO.md)
-  // 서버에 service 컬럼이 아직 없으면 그 값만 빼고 재시도해 로그가 끊기지 않게 합니다.
-  async function logVisit(){ if(!SB)return;
-    const base={device:dev(), lang:LANG};
-    try{
-      const r=await SB.from('visits').insert(Object.assign({service:SERVICE_ID}, base));
-      if(r && r.error) await SB.from('visits').insert(base);
-    }catch(e){ try{ await SB.from('visits').insert(base); }catch(x){} } }
-  function sideKey(side){ const p=[]; GENES.forEach(g=>{const v=STATE[side][g.id]; if(v&&v!=='nn')p.push(g.id+':'+v);}); POLY.forEach(x=>{if(STATE[side][x.id]==='yes')p.push(x.id);}); return p.sort().join('+')||'normal'; }
-  function sideLabel(side){ const t=[]; GENES.forEach(g=>{const v=STATE[side][g.id]; if(!v||v==='nn')return; let nm=(g.type==='incdom'&&v==='mm')?gSuper(g):gName(g); if(v==='het'&&g.type==='rec')nm='het '+nm; t.push(nm);}); POLY.forEach(x=>{if(STATE[side][x.id]==='yes')t.push(pName(x));}); return t.join(' ')||L().normal; }
-  window.calcAndLog=function(){ calculate();
-    if(SB){ const a=sideKey('A'),b=sideKey('B');
-      if(!(a==='normal'&&b==='normal')){
-        const base={ckey:[a,b].sort().join(' × '), label:sideLabel('A')+' × '+sideLabel('B')};
-        try{ SB.from('combo_queries').insert(Object.assign({service:SERVICE_ID}, base))
-               .then(r=>{ if(r && r.error) SB.from('combo_queries').insert(base); }); }catch(e){}
-      } } };
-
-  /* ---------- 모프/콤보 오버라이드 로드 ---------- */
-  function applyMorphRows(rows){
-    const genes=[], poly=[];
-    rows.forEach(r=>{ if(r.color)GCOLOR[r.id]=r.color; if(r.image_url)MORPH_IMG[r.id]=r.image_url;
-      if(r.kind==='poly'){ poly.push({id:r.id,ko:r.ko,en:r.en,zh:r.zh,ja:r.ja}); }
-      else { const g={id:r.id,type:r.kind,family:r.family||'albino',ko:r.ko,en:r.en,zh:r.zh,ja:r.ja,risk:!!r.risk};
-        if(r.super_ko){g.superKo=r.super_ko;g.superEn=r.super_en;g.superZh=r.super_zh;g.superJa=r.super_ja;} genes.push(g); } });
-    if(genes.length){ GENES.length=0; genes.forEach(g=>GENES.push(g)); }
-    if(poly.length){ POLY.length=0; poly.forEach(p=>POLY.push(p)); }
-    GENES.forEach(g=>{ if(STATE.A[g.id]===undefined)STATE.A[g.id]='nn'; if(STATE.B[g.id]===undefined)STATE.B[g.id]='nn'; });
-    POLY.forEach(p=>{ if(STATE.A[p.id]===undefined)STATE.A[p.id]='no'; if(STATE.B[p.id]===undefined)STATE.B[p.id]='no'; });
-  }
-  async function loadOverrides(){
-    if(!SB)return;
-    try{
-      const m=await SB.from('morphs').select('*').eq('active',true).order('sort');
-      const c=await SB.from('combos').select('*').order('sort');
-      let changed=false;
-      if(m.data&&m.data.length){ applyMorphRows(m.data); changed=true; }
-      if(c.data&&c.data.length){ COMBOS.length=0; c.data.forEach(r=>COMBOS.push({tokens:r.tokens||[], ko:r.ko, en:r.en, vintage:!!r.vintage, risk:!!r.risk})); changed=true; }
-      if(changed){ hasResult=false; applyLang(); }
-    }catch(e){}
-  }
-
-  /* ---------- 프리미엄 코드 ---------- */
-  let isPrem=false, premKind=null, premExp=null;
-  async function refreshPrem(){
-    const btn=document.getElementById('premBtn'), pro=document.getElementById('proBtn');
-    if(!SB){ if(btn)btn.style.display='none'; if(pro)pro.style.display='none'; return; }
-    if(btn)btn.style.display='';
-    try{ const r=await SB.rpc('premium_status',{p_device:uid()}); const d=r.data||{};
-         isPrem=!!d.active; premKind=d.kind||null; premExp=d.expires_at||null; }
-    catch(e){ try{ const r2=await SB.rpc('is_premium',{p_device:uid()}); isPrem=!!r2.data; }catch(x){ isPrem=false; } }
-    if(btn) btn.textContent = isPrem? (premKind==='sub'?'💎 구독 중':'💎 체험판 이용중') : '💎 프리미엄 코드';
-    // 노출 스위치 — 준비 중이면 버튼 자체를 숨김 (gecko-core.js 참고)
-    if(btn && !SHOW_PREMIUM_UI) btn.style.display='none';
-    window.__isPrem = isPrem;
-    const ab=document.getElementById('acctBtn');
-    if(ab){
-      // 노출 스위치 — 테스트 기간에는 로그인 진입 자체를 감춤 (gecko-core.js)
-      ab.style.display = SHOW_ACCOUNT_UI ? '' : 'none';
-      ab.textContent = USER? '👤 내 정보' : '👤 로그인';
-    }
-    if(pro) pro.style.display = isPrem? '' : 'none';
-    const ad=document.getElementById('adSlot'); if(ad && isPrem) ad.style.display='none';   // 프리미엄 = 광고 제거
-  }
-  window.openPrem=async function(){
-    if(!SB){alert('백엔드(Supabase)가 아직 설정되지 않았습니다.');return;}
-    await refreshUser(); await refreshPrem();
-    const exp=premExp? new Date(premExp).toLocaleDateString('ko-KR') : null;
-    const acct=document.getElementById('premAccount');
-    if(USER){
-      acct.innerHTML='<div class="acctbox"><div><b>'+esc(USER.email||'로그인됨')+'</b><div class="asub">이 계정으로 어느 기기에서든 프리미엄이 유지됩니다</div></div>'
-        +'<button class="mini" id="btnLogout">로그아웃</button></div>';
-      document.getElementById('btnLogout').onclick=async()=>{ await SB.auth.signOut(); USER=null; await refreshPrem(); openPrem(); };
-    } else {
-      acct.innerHTML='<div class="lockbox" style="text-align:left"><b>로그인하면 기기가 바뀌어도 프리미엄이 유지됩니다.</b><br>로그인 없이 코드를 쓰면 이 브라우저에서만 인정돼요.</div>'
-        +'<a class="abtn" href="login.html" style="display:block;width:100%;margin:10px 0 2px;text-align:center;text-decoration:none;box-sizing:border-box">로그인 / 회원가입</a>';
-    }
-    document.getElementById('premStatus').textContent = isPrem
-      ? ((premKind==='sub'?'구독':'체험판')+' 이용 중' + (exp? ' · '+exp+'까지' : ' · 무기한'))
-      : (USER? '발급받은 일회성 코드를 입력하세요. (1인 1회)' : '프리미엄 코드는 로그인 후 사용할 수 있어요.');
-    const pin=document.getElementById('premInput'), pbtn=document.querySelector('#premModal .btn-close');
-    if(pin) pin.disabled=!USER;
-    if(pbtn) pbtn.style.opacity=USER?'1':'.5';
-    document.getElementById('premMsg').textContent=''; document.getElementById('premInput').value='';
-    // 노출 스위치 (gecko-core.js) — 준비 중인 영역은 감춤
-    const pkb=document.getElementById('perkBox');   if(pkb) pkb.style.display = SHOW_PREMIUM_UI? '' : 'none';
-    const dnb=document.getElementById('donateBox'); if(dnb) dnb.style.display = SHOW_DONATE? '' : 'none';
-    // 후원 계좌
-    try{ document.getElementById('donBank').textContent=DONATE_BANK;
-         document.getElementById('donAcct').textContent=DONATE_ACCT; }catch(e){}
-    const dc=document.getElementById('donCopy');
-    if(dc) dc.onclick=()=>{ const v=document.getElementById('donAcct').textContent.trim();
-      const done=()=>{ dc.textContent='복사됨'; setTimeout(()=>dc.textContent='복사',1400); };
-      if(navigator.clipboard) navigator.clipboard.writeText(v).then(done,()=>prompt('계좌번호',v));
-      else prompt('계좌번호',v); };
-    document.getElementById('premModal').classList.add('show');
-  };
-  // 로그인 시 기기에 있던 코드/데이터를 계정으로 이관
-  async function migrateDevice(){
-    if(!USER) return;
-    try{ await SB.rpc('claim_device',{p_device:dev(), p_user:uid()}); }catch(e){}
-  }
-  window.closePrem=function(){ document.getElementById('premModal').classList.remove('show'); };
-  window.redeemPrem=async function(){
-    if(!USER){ location.href='login.html'; return; }
-    const code=document.getElementById('premInput').value.trim(); const msg=document.getElementById('premMsg'); if(!code){msg.style.color='var(--warn-hi-fg)';msg.textContent='코드를 입력하세요.';return;} msg.style.color='var(--ink2)';msg.textContent='확인 중…'; try{ const r=await SB.rpc('redeem_code',{p_code:code,p_device:uid()}); const v=r.data; if(v==='ok'){ msg.style.color='var(--teal)';msg.textContent='활성화되었습니다! 🎉'; isPrem=true; refreshPrem(); setTimeout(closePrem,900);} else { msg.style.color='var(--warn-hi-fg)'; msg.textContent = v==='login_required'?'로그인 후 사용할 수 있어요.':v==='not_found'?'존재하지 않는 코드예요.':v==='revoked'?'사용이 중지된 코드예요.':v==='used'?'이미 다른 회원이 사용한 코드예요.':'사용할 수 없는 코드예요.'; } }catch(e){ msg.style.color='var(--warn-hi-fg)'; msg.textContent='오류가 발생했어요.'; } };
-  document.getElementById('premModal').addEventListener('click',e=>{ if(e.target.id==='premModal') closePrem(); });
-
-
-  /* ---- 결과 내보내기 (프리미엄) ---- */
-  window.exportImage=function(){
-    const el=document.querySelector('.results');
-    if(!el){ alert('먼저 계산해 주세요.'); return; }
-    const w=760, rows=[...document.querySelectorAll('.rtable tbody tr')];
-    const h=190+rows.length*46;
-    const c=document.createElement('canvas'); c.width=w*2; c.height=h*2; const x=c.getContext('2d'); x.scale(2,2);
-    x.fillStyle='#EDEAE1'; x.fillRect(0,0,w,h);
-    x.fillStyle='#26221D'; x.font='700 24px sans-serif'; x.fillText('🦎 레오파드 게코 브리딩 예상',28,44);
-    const pa=[...document.querySelectorAll('#parentA .chip.on')].map(v=>v.textContent.trim()).join(' ')||'노멀';
-    const pb=[...document.querySelectorAll('#parentB .chip.on')].map(v=>v.textContent.trim()).join(' ')||'노멀';
-    x.font='14px sans-serif'; x.fillStyle='#6C6452';
-    x.fillText('♂ '+pa.slice(0,52),28,76); x.fillText('♀ '+pb.slice(0,52),28,98);
-    x.fillStyle='#FDFCF9'; x.fillRect(20,118,w-40,h-140);
-    let y=148;
-    rows.forEach(tr=>{ const cells=tr.children;
-      x.fillStyle='#0E7C7B'; x.font='700 15px sans-serif'; x.fillText(cells[0].innerText.trim().replace(/\s+/g,' '),36,y);
-      x.fillStyle='#26221D'; x.font='14px sans-serif';
-      x.fillText(cells[1].innerText.trim().replace(/\s+/g,' ').slice(0,40),110,y);
-      const het=cells[2].innerText.trim().replace(/\s+/g,' ');
-      if(het&&het!=='–'){ x.fillStyle='#6B5686'; x.font='12px sans-serif'; x.fillText(het.slice(0,44),110,y+16); }
-      y+=46; });
-    x.fillStyle='#8A8375'; x.font='11px sans-serif'; x.fillText('ryangstudio.com/gecko',28,h-14);
-    c.toBlob(bl=>{ const a=document.createElement('a'); a.href=URL.createObjectURL(bl); a.download='breeding-result.png'; a.click(); });
-  };
-
-  /* ---------- 라우팅 ---------- */
-  function isAdminRoute(){ return location.hash==='#admin' || /\/admin\/?$/.test(location.pathname); }
-  function route(){ const on=isAdminRoute(); document.querySelector('.wrap').style.display=on?'none':''; document.querySelector('header').style.display=on?'none':''; const ar=document.getElementById('adminRoot'); ar.style.display=on?'block':'none'; if(on) renderAdmin(); }
-  window.addEventListener('hashchange', route);
-
-  /* ---------- 관리자 ----------
-     관리자 기능은 https://ryangstudio.com/admin/ 으로 옮겼습니다.
-     여러 서비스를 한 곳에서 관리하기 위함입니다. (docs/STUDIO.md)
-     옛 주소(#admin)로 들어오는 경우를 대비해 안내만 남깁니다. */
-  function renderAdmin(){
-    document.getElementById('adminRoot').innerHTML =
-      '<div class="admin-wrap"><div class="admin-top"><h1>🛠 관리자</h1>'
-      +'<a class="admin-back" href="#">← 계산기로</a></div>'
-      +'<div class="apad" style="text-align:center;line-height:1.9">'
-      +'<div class="alabel">관리자 페이지가 이사했습니다</div>'
-      +'<div class="asub" style="margin:6px 0 16px">여러 서비스를 한 곳에서 관리하기 위해 스튜디오로 옮겼어요.</div>'
-      +'<a class="abtn" href="/admin/" style="display:inline-block;text-decoration:none">관리자 페이지 열기 →</a>'
-      +'<div class="ahint" style="margin-top:14px">주소: ryangstudio.com/admin/</div>'
-      +'</div></div>';
-  }
-  /* ---------- 초기화 ---------- */
-  // breeding.html 에서 넘어온 페어링 적용
-  (function(){ try{
-    const raw=sessionStorage.getItem('leoPair'); if(!raw) return;
-    sessionStorage.removeItem('leoPair'); const d=JSON.parse(raw);
-    const put=(side,o)=>{ GENES.forEach(g=>STATE[side][g.id]='nn'); POLY.forEach(x=>STATE[side][x.id]='no');
-      (o.m||[]).forEach(tk=>{ if(String(tk).indexOf('super_')===0){ const id=tk.slice(6); if(STATE[side][id]!==undefined)STATE[side][id]='mm'; return; }
-        const g=GENES.filter(x=>x.id===tk)[0]; if(g){ STATE[side][g.id]= g.type==='rec'?'mm':'het'; return; }
-        if(STATE[side][tk]!==undefined) STATE[side][tk]='yes'; });
-      (o.h||[]).forEach(id=>{ const g=GENES.filter(x=>x.id===id)[0]; if(g&&STATE[side][g.id]==='nn') STATE[side][g.id]='het'; }); };
-    put('A',d.A||{}); put('B',d.B||{});
-    setTimeout(()=>{ buildParent('A'); buildParent('B'); calcAndLog();
-      const r=document.querySelector('.results'); if(r) r.scrollIntoView({behavior:'smooth'}); }, 260);
-  }catch(e){} })();
-  route(); logVisit(); loadOverrides(); refreshUser().then(refreshPrem);
-  if(SB) SB.auth.onAuthStateChange((_e,sess)=>{ USER=sess?sess.user:null; refreshPrem(); });
-})();
-</script>
+  </footer>
+  <script src="./home-redesign.js?v=20260728b"></script>
 </body>
 </html>

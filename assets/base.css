@@ -1,0 +1,164 @@
+/* =============================================================================
+   량 스튜디오 계산기 공용 컴포넌트
+   -----------------------------------------------------------------------------
+   헤더 · 세그먼트 바 · 부모 카드 · 선택 요약의 "기본" 규칙입니다.
+   크레스티드와 레오파드가 함께 씁니다.
+
+   ⚠️ 이 규칙들이 예전에는 crested/index.html 안에만 있었습니다. 그래서
+      레오파드는 .avatar 의 overflow·border-radius, .filterbar, .hd-deco 등
+      기본값을 못 받아 아바타 사진이 원 밖으로 튀어나오고 헤더가 깨졌습니다.
+      각 계산기의 *-redesign.css 는 이 파일을 덮어쓰는 용도로만 쓰세요.
+   ============================================================================= */
+
+/* ── 헤더: 로고 + 좌측 정렬 제목, 우측 버튼 ── */
+  header{padding:0;text-align:left;position:relative;overflow:hidden}
+  .hd{max-width:880px;margin:0 auto;padding:26px 16px 22px;display:flex;align-items:flex-start;gap:14px;position:relative;z-index:2}
+  .hd-mark{
+    width:56px;height:56px;border-radius:50%;background:var(--card);border:1px solid var(--hair);
+    display:flex;align-items:center;justify-content:center;flex:0 0 auto;box-shadow:var(--shadow);
+  }
+  .hd-mark img{width:30px;height:30px;display:block}
+  .hd-txt{flex:1;min-width:0;padding-top:2px}
+  header h1{margin:0;font-size:clamp(21px,4.4vw,28px);font-weight:800;letter-spacing:-.7px;line-height:1.25}
+  header .sub{color:var(--ink2);font-size:13px;margin-top:5px;max-width:none;margin-left:0;margin-right:0}
+  .hd-btns{display:flex;gap:8px;align-items:center;flex:0 0 auto;padding-top:4px}
+  @media (max-width:620px){
+    .hd{flex-wrap:wrap;padding:18px 16px 16px;gap:11px}
+    .hd-mark{width:44px;height:44px} .hd-mark img{width:24px;height:24px}
+    .hd-btns{width:100%;order:3}
+  }
+  /* 헤더 배경 장식 (은은한 원형 그라데이션) */
+  header::before{
+    content:'';position:absolute;inset:0;z-index:1;pointer-events:none;
+    background:
+      radial-gradient(420px 200px at 88% 8%, rgba(14,124,123,.10), transparent 70%),
+      radial-gradient(320px 180px at 4% 96%, rgba(234,195,106,.13), transparent 70%);
+  }
+  /* 장식 이미지 — 순수 장식이라 클릭·스크린리더 대상에서 제외합니다.
+     ※ 모프를 나타내는 그림이 아닙니다. 실제 모프 사진은 결과 표에서만 씁니다. */
+  .hd-deco{position:absolute;pointer-events:none;user-select:none;z-index:1}
+  /* .hd-deco.leaf / .hd-deco.hero 의 위치·크기는 crested-redesign.css 에서 정의합니다.
+     여기에 중복으로 두면 어느 쪽이 이기는지 헷갈려서 옮겼습니다. */
+  /* 좁은 화면에서는 글자와 겹치지 않게 줄이고, 아주 좁으면 게코를 숨깁니다.
+     .hd 가 z-index:2 이므로 겹쳐도 글자·버튼이 항상 위에 옵니다. */
+  /* 장식과 겹치는 구간에서도 버튼이 눌리도록 위로 올립니다 */
+  .hd-btns{position:relative;z-index:4}
+
+  /* langbtn 을 헤더 흐름 안으로 (기존 절대배치 해제) */
+  .langbtn{position:static;top:auto;right:auto;height:36px;padding:0 12px;font-size:12.5px;box-shadow:var(--shadow)}
+  @media (max-width:420px){ .langbtn{height:34px;padding:0 10px;top:auto;right:auto} }
+  .langmenu{top:auto;right:16px;margin-top:4px}
+
+  /* ── 세그먼트 바: 5개 필터를 한 줄로 ── */
+  .filterbar{
+    display:flex;flex-wrap:wrap;align-items:center;gap:6px;
+    background:var(--card);border:1px solid var(--hair);border-radius:999px;
+    padding:6px;margin:4px 0 16px;box-shadow:var(--shadow);
+  }
+  .filterbar .fseg{
+    display:inline-flex;align-items:center;gap:7px;border:none;background:transparent;
+    border-radius:999px;padding:9px 16px;font-size:12.8px;font-weight:700;color:var(--ink2);
+    cursor:pointer;font-family:inherit;line-height:1.3;white-space:nowrap;
+    transition:background .14s,color .14s;
+  }
+  .filterbar .fseg:hover{background:var(--card2);color:var(--ink)}
+  .filterbar .fseg.on,
+  .filterbar .fseg[aria-pressed="true"]{background:var(--teal);color:#fff}
+  .filterbar .fseg .fico{font-size:12px;opacity:.9}
+  .filterbar .fseg.on .fico,
+  .filterbar .fseg[aria-pressed="true"] .fico{opacity:1}
+  .filterbar .optinfo{margin-left:auto;margin-right:6px}
+  @media (max-width:620px){
+    .filterbar{border-radius:16px}
+    .filterbar .fseg{padding:8px 12px;font-size:12px}
+  }
+
+  /* ── 부모 카드 ── */
+  .card{background:var(--card);border:1px solid var(--hair);border-radius:18px;padding:16px 15px 17px;box-shadow:var(--shadow)}
+  .card-top{display:flex;align-items:center;gap:11px;margin-bottom:14px}
+  .avatar{
+    width:44px;height:44px;border-radius:50%;flex:0 0 auto;
+    background:var(--gtile);border:1px solid var(--hair);
+    display:flex;align-items:center;justify-content:center;font-size:20px;overflow:hidden;
+  }
+  .avatar img{width:100%;height:100%;object-fit:cover;display:block}
+  .card-name{flex:1;min-width:0}
+  .card h2{margin:0;font-size:17px;font-weight:800;letter-spacing:-.3px;display:flex;align-items:center;gap:7px}
+  .card-role{font-size:11.5px;color:var(--ink2);margin-top:1px}
+  .helpbtn{
+    flex:0 0 auto;background:transparent;border:1px solid var(--hair);border-radius:999px;
+    padding:6px 11px;font-size:11px;font-weight:700;color:var(--ink2);cursor:pointer;font-family:inherit;
+    display:inline-flex;align-items:center;gap:4px;
+  }
+  .helpbtn:hover{color:var(--ink);background:var(--card2)}
+
+  /* 그룹 제목에 왼쪽 강조 바 */
+  .famhead{margin:16px 0 8px;padding-left:9px;position:relative}
+  .famhead::before{
+    content:'';position:absolute;left:0;top:2px;bottom:2px;width:3px;border-radius:2px;background:var(--teal);
+  }
+  .card.b .famhead::before{background:var(--patina)}
+  .famname{font-size:13px;font-weight:800}
+  .famdesc{display:inline;margin-left:7px;font-size:11px;color:var(--ink2);font-weight:500}
+  .sechead{padding-left:9px;position:relative;margin:16px 0 8px;font-size:13px;font-weight:800;color:var(--ink)}
+  .sechead::before{
+    content:'';position:absolute;left:0;top:2px;bottom:2px;width:3px;border-radius:2px;background:var(--teal);
+  }
+  .card.b .sechead::before{background:var(--patina)}
+
+  /* ── 선택된 형질 요약 + 실행 ── */
+  .selbar{
+    display:flex;align-items:stretch;gap:14px;flex-wrap:wrap;
+    background:var(--card);border:1px solid var(--hair);border-radius:18px;
+    padding:14px 16px;margin-top:16px;box-shadow:var(--shadow);
+  }
+  .sel-left{flex:1;min-width:230px;display:flex;gap:12px;align-items:flex-start}
+  .sel-label{font-size:11.5px;font-weight:800;color:var(--ink2);flex:0 0 auto;padding-top:4px;white-space:nowrap}
+  .sel-lines{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
+  .sel-line{display:flex;align-items:flex-start;gap:7px;flex-wrap:wrap}
+  .sel-who{font-size:11.5px;font-weight:800;flex:0 0 auto;padding-top:2px;display:inline-flex;align-items:center;gap:4px}
+  .sel-who.a{color:var(--teal)} .sel-who.b{color:var(--patina)}
+  .selchip{
+    display:inline-flex;align-items:center;gap:5px;background:var(--card2);border:1px solid var(--hair);
+    border-radius:999px;padding:3px 9px;font-size:11px;font-weight:600;color:var(--ink);
+  }
+  .selchip .sw{width:8px;height:8px;border-radius:50%;flex:0 0 auto}
+  .sel-none{font-size:11.5px;color:var(--ink2)}
+  .sel-right{display:flex;gap:9px;align-items:center;flex:0 0 auto}
+  @media (max-width:700px){ .sel-right{width:100%} .sel-right .act{flex:1 1 auto} }
+
+  /* 실행 버튼 — 예시처럼 크게 */
+  .actions{margin:0}
+  /* 실행 버튼 — '모프 계산하기' 가 좁은 폭에서 '모프 계 / 산하기' 로 쪼개지던 문제.
+     flex:1 1 0 로 눌려 138px 까지 줄고 white-space:normal 이라 단어 중간에서 끊겼습니다.
+     내용 너비를 지키게 하고 줄바꿈을 막습니다. */
+  .act{border-radius:14px;padding:14px 20px;font-size:15px;font-weight:800;
+    white-space:nowrap;flex:0 0 auto;min-width:max-content}
+
+  /* ⓘ 버튼 — button 요소라 border 를 지우지 않으면 브라우저 기본
+     'border: 2px outset' 이 그대로 나와 90년대 버튼처럼 보입니다.
+     (크레스티드에는 있었지만 레오파드 CSS 에 빠져 있었습니다) */
+  .optinfo{background:none;border:none;font-family:inherit;cursor:help;
+    display:inline-flex;align-items:center;gap:5px;color:var(--ink2)}
+  .optinfo:focus-visible{outline:2px solid var(--teal);outline-offset:2px;border-radius:8px}
+  .btn-reset{background:var(--card2);color:var(--ink);box-shadow:none;border:1px solid var(--hair);flex:0 0 auto;padding:14px 18px}
+  .btn-calc{flex:0 0 auto;padding:14px 30px;display:inline-flex;align-items:center;gap:9px}
+
+  /* ── 결과 범례 ── */
+  .reslegend{display:flex;flex-wrap:wrap;gap:14px;align-items:center;margin:2px 2px 12px;font-size:11.5px;color:var(--ink2)}
+  .reslegend i{display:inline-flex;align-items:center;gap:5px;font-style:normal}
+  .reslegend i::before{content:'';width:9px;height:9px;border-radius:50%;background:currentColor;opacity:.85}
+  .lg-inc{color:var(--b-inc-fg)} .lg-rec{color:var(--b-rec-fg)}
+  .lg-poly{color:var(--b-dom-fg)} .lg-etc{color:var(--ink2)}
+
+
+/* ── 다인자 크로스 표기 · 모프 설명(추후) — 두 계산기 공용 ── */
+  /* 다인자 크로스 표기 · 모프 설명(추후) */
+  .crosstag{display:inline-block;margin-left:6px;padding:1px 7px;border-radius:6px;
+    background:var(--b-poly-bg);color:var(--b-poly-fg);border:1px solid var(--b-poly-bd);
+    font-size:10.5px;font-weight:700;vertical-align:1px;white-space:nowrap}
+  .crossnote{background:var(--note-bg);border:1px solid var(--note-bd);color:var(--note-fg);
+    border-radius:12px;padding:11px 13px;font-size:11.8px;line-height:1.75;margin:10px 0 4px}
+  .crossnote b{color:var(--ink)}
+  /* TODO(모프 설명): 결과 행에 들어갈 설명 스타일. 데이터 준비되면 사용합니다. */
+  .morphdesc{font-size:11px;color:var(--ink2);font-weight:500;line-height:1.6;margin-top:3px}

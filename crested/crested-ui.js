@@ -1,490 +1,12 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Crested Gecko Morph Calculator</title>
-<!-- ?v= 는 캐시 무효화용입니다. crested-core.js 를 고쳐 올릴 때마다 숫자를 바꿔주세요.
-     (안 바꾸면 이미 방문했던 사람의 브라우저가 예전 파일을 계속 씁니다) -->
-<script src="crested-core.js?v=20260727c"></script>
-<script>
-if(typeof CR_ALL_GENES==='undefined'){
-  document.addEventListener('DOMContentLoaded',function(){
-    document.body.innerHTML='<div style="max-width:520px;margin:60px auto;padding:24px;font-family:-apple-system,BlinkMacSystemFont,\'Apple SD Gothic Neo\',sans-serif;background:#FDFCF9;border-radius:16px;box-shadow:0 6px 18px rgba(0,0,0,.08);line-height:1.7;color:#26221D">'
-      +'<div style="font-size:34px;text-align:center">⚠️</div>'
-      +'<h2 style="text-align:center;font-size:18px;margin:10px 0">필수 파일이 없습니다</h2>'
-      +'<p style="font-size:14px;color:#6C6452"><b>crested-core.js</b> 파일을 찾을 수 없어요. 이 파일에 모프 데이터와 계산 엔진이 들어 있습니다.</p>'
-      +'<p style="font-size:14px;color:#6C6452"><b>해결 방법</b><br><b>crested-core.js</b> 를 <b>crested.html 과 같은 위치</b>에 올린 뒤 새로고침해 주세요.</p>'
-      +'</div>';
-  });
-}
-</script>
-<style>
-  /* ===== 팔레트 — 레오파드 계산기와 동일 계열 ===== */
-  :root{
-    --bg:#EDEAE1; --card:#FDFCF9; --card2:#F4F1E9; --ink:#26221D; --ink2:#8A8375;
-    --hair:rgba(38,34,29,.08); --chipbd:rgba(38,34,29,.16); --gtile:#E7E2D6;
-    --teal:#0E7C7B; --teal-press:#0A6160; --patina:#3B8DA0; --butter:#EAC36A; --eggplant:#6B5686;
-    --shadow:0 1px 2px rgba(38,34,29,.05), 0 6px 18px rgba(38,34,29,.05);
-    --b-rec-bg:rgba(107,86,134,.13); --b-rec-fg:#6B5686; --b-rec-bd:rgba(107,86,134,.34);
-    --b-inc-bg:rgba(59,141,160,.15); --b-inc-fg:#2C7A8C; --b-inc-bd:rgba(59,141,160,.4);
-    --b-dom-bg:rgba(197,146,32,.16); --b-dom-fg:#9A6A12; --b-dom-bd:rgba(197,146,32,.42);
-    --b-poly-bg:rgba(138,131,117,.14); --b-poly-fg:#736C5E; --b-poly-bd:rgba(38,34,29,.14);
-    --warn-hi-bg:#FBEAE3; --warn-hi-bd:#F0C3B2; --warn-hi-fg:#B4402A;
-    --warn-md-bg:#FBF2DA; --warn-md-bd:#EAD6A2; --warn-md-fg:#8A6410;
-    --note-bg:#F3EEE0; --note-bd:#E4DCC7; --note-fg:#6C6452;
-    --radius:16px;
-  }
-  @media (prefers-color-scheme: dark){
-    :root{
-      --bg:#141310; --card:#211E1A; --card2:#1B1915; --ink:#F3EFE7; --ink2:#A49D8F;
-      --hair:rgba(255,255,255,.08); --chipbd:rgba(255,255,255,.18); --gtile:#2C2822;
-      --teal:#3FB8B2; --teal-press:#57C8C2; --patina:#5FB0C1; --butter:#EAC36A; --eggplant:#B9A3D6;
-      --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.28);
-      --b-rec-bg:rgba(185,163,214,.16); --b-rec-fg:#C9B6E4; --b-rec-bd:rgba(185,163,214,.36);
-      --b-inc-bg:rgba(95,176,193,.16); --b-inc-fg:#8FCEDB; --b-inc-bd:rgba(95,176,193,.4);
-      --b-dom-bg:rgba(234,195,106,.16); --b-dom-fg:#EAC36A; --b-dom-bd:rgba(234,195,106,.4);
-      --b-poly-bg:rgba(164,157,143,.16); --b-poly-fg:#BDB6A6; --b-poly-bd:rgba(255,255,255,.14);
-      --warn-hi-bg:#2E1713; --warn-hi-bd:#6E2E22; --warn-hi-fg:#F3A594;
-      --warn-md-bg:#2A2210; --warn-md-bd:#6B531A; --warn-md-fg:#EBC873;
-      --note-bg:#201D16; --note-bd:#3A3427; --note-fg:#BDB49E;
-    }
-  }
-  *{box-sizing:border-box}
-  html,body{margin:0;padding:0}
-  body{background:var(--bg); color:var(--ink);
-    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Apple SD Gothic Neo","Malgun Gothic","Hiragino Sans","Microsoft YaHei",system-ui,sans-serif;
-    -webkit-font-smoothing:antialiased; line-height:1.5; padding:0 0 64px;}
-  header{padding:24px 60px 18px;text-align:center;position:relative}
-  @media (max-width:560px){ header{padding:62px 16px 16px} }
-  header h1{margin:0;font-size:26px;font-weight:800;letter-spacing:-.5px}
-  header .sub{color:var(--ink2);font-size:13.5px;margin-top:6px;max-width:440px;margin-left:auto;margin-right:auto}
-  .langbtn{position:absolute;top:16px;right:16px;height:42px;border-radius:13px;background:var(--card);box-shadow:var(--shadow);border:none;
-    display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;color:var(--ink);z-index:40;padding:0 13px;
-    font-family:inherit;font-size:13px;font-weight:700;letter-spacing:-.2px}
-  .langbtn svg{width:18px;height:18px;flex:0 0 auto}
-  @media (max-width:420px){ .langbtn{height:38px;padding:0 10px;font-size:12px;gap:5px;top:14px;right:12px}
-    .langbtn svg{width:16px;height:16px} }
-  .langmenu{position:absolute;top:64px;right:16px;background:var(--card);border-radius:15px;box-shadow:0 10px 34px rgba(38,34,29,.2);padding:6px;min-width:158px;z-index:50;display:none;text-align:left}
-  .langmenu.open{display:block}
-  .langmenu button{display:flex;align-items:center;justify-content:space-between;width:100%;background:transparent;border:none;padding:11px 13px;font-size:14.5px;font-weight:500;color:var(--ink);cursor:pointer;font-family:inherit;border-radius:10px}
-  .langmenu button:active{background:rgba(120,120,128,.14)}
-  .langmenu button.on{color:var(--teal);font-weight:700}
-  .langmenu button.on::after{content:"✓";margin-left:12px;font-weight:800}
-  .langmenu .mtitle{font-size:11px;color:var(--ink2);font-weight:600;padding:4px 13px 6px;letter-spacing:.3px}
-  .topnav{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:12px}
-  .blink{display:inline-flex;align-items:center;gap:5px;background:var(--card);border:1px solid var(--hair);border-radius:999px;
-    padding:7px 14px;font-size:12.5px;font-weight:600;color:var(--ink);text-decoration:none;cursor:pointer;font-family:inherit;box-shadow:var(--shadow)}
-  .blink:active{filter:brightness(.97)}
-  .wrap{max-width:880px;margin:0 auto;padding:8px 16px}
+/* crested-ui.js — crested 화면 로직
+   HTML 에서 분리했습니다. 유지보수는 이 파일에서 하세요. */
 
-  .optbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;background:var(--card);border-radius:var(--radius);
-    padding:8px 10px;margin-bottom:14px;box-shadow:var(--shadow)}
-  .optchip{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--chipbd);background:transparent;
-    border-radius:999px;padding:6px 12px;font-size:12.5px;font-weight:600;color:var(--ink);cursor:pointer;
-    font-family:inherit;line-height:1.3;transition:background .12s,border-color .12s}
-  .optchip .dotx{width:8px;height:8px;border-radius:50%;background:var(--chipbd);flex:0 0 auto;transition:background .12s}
-  .optchip[aria-pressed="true"]{background:var(--teal);border-color:var(--teal);color:#fff}
-  .optchip[aria-pressed="true"] .dotx{background:#fff}
-  .optinfo{margin-left:auto;display:flex;align-items:center;gap:5px;font-size:11.5px;color:var(--ink2);cursor:help;padding:4px 2px;background:none;border:none;font-family:inherit}
-  .optnote{flex-basis:100%;font-size:11.5px;color:var(--ink2);line-height:1.7;margin:4px 2px 0;display:none}
-  .optnote.show{display:block}
-  @media (max-width:420px){ .optinfo span.oitxt{display:none} }
-  .modeseg{display:inline-flex;border:1px solid var(--chipbd);border-radius:999px;overflow:hidden;background:transparent}
-  .modeseg button{background:transparent;border:none;padding:6px 13px;font-size:12.5px;font-weight:600;color:var(--ink2);
-    cursor:pointer;font-family:inherit;line-height:1.3}
-  .modeseg button.on{background:var(--teal);color:#fff}
-
-  .parents{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-  @media(max-width:620px){.parents{grid-template-columns:1fr}}
-  .card{background:var(--card2);border-radius:var(--radius);padding:12px 12px 13px}
-  .card h2{margin:2px 2px 12px;font-size:16px;font-weight:700;display:flex;align-items:center;gap:8px}
-  .dot{width:10px;height:10px;border-radius:50%}
-  .dot.a{background:var(--teal)} .dot.b{background:var(--patina)}
-  .parentcombo{font-size:12.5px;font-weight:700;color:var(--teal);background:rgba(14,124,123,.1);
-    border-radius:9px;padding:6px 10px;margin:0 2px 10px}
-  .parentcombo.b{color:var(--patina);background:rgba(59,141,160,.12)}
-  .sechead{font-size:11.5px;font-weight:700;color:var(--ink2);letter-spacing:.2px;margin:12px 2px 7px}
-  .famhead{margin:14px 2px 7px}
-  .famname{font-size:12.5px;font-weight:700;color:var(--ink)}
-  .fambadge{display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;border-radius:999px;margin-left:6px;vertical-align:1px}
-  .badge-rec{background:var(--b-rec-bg);color:var(--b-rec-fg);border:1px solid var(--b-rec-bd)}
-  .badge-incdom{background:var(--b-inc-bg);color:var(--b-inc-fg);border:1px solid var(--b-inc-bd)}
-  .badge-dom{background:var(--b-dom-bg);color:var(--b-dom-fg);border:1px solid var(--b-dom-bd)}
-  .badge-poly{background:var(--b-poly-bg);color:var(--b-poly-fg);border:1px solid var(--b-poly-bd)}
-  .famdesc{font-size:11px;color:var(--ink2);margin-top:4px;line-height:1.55}
-  .locusnote{font-size:11px;color:var(--ink2);line-height:1.6;background:var(--gtile);border-radius:9px;padding:7px 9px;margin:0 2px 8px}
-
-  .chipgrid{display:flex;flex-wrap:wrap;gap:7px}
-  .chipwrap{display:flex;flex-direction:column;gap:5px}
-  .chip{display:inline-flex;align-items:center;gap:6px;background:var(--card);border:1px solid var(--chipbd);
-    border-radius:999px;padding:7px 12px;font-size:12.5px;font-weight:600;color:var(--ink);cursor:pointer;
-    font-family:inherit;line-height:1.25;transition:background .12s,border-color .12s,color .12s}
-  .chip .sw{width:11px;height:11px;border-radius:50%;flex:0 0 auto;box-shadow:inset 0 0 0 1px rgba(0,0,0,.12)}
-  .chip.on{background:var(--teal);border-color:var(--teal);color:#fff}
-  .chip.b.on{background:var(--patina);border-color:var(--patina)}
-  .chip:active{filter:brightness(.97)}
-  .chiprisk{font-size:11px}
-  .chipq{font-size:10px;font-weight:800;opacity:.8}
-  .subseg{display:inline-flex;border:1px solid var(--chipbd);border-radius:999px;overflow:hidden;align-self:flex-start;margin-left:6px}
-  .subseg button{background:transparent;border:none;padding:4px 10px;font-size:11px;font-weight:600;color:var(--ink2);
-    cursor:pointer;font-family:inherit}
-  .subseg button.on{background:var(--teal);color:#fff}
-  .subseg.b button.on{background:var(--patina)}
-
-  .actions{display:flex;gap:10px;margin:16px 0 6px}
-  .act{flex:1;border:none;border-radius:14px;padding:15px 10px;font-size:15.5px;font-weight:700;font-family:inherit;cursor:pointer}
-  .btn-reset{background:var(--card);color:var(--ink);box-shadow:var(--shadow)}
-  .btn-calc{background:var(--teal);color:#fff;box-shadow:0 4px 14px rgba(14,124,123,.28)}
-  .btn-calc:active{background:var(--teal-press)}
-
-  .results{margin-top:14px}
-  .empty{background:var(--card);border-radius:var(--radius);padding:34px 20px;text-align:center;color:var(--ink2);font-size:14px;box-shadow:var(--shadow);line-height:1.7}
-  .results h2{font-size:17px;margin:20px 2px 4px;font-weight:700}
-  .summary{font-size:12px;color:var(--ink2);margin:0 2px 12px}
-  .warnhead{font-size:14px;font-weight:700;margin:6px 2px 8px}
-  .warnbox{border-radius:13px;padding:12px 14px;font-size:12.8px;line-height:1.7;margin-bottom:8px}
-  .warn-high{background:var(--warn-hi-bg);border:1px solid var(--warn-hi-bd);color:var(--warn-hi-fg)}
-  .warn-med{background:var(--warn-md-bg);border:1px solid var(--warn-md-bd);color:var(--warn-md-fg)}
-
-  .vbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;background:var(--warn-md-bg);border:1px solid var(--warn-md-bd);
-    color:var(--warn-md-fg);border-radius:12px;padding:9px 12px;font-size:12px;line-height:1.6;margin-bottom:10px}
-  .vbar button{margin-left:auto;background:var(--card);border:1px solid var(--chipbd);border-radius:999px;
-    padding:6px 12px;font-size:12px;font-weight:700;color:var(--ink);cursor:pointer;font-family:inherit}
-
-  .pie-wrap{display:flex;justify-content:center;margin:6px 0 16px}
-  .pie{width:186px;height:186px;border-radius:50%;position:relative;display:flex;align-items:center;justify-content:center}
-  .pie-hole{width:122px;height:122px;border-radius:50%;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
-  .pie-top{font-size:19px;font-weight:800;color:var(--ink)}
-  .gecko{display:block}
-
-  .rtable{width:100%;border-collapse:separate;border-spacing:0;background:var(--card);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);table-layout:fixed}
-  .rtable th{font-size:11px;font-weight:700;color:var(--ink2);text-align:left;padding:11px 10px;background:var(--card2);border-bottom:1px solid var(--hair)}
-  .rtable td{padding:11px 10px;font-size:13px;border-bottom:1px solid var(--hair);vertical-align:top;word-break:keep-all;overflow-wrap:anywhere}
-  .rtable tr:last-child td{border-bottom:none}
-  .rtable tr.dead td{background:var(--warn-hi-bg)}
-  .c-prob{width:82px;font-weight:800;white-space:nowrap}
-  .c-het{width:32%}
-  .cdot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:1px}
-  .cfrac{display:block;font-size:10.5px;color:var(--ink2);font-weight:600;margin-top:1px}
-  .visrow{display:flex;align-items:flex-start;gap:8px}
-  .geckothumb{flex:0 0 auto;margin-top:1px}
-  .vtext{flex:1;min-width:0;font-weight:600;line-height:1.5}
-  .vtext.isnorm{color:var(--ink2);font-weight:500}
-  .combotag{display:inline-block;font-size:9.5px;font-weight:800;letter-spacing:.4px;background:var(--butter);color:#4A3A12;
-    border-radius:5px;padding:1px 5px;margin-right:5px;vertical-align:1.5px}
-  .submorph{font-size:11px;color:var(--ink2);font-weight:500;margin-top:2px}
-  .deadtag{display:inline-block;font-size:9.5px;font-weight:800;background:var(--warn-hi-fg);color:#fff;
-    border-radius:5px;padding:1px 5px;margin-right:5px;vertical-align:1.5px}
-  .healthtag{display:inline-block;font-size:9.5px;font-weight:800;background:var(--warn-md-fg);color:#fff;
-    border-radius:5px;padding:1px 5px;margin-right:5px;vertical-align:1.5px}
-  .het100{display:inline-block;font-size:10.5px;font-weight:700;background:var(--b-rec-bg);color:var(--b-rec-fg);
-    border:1px solid var(--b-rec-bd);border-radius:6px;padding:2px 6px;margin:0 4px 4px 0}
-  .hetp{display:inline-block;font-size:10.5px;font-weight:700;background:var(--b-poly-bg);color:var(--b-poly-fg);
-    border:1px solid var(--b-poly-bd);border-radius:6px;padding:2px 6px;margin:0 4px 4px 0}
-  .hetnone{color:var(--ink2)}
-  .morebtn{display:block;width:100%;margin-top:10px;background:var(--card);border:1px solid var(--chipbd);border-radius:12px;
-    padding:12px;font-size:13px;font-weight:700;color:var(--ink);cursor:pointer;font-family:inherit}
-
-  .polyblock{background:var(--card);border-radius:var(--radius);padding:14px 15px;margin-top:14px;box-shadow:var(--shadow)}
-  .polyblock h3{font-size:14px;margin:0 0 6px;font-weight:700}
-  .pdesc{font-size:11.8px;color:var(--ink2);line-height:1.7;margin-bottom:10px}
-  .polychip{display:inline-block;font-size:12px;font-weight:600;background:var(--gtile);color:var(--ink);
-    border-radius:999px;padding:5px 11px;margin:0 5px 5px 0}
-  .polychip.both{background:var(--butter);color:#4A3A12}
-
-  .bottom-links{display:flex;justify-content:center;gap:8px;margin-top:22px;flex-wrap:wrap}
-  .mailnote{text-align:center;font-size:11.5px;color:var(--ink2);margin-top:8px;line-height:1.6}
-  .note{background:var(--note-bg);border:1px solid var(--note-bd);color:var(--note-fg);border-radius:13px;
-    padding:14px 15px;font-size:11.8px;line-height:1.85;margin-top:18px}
-  .note b{color:var(--ink)}
-  .legal{text-align:center;margin-top:14px;font-size:11.5px}
-  .legal a{color:var(--ink2);text-decoration:none;margin:0 4px}
-  footer{text-align:center;font-size:11px;color:var(--ink2);margin-top:12px;line-height:1.7;padding:0 8px}
-
-  .modal-overlay{position:fixed;inset:0;background:rgba(20,17,13,.5);display:none;align-items:center;justify-content:center;z-index:100;padding:16px}
-  .modal-overlay.show{display:flex}
-  .modal{background:var(--card);border-radius:20px;max-width:460px;width:100%;max-height:82vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.3)}
-  .modal-head{display:flex;align-items:center;justify-content:space-between;padding:16px 18px 10px}
-  .modal-head h3{margin:0;font-size:16.5px;font-weight:800}
-  .modal-x{background:transparent;border:none;font-size:17px;color:var(--ink2);cursor:pointer;padding:4px 6px;font-family:inherit}
-  .modal-body{padding:0 18px 8px;overflow-y:auto;-webkit-overflow-scrolling:touch}
-  .upd-section{margin-bottom:14px}
-  .upd-title{font-size:12.5px;font-weight:800;margin-bottom:6px}
-  .upd-title.done{color:var(--teal)} .upd-title.soon{color:var(--ink2)}
-  .modal-body ul{margin:0;padding-left:18px}
-  .modal-body li{font-size:12.5px;line-height:1.75;color:var(--ink);margin-bottom:2px}
-  .modal-mail{font-size:11.5px;color:var(--ink2);margin:10px 0 4px}
-  .modal-mail a{color:var(--teal)}
-  .modal-foot{display:flex;gap:8px;padding:10px 18px 16px}
-  .modal-foot button{flex:1;border:none;border-radius:12px;padding:12px;font-size:13.5px;font-weight:700;font-family:inherit;cursor:pointer}
-  .btn-today{background:var(--card2);color:var(--ink2)}
-  .btn-close{background:var(--teal);color:#fff}
-
-  /* ═══════════════════════════════════════════════════════════
-     화면 개편 — 헤더 · 세그먼트 바 · 부모 카드 · 선택 요약
-     ═══════════════════════════════════════════════════════════ */
-
-  /* ── 헤더: 로고 + 좌측 정렬 제목, 우측 버튼 ── */
-  header{padding:0;text-align:left;position:relative;overflow:hidden}
-  .hd{max-width:880px;margin:0 auto;padding:26px 16px 22px;display:flex;align-items:flex-start;gap:14px;position:relative;z-index:2}
-  .hd-mark{
-    width:56px;height:56px;border-radius:50%;background:var(--card);border:1px solid var(--hair);
-    display:flex;align-items:center;justify-content:center;flex:0 0 auto;box-shadow:var(--shadow);
-  }
-  .hd-mark img{width:30px;height:30px;display:block}
-  .hd-txt{flex:1;min-width:0;padding-top:2px}
-  header h1{margin:0;font-size:clamp(21px,4.4vw,28px);font-weight:800;letter-spacing:-.7px;line-height:1.25}
-  header .sub{color:var(--ink2);font-size:13px;margin-top:5px;max-width:none;margin-left:0;margin-right:0}
-  .hd-btns{display:flex;gap:8px;align-items:center;flex:0 0 auto;padding-top:4px}
-  @media (max-width:620px){
-    .hd{flex-wrap:wrap;padding:18px 16px 16px;gap:11px}
-    .hd-mark{width:44px;height:44px} .hd-mark img{width:24px;height:24px}
-    .hd-btns{width:100%;order:3}
-  }
-  /* 헤더 배경 장식 (은은한 원형 그라데이션) */
-  header::before{
-    content:'';position:absolute;inset:0;z-index:1;pointer-events:none;
-    background:
-      radial-gradient(420px 200px at 88% 8%, rgba(14,124,123,.10), transparent 70%),
-      radial-gradient(320px 180px at 4% 96%, rgba(234,195,106,.13), transparent 70%);
-  }
-  /* 장식 이미지 — 순수 장식이라 클릭·스크린리더 대상에서 제외합니다.
-     ※ 모프를 나타내는 그림이 아닙니다. 실제 모프 사진은 결과 표에서만 씁니다. */
-  .hd-deco{position:absolute;pointer-events:none;user-select:none;z-index:1}
-  .hd-deco.leaf{left:-30px;top:-22px;width:158px;transform:rotate(-14deg);opacity:.42}
-  .hd-deco.hero{right:-10px;bottom:-34px;width:236px;opacity:.95;z-index:2}
-  @media (prefers-color-scheme:dark){
-    .hd-deco.leaf{opacity:.26} .hd-deco.hero{opacity:.7}
-  }
-  /* 좁은 화면에서는 글자와 겹치지 않게 줄이고, 아주 좁으면 게코를 숨깁니다.
-     .hd 가 z-index:2 이므로 겹쳐도 글자·버튼이 항상 위에 옵니다. */
-  @media (max-width:760px){ .hd-deco.hero{width:172px;right:-22px;bottom:-24px;opacity:.4} }
-  @media (max-width:560px){ .hd-deco.hero{display:none} .hd-deco.leaf{width:112px;opacity:.3} }
-  /* 장식과 겹치는 구간에서도 버튼이 눌리도록 위로 올립니다 */
-  .hd-btns{position:relative;z-index:4}
-
-  /* langbtn 을 헤더 흐름 안으로 (기존 절대배치 해제) */
-  .langbtn{position:static;top:auto;right:auto;height:36px;padding:0 12px;font-size:12.5px;box-shadow:var(--shadow)}
-  @media (max-width:420px){ .langbtn{height:34px;padding:0 10px;top:auto;right:auto} }
-  .langmenu{top:auto;right:16px;margin-top:4px}
-
-  /* ── 세그먼트 바: 5개 필터를 한 줄로 ── */
-  .filterbar{
-    display:flex;flex-wrap:wrap;align-items:center;gap:6px;
-    background:var(--card);border:1px solid var(--hair);border-radius:999px;
-    padding:6px;margin:4px 0 16px;box-shadow:var(--shadow);
-  }
-  .filterbar .fseg{
-    display:inline-flex;align-items:center;gap:7px;border:none;background:transparent;
-    border-radius:999px;padding:9px 16px;font-size:12.8px;font-weight:700;color:var(--ink2);
-    cursor:pointer;font-family:inherit;line-height:1.3;white-space:nowrap;
-    transition:background .14s,color .14s;
-  }
-  .filterbar .fseg:hover{background:var(--card2);color:var(--ink)}
-  .filterbar .fseg.on,
-  .filterbar .fseg[aria-pressed="true"]{background:var(--teal);color:#fff}
-  .filterbar .fseg .fico{font-size:12px;opacity:.9}
-  .filterbar .fseg.on .fico,
-  .filterbar .fseg[aria-pressed="true"] .fico{opacity:1}
-  .filterbar .optinfo{margin-left:auto;margin-right:6px}
-  @media (max-width:620px){
-    .filterbar{border-radius:16px}
-    .filterbar .fseg{padding:8px 12px;font-size:12px}
-  }
-
-  /* ── 부모 카드 ── */
-  .card{background:var(--card);border:1px solid var(--hair);border-radius:18px;padding:16px 15px 17px;box-shadow:var(--shadow)}
-  .card-top{display:flex;align-items:center;gap:11px;margin-bottom:14px}
-  .avatar{
-    width:44px;height:44px;border-radius:50%;flex:0 0 auto;
-    background:var(--gtile);border:1px solid var(--hair);
-    display:flex;align-items:center;justify-content:center;font-size:20px;overflow:hidden;
-  }
-  .avatar img{width:100%;height:100%;object-fit:cover;display:block}
-  .card-name{flex:1;min-width:0}
-  .card h2{margin:0;font-size:17px;font-weight:800;letter-spacing:-.3px;display:flex;align-items:center;gap:7px}
-  .card-role{font-size:11.5px;color:var(--ink2);margin-top:1px}
-  .helpbtn{
-    flex:0 0 auto;background:transparent;border:1px solid var(--hair);border-radius:999px;
-    padding:6px 11px;font-size:11px;font-weight:700;color:var(--ink2);cursor:pointer;font-family:inherit;
-    display:inline-flex;align-items:center;gap:4px;
-  }
-  .helpbtn:hover{color:var(--ink);background:var(--card2)}
-
-  /* 그룹 제목에 왼쪽 강조 바 */
-  .famhead{margin:16px 0 8px;padding-left:9px;position:relative}
-  .famhead::before{
-    content:'';position:absolute;left:0;top:2px;bottom:2px;width:3px;border-radius:2px;background:var(--teal);
-  }
-  .card.b .famhead::before{background:var(--patina)}
-  .famname{font-size:13px;font-weight:800}
-  .famdesc{display:inline;margin-left:7px;font-size:11px;color:var(--ink2);font-weight:500}
-  .sechead{padding-left:9px;position:relative;margin:16px 0 8px;font-size:13px;font-weight:800;color:var(--ink)}
-  .sechead::before{
-    content:'';position:absolute;left:0;top:2px;bottom:2px;width:3px;border-radius:2px;background:var(--teal);
-  }
-  .card.b .sechead::before{background:var(--patina)}
-
-  /* ── 선택된 형질 요약 + 실행 ── */
-  .selbar{
-    display:flex;align-items:stretch;gap:14px;flex-wrap:wrap;
-    background:var(--card);border:1px solid var(--hair);border-radius:18px;
-    padding:14px 16px;margin-top:16px;box-shadow:var(--shadow);
-  }
-  .sel-left{flex:1;min-width:230px;display:flex;gap:12px;align-items:flex-start}
-  .sel-label{font-size:11.5px;font-weight:800;color:var(--ink2);flex:0 0 auto;padding-top:4px;white-space:nowrap}
-  .sel-lines{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
-  .sel-line{display:flex;align-items:flex-start;gap:7px;flex-wrap:wrap}
-  .sel-who{font-size:11.5px;font-weight:800;flex:0 0 auto;padding-top:2px;display:inline-flex;align-items:center;gap:4px}
-  .sel-who.a{color:var(--teal)} .sel-who.b{color:var(--patina)}
-  .selchip{
-    display:inline-flex;align-items:center;gap:5px;background:var(--card2);border:1px solid var(--hair);
-    border-radius:999px;padding:3px 9px;font-size:11px;font-weight:600;color:var(--ink);
-  }
-  .selchip .sw{width:8px;height:8px;border-radius:50%;flex:0 0 auto}
-  .sel-none{font-size:11.5px;color:var(--ink2)}
-  .sel-right{display:flex;gap:9px;align-items:center;flex:0 0 auto}
-  @media (max-width:700px){ .sel-right{width:100%} .sel-right .act{flex:1} }
-
-  /* 실행 버튼 — 예시처럼 크게 */
-  .actions{margin:0}
-  .act{border-radius:14px;padding:14px 20px;font-size:15px;font-weight:800}
-  .btn-reset{background:var(--card2);color:var(--ink);box-shadow:none;border:1px solid var(--hair);flex:0 0 auto;padding:14px 18px}
-  .btn-calc{flex:0 0 auto;padding:14px 30px;display:inline-flex;align-items:center;gap:9px}
-
-  /* ── 결과 범례 ── */
-  .reslegend{display:flex;flex-wrap:wrap;gap:14px;align-items:center;margin:2px 2px 12px;font-size:11.5px;color:var(--ink2)}
-  .reslegend i{display:inline-flex;align-items:center;gap:5px;font-style:normal}
-  .reslegend i::before{content:'';width:9px;height:9px;border-radius:50%;background:currentColor;opacity:.85}
-  .lg-inc{color:var(--b-inc-fg)} .lg-rec{color:var(--b-rec-fg)}
-  .lg-poly{color:var(--b-dom-fg)} .lg-etc{color:var(--ink2)}
-</style>
-</head>
-<body>
-<header>
-  <img class="hd-deco leaf" src="../assets/leaf.svg" alt="" aria-hidden="true">
-  <img class="hd-deco hero" src="../assets/crested-hero.png" alt="" aria-hidden="true" loading="lazy">
-  <div class="hd">
-    <div class="hd-mark"><img src="../assets/logo-paw.svg" alt=""></div>
-    <div class="hd-txt">
-      <h1 id="h-title">🦎 Crested Gecko Morph Calculator</h1>
-      <div class="sub" id="h-sub"></div>
-    </div>
-    <div class="hd-btns">
-      <button class="blink" id="btn-upd" onclick="openUpd()">📢</button>
-      <button class="langbtn" id="langBtn" aria-label="Language" title="Language">
-        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.7 3.8 9S14.5 18.4 12 21c-2.5-2.6-3.8-5.7-3.8-9S9.5 5.6 12 3z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
-        <span class="lgtxt">Language</span>
-      </button>
-    </div>
-  </div>
-  <div class="langmenu" id="langMenu">
-    <div class="mtitle" id="lbl-langtitle">Language</div>
-    <button data-lang="ko">한국어</button>
-    <button data-lang="en">English</button>
-    <button data-lang="ja">日本語</button>
-    <button data-lang="zh">中文</button>
-  </div>
-</header>
-
-<div class="wrap">
-  <!-- 표시 기준 · 옵션을 한 줄 세그먼트로 통합 -->
-  <div class="filterbar" id="modeSeg" role="group">
-    <button type="button" class="fseg on" data-mode="visual"><span class="fico">◉</span><span id="lbl-mode-visual"></span></button>
-    <button type="button" class="fseg" data-mode="geno"><span class="fico">⚭</span><span id="lbl-mode-geno"></span></button>
-    <button type="button" class="fseg" id="partialchk" aria-pressed="false"><span class="fico">%</span><span id="lbl-partial"></span></button>
-    <button type="button" class="fseg" id="extrachk" aria-pressed="false"><span class="fico">✦</span><span id="lbl-extra"></span></button>
-    <button type="button" class="fseg" id="polychk" aria-pressed="true"><span class="fico">⋔</span><span id="lbl-poly"></span></button>
-    <button type="button" class="optinfo" id="optInfoBtn" aria-expanded="false">ⓘ <span class="oitxt" id="lbl-optinfo"></span></button>
-    <div class="optnote" id="optNote"></div>
-  </div>
-
-  <div class="parents">
-    <div class="card a">
-      <div class="card-top">
-        <div class="avatar">🦎</div>
-        <div class="card-name">
-          <h2><span class="dot a"></span> <span id="lbl-pa"></span></h2>
-          <div class="card-role" id="lbl-pa-role"></div>
-        </div>
-        <button type="button" class="helpbtn" onclick="toggleOptNote()">ⓘ <span id="lbl-help"></span></button>
-      </div>
-      <div id="parentA"></div>
-    </div>
-    <div class="card b">
-      <div class="card-top">
-        <div class="avatar">🦎</div>
-        <div class="card-name">
-          <h2><span class="dot b"></span> <span id="lbl-pb"></span></h2>
-          <div class="card-role" id="lbl-pb-role"></div>
-        </div>
-        <button type="button" class="helpbtn" onclick="toggleOptNote()">ⓘ <span id="lbl-help2"></span></button>
-      </div>
-      <div id="parentB"></div>
-    </div>
-  </div>
-
-  <!-- 선택된 형질 요약 + 실행 -->
-  <div class="selbar">
-    <div class="sel-left">
-      <div class="sel-label" id="lbl-selected"></div>
-      <div class="sel-lines">
-        <div class="sel-line"><span class="sel-who a">♦ <span id="lbl-sel-a"></span></span><span id="selA"></span></div>
-        <div class="sel-line"><span class="sel-who b">♦ <span id="lbl-sel-b"></span></span><span id="selB"></span></div>
-      </div>
-    </div>
-    <div class="sel-right actions">
-      <button class="act btn-reset" id="btn-reset" onclick="resetAll()"></button>
-      <button class="act btn-calc" id="btn-calc" onclick="calculate()"></button>
-    </div>
-  </div>
-
-  <div class="results" id="results"></div>
-
-  <div class="bottom-links">
-    <a class="blink" id="mailLink" href="#">✉️ <span id="lbl-contact"></span></a>
-  </div>
-  <div class="mailnote" id="mailNote"></div>
-
-  <div class="note" id="note"></div>
-  <div class="legal">
-    <a href="terms.html#terms" id="lbl-terms">이용약관</a> · <a href="terms.html#privacy" id="lbl-privacy">개인정보처리방침</a>
-  </div>
-  <footer id="footer"></footer>
-</div>
-
-<div class="modal-overlay" id="updModal">
-  <div class="modal">
-    <div class="modal-head">
-      <h3 id="lbl-updh">📢</h3>
-      <button class="modal-x" onclick="closeUpd()" aria-label="close">✕</button>
-    </div>
-    <div class="modal-body">
-      <div class="upd-section">
-        <div class="upd-title done" id="lbl-upddone"></div>
-        <ul id="updDone"></ul>
-      </div>
-      <div class="upd-section">
-        <div class="upd-title soon" id="lbl-updsoon"></div>
-        <ul id="updSoon"></ul>
-      </div>
-      <div class="modal-mail" id="updMail"></div>
-    </div>
-    <div class="modal-foot">
-      <button class="btn-today" onclick="dismissToday()" id="lbl-today"></button>
-      <button class="btn-close" onclick="closeUpd()" id="lbl-mclose"></button>
-    </div>
-  </div>
-</div>
-
-<script>
 /* ================= 다국어 사전 ================= */
 const I18N = {
   ko:{
     htmlLang:'ko',
-    title:'🦎 크레스티드 모프 계산기',
-    sub:'부모의 유전 형질을 고르면 새끼 모프가 나올 확률을 계산합니다',
+    title:'크레스티드 게코 모프 계산기',
+    sub:'부모의 유전 형질을 선택해 새끼 모프 확률을 계산하세요',
     langLabel:'언어', parentA:'부모 A', parentB:'부모 B',
     parentRole:'유전 형질 선택', helpBtn:'선택 도움말',
     selectedLabel:'선택된 형질', selNone:'아직 고르지 않았어요',
@@ -508,11 +30,12 @@ const I18N = {
     colProb:'확률', colVisual:'비주얼 (발현)', colMorph:'모프 (헷 포함)', colHet:'HET (보인자)', hetNone:'–',
     secGene:'유전 모프 (확률 계산)',
     visualLbl:'비주얼', hetLbl:'헷', copy1:'1카피', copy2:'2카피',
-    warnH:'⚠️ 주의가 필요한 유전 조합',
+    warnH:'주의가 필요한 유전 조합',
     viveNote:function(p){return '이 조합에는 <b>부화·생존이 어려운 결과</b>가 '+p+'% 포함되어 있습니다.';},
     viveOn:'생존 개체 기준으로 보기', viveOff:'전체(이론값)로 보기',
     viveBadge:'생존 개체 기준 — 비생존 결과를 제외하고 다시 나눈 확률입니다',
     showAll:function(n){return '전체 '+n+'가지 모두 보기';},
+    crossTag:'크로스', crossNote:'라인브리딩 형질이 섞인 교배입니다. 새끼에게 형질이 보이지 않아도 유전자에는 섞여 있으므로, 분양·재교배 시 <b>크로스 개체</b>로 표기하는 것을 권합니다.',
     polyH:'라인브리딩 형질 (확률 계산 불가)',
     polyDesc:'폴리제닉(다인자) 형질이라 정확한 확률을 낼 수 없습니다. 아래 형질은 부모가 지녀 새끼에 나타날 수 있으며 발현 정도는 개체마다 다릅니다. ‘(양쪽)’은 부모 둘 다 지닌 형질로 더 강하게 발현될 가능성이 있습니다.',
     polyBoth:'양쪽',
@@ -529,7 +52,7 @@ const I18N = {
       +'슈퍼달마시안·슈퍼스트라이프·슈퍼하이포는 <b>표현이 강하다</b>는 뜻일 뿐 동형접합이 아닙니다.',
     terms:'이용약관', privacy:'개인정보처리방침',
     footer:'확률은 멘델 유전 법칙에 따른 이론값입니다 · 라인브리딩(폴리제닉) 형질은 확률 계산 대상이 아닙니다',
-    updH:'📢 업데이트 노트', updDone:'✅ 업데이트 됨', updSoon:'🔜 업데이트 예정',
+    updH:'업데이트 노트', updDone:'업데이트 됨', updSoon:'업데이트 예정',
     updDoneList:[
       '<b>크레스티드 게코 계산기</b> 첫 공개 — 레오파드 계산기와 별도 페이지',
       '릴리화이트 · 카푸치노/세이블 · 팬텀 · 초초 · 아잔틱 확률 계산',
@@ -552,7 +75,7 @@ const I18N = {
   },
   en:{
     htmlLang:'en',
-    title:'🦎 Crested Gecko Morph Calculator',
+    title:'Crested Gecko Morph Calculator',
     sub:'Pick each parent’s genetics to see the probability of each offspring morph',
     langLabel:'Language', parentA:'Parent A', parentB:'Parent B',
     parentRole:'Choose genetic traits', helpBtn:'Help',
@@ -577,11 +100,12 @@ const I18N = {
     colProb:'Prob.', colVisual:'Visual (expressed)', colMorph:'Morph (incl. het)', colHet:'Het (carrier)', hetNone:'–',
     secGene:'Genetic morphs (calculated)',
     visualLbl:'Visual', hetLbl:'het', copy1:'1 copy', copy2:'2 copies',
-    warnH:'⚠️ Genetics that need caution',
+    warnH:'Genetics that need caution',
     viveNote:function(p){return 'This pairing includes <b>'+p+'% outcomes that do not survive</b>.';},
     viveOn:'Show live-hatchling odds', viveOff:'Show full theoretical odds',
     viveBadge:'Live-hatchling odds — non-viable outcomes removed and the rest renormalised',
     showAll:function(n){return 'Show all '+n+' outcomes';},
+    crossTag:'cross', crossNote:'This pairing mixes line-bred traits. Even when a hatchling shows none of them, the genes are still in the mix — label such animals as <b>crosses</b> when selling or re-pairing.',
     polyH:'Line-bred traits (not probability-based)',
     polyDesc:'These are polygenic traits, so exact probabilities can’t be calculated. The traits below are carried by a parent and may appear in offspring to varying degrees. “(both)” means both parents carry it, so it may express more strongly.',
     polyBoth:'both',
@@ -598,7 +122,7 @@ const I18N = {
       +'<b>strongly expressed</b> and are not homozygous.',
     terms:'Terms', privacy:'Privacy',
     footer:'Probabilities are theoretical values from Mendelian inheritance · line-bred (polygenic) traits are not probability-based',
-    updH:'📢 Update notes', updDone:'✅ Shipped', updSoon:'🔜 Coming next',
+    updH:'Update notes', updDone:'Shipped', updSoon:'Coming next',
     updDoneList:[
       '<b>Crested gecko calculator</b> first release — a separate page from the leopard gecko one',
       'Probability calculation for Lilly White · Cappuccino/Sable · Phantom · ChoCho · Axanthic',
@@ -621,7 +145,7 @@ const I18N = {
   },
   ja:{
     htmlLang:'ja',
-    title:'🦎 クレステッドゲッコー モルフ計算機',
+    title:'クレステッドゲッコー モルフ計算機',
     sub:'両親の遺伝形質を選ぶと、仔のモルフ確率を計算します',
     langLabel:'言語', parentA:'親 A', parentB:'親 B',
     parentRole:'遺伝形質を選択', helpBtn:'ヘルプ',
@@ -646,11 +170,12 @@ const I18N = {
     colProb:'確率', colVisual:'ビジュアル（発現）', colMorph:'モルフ（het 含む）', colHet:'Het（保因）', hetNone:'–',
     secGene:'遺伝モルフ（確率計算）',
     visualLbl:'ビジュアル', hetLbl:'ヘテロ', copy1:'1コピー', copy2:'2コピー',
-    warnH:'⚠️ 注意が必要な遺伝の組み合わせ',
+    warnH:'注意が必要な遺伝の組み合わせ',
     viveNote:function(p){return 'この組み合わせには<b>孵化・生存が困難な結果が '+p+'%</b> 含まれています。';},
     viveOn:'生存個体基準で見る', viveOff:'全体（理論値）で見る',
     viveBadge:'生存個体基準 — 生存困難な結果を除いて再計算した確率です',
     showAll:function(n){return '全 '+n+' 通りをすべて表示';},
+    crossTag:'クロス', crossNote:'ラインブリード形質が混ざった交配です。仔に形質が出なくても遺伝子には混ざっているため、分譲・再交配の際は<b>クロス個体</b>と表記することをおすすめします。',
     polyH:'ラインブリード形質（確率計算不可）',
     polyDesc:'ポリジェニック（多因子）形質のため正確な確率は出せません。以下の形質は親が持ち、仔に程度の差はあれ現れる可能性があります。「(両方)」は両親とも持つ形質で、より強く発現する可能性があります。',
     polyBoth:'両方',
@@ -667,7 +192,7 @@ const I18N = {
       +'スーパーダルメシアン・スーパーストライプ・スーパーハイポは<b>発現が強い</b>という意味に過ぎず、ホモではありません。',
     terms:'利用規約', privacy:'プライバシーポリシー',
     footer:'確率はメンデル遺伝に基づく理論値です · ラインブリード（ポリジェニック）形質は確率計算の対象外です',
-    updH:'📢 アップデート情報', updDone:'✅ 更新済み', updSoon:'🔜 更新予定',
+    updH:'アップデート情報', updDone:'更新済み', updSoon:'更新予定',
     updDoneList:[
       '<b>クレステッドゲッコー計算機</b>を初公開 — レオパ計算機とは別ページ',
       'リリーホワイト・カプチーノ／セーブル・ファントム・チョチョ・アザンティックの確率計算',
@@ -690,7 +215,7 @@ const I18N = {
   },
   zh:{
     htmlLang:'zh-Hans',
-    title:'🦎 睫角守宫基因计算器',
+    title:'睫角守宫基因计算器',
     sub:'选择父母双方的基因，即可计算后代各形态的概率',
     langLabel:'语言', parentA:'亲本 A', parentB:'亲本 B',
     parentRole:'选择遗传性状', helpBtn:'帮助',
@@ -715,11 +240,12 @@ const I18N = {
     colProb:'概率', colVisual:'表现型', colMorph:'形态（含 het）', colHet:'Het（携带）', hetNone:'–',
     secGene:'遗传形态（可计算）',
     visualLbl:'表现', hetLbl:'het', copy1:'1个拷贝', copy2:'2个拷贝',
-    warnH:'⚠️ 需要注意的基因组合',
+    warnH:'需要注意的基因组合',
     viveNote:function(p){return '此配对包含 <b>'+p+'% 无法存活</b>的结果。';},
     viveOn:'按存活个体查看', viveOff:'查看完整理论值',
     viveBadge:'按存活个体计算 — 已剔除不存活结果并重新归一化',
     showAll:function(n){return '显示全部 '+n+' 种结果';},
+    crossTag:'杂交', crossNote:'本次配对混入了线育性状。即使后代未表现出来，基因中仍然含有，因此出售或再次配对时建议标注为<b>杂交个体</b>。',
     polyH:'线育性状（非概率计算）',
     polyDesc:'这是多基因（polygenic）性状，无法计算精确概率。以下性状由父母携带，可能以不同程度出现在后代中。「(双方)」表示父母双方都携带，可能表现更强。',
     polyBoth:'双方',
@@ -735,7 +261,7 @@ const I18N = {
       +'<br><br><b>"超级"的两种含义</b> — 超级卡布奇诺、超级黑貂、超级莉莉白是真正的纯合个体。而超级大麦町、超级直纹、超级低黑只表示<b>表现强烈</b>，并非纯合。',
     terms:'使用条款', privacy:'隐私政策',
     footer:'概率为基于孟德尔遗传的理论值 · 线育（多基因）性状不在概率计算范围内',
-    updH:'📢 更新说明', updDone:'✅ 已更新', updSoon:'🔜 计划中',
+    updH:'更新说明', updDone:'已更新', updSoon:'计划中',
     updDoneList:[
       '<b>睫角守宫计算器</b>首次发布 — 与豹纹守宫计算器分开的独立页面',
       '莉莉白 · 卡布奇诺／黑貂 · 幻影 · ChoCho · 无黄化的概率计算',
@@ -779,7 +305,7 @@ function stateChip(g, side, state, label, colorKey, risky){
   const chip=document.createElement('button'); chip.type='button';
   chip.className='chip'+(side==='B'?' b':'')+(on?' on':'');
   chip.innerHTML='<span class="sw" style="background:'+(CR_COLOR[colorKey]||'#CFC7A0')+'"></span>'+escapeHtml(label)
-    +(risky?' <span class="chiprisk">⚠</span>':'')+proofTag(g);
+    +(risky?' <i class="bi bi-exclamation-triangle-fill chiprisk" aria-hidden="true"></i>':'')+proofTag(g);
   chip.onclick=()=>{ CR_STATE[side][g.id]= on ? 'nn' : state; buildParent(side); if(hasResult) calculate(); };
   return chip;
 }
@@ -943,9 +469,14 @@ function pctStr(p){ const n=p*100; return n>=9.95? n.toFixed(0) : n>=0.995? n.to
 function render(payload){
   const host=document.getElementById('results'), t=L();
   if(!payload || !payload.anything){ host.innerHTML='<div class="empty">'+t.emptyNone+'</div>'; return; }
+  /* 다인자(라인브리딩) 크로스 표기 — 발현이 안 보여도 유전자에 섞였음을 남깁니다.
+     자세한 취지는 gecko/index.html 의 같은 주석 참고. */
+  const crossTag = (payload.poly && payload.poly.length)
+    ? '(' + payload.poly.map(p=>p.name).join('·') + ' ' + t.crossTag + ')'
+    : '';
   let html='';
   if(payload.warnings && payload.warnings.length){
-    html+='<div class="warnhead">'+t.warnH+'</div>';
+    html+='<div class="warnhead"><i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i> '+t.warnH+'</div>';
     payload.warnings.forEach(w=>{ html+='<div class="warnbox warn-'+w.level+'">'+w.text+'</div>'; });
   }
   if(payload.rows && payload.rows.length){
@@ -972,6 +503,9 @@ function render(payload){
       vtext += r.combo
         ? '<span class="combotag">'+t.comboTag+'</span>'+escapeHtml(r.combo)+'<div class="submorph">'+escapeHtml(r.label)+'</div>'
         : escapeHtml(r.label);
+      if(crossTag) vtext+='<span class="crosstag">'+escapeHtml(crossTag)+'</span>';
+      /* TODO(모프 설명): crested-core.js 의 CR_ALL_GENES/CR_TRAITS 에 desc 를 추가한 뒤 아래를 사용하세요.
+         vtext += '<div class="morphdesc">'+escapeHtml(morphDescFor(r.tokens, r.traits))+'</div>'; */
       html+='<tr'+(r.nonViable?' class="dead"':'')+'>'
         +'<td class="c-prob"><span class="cdot" style="background:'+r._color+'"></span>'+pctStr(r.prob)+'%'
         +'<span class="cfrac">'+crFrac(r.prob)+'</span></td>'
@@ -986,6 +520,7 @@ function render(payload){
       html+='</tr>';
     });
     html+='</tbody></table>';
+    if(crossTag) html+='<div class="crossnote">'+t.crossNote+'</div>';
     if(shown.length<rows.length)
       html+='<button type="button" class="morebtn" onclick="expandRows()">'+escapeHtml(t.showAll(rows.length))+'</button>';
   }
@@ -1017,18 +552,21 @@ function applyLang(){
   set('lbl-help',t.helpBtn); set('lbl-help2',t.helpBtn);
   set('lbl-selected',t.selectedLabel);
   set('lbl-sel-a',t.parentA); set('lbl-sel-b',t.parentB);
-  set('btn-reset',t.reset); set('btn-calc',t.calc);
+  setH('btn-reset','<i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i><span>'+escapeHtml(t.reset)+'</span>');
+  setH('btn-calc','<i class="bi bi-calculator" aria-hidden="true"></i><span>'+escapeHtml(t.calc)+'</span><i class="bi bi-chevron-right calc-arrow" aria-hidden="true"></i>');
   set('lbl-mode-visual',t.modeVisual); set('lbl-mode-geno',t.modeGeno);
   set('lbl-partial',t.partialToggle); set('lbl-extra',t.extraToggle);
   set('lbl-poly',t.polyToggle); set('lbl-optinfo',t.optInfo);
   setH('optNote',t.optNote);
-  set('btn-upd','📢 '+t.updBtn);
+  setH('btn-upd','<i class="bi bi-file-earmark-text" aria-hidden="true"></i><span>'+escapeHtml(t.updBtn)+'</span>');
   set('lbl-contact',t.contact);
   setH('mailNote',t.mailNote+' ('+CR_CONTACT_MAIL+')');
   setH('note',t.note);
   set('lbl-terms',t.terms); set('lbl-privacy',t.privacy);
   set('footer',t.footer); set('lbl-langtitle',t.langLabel);
-  set('lbl-updh',t.updH); set('lbl-upddone',t.updDone); set('lbl-updsoon',t.updSoon);
+  setH('lbl-updh','<i class="bi bi-megaphone" aria-hidden="true"></i> '+escapeHtml(t.updH));
+  setH('lbl-upddone','<i class="bi bi-check-circle-fill" aria-hidden="true"></i> '+escapeHtml(t.updDone));
+  setH('lbl-updsoon','<i class="bi bi-clock" aria-hidden="true"></i> '+escapeHtml(t.updSoon));
   setH('updDone', t.updDoneList.map(x=>'<li>'+x+'</li>').join(''));
   setH('updSoon', t.updSoonList.map(x=>'<li>'+x+'</li>').join(''));
   setH('updMail', t.updMail+'<a href="mailto:'+CR_CONTACT_MAIL+'">'+CR_CONTACT_MAIL+'</a>');
@@ -1115,6 +653,3 @@ applyLang();
   try{ dismissed=(localStorage.getItem('crUpdDismiss')===UPD_VER+'|'+todayKey()); }catch(e){ dismissed=false; }
   if(!dismissed) openUpd();
 })();
-</script>
-</body>
-</html>

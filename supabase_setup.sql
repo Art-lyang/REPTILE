@@ -442,14 +442,25 @@ returns jsonb language sql security definer set search_path = public as $$
 $$;
 grant execute on function public.my_consent() to authenticated;
 
--- D) 검색(계산) 로그를 기기와 연결 — 동의 회원의 이용 기록 분석용
---    (combo_queries 가 아직 없는 프로젝트에서도 오류가 나지 않게 존재 확인)
+-- D) 로그 보강 ------------------------------------------------
+--    device  : 검색(계산) 로그를 기기와 연결 — 동의 회원의 이용 기록 분석용
+--    service : 어느 서비스에서 온 로그인지 구분 (gecko / crested / pygmy / studio)
+--              량 스튜디오 안에서 여러 도구가 같은 DB 를 쓰기 때문에 필요합니다.
+--              ※ 나중에 붙이면 그 전 데이터는 서비스를 구분할 수 없으니 지금 넣습니다.
+--              기존 데이터는 전부 게코에서 온 것이므로 기본값을 'gecko' 로 둡니다.
 do $cq$
 begin
   if to_regclass('public.combo_queries') is not null then
-    alter table public.combo_queries add column if not exists device text;
+    alter table public.combo_queries add column if not exists device  text;
+    alter table public.combo_queries add column if not exists service text default 'gecko';
   else
     raise notice '[건너뜀] combo_queries 테이블이 없습니다.';
+  end if;
+
+  if to_regclass('public.visits') is not null then
+    alter table public.visits add column if not exists service text default 'gecko';
+  else
+    raise notice '[건너뜀] visits 테이블이 없습니다.';
   end if;
 end
 $cq$;

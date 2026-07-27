@@ -977,10 +977,23 @@ applyLang();
   async function refreshUser(){ if(!SB) return null; try{ const r=await SB.auth.getSession(); USER=r.data.session? r.data.session.user : null; }catch(e){ USER=null; } return USER; }
 
   /* ---------- 통계 ---------- */
-  async function logVisit(){ if(!SB)return; try{ await SB.from('visits').insert({device:dev(), lang:LANG}); }catch(e){} }
+  // service 값을 함께 남깁니다 — 관리자에서 서비스별로 나눠 보기 위함 (docs/STUDIO.md)
+  // 서버에 service 컬럼이 아직 없으면 그 값만 빼고 재시도해 로그가 끊기지 않게 합니다.
+  async function logVisit(){ if(!SB)return;
+    const base={device:dev(), lang:LANG};
+    try{
+      const r=await SB.from('visits').insert(Object.assign({service:SERVICE_ID}, base));
+      if(r && r.error) await SB.from('visits').insert(base);
+    }catch(e){ try{ await SB.from('visits').insert(base); }catch(x){} } }
   function sideKey(side){ const p=[]; GENES.forEach(g=>{const v=STATE[side][g.id]; if(v&&v!=='nn')p.push(g.id+':'+v);}); POLY.forEach(x=>{if(STATE[side][x.id]==='yes')p.push(x.id);}); return p.sort().join('+')||'normal'; }
   function sideLabel(side){ const t=[]; GENES.forEach(g=>{const v=STATE[side][g.id]; if(!v||v==='nn')return; let nm=(g.type==='incdom'&&v==='mm')?gSuper(g):gName(g); if(v==='het'&&g.type==='rec')nm='het '+nm; t.push(nm);}); POLY.forEach(x=>{if(STATE[side][x.id]==='yes')t.push(pName(x));}); return t.join(' ')||L().normal; }
-  window.calcAndLog=function(){ calculate(); if(SB){ const a=sideKey('A'),b=sideKey('B'); if(!(a==='normal'&&b==='normal')){ const ck=[a,b].sort().join(' × '); try{ SB.from('combo_queries').insert({ckey:ck, label:sideLabel('A')+' × '+sideLabel('B')}); }catch(e){} } } };
+  window.calcAndLog=function(){ calculate();
+    if(SB){ const a=sideKey('A'),b=sideKey('B');
+      if(!(a==='normal'&&b==='normal')){
+        const base={ckey:[a,b].sort().join(' × '), label:sideLabel('A')+' × '+sideLabel('B')};
+        try{ SB.from('combo_queries').insert(Object.assign({service:SERVICE_ID}, base))
+               .then(r=>{ if(r && r.error) SB.from('combo_queries').insert(base); }); }catch(e){}
+      } } };
 
   /* ---------- 모프/콤보 오버라이드 로드 ---------- */
   function applyMorphRows(rows){
@@ -1095,7 +1108,7 @@ applyLang();
       const het=cells[2].innerText.trim().replace(/\s+/g,' ');
       if(het&&het!=='–'){ x.fillStyle='#6B5686'; x.font='12px sans-serif'; x.fillText(het.slice(0,44),110,y+16); }
       y+=46; });
-    x.fillStyle='#8A8375'; x.font='11px sans-serif'; x.fillText('art-lyang.github.io/REPTILE',28,h-14);
+    x.fillStyle='#8A8375'; x.font='11px sans-serif'; x.fillText('ryangstudio.com/gecko',28,h-14);
     c.toBlob(bl=>{ const a=document.createElement('a'); a.href=URL.createObjectURL(bl); a.download='breeding-result.png'; a.click(); });
   };
 
@@ -1138,7 +1151,7 @@ applyLang();
       SB.from('visits').select('*',{count:'exact',head:true}),
       SB.from('visits').select('*',{count:'exact',head:true}).eq('day',today),
       SB.from('visits').select('*',{count:'exact',head:true}).gte('day',d7),
-      SB.from('visits').select('device,day').gte('day',d7).limit(5000),
+      SB.from('visits').select('device,day,service').gte('day',d7).limit(5000),
       SB.from('profiles').select('*'),
       SB.from('access_codes').select('*'),
       SB.from('animals').select('id,device,created_at').limit(5000),
@@ -1200,6 +1213,17 @@ applyLang();
       +card(rows(pair).length,'페어링')
       +card(rows(clu).length,'클러치', eggs? '알 '+eggs+'개':'')
       +'</div>';
+
+    // 서비스별 접속 (docs/STUDIO.md) — service 컬럼이 아직 없으면 이 구역은 생략
+    const SVC={gecko:'🦎 게코 계산기', crested:'🦎 크레스티드', pygmy:'🐿 피그미 테스트', studio:'🏠 스튜디오 허브'};
+    const bySvc={}; let hasSvc=false;
+    rows(vDev).forEach(x=>{ if(x.service){ hasSvc=true; bySvc[x.service]=(bySvc[x.service]||0)+1; } });
+    if(hasSvc){
+      h+='<div class="alabel2">서비스별 접속 <span class="asub">최근 7일</span></div><div class="statrow">'
+        +Object.keys(bySvc).sort((a,b)=>bySvc[b]-bySvc[a])
+           .map(k=>card(bySvc[k], SVC[k]||k)).join('')
+        +'</div>';
+    }
 
     h+='<div class="alabel2">최근 7일 접속 추이</div>'
       +days.map(d=>'<div class="daybar"><span class="dl">'+d.slice(5)+'</span>'

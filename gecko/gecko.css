@@ -464,16 +464,11 @@ header {
   grid-column: 1 / -1;
 }
 
+/* 아바타 사진 배치는 assets/theme.css 가 가집니다. 여기 있던
+   .card .avatar img{...} 는 선택자가 (0,2,1)이라 theme 의 .avatar img(0,1,1)를
+   눌러서, 얼굴이 아니라 몸통이 원 안에 남아 있었습니다. */
 .card .avatar {
   background: #ead9b7;
-}
-
-.card .avatar img {
-  width: 190%;
-  height: 190%;
-  object-fit: contain;
-  object-position: 16% 36%;
-  transform: translate(-20%, 2%);
 }
 
 .card.b .avatar img {

@@ -93,17 +93,22 @@ header::before {
   display: none;
 }
 
+/* align-items 를 center 로 두면 로고가 '제목 + 부제' 전체의 한가운데에 놓여
+   제목보다 한참 아래로 내려앉습니다. 제목 첫 줄에 맞추려고 위로 올린 뒤,
+   로고 높이의 절반과 제목 줄높이의 절반 차이만큼 margin 으로 되돌립니다.
+   (margin-top = (제목 줄높이 - 로고 높이) / 2) */
 .hd {
   max-width: 1440px;
   min-height: 160px;
   padding: 32px 72px 28px;
-  align-items: center;
+  align-items: flex-start;
   gap: 16px;
 }
 
 .hd-mark {
   width: 56px;
   height: 56px;
+  margin-top: -6px;   /* 제목 38.4px · 줄높이 44.5px 기준 */
   border-color: rgba(7, 90, 72, .2);
   box-shadow: none;
 }
@@ -291,19 +296,28 @@ header .sub {
 }
 
 .avatar {
+  position: relative;   /* 안의 사진을 절대배치로 밀어 넣기 위한 기준 */
   width: 52px;
   height: 52px;
   border: 2px solid rgba(7, 90, 72, .14);
   background: #e9e0cd;
 }
 
+/* 원 안에는 몸통이 아니라 얼굴이 보여야 합니다.
+   예전에는 object-fit:contain + object-position 으로 맞췄는데, 사진이 가로로
+   길어서 contain 으로는 위아래에 여백만 생기고 확대가 안 됐습니다. 그래서
+   몸통이 걸리고 머리는 잘려나갔습니다.
+
+   지금은 사진을 원 지름의 360% 로 키운 뒤 얼굴 좌표가 원 중앙에 오도록 직접
+   밀어 넣습니다. left/top 이 %(=원 크기 기준)라서 아바타가 52px 이든 46px 이든
+   같은 구도가 나옵니다. 값은 종별 보정 절에 있습니다. */
 .avatar img {
-  width: 165%;
-  height: 165%;
+  position: absolute;
+  width: 360%;
+  height: auto;
   max-width: none;
-  object-fit: contain;
-  object-position: 20% 30%;
-  transform: translate(-15%, -4%);
+  object-fit: none;
+  transform: none;
 }
 
 .card.b .avatar img {
@@ -618,6 +632,7 @@ header .sub {
   .hd-mark {
     width: 46px;
     height: 46px;
+    margin-top: -7px;   /* 제목 27px · 줄높이 31.3px 기준 */
   }
 
   .hd-mark img {
@@ -706,6 +721,10 @@ header .sub {
     padding: 20px 16px 74px;
     align-content: flex-start;
     flex-wrap: wrap;
+  }
+
+  .hd-mark {
+    margin-top: -10px;   /* 제목 23px . 줄높이 26.7px 기준 */
   }
 
   .hd-txt {
@@ -895,8 +914,8 @@ body.leo .filterbar{grid-template-columns:repeat(2,minmax(0,1fr)) auto}
 @media (max-width:1100px){ body.leo .filterbar{grid-template-columns:repeat(2,minmax(0,1fr))} }
 @media (max-width:620px){ body.leo .filterbar{grid-template-columns:minmax(0,1fr)} }
 
-/* 아바타는 히어로 사진을 165% 로 키워 머리 쪽만 원 안에 보여줍니다.
-   세로값을 키울수록 사진이 아래로 밀려 위쪽(=머리)이 드러납니다. 사진마다
-   피사체 위치가 달라 크레스티드 30% 를 그대로 쓰면 레오파드는 머리가 잘리고
-   몸통만 남습니다. */
-body.leo .avatar img{object-position:22% 55%}
+/* 얼굴 좌표가 사진마다 달라 밀어 넣는 양도 다릅니다.
+   레오파드는 원본 640x341 의 (243,88), 크레스티드는 640x307 의 (247,112) 이
+   눈 근처입니다. 그 점이 원 중앙에 오도록 계산한 값입니다. */
+body.leo  .avatar img{left:-86.7%; top:0.5%}
+body.cres .avatar img{left:-88.9%; top:-13%}

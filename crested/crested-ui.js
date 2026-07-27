@@ -54,21 +54,10 @@ const I18N = {
     footer:'확률은 멘델 유전 법칙에 따른 이론값입니다 · 라인브리딩(폴리제닉) 형질은 확률 계산 대상이 아닙니다',
     updH:'업데이트 노트', updDone:'업데이트 됨', updSoon:'업데이트 예정',
     updDoneList:[
-      '<b>크레스티드 게코 계산기</b> 첫 공개 — 레오파드 계산기와 별도 페이지',
-      '릴리화이트 · 카푸치노/세이블 · 팬텀 · 초초 · 아잔틱 확률 계산',
-      '<b>카푸치노와 세이블을 같은 자리로 정정</b> — 카푸치노 1개 + 세이블 1개 = <b>루왁</b>, 둘 다 슈퍼인 개체는 나오지 않음',
-      '<b>프라푸치노 = 카푸치노 + 릴리화이트</b> 로 정정 (카푸치노+세이블이 아님)',
-      '<b>슈퍼릴리화이트는 치사 유전</b> — 부모로 고를 수 없고, 새끼 결과에만 비생존으로 표시 + 생존 개체 기준 확률 다시 보기',
-      '슈퍼카푸치노 건강 주의 · 소락 표기 · 열성 계통 근친 안내',
-      '추가 유전자 — 화이트아웃/화이트월, 엠티백, 달마시안, 파이드, 파이어',
-      '표현형 기준 / 유전형 기준 전환',
-      '4개 언어(한·영·일·중), 라이트/다크 모드, 크레스티드 일러스트 + 도넛 차트'
+      'V1.0 테스트버전 출시'
     ],
     updSoonList:[
-      '모프별 실물 사진 적용',
-      '아잔틱 계통(AE·MSL·Obscurial) 구분 및 계통 간 교배 경고',
-      '내 개체 등록 · 페어링 기록',
-      '결과 이미지로 저장'
+      '리스트 준비중'
     ],
     updMail:'문의 · 건의: ', today:'오늘 하루 안 보기', mclose:'닫기',
     mailSubject:'크레스티드 모프 계산기 - 정보수정/업데이트 건의',
@@ -124,21 +113,10 @@ const I18N = {
     footer:'Probabilities are theoretical values from Mendelian inheritance · line-bred (polygenic) traits are not probability-based',
     updH:'Update notes', updDone:'Shipped', updSoon:'Coming next',
     updDoneList:[
-      '<b>Crested gecko calculator</b> first release — a separate page from the leopard gecko one',
-      'Probability calculation for Lilly White · Cappuccino/Sable · Phantom · ChoCho · Axanthic',
-      '<b>Cappuccino and Sable corrected to one shared locus</b> — one of each = <b>Luwak</b>, and no animal is ever super for both',
-      '<b>Frappuccino corrected to Cappuccino + Lilly White</b> (not Cappuccino + Sable)',
-      '<b>Super Lilly White treated as lethal</b> — not selectable as a parent, shown only in offspring results as non-viable, with a live-hatchling odds view',
-      'Super Cappuccino health caution · Sorak labelling · recessive line inbreeding notice',
-      'Extra genes — Whiteout/Whitewall, Empty Back, Dalmatian, Pied, Fire',
-      'Phenotype / genotype views',
-      '4 languages (KO/EN/JA/ZH), light and dark mode, crested illustration and donut chart'
+      'V1.0 test release'
     ],
     updSoonList:[
-      'Real photos for each morph',
-      'Axanthic line tracking (AE / MSL / Obscurial) with cross-line warnings',
-      'My animals · pairing records',
-      'Save results as an image'
+      'List coming soon'
     ],
     updMail:'Contact: ', today:'Don’t show today', mclose:'Close',
     mailSubject:'Crested Gecko Morph Calculator - correction / feature request',
@@ -194,21 +172,10 @@ const I18N = {
     footer:'確率はメンデル遺伝に基づく理論値です · ラインブリード（ポリジェニック）形質は確率計算の対象外です',
     updH:'アップデート情報', updDone:'更新済み', updSoon:'更新予定',
     updDoneList:[
-      '<b>クレステッドゲッコー計算機</b>を初公開 — レオパ計算機とは別ページ',
-      'リリーホワイト・カプチーノ／セーブル・ファントム・チョチョ・アザンティックの確率計算',
-      '<b>カプチーノとセーブルを同一座に修正</b> — 各1つずつで<b>ルアク</b>、両方スーパーの個体は出ません',
-      '<b>フラペチーノ＝カプチーノ＋リリーホワイト</b>に修正（カプチーノ＋セーブルではありません）',
-      '<b>スーパーリリーホワイトは致死遺伝</b> — 親として選べず、仔の結果にのみ生存困難として表示＋生存個体基準の確率表示',
-      'スーパーカプチーノの健康注意・ソラク表記・劣性系統の近交に関する案内',
-      '追加遺伝子 — ホワイトアウト／ホワイトウォール、エンプティバック、ダルメシアン、パイド、ファイア',
-      '表現型／遺伝型の切り替え',
-      '4言語（韓・英・日・中）、ライト／ダークモード、クレステッドのイラストとドーナツチャート'
+      'V1.0 テスト版リリース'
     ],
     updSoonList:[
-      'モルフごとの実物写真',
-      'アザンティック系統（AE・MSL・Obscurial）の区別と系統間交配の警告',
-      '個体登録・ペアリング記録',
-      '結果を画像で保存'
+      'リスト準備中'
     ],
     updMail:'お問い合わせ: ', today:'今日は表示しない', mclose:'閉じる',
     mailSubject:'クレステッドゲッコー モルフ計算機 - 修正/ご要望',
@@ -263,21 +230,10 @@ const I18N = {
     footer:'概率为基于孟德尔遗传的理论值 · 线育（多基因）性状不在概率计算范围内',
     updH:'更新说明', updDone:'已更新', updSoon:'计划中',
     updDoneList:[
-      '<b>睫角守宫计算器</b>首次发布 — 与豹纹守宫计算器分开的独立页面',
-      '莉莉白 · 卡布奇诺／黑貂 · 幻影 · ChoCho · 无黄化的概率计算',
-      '<b>将卡布奇诺与黑貂更正为同一基因座</b> — 各一个即为 <b>Luwak</b>，不存在同时为两者超级的个体',
-      '<b>法布奇诺更正为 卡布奇诺 + 莉莉白</b>（并非 卡布奇诺 + 黑貂）',
-      '<b>超级莉莉白按致死遗传处理</b> — 无法作为亲本选择，仅在后代结果中标注为不存活，并提供按存活个体计算的概率',
-      '超级卡布奇诺健康提示 · Sorak 标注 · 隐性品系近交提醒',
-      '附加基因 — Whiteout／白墙、空背、大麦町、花斑、Fire',
-      '表现型／基因型切换',
-      '4 种语言（韩／英／日／中），浅色与深色模式，睫角守宫插图与环形图'
+      'V1.0 测试版发布'
     ],
     updSoonList:[
-      '各形态实物照片',
-      '无黄化品系（AE／MSL／Obscurial）区分与跨品系配对警告',
-      '个体登记与配对记录',
-      '结果保存为图片'
+      '列表准备中'
     ],
     updMail:'联系: ', today:'今天不再显示', mclose:'关闭',
     mailSubject:'睫角守宫基因计算器 - 信息更正 / 功能建议',

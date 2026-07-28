@@ -20,8 +20,13 @@
   window.calcAndLog=function(){ calculate();
     if(SB){ const a=sideKey('A'),b=sideKey('B');
       if(!(a==='normal'&&b==='normal') && window.StudioAnalytics){
-        StudioAnalytics.logCombo(SB, SERVICE_ID,
-          [a,b].sort().join(' × '), sideLabel('A')+' × '+sideLabel('B'));
+      /* 통계 목록은 관리자가 보는 것이라 항상 한국어로 남깁니다.
+         보는 사람의 화면 언어대로 남기면 목록에 한·영·일이 섞여 뭐가 뭐지 알아볼 수
+         없습니다. 이름을 만드는 동안만 LANG 을 잠시 바꿔놓습니다. */
+        const _l=LANG; LANG='ko';
+        const lab=sideLabel('A')+' × '+sideLabel('B');
+        LANG=_l;
+        StudioAnalytics.logCombo(SB, SERVICE_ID, [a,b].sort().join(' × '), lab);
       } } };
 
   /* ---------- 모프/콤보 오버라이드 로드 ---------- */

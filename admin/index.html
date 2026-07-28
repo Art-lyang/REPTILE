@@ -89,6 +89,23 @@
   .atag.new{background:rgba(14,124,123,.16);color:var(--teal)}
   .atag.rev{background:var(--warn-hi-bg);color:var(--warn-hi-fg)}
   .atag.sub{background:rgba(234,195,106,.22);color:#9A6A12;border:1px solid rgba(197,146,32,.4)}
+  /* 표 — 회원 목록과 관리자 명단.
+     좁은 화면에서 칸을 줄이면 읽을 수 없게 되므로, 표만 가로로 넘겨 봅니다.
+     페이지 자체가 옆으로 밀리면 안 되니 감싼 쪽에 스크롤을 겁니다. */
+  .atblwrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin-top:4px;
+    background:var(--card2);border-radius:11px}
+  .atbl{border-collapse:collapse;width:100%;font-size:12.5px}
+  .atbl th,.atbl td{padding:9px 11px;text-align:left;white-space:nowrap;
+    border-bottom:1px solid rgba(120,120,128,.14)}
+  .atbl th{font-size:11px;font-weight:700;color:var(--ink2);
+    background:rgba(120,120,128,.07);position:sticky;top:0}
+  .atbl tbody tr:last-child td{border-bottom:0}
+  .atbl td.acen{text-align:center}
+  .atbl td.anowrap{white-space:nowrap;color:var(--ink2)}
+  .arole{display:inline-block;font-size:10.5px;font-weight:700;padding:3px 9px;
+    border-radius:20px;margin-left:8px;align-self:center}
+  .arole.owner{background:rgba(14,124,123,.16);color:var(--teal)}
+  .arole.staff{background:rgba(120,120,128,.16);color:var(--ink2)}
   .achk{display:flex;align-items:center;gap:8px;font-size:13.5px;margin:6px 0}
   .achk input{width:18px;height:18px;accent-color:var(--teal)}
   .aimg{max-width:120px;border-radius:10px;margin-top:6px}
@@ -185,6 +202,14 @@ async function seedCombos(){
 }
   /* ---------- 관리자 ---------- */
   let adminUser=null, adTab='info';
+  // 'owner' 최고관리자 · 'staff' 부관리자 · null 관리자 아님
+  // 화면을 감추는 건 잠금이 아닙니다. 실제 차단은 DB 정책(supabase_v8.sql)이 합니다.
+  let adRole=null;
+  const isOwner=()=>adRole==='owner';
+  async function loadRole(){
+    try{ const r=await SB.rpc('my_admin_role'); adRole=r.data||null; }
+    catch(e){ adRole=null; }
+  }
   function shell(inner){
     return '<div class="admin-wrap"><div class="admin-top">'
       +'<h1>🛠 량 스튜디오 관리자</h1>'
@@ -193,11 +218,13 @@ async function seedCombos(){
     const ar=document.getElementById('adminRoot');
     if(!SB){ ar.innerHTML=shell('<div class="apad">백엔드(Supabase)가 설정되지 않았습니다.<br><br><b>gecko/gecko-core.js</b> 의 SUPABASE_URL / SUPABASE_ANON 을 확인해 주세요.</div>'); return; }
     try{ const s=await SB.auth.getSession(); adminUser=s.data.session?s.data.session.user:null; }catch(e){ adminUser=null; }
-    if(!adminUser) renderLogin(); else renderPanel();
+    if(!adminUser){ adRole=null; renderLogin(); return; }
+    await loadRole();
+    renderPanel();
   }
   function renderLogin(){
     document.getElementById('adminRoot').innerHTML=shell('<div class="apad"><div class="alabel">관리자 로그인</div><input id="adEmail" class="ain" placeholder="이메일" type="email"><input id="adPw" class="ain" placeholder="비밀번호" type="password"><button class="abtn" id="adLogin">로그인</button><div id="adErr" class="aerr"></div></div>');
-    document.getElementById('adLogin').onclick=async()=>{ const e=document.getElementById('adEmail').value.trim(),p=document.getElementById('adPw').value,err=document.getElementById('adErr'); err.textContent='로그인 중…'; try{ const r=await SB.auth.signInWithPassword({email:e,password:p}); if(r.error)err.textContent='로그인 실패: '+r.error.message; else { adminUser=r.data.user; renderPanel(); } }catch(x){ err.textContent='오류'; } };
+    document.getElementById('adLogin').onclick=async()=>{ const e=document.getElementById('adEmail').value.trim(),p=document.getElementById('adPw').value,err=document.getElementById('adErr'); err.textContent='로그인 중…'; try{ const r=await SB.auth.signInWithPassword({email:e,password:p}); if(r.error)err.textContent='로그인 실패: '+r.error.message; else { adminUser=r.data.user; await loadRole(); renderPanel(); } }catch(x){ err.textContent='오류'; } };
   }
   /* 어느 도구를 보고 있는지. ''(전체) 또는 studio-config.js 의 서비스 키.
      통계·콤보처럼 도구별로 갈리는 화면에만 적용되고, 회원·코드처럼 스튜디오
@@ -222,11 +249,90 @@ async function seedCombos(){
 
   function renderPanel(){
     // 서비스가 늘면 여기에 탭을 추가하세요 (docs/STUDIO.md)
-    const tabs=[['info','한눈에'],['member','회원'],['stat','통계'],['code','코드'],['morph','레오 모프'],['combo','레오 콤보'],['crmorph','크레 모프'],['text','문구']];
-    document.getElementById('adminRoot').innerHTML=shell('<div class="atabs">'+tabs.map(t=>'<button class="atab'+(adTab===t[0]?' on':'')+'" data-t="'+t[0]+'">'+t[1]+'</button>').join('')+'<button class="atab logout" id="adLogout">로그아웃</button></div><div id="adBody" class="apad"></div>');
+    // 세 번째 값이 true 면 최고관리자 전용입니다. 부관리자에게는 안 보입니다.
+    const ALL=[['info','한눈에',true],['member','회원',true],['stat','통계',true],
+               ['code','코드',false],['morph','레오 모프',false],['combo','레오 콤보',false],
+               ['crmorph','크레 모프',false],['text','문구',true],['admin','관리자',true]];
+    const tabs=ALL.filter(t=>!t[2]||isOwner());
+    if(!tabs.some(t=>t[0]===adTab)) adTab=tabs.length?tabs[0][0]:'code';
+
+    const badge=adRole? '<span class="arole '+adRole+'">'
+      +(isOwner()?'최고관리자':'부관리자')+'</span>' : '';
+    document.getElementById('adminRoot').innerHTML=shell(
+      '<div class="atabs">'+tabs.map(t=>'<button class="atab'+(adTab===t[0]?' on':'')+'" data-t="'+t[0]+'">'+t[1]+'</button>').join('')
+      +badge+'<button class="atab logout" id="adLogout">로그아웃</button></div><div id="adBody" class="apad"></div>');
     document.querySelectorAll('.atab[data-t]').forEach(b=>b.onclick=()=>{ adTab=b.dataset.t; renderPanel(); });
-    document.getElementById('adLogout').onclick=async()=>{ await SB.auth.signOut(); adminUser=null; renderLogin(); };
-    ({info:tabInfo,morph:tabMorph,combo:tabCombo,stat:tabStat,code:tabCode,member:tabMember,crmorph:tabCrMorph,text:tabText}[adTab])();
+    document.getElementById('adLogout').onclick=async()=>{ await SB.auth.signOut(); adminUser=null; adRole=null; renderLogin(); };
+
+    if(!adRole){
+      document.getElementById('adBody').innerHTML='<div class="aerr"><b>관리자로 등록되지 않은 계정입니다.</b><br><br>'
+        +'현재 로그인: '+esc((adminUser&&adminUser.email)||'-')+'<br>'
+        +'최고관리자에게 <b>관리자</b> 탭에서 등록을 요청하세요.</div>';
+      return;
+    }
+    ({info:tabInfo,morph:tabMorph,combo:tabCombo,stat:tabStat,code:tabCode,
+      member:tabMember,crmorph:tabCrMorph,text:tabText,admin:tabAdmins}[adTab])();
+  }
+
+  /* ---------- 관리자 명단 (최고관리자 전용) ---------- */
+  async function tabAdmins(){
+    const body=document.getElementById('adBody'); body.innerHTML='<div class="asub">불러오는 중…</div>';
+    const r=await SB.from('admins').select('*').order('role').order('email');
+    if(r.error){ body.innerHTML='<div class="aerr"><b>관리자 명단을 볼 권한이 없습니다.</b><br><br>'
+      +'<code>supabase_v8.sql</code> 을 적용했는지 확인하세요.</div>'; return; }
+    const rows=r.data||[];
+    const me=((adminUser&&adminUser.email)||'').toLowerCase();
+    const owners=rows.filter(x=>x.role==='owner').length;
+    const fmt=d=>d? new Date(d).toLocaleDateString('ko-KR',{year:'2-digit',month:'2-digit',day:'2-digit'}) : '-';
+
+    body.innerHTML='<div class="alabel">관리자 추가</div>'
+      +'<div class="ahint">부관리자는 <b>코드 발급</b>과 <b>모프 추가·수정</b>만 할 수 있습니다. '
+      +'회원 개인정보·동의 기록·접속 통계·안내 문구에는 접근할 수 없습니다.</div>'
+      +'<div class="abar"><input class="ain" id="naEmail" placeholder="이메일" type="email">'
+      +'<select class="ain" id="naRole" style="max-width:150px"><option value="staff">부관리자</option><option value="owner">최고관리자</option></select>'
+      +'<button class="abtn sm" id="naAdd">추가</button></div>'
+      +'<div id="naMsg" class="asub"></div>'
+      +'<div class="alabel2">등록된 관리자 <span class="asub">'+rows.length+'명</span></div>'
+      +'<div class="atblwrap"><table class="atbl"><thead><tr>'
+      +'<th>이메일</th><th>등급</th><th>메모</th><th>등록일</th><th></th></tr></thead><tbody>'
+      +rows.map(x=>{
+        const mine=(x.email||'').toLowerCase()===me;
+        const last=x.role==='owner'&&owners<=1;
+        return '<tr><td><b>'+esc(x.email)+'</b>'+(mine?' <span class="asub">(나)</span>':'')+'</td>'
+          +'<td><span class="arole '+x.role+'">'+(x.role==='owner'?'최고관리자':'부관리자')+'</span></td>'
+          +'<td>'+esc(x.note||'-')+'</td><td>'+fmt(x.created_at)+'</td>'
+          +'<td class="anowrap">'
+          +(last? '<span class="asub">마지막 최고관리자</span>'
+                : '<button class="abtn sm ghost" data-role="'+esc(x.email)+'" data-to="'+(x.role==='owner'?'staff':'owner')+'">'
+                  +(x.role==='owner'?'부관리자로':'최고관리자로')+'</button>'
+                  +' <button class="abtn sm ghost" data-del="'+esc(x.email)+'">삭제</button>')
+          +'</td></tr>'; }).join('')
+      +'</tbody></table></div>';
+
+    const msg=document.getElementById('naMsg');
+    const say=(t,bad)=>{ msg.textContent=t; msg.style.color=bad?'var(--warn-hi-fg)':'var(--ink2)'; };
+
+    document.getElementById('naAdd').onclick=async()=>{
+      const em=document.getElementById('naEmail').value.trim().toLowerCase();
+      const ro=document.getElementById('naRole').value;
+      if(!em||em.indexOf('@')<0){ say('이메일을 확인해 주세요.',true); return; }
+      say('등록 중…');
+      const w=await SB.from('admins').upsert({email:em,role:ro},{onConflict:'email'});
+      if(w.error){ say('등록 실패: '+w.error.message,true); return; }
+      say('등록했습니다. 해당 계정이 다시 로그인하면 적용됩니다.');
+      tabAdmins();
+    };
+    body.querySelectorAll('[data-role]').forEach(b=>b.onclick=async()=>{
+      const w=await SB.from('admins').update({role:b.dataset.to}).eq('email',b.dataset.role);
+      if(w.error){ say('변경 실패: '+w.error.message,true); return; }
+      tabAdmins();
+    });
+    body.querySelectorAll('[data-del]').forEach(b=>b.onclick=async()=>{
+      if(!confirm(b.dataset.del+' 의 관리자 권한을 해제할까요?')) return;
+      const w=await SB.from('admins').delete().eq('email',b.dataset.del);
+      if(w.error){ say('삭제 실패: '+w.error.message,true); return; }
+      tabAdmins();
+    });
   }
 
   /* ---------- 한눈에 보기 (대시보드) ---------- */
@@ -653,19 +759,26 @@ async function seedCombos(){
       +'수신 동의는 <b>2년마다 재확인</b> 의무가 있고, 제3자 제공은 실제 제공 시점에 제공받는 자·항목을 다시 고지해야 합니다.</div>'
       +'<div class="alabel2">회원 목록 <span class="asub">'+rows.length+'명 표시</span></div>';
 
-    html+='<div class="alist">'+(rows.length? rows.map(x=>{
-      const tags=(x.agree_mkt_email?'<span class="atag used">메일</span>':'')
-        +(x.agree_mkt_sms?'<span class="atag used">문자</span>':'')
-        +(x.agree_third?'<span class="atag">제3자</span>':'');
-      const who=[x.name, x.nickname&&('@'+x.nickname)].filter(Boolean).join(' ');
-      const meta=['가입 '+fmt(x.created_at)];
-      if(who) meta.push(esc(who));
-      if(x.phone) meta.push(esc(x.phone));
-      if(x.mkt_at) meta.push('마케팅동의 '+fmt(x.mkt_at));
-      else if(x.consent_at) meta.push('최종동의 '+fmt(x.consent_at));
-      return '<div class="arow"><div class="arow-main"><b>'+esc(x.email||'-')+'</b>'+tags
-        +'<div class="asub">'+meta.join(' · ')+'</div></div></div>'; }).join('')
-      : '<div class="asub" style="padding:14px">조건에 맞는 회원이 없습니다.</div>')+'</div>';
+    // 수집 항목을 한 줄에 한 명씩, 칸을 맞춰 봅니다.
+    // 좁은 화면에서는 표만 옆으로 넘겨 봅니다 (.atblwrap 이 가로 스크롤)
+    const yn=v=>v? '<span class="atag used">○</span>' : '<span class="asub">–</span>';
+    html+= rows.length
+      ? '<div class="atblwrap"><table class="atbl"><thead><tr>'
+        +'<th>이메일</th><th>이름</th><th>닉네임</th><th>연락처</th><th>가입일</th>'
+        +'<th>메일</th><th>문자</th><th>제3자</th><th>최종동의</th></tr></thead><tbody>'
+        +rows.map(x=>'<tr>'
+          +'<td><b>'+esc(x.email||'-')+'</b></td>'
+          +'<td>'+esc(x.name||'-')+'</td>'
+          +'<td>'+(x.nickname? '@'+esc(x.nickname) : '-')+'</td>'
+          +'<td class="anowrap">'+esc(x.phone||'-')+'</td>'
+          +'<td class="anowrap">'+fmt(x.created_at)+'</td>'
+          +'<td class="acen">'+yn(x.agree_mkt_email)+'</td>'
+          +'<td class="acen">'+yn(x.agree_mkt_sms)+'</td>'
+          +'<td class="acen">'+yn(x.agree_third)+'</td>'
+          +'<td class="anowrap">'+fmt(x.mkt_at||x.consent_at)+'</td>'
+          +'</tr>').join('')
+        +'</tbody></table></div>'
+      : '<div class="asub" style="padding:14px">조건에 맞는 회원이 없습니다.</div>';
     body.innerHTML=html;
 
     body.querySelectorAll('[data-f]').forEach(b=>b.onclick=()=>{ memFilter=b.dataset.f; tabMember(); });

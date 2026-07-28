@@ -105,6 +105,43 @@ begin
 end $cols$;
 
 
+/* ── 2-2. 기존 함수 먼저 지우기 ──────────────────────────────────────────
+   create or replace 는 인자 이름·기본값까지 같아야 통과합니다. 지금 DB 에
+   깔린 함수 중에 인자에 기본값이 붙은 게 있어서 아래 오류가 났습니다.
+
+     42P13: cannot remove parameter defaults from existing function
+     HINT:  Use DROP FUNCTION redeem_code(text,text) first.
+
+   그래서 바꿀 함수를 먼저 지우고 새로 만듭니다. 지우면 권한(grant)도 같이
+   날아가므로 아래 9-2 에서 다시 부여합니다. 화면은 인자를 항상 전부
+   넘기고 있어(확인함) 기본값이 없어져도 그대로 동작합니다.
+
+   함수만 지웁니다. 표와 데이터는 건드리지 않습니다.
+
+   이름만 보고 지웁니다. 인자를 하나하나 적어서 지우면, 지금 DB 에 깔린
+   모양이 제가 아는 것과 조금이라도 다를 때 그건 안 지워진 채 새 함수가
+   덧붙어 이름이 같은 함수 두 개가 남습니다. 그러면 어느 쪽이 불릴지
+   알 수 없게 됩니다. */
+do $drop$
+declare r record; n int := 0;
+begin
+  for r in
+    select p.oid::regprocedure as sig
+      from pg_proc p
+      join pg_namespace ns on ns.oid = p.pronamespace
+     where ns.nspname = 'public'
+       and p.proname in ('my_rows','save_row','delete_row','claim_device',
+                         'redeem_code','is_premium','premium_status',
+                         'delete_my_account','merge_account')
+  loop
+    raise notice '지움 — %', r.sig;
+    execute 'drop function ' || r.sig::text;
+    n := n + 1;
+  end loop;
+  raise notice '함수 %개 정리', n;
+end $drop$;
+
+
 /* ── 3. 기록 조회 : 주인을 서버가 정합니다 ───────────────────────────── */
 create or replace function public.my_rows(p_device text, p_table text)
 returns jsonb language plpgsql security definer set search_path = public as $$
@@ -344,8 +381,6 @@ begin
   return jsonb_build_object('ok', true);
 end $$;
 
-grant execute on function public.delete_my_account() to authenticated;
-
 
 /* ── 8. 정책 : '관리자만' → '본인 또는 관리자' ───────────────────────────
    v6 은 급한 대로 표를 관리자에게만 열어 두었습니다. 이제 주인이 계정이니
@@ -425,8 +460,30 @@ begin
   return moved;
 end $$;
 
-revoke execute on function public.merge_account(uuid, uuid) from anon;
-grant  execute on function public.merge_account(uuid, uuid) to authenticated;
+
+/* ── 9-2. 권한 다시 부여 ─────────────────────────────────────────────────
+   2-2 에서 함수를 지웠으므로 grant 도 같이 날아갔습니다. 다시 답니다.
+
+   앞의 일곱 개에 anon 이 남아 있는 것은 의도한 것입니다. 계산기는 회원가입
+   없이 쓰는 서비스라, 로그인 안 한 사람도 자기 기기 기록은 다뤄야 합니다.
+   '누가 주인인가' 는 이제 함수 안에서 auth.uid() 로 가리므로, 호출 권한이
+   열려 있어도 남의 것에는 닿지 않습니다.
+
+   반대로 아래 두 개는 PUBLIC 까지 회수합니다. 새로 만든 함수는 기본적으로
+   PUBLIC 에 실행 권한이 붙기 때문에, anon 만 회수하면 PUBLIC 경로로 그대로
+   불립니다. */
+grant execute on function public.my_rows(text, text)         to anon, authenticated;
+grant execute on function public.save_row(text, text, jsonb) to anon, authenticated;
+grant execute on function public.delete_row(text, text, uuid) to anon, authenticated;
+grant execute on function public.claim_device(text, text)    to anon, authenticated;
+grant execute on function public.redeem_code(text, text)     to anon, authenticated;
+grant execute on function public.is_premium(text)            to anon, authenticated;
+grant execute on function public.premium_status(text)        to anon, authenticated;
+
+revoke all on function public.delete_my_account()          from public;
+revoke all on function public.merge_account(uuid, uuid)    from public;
+grant execute on function public.delete_my_account()         to authenticated;
+grant execute on function public.merge_account(uuid, uuid)   to authenticated;
 
 
 /* ── 10. 확인 ──────────────────────────────────────────────────────────── */

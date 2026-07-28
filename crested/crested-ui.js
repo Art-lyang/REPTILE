@@ -41,6 +41,7 @@ const I18N = {
     polyBoth:'양쪽',
     proof:{ established:'', partial:'부분검증', contested:'미확정' },
     fakeSuperNote:'이름에 ‘슈퍼’가 붙지만 동형접합이 아니라 <b>표현 강도</b>를 뜻합니다 — 슈퍼끼리 교배해도 100% 슈퍼가 나오지 않습니다.',
+    piedNote:'<b>파이드는 유전 방식이 아직 확정되지 않았습니다.</b> 공우성인지 불완전우성인지, 또는 다른 방식인지 브리더들 사이에서도 견해가 갈립니다. 이 계산기는 열성으로 두고 계산하지만 그것이 정답이라는 뜻은 아닙니다. 파이드가 들어간 결과는 <b>참고용으로만</b> 보시고, 실제 교배 계획은 계통 기록을 가진 브리더와 상의하십시오.',
     note:'<b>이 계산기가 다루는 것</b> — 릴리화이트, 카푸치노·세이블(같은 자리), 팬텀, 초초, 아잔틱을 멘델 유전으로 계산합니다. '
       +'<b>카푸치노와 세이블은 같은 자리의 서로 다른 돌연변이</b>라서, 한 개체가 둘 다 슈퍼일 수 없고 카푸치노 1개 + 세이블 1개는 <b>루왁</b>이 됩니다. '
       +'첨부해 주신 엑셀은 이 둘을 독립으로 두어 실제로는 존재할 수 없는 조합이 일부 포함되어 있어, 이 계산기에서는 바로잡았습니다. '
@@ -102,6 +103,7 @@ const I18N = {
     polyBoth:'both',
     proof:{ established:'', partial:'partly proven', contested:'unconfirmed' },
     fakeSuperNote:'Despite the name, “super” here means <b>strength of expression</b>, not homozygosity — super × super does not give 100% super.',
+    piedNote:'<b>How Pied is inherited has not been settled.</b> Breeders disagree over whether it is co-dominant, incomplete dominant, or something else. This calculator treats it as recessive, which is a working assumption rather than an answer. Read any result involving Pied <b>as a reference only</b>, and plan real pairings with a breeder who holds line records.',
     note:'<b>What this calculator covers</b> — Lilly White, Cappuccino/Sable (one shared locus), Phantom, ChoCho and Axanthic, calculated by Mendelian inheritance. '
       +'<b>Cappuccino and Sable are different mutations at the same locus</b>, so no animal can be super for both, and one Cappuccino allele plus one Sable allele makes a <b>Luwak</b>. '
       +'The supplied spreadsheet treats them as independent and therefore contains some combinations that cannot exist; this calculator corrects that. '
@@ -163,6 +165,7 @@ const I18N = {
     polyBoth:'両方',
     proof:{ established:'', partial:'一部検証', contested:'未確定' },
     fakeSuperNote:'名前に「スーパー」が付きますが、ホモではなく<b>発現の強さ</b>を意味します — スーパー同士を交配しても100%スーパーにはなりません。',
+    piedNote:'<b>パイドの遺伝様式はまだ確定していません。</b> 共優性なのか不完全優性なのか、あるいは別の様式なのか、ブリーダーの間でも見解が分かれています。この計算機は劣性として計算しますが、それが正解という意味ではありません。パイドを含む結果は<b>参考としてのみ</b>ご覧いただき、実際の交配計画は系統記録を持つブリーダーにご相談ください。',
     note:'<b>この計算機が扱う形質</b> — リリーホワイト、カプチーノ／セーブル（同一座）、ファントム、チョチョ、アザンティックをメンデル遺伝で計算します。'
       +'<b>カプチーノとセーブルは同じ座の別の変異</b>であるため、1個体が両方のスーパーになることはなく、カプチーノ1つ＋セーブル1つで<b>ルアク</b>になります。'
       +'ご提供いただいた参照表は両者を独立として扱っており、実在し得ない組み合わせが一部含まれるため、この計算機では修正しています。'
@@ -224,6 +227,7 @@ const I18N = {
     polyBoth:'双方',
     proof:{ established:'', partial:'部分验证', contested:'待确认' },
     fakeSuperNote:'名称中虽有"超级"，但指的是<b>表现强度</b>而非纯合 — 超级 × 超级并不会得到 100% 超级。',
+    piedNote:'<b>花斑（Pied）的遗传方式尚未确定。</b> 究竟是共显性、不完全显性还是其他方式，繁育者之间也存在分歧。本计算器按隐性处理，但这只是一种工作假设，并非定论。涉及花斑的结果请<b>仅作参考</b>，实际配对计划请与掌握血统记录的繁育者商议。',
     note:'<b>本计算器涵盖的性状</b> — 莉莉白、卡布奇诺／黑貂（同一基因座）、幻影、ChoCho、无黄化，按孟德尔遗传计算。'
       +'<b>卡布奇诺与黑貂是同一基因座上的不同突变</b>，因此没有个体能同时是两者的超级形态；一个卡布奇诺等位基因加一个黑貂等位基因即为 <b>Luwak</b>。'
       +'您提供的参考表格把两者当作独立基因座，因而包含了一些现实中不存在的组合，本计算器已作修正。'
@@ -528,6 +532,7 @@ function applyLang(){
   set('lbl-contact',t.contact);
   setH('mailNote',t.mailNote+' ('+CR_CONTACT_MAIL+')');
   setH('note',t.note);
+  setH('piedNote',t.piedNote);
   set('lbl-terms',t.terms); set('lbl-privacy',t.privacy);
   set('footer',t.footer); set('lbl-langtitle',t.langLabel);
   setH('lbl-updh','<i class="bi bi-megaphone" aria-hidden="true"></i> '+escapeHtml(t.updH));

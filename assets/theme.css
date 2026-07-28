@@ -899,7 +899,13 @@ body.leo .filterbar{grid-template-columns:repeat(2,minmax(0,1fr)) auto}
 body.leo .avatar img{position:static; width:100%; height:100%; object-fit:cover; left:auto; top:auto}
 /* 사진이 서로 다르므로 부모 B 색조 변조는 필요 없습니다. */
 body.leo .card.b .avatar img{filter:none}
-body.cres .avatar img{left:-88.9%; top:-13%}
+/* 크레스티드도 부모 A·B 각각 얼굴 사진을 씁니다(주황 개체 / 어두운 개체).
+   정사각 초상이라 히어로 사진처럼 360% 로 키워 밀어 넣을 필요가 없습니다.
+   원 안에 머리가 통째로 들어오게 잘려 있어 자르기도 하지 않습니다. */
+body.cres .avatar img{position:static; width:100%; height:100%; object-fit:cover; left:auto; top:auto}
+/* 사진이 서로 다르므로 부모 B 색조 변조는 필요 없습니다.
+   두면 어두운 개체가 한 번 더 탁해집니다. */
+body.cres .card.b .avatar img{filter:none}
 /* 펫테일(아프리카 팻테일) — 전용 사진 사용 중.
    히어로·부모A = fattail-profile-normal-v1.jpg, 부모B = fattail-profile-oreo-v1.jpg */
 /* 펫테일도 부모 A·B 각각 얼굴 사진을 씁니다. 정사각으로 잘려 있어

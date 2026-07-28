@@ -55,6 +55,8 @@ const I18N = {
       +'대부분의 모프 이름은 학술 논문이 아니라 브리더들의 사육 기록과 합의에 기반합니다. 이 계산기의 확률은 참고용이며, 실제 부화 개체의 외형은 여러 형질의 상호작용과 '
       +'성장에 따른 색 변화로 달라질 수 있습니다. 중요한 교배 결정은 계통 정보를 가진 브리더와 상의하십시오.',
     terms:'이용약관', privacy:'개인정보처리방침',
+    seoIntroH:'펫테일 게코 모프 계산기',
+    seoIntro:'아프리칸 팻테일 게코의 부모 형질을 고르면 새끼 모프와 확률을 계산합니다. 화이트아웃, 패턴리스, 스팅어, 아마엘 알비노, 줄루, 오레오, 캐러멜 등 팻테일 계통의 유전 형질을 다루고 조합 명칭과 주의가 필요한 교배를 함께 표시합니다. 한국어·영어·중국어·일본어를 지원하며 회원가입 없이 무료로 쓸 수 있습니다.',
     footer:'확률은 멘델 유전 법칙에 따른 이론값입니다 · 라인브리딩(폴리제닉) 형질은 확률 계산 대상이 아닙니다',
     updH:'업데이트 노트', updDone:'업데이트 됨', updSoon:'업데이트 예정',
     updDoneList:[
@@ -115,6 +117,8 @@ const I18N = {
       +'come from breeder records and community consensus rather than published studies. The probabilities here are for reference only; a real hatchling’s appearance can differ because traits '
       +'interact and because colour changes as the animal grows. Consult a breeder who knows the lineage before making an important pairing decision.',
     terms:'Terms', privacy:'Privacy',
+    seoIntroH:'African Fat-Tailed Gecko Morph Calculator',
+    seoIntro:'Pick each parent’s traits to see the offspring morphs and their odds for African fat-tailed geckos. It covers Whiteout, Patternless, Stinger, Amel albino, Zulu, Oreo and Caramel among others, names the combos and flags pairings that need care. Free, no sign-up, in Korean, English, Chinese and Japanese.',
     footer:'Probabilities are theoretical values from Mendelian inheritance · line-bred (polygenic) traits are not probability-based',
     updH:'Update notes', updDone:'Shipped', updSoon:'Coming next',
     updDoneList:[
@@ -175,6 +179,8 @@ const I18N = {
       +'モルフ名の多くは学術論文ではなくブリーダーの飼育記録と合意に基づいています。この計算機の確率はあくまで参考であり、実際に孵化した個体の外見は、形質同士の相互作用や'
       +'成長に伴う色変化によって異なる場合があります。重要な交配の判断は、血統を把握しているブリーダーにご相談ください。',
     terms:'利用規約', privacy:'プライバシーポリシー',
+    seoIntroH:'ニシアフリカトカゲモドキ モルフ計算機',
+    seoIntro:'ニシアフリカトカゲモドキの両親の形質を選ぶと、仔のモルフと確率を計算します。ホワイトアウト、パターンレス、スティンガー、アメルアルビノ、ズールー、オレオ、キャラメルなどに対応し、コンボ名と注意が必要な組み合わせを表示します。会員登録なしで無料、4言語対応です。',
     footer:'確率はメンデル遺伝に基づく理論値です · ラインブリード（ポリジェニック）形質は確率計算の対象外です',
     updH:'アップデート情報', updDone:'更新済み', updSoon:'更新予定',
     updDoneList:[
@@ -235,6 +241,8 @@ const I18N = {
       +'而非已发表的研究。本计算器给出的概率仅供参考；由于性状之间会相互影响，且体色会随成长变化，实际孵化个体的外观可能与预测不同。'
       +'做重要配对决定前，请咨询了解血统的繁育者。',
     terms:'使用条款', privacy:'隐私政策',
+    seoIntroH:'非洲肥尾守宫基因计算器',
+    seoIntro:'选择非洲肥尾守宫父母双方的性状，即可计算后代形态与概率。支持 Whiteout、无纹、Stinger、Amel 白化、Zulu、Oreo、Caramel 等性状，并显示组合名称与需要注意的配对。免注册免费使用，支持韩英中日四种语言。',
     footer:'概率为基于孟德尔遗传的理论值 · 线育（多基因）性状不在概率计算范围内',
     updH:'更新说明', updDone:'已更新', updSoon:'计划中',
     updDoneList:[
@@ -249,7 +257,9 @@ const I18N = {
   },
 };
 
-LANG='ko';
+/* 언어별 주소(/en/gecko/ 등)는 이 파일보다 먼저 var LANG 을 정해둡니다.
+   여기서 무조건 'ko' 로 덮어쓰면 그 주소가 항상 한국어로 뜼게 됩니다. */
+if(!I18N[LANG]) LANG='ko';
 let MODE='visual';
 /* ⚠️ 펫테일은 66%·33% 헷 표기를 실제로 많이 쓰기 때문에 기본값이 true 입니다.
    index.html 의 #partialchk 도 aria-pressed="true" 로 맞춰 두었습니다. */

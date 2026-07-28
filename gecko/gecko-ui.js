@@ -39,6 +39,8 @@ const I18N = {
     updSoonList:['리스트 준비중'],
     mailNote:'정보수정, 버그 및 업데이트 건의는 <b>문의하기</b>로 보내주세요',
     credit:'해당 레오파드 모프 계산기는 <b>Stylish Gecko</b> 의 자문 및 도움을 받아 제작되었습니다.',
+    seoIntroH:'레오파드 게코 모프 계산기',
+    seoIntro:'부모 개체의 유전 형질을 고르면 새끼에게 나올 모프와 확률을 멘델 유전 법칙으로 계산합니다. 트램퍼·벨·레인워터 알비노, 이클립스, 블리자드, 머피 패턴리스, 맥스노우, 레몬 프로스트, 에니그마, 화이트 앤 옐로우, 슈퍼자이언트를 지원하며 랩터·갤럭시·디아블로 블랑코·레이다·타이푼 등 콤보 명칭도 함께 표시합니다. 탠저린·만다린·멜라니스틱 같은 라인브리딩 형질은 계열을 따져 멜라텐져린처럼 이름을 붙여줍니다. 한국어·영어·중국어·일본어를 지원하며 회원가입 없이 무료로 쓸 수 있습니다.',
     footer:'확률은 멘델 유전 법칙에 따른 이론값입니다 · 라인브리딩(폴리제닉) 형질은 확률 계산 대상이 아닙니다',
   },
   en:{
@@ -77,6 +79,8 @@ const I18N = {
     updSoonList:['List coming soon'],
     mailNote:'Corrections, bug reports and feature requests are welcome via <b>Contact</b>',
     credit:'This leopard gecko morph calculator was built with advice and help from <b>Stylish Gecko</b>.',
+    seoIntroH:'Leopard Gecko Morph Calculator',
+    seoIntro:'Pick each parent’s genetics and this tool works out which morphs the offspring can be, and at what odds, using Mendelian inheritance. It covers Tremper, Bell and Rainwater albino, Eclipse, Blizzard, Murphy Patternless, Mack Snow, Lemon Frost, Enigma, White &amp; Yellow and Super Giant, and names the combos — RAPTOR, Galaxy, Diablo Blanco, Radar, Typhoon and more. Line-bred traits such as Tangerine, Mandarin and Melanistic are resolved by line, so a cross between them reads as Mela Tangerine. Free, no sign-up, in Korean, English, Chinese and Japanese.',
     footer:'Probabilities are theoretical values from Mendelian inheritance · line-bred (polygenic) traits are not probability-based',
   },
   zh:{
@@ -115,6 +119,8 @@ const I18N = {
     updSoonList:['列表准备中'],
     mailNote:'信息更正、错误报告与功能建议请通过<b>联系我们</b>发送',
     credit:'本豹纹守宫基因计算器在 <b>Stylish Gecko</b> 的指导与协助下制作。',
+    seoIntroH:'豹纹守宫基因计算器',
+    seoIntro:'选择父母双方的遗传性状，即可按孟德尔定律计算后代可能出现的形态与概率。支持特伦伯、贝尔、雨水白化、日食眼、暴雪、墨菲无纹、麦克雪花、柠檬霜、Enigma、白与黄以及超级巨人，并显示 RAPTOR、Galaxy、Diablo Blanco、Radar、Typhoon 等组合名称。橘化、曼达林、黑化等线育性状按系统判定，混合后会得到「黑化橘化」这样的名称。免注册免费使用，支持韩英中日四种语言。',
     footer:'概率为基于孟德尔遗传的理论值 · 线育（多基因）性状不在概率计算范围内',
   },
   ja:{
@@ -153,11 +159,15 @@ const I18N = {
     updSoonList:['リスト準備中'],
     mailNote:'情報の修正・不具合のご報告・ご要望は<b>お問い合わせ</b>からお送りください',
     credit:'本モルフ計算機は <b>Stylish Gecko</b> の助言と協力を得て制作しました。',
+    seoIntroH:'ヒョウモントカゲモドキ モルフ計算機',
+    seoIntro:'両親の遺伝形質を選ぶと、仔に出るモルフとその確率をメンデルの法則で計算します。トレンパー・ベル・レインウォーターアルビノ、エクリプス、ブリザード、マーフィーパターンレス、マックスノー、レモンフロスト、エニグマ、ホワイト&amp;イエロー、スーパージャイアントに対応し、RAPTOR・ギャラクシー・ディアブロブランコ・レーダー・タイフーンなどのコンボ名も表示します。タンジェリン・マンダリン・メラニスティックといったラインブリード形質は系統で判定し、交ざるとメラタンジェリンのように名前が付きます。会員登録なしで無料、4言語対応です。',
     footer:'確率はメンデル遺伝に基づく理論値です · ラインブリード（ポリジェニック）形質は確率計算の対象外です',
   },
 };
 
-LANG='ko';
+/* 언어별 주소(/en/gecko/ 등)는 이 파일보다 먼저 var LANG 을 정해둡니다.
+   여기서 무조건 'ko' 로 덮어쓰면 그 주소가 항상 한국어로 뜼게 됩니다. */
+if(!I18N[LANG]) LANG='ko';
 let showPoly=true, showPartialHet=false, showVintage=false, hasResult=false;
 function L(){ return I18N[LANG]; }
 function gName(g){ return g[LANG]; }

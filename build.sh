@@ -18,10 +18,14 @@ mkdir -p dist
 # 아래 case 필터를 그냥 통과해 버립니다.
 git -c core.quotepath=false ls-files -z | while IFS= read -r -d '' f; do
   case "$f" in
-    docs/*|README*|supabase_*|구글로그인*|build.sh|wrangler.jsonc|.assetsignore) continue ;;
+    docs/*|README*|supabase_*|구글로그인*|build.sh|wrangler.jsonc|.assetsignore|tools/*) continue ;;
   esac
   mkdir -p "dist/$(dirname "$f")"
   cp "$f" "dist/$f"
 done
+
+# 언어별 정적 페이지(/en/gecko/ 등)와 sitemap 을 여기서 만듭니다.
+# 저장소에는 한국어 원본만 두고, 사본은 배포할 때만 생성합니다.
+python3 tools/build_langs.py dist "$(date +%Y-%m-%d)"
 
 echo "dist/ 생성 완료 — $(find dist -type f | wc -l)개 파일"

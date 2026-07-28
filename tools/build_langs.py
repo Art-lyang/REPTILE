@@ -1,0 +1,202 @@
+"""언어별 정적 페이지를 만듭니다.  build.sh 가 dist/ 를 채운 뒤 호출합니다.
+
+왜 필요한가
+  계산기는 한 주소에서 JS 로 언어를 바꿉니다. 사람에게는 편하지만 검색엔진에는
+  주소가 하나뿐이라, 구글은 한국어판만 색인하고 영어·일본어·중국어 검색에는
+  걸리지 않습니다. hreflang 도 주소가 갈려야 붙일 수 있습니다.
+
+무엇을 만드는가
+  dist/en/gecko/index.html 처럼 언어별 사본을 만듭니다. 각 사본은
+    · <html lang> 과 <title>·description 이 그 언어
+    · canonical 이 자기 주소
+    · hreflang 로 나머지 언어와 서로를 가리킴
+    · 화면 문구가 그 언어로 미리 박혀 있음 (JS 없이도 읽힘)
+    · var LANG 을 미리 정해 첫 화면부터 그 언어로 뜸
+  JS·CSS·이미지는 복사하지 않고 원래 위치를 절대경로로 가리킵니다. 사본이
+  늘어도 실제 파일은 하나뿐이라 고칠 때 한 곳만 보면 됩니다.
+
+한국어는 기존 주소(/gecko/)를 그대로 씁니다. 이미 색인된 주소를 옮기면
+그동안 쌓인 것이 날아갑니다.
+"""
+import io, os, re, sys
+
+SITE = 'https://ryangstudio.com'
+LANGS = ['ko', 'en', 'ja', 'zh']
+HTML_LANG = {'ko': 'ko', 'en': 'en', 'ja': 'ja', 'zh': 'zh-Hans'}
+CALCS = [('gecko', 'gecko/gecko-ui.js'),
+         ('crested', 'crested/crested-ui.js'),
+         ('fattail', 'fattail/fattail-ui.js')]
+
+
+def read_i18n(path):
+    """ui.js 의 I18N 리터럴만 잘라 파이썬 쪽에서 값을 꺼냅니다.
+    파일 전체를 실행할 수 없어(DOM 을 건드립니다) 문자열만 훑습니다."""
+    s = io.open(path, encoding='utf-8').read()
+    i = s.index('const I18N')
+    j = s.index('{', i)
+    depth, end = 0, -1
+    for k in range(j, len(s)):
+        if s[k] == '{':
+            depth += 1
+        elif s[k] == '}':
+            depth -= 1
+            if depth == 0:
+                end = k + 1
+                break
+    blk = s[j:end]
+
+    out = {}
+    for lang in LANGS:
+        m = re.search(r"\n  " + lang + r":\s*\{", blk)
+        if not m:
+            continue
+        st, depth = m.end(), 1
+        fin = len(blk)
+        for k in range(st, len(blk)):
+            if blk[k] == '{':
+                depth += 1
+            elif blk[k] == '}':
+                depth -= 1
+                if depth == 0:
+                    fin = k
+                    break
+        body = blk[st:fin]
+        vals = {}
+        for mm in re.finditer(r"(\w+)\s*:\s*'", body):
+            key, p = mm.group(1), mm.end()
+            buf = []
+            while p < len(body):
+                c = body[p]
+                if c == '\\':
+                    buf.append(body[p:p + 2]); p += 2; continue
+                if c == "'":
+                    break
+                buf.append(c); p += 1
+            vals[key] = ''.join(buf)
+        out[lang] = vals
+    return out
+
+
+def strip_tags(s):
+    return re.sub(r'<[^>]+>', '', s)
+
+
+def alt_links(calc, cur):
+    """네 언어가 서로를 가리키게 합니다. x-default 는 한국어로 둡니다."""
+    rows = []
+    for L in LANGS:
+        href = url_of(calc, L)
+        rows.append('  <link rel="alternate" hreflang="%s" href="%s">' % (HTML_LANG[L], href))
+    rows.append('  <link rel="alternate" hreflang="x-default" href="%s">' % url_of(calc, 'ko'))
+    return '\n'.join(rows)
+
+
+def url_of(calc, lang):
+    return '%s/%s/' % (SITE, calc) if lang == 'ko' else '%s/%s/%s/' % (SITE, lang, calc)
+
+
+def absolutize(html, calc):
+    """상대경로를 절대경로로. 언어 사본은 한 단계 깊어서 ../ 계산이 어긋납니다."""
+    html = html.replace('href="../assets/', 'href="/assets/')
+    html = html.replace('src="../assets/', 'src="/assets/')
+    html = html.replace('href="../terms.html', 'href="/terms.html')
+    # 같은 폴더의 스크립트·스타일은 원본 폴더를 가리키게
+    html = re.sub(r'(src|href)="(?!https?:|/|\.\./|#)([^"]+)"',
+                  lambda m: '%s="/%s/%s"' % (m.group(1), calc, m.group(2)), html)
+    return html
+
+
+def build(calc, ui_path, dist):
+    base_path = os.path.join(dist, calc, 'index.html')
+    if not os.path.exists(base_path):
+        print('  건너뜀 %s (없음)' % calc)
+        return 0
+    base = io.open(base_path, encoding='utf-8').read()
+    I = read_i18n(ui_path)
+    made = 0
+
+    for lang in LANGS:
+        t = I.get(lang)
+        if not t:
+            continue
+        h = base
+
+        # 언어 표시
+        h = re.sub(r'<html lang="[^"]*"', '<html lang="%s"' % HTML_LANG[lang], h, count=1)
+
+        # 제목·설명·정규주소
+        if t.get('title'):
+            h = re.sub(r'<title>.*?</title>',
+                       '<title>%s</title>' % (t['title'] + ' · RYANG STUDIO'), h, count=1, flags=re.S)
+        if t.get('seoIntro'):
+            desc = strip_tags(t['seoIntro'])[:155]
+            h = re.sub(r'(<meta name="description" content=")[^"]*(">)',
+                       lambda m: m.group(1) + desc + m.group(2), h, count=1)
+        h = re.sub(r'(<link rel="canonical" href=")[^"]*(">)',
+                   lambda m: m.group(1) + url_of(calc, lang) + m.group(2), h, count=1)
+        h = re.sub(r'(<meta property="og:url" content=")[^"]*(">)',
+                   lambda m: m.group(1) + url_of(calc, lang) + m.group(2), h, count=1)
+        h = re.sub(r'(<meta property="og:title" content=")[^"]*(">)',
+                   lambda m: m.group(1) + t.get('title', '') + m.group(2), h, count=1)
+
+        # 언어 교차 링크
+        h = h.replace('<link rel="canonical"', alt_links(calc, lang) + '\n  <link rel="canonical"', 1)
+
+        # 화면 문구 — JS 없이도 읽히도록 미리 박습니다
+        for eid, key in [('h-title', 'title'), ('h-sub', 'sub'), ('note', 'note'),
+                         ('mailNote', 'mailNote'), ('creditNote', 'credit')]:
+            if not t.get(key):
+                continue
+            h = re.sub(r'(id="' + eid + r'"[^>]*>).*?(</(?:div|span|h1|p)>)',
+                       lambda m: m.group(1) + t[key] + m.group(2), h, count=1, flags=re.S)
+        if t.get('footer'):
+            h = re.sub(r'(<footer id="footer">).*?(</footer>)',
+                       lambda m: m.group(1) + t['footer'] + m.group(2), h, count=1, flags=re.S)
+        if t.get('seoIntro'):
+            h = re.sub(r'<section class="seo-intro">.*?</section>',
+                       '<section class="seo-intro">\n    <h2>%s</h2>\n    <p>%s</p>\n  </section>'
+                       % (t.get('seoIntroH', ''), t['seoIntro']), h, count=1, flags=re.S)
+
+        if lang == 'ko':
+            # 한국어는 원래 자리에 그대로 씁니다 (주소를 옮기지 않습니다)
+            io.open(base_path, 'w', encoding='utf-8', newline='\n').write(h)
+            continue
+
+        # 언어 사본은 경로가 한 단계 깊어집니다
+        h = absolutize(h, calc)
+        # 첫 화면부터 그 언어로 뜨게
+        h = h.replace('<script src="/%s/' % calc,
+                      "<script>var LANG='%s';</script>\n<script src=\"/%s/" % (lang, calc), 1)
+
+        outdir = os.path.join(dist, lang, calc)
+        os.makedirs(outdir, exist_ok=True)
+        io.open(os.path.join(outdir, 'index.html'), 'w', encoding='utf-8', newline='\n').write(h)
+        made += 1
+    return made
+
+
+def write_sitemap(dist, today):
+    rows = ['  <url><loc>%s/</loc><lastmod>%s</lastmod><changefreq>weekly</changefreq><priority>1.0</priority></url>'
+            % (SITE, today)]
+    for calc, _ in CALCS:
+        for lang in LANGS:
+            rows.append('  <url><loc>%s</loc><lastmod>%s</lastmod><changefreq>weekly</changefreq><priority>%s</priority></url>'
+                        % (url_of(calc, lang), today, '0.9' if lang == 'ko' else '0.7'))
+    rows.append('  <url><loc>%s/terms</loc><lastmod>%s</lastmod><changefreq>yearly</changefreq><priority>0.2</priority></url>'
+                % (SITE, today))
+    io.open(os.path.join(dist, 'sitemap.xml'), 'w', encoding='utf-8', newline='\n').write(
+        '<?xml version="1.0" encoding="UTF-8"?>\n'
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' + '\n'.join(rows) + '\n</urlset>\n')
+    return len(rows)
+
+
+if __name__ == '__main__':
+    dist = sys.argv[1] if len(sys.argv) > 1 else 'dist'
+    today = sys.argv[2] if len(sys.argv) > 2 else '2026-07-29'
+    total = 0
+    for calc, ui in CALCS:
+        n = build(calc, ui, dist)
+        total += n
+        print('  %-8s 언어 사본 %d개' % (calc, n))
+    n = write_sitemap(dist, today)
+    print('  sitemap %d개 주소' % n)

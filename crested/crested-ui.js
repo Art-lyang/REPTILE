@@ -51,6 +51,8 @@ const I18N = {
       +'<br><br><b>‘슈퍼’라는 말의 두 가지 뜻</b> — 슈퍼카푸치노·슈퍼세이블·슈퍼릴리화이트는 실제 동형접합(유전자 2개)입니다. 반면 '
       +'슈퍼달마시안·슈퍼스트라이프·슈퍼하이포는 <b>표현이 강하다</b>는 뜻일 뿐 동형접합이 아닙니다.',
     terms:'이용약관', privacy:'개인정보처리방침',
+    seoIntroH:'크레스티드 게코 모프 계산기',
+    seoIntro:'부모 개체의 형질을 고르면 새끼 모프와 확률을 계산합니다. 릴리화이트, 카푸치노·세이블(같은 자리의 3중 대립인자), 팬텀, 초초, 아잔틱, 화이트아웃, 엠티백, 달마시안, 파이드, 파이어를 다루며 루왁·프라푸치노·소락 같은 조합 명칭과 슈퍼릴리화이트 같은 치사 조합 경고를 함께 보여줍니다. 라인브리딩 형질도 참고용으로 표시합니다. 한국어·영어·중국어·일본어를 지원하며 회원가입 없이 무료로 쓸 수 있습니다.',
     footer:'확률은 멘델 유전 법칙에 따른 이론값입니다 · 라인브리딩(폴리제닉) 형질은 확률 계산 대상이 아닙니다',
     updH:'업데이트 노트', updDone:'업데이트 됨', updSoon:'업데이트 예정',
     updDoneList:[
@@ -110,6 +112,8 @@ const I18N = {
       +'<br><br><b>Two meanings of “super”</b> — Super Cappuccino, Super Sable and Super Lilly White are genuine homozygotes. Super Dalmatian, Super Stripe and Super Hypo merely mean '
       +'<b>strongly expressed</b> and are not homozygous.',
     terms:'Terms', privacy:'Privacy',
+    seoIntroH:'Crested Gecko Morph Calculator',
+    seoIntro:'Pick each parent’s traits to see the offspring morphs and their odds. It covers Lilly White, Cappuccino and Sable — three alleles at one locus — along with Phantom, ChoCho, Axanthic, Whiteout, Empty Back, Dalmatian, Pied and Fire, naming combos such as Luwak, Frappuccino and Sorak and flagging lethal pairings like Super Lilly White. Line-bred traits are listed for reference. Free, no sign-up, in Korean, English, Chinese and Japanese.',
     footer:'Probabilities are theoretical values from Mendelian inheritance · line-bred (polygenic) traits are not probability-based',
     updH:'Update notes', updDone:'Shipped', updSoon:'Coming next',
     updDoneList:[
@@ -169,6 +173,8 @@ const I18N = {
       +'<br><br><b>「スーパー」の2つの意味</b> — スーパーカプチーノ・スーパーセーブル・スーパーリリーホワイトは本当のホモ（遺伝子2つ）です。一方、'
       +'スーパーダルメシアン・スーパーストライプ・スーパーハイポは<b>発現が強い</b>という意味に過ぎず、ホモではありません。',
     terms:'利用規約', privacy:'プライバシーポリシー',
+    seoIntroH:'クレステッドゲッコー モルフ計算機',
+    seoIntro:'両親の形質を選ぶと、仔のモルフと確率を計算します。リリーホワイト、カプチーノ・セーブル（同じ座の3対立遺伝子）、ファントム、チョチョ、アザンティック、ホワイトアウト、エンプティバック、ダルメシアン、パイド、ファイアに対応し、ルアク・フラペチーノ・ソラクなどのコンボ名や、スーパーリリーホワイトのような致死組み合わせの警告も表示します。ラインブリード形質は参考として表示。会員登録なしで無料、4言語対応です。',
     footer:'確率はメンデル遺伝に基づく理論値です · ラインブリード（ポリジェニック）形質は確率計算の対象外です',
     updH:'アップデート情報', updDone:'更新済み', updSoon:'更新予定',
     updDoneList:[
@@ -227,6 +233,8 @@ const I18N = {
       +'做重要配对决定前，请咨询了解血统的繁育者。'
       +'<br><br><b>"超级"的两种含义</b> — 超级卡布奇诺、超级黑貂、超级莉莉白是真正的纯合个体。而超级大麦町、超级直纹、超级低黑只表示<b>表现强烈</b>，并非纯合。',
     terms:'使用条款', privacy:'隐私政策',
+    seoIntroH:'睫角守宫基因计算器',
+    seoIntro:'选择父母双方的性状即可计算后代形态与概率。支持莉莉白、卡布奇诺与黑貂（同一基因座的三个等位基因）、幻影、ChoCho、无黄化、Whiteout、空背、大麦町、花斑与 Fire，并显示 Luwak、法布奇诺、Sorak 等组合名称，同时对超级莉莉白等致死组合发出警告。线育性状仅作参考显示。免注册免费使用，支持韩英中日四种语言。',
     footer:'概率为基于孟德尔遗传的理论值 · 线育（多基因）性状不在概率计算范围内',
     updH:'更新说明', updDone:'已更新', updSoon:'计划中',
     updDoneList:[
@@ -240,7 +248,9 @@ const I18N = {
   },
 };
 
-LANG='ko';
+/* 언어별 주소(/en/gecko/ 등)는 이 파일보다 먼저 var LANG 을 정해둡니다.
+   여기서 무조건 'ko' 로 덮어쓰면 그 주소가 항상 한국어로 뜼게 됩니다. */
+if(!I18N[LANG]) LANG='ko';
 let MODE='visual';
 let showPartialHet=false, showPoly=true, showExtra=false, hasResult=false;
 let liveOdds=false, expandAll=false;

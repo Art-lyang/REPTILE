@@ -34,6 +34,9 @@ const I18N = {
     optRec:{nn:'정상', het:'het 보인자', mm:'비주얼'},
     optDom:{nn:'정상', het:'비주얼', mm:'슈퍼폼'},
     note:'<b>참고</b> — 트램퍼·벨·레인워터 알비노는 서로 <b>다른 유전자</b>라서, 한쪽 알비노 het와 다른 알비노 het를 교배하면 알비노가 나오지 않습니다(더블 het). 맥스노우는 불완전우성(슈퍼폼 = 슈퍼 스노우, 건강함)이고, 에니그마·W&Y는 우성입니다. <b>일부 모프는 슈퍼폼이나 특정 조합에서 심각한 건강 문제·치사성이 나타납니다</b>(예: 슈퍼 레몬 프로스트의 종양, 에니그마의 신경 증상). 위험 조합은 결과 상단에 경고로 표시됩니다.',
+    updDone:'업데이트 됨', updSoon:'업데이트 예정',
+    updDoneList:['V1.0 테스트버전 출시'],
+    updSoonList:['리스트 준비중'],
     footer:'확률은 멘델 유전 법칙에 따른 이론값입니다 · 라인브리딩(폴리제닉) 형질은 확률 계산 대상이 아닙니다',
   },
   en:{
@@ -67,6 +70,9 @@ const I18N = {
     optRec:{nn:'Normal', het:'het (carrier)', mm:'Visual'},
     optDom:{nn:'Normal', het:'Visual', mm:'Super form'},
     note:'<b>Note</b> — Tremper, Bell and Rainwater albino are <b>separate genes</b>, so crossing a het of one with a het of another yields no albinos (double het). Mack Snow is incomplete dominant (homozygous = Super Snow, healthy); Enigma and W&Y are dominant. <b>Some morphs cause serious health issues or lethality in their super (homozygous) form or in certain pairings</b> (e.g. tumors in Super Lemon Frost, neurological symptoms in Enigma). Risky pairings are flagged at the top of the results.',
+    updDone:'Shipped', updSoon:'Coming next',
+    updDoneList:['V1.0 test release'],
+    updSoonList:['List coming soon'],
     footer:'Probabilities are theoretical values from Mendelian inheritance · line-bred (polygenic) traits are not probability-based',
   },
   zh:{
@@ -100,6 +106,9 @@ const I18N = {
     optRec:{nn:'普通', het:'het 携带', mm:'表现型'},
     optDom:{nn:'普通', het:'表现型', mm:'超级形态'},
     note:'<b>注意</b> — 特伦伯、贝尔、雨水白化是<b>不同的基因</b>，因此一方白化 het 与另一方白化 het 交配不会产生白化（双 het）。麦克雪花为不完全显性（纯合 = 超级雪花，健康），Enigma 与 W&Y 为显性。<b>部分形态在超级（纯合）形式或特定配对中会出现严重健康问题或致死</b>（例如超级柠檬霜的肿瘤、Enigma 的神经症状）。有风险的配对会在结果顶部以警告显示。',
+    updDone:'已更新', updSoon:'计划中',
+    updDoneList:['V1.0 测试版发布'],
+    updSoonList:['列表准备中'],
     footer:'概率为基于孟德尔遗传的理论值 · 线育（多基因）性状不在概率计算范围内',
   },
   ja:{
@@ -133,6 +142,9 @@ const I18N = {
     optRec:{nn:'ノーマル', het:'het（保因）', mm:'ビジュアル'},
     optDom:{nn:'ノーマル', het:'ビジュアル', mm:'スーパーフォーム'},
     note:'<b>参考</b> — トレンパー・ベル・レインウォーターアルビノは<b>別々の遺伝子</b>のため、片方のアルビノ het と別のアルビノ het を交配してもアルビノは出ません（ダブル het）。マックスノーは不完全優性（ホモ = スーパースノー、健康）、エニグマ・W&Y は優性です。<b>一部のモルフはスーパー（ホモ）や特定の組み合わせで深刻な健康問題や致死性が生じます</b>（例：スーパーレモンフロストの腫瘍、エニグマの神経症状）。リスクのある組み合わせは結果上部に警告表示されます。',
+    updDone:'更新済み', updSoon:'更新予定',
+    updDoneList:['V1.0 テスト版リリース'],
+    updSoonList:['リスト準備中'],
     footer:'確率はメンデル遺伝に基づく理論値です · ラインブリード（ポリジェニック）形質は確率計算の対象外です',
   },
 };
@@ -280,6 +292,14 @@ function applyLang(){
     +'<br><b>'+escapeHtml(t.vintageToggle)+'</b> — '+escapeHtml(t.vintageHint);
   document.getElementById('note').innerHTML=t.note+'<br><br>'+t.comboNote;
   document.getElementById('footer').textContent=t.footer;
+  /* 업데이트 노트 — 예전에는 index.html 에 <li> 로 박혀 있어서 문구 하나 고치려면
+     배포를 해야 했습니다. 이제 여기서 그리고, 관리자에서 고친 값이 있으면
+     gecko-app.js 가 t.updDoneList / t.updSoonList 를 덮어씁니다. */
+  const setUpd=(id,val)=>{ const el=document.getElementById(id); if(el) el.innerHTML=val; };
+  setUpd('lbl-upddone','✅ '+escapeHtml(t.updDone));
+  setUpd('lbl-updsoon','🔜 '+escapeHtml(t.updSoon));
+  setUpd('updDone',(t.updDoneList||[]).map(x=>'<li>'+x+'</li>').join(''));
+  setUpd('updSoon',(t.updSoonList||[]).map(x=>'<li>'+x+'</li>').join(''));
   document.getElementById('lbl-langtitle').textContent=t.langLabel;
   document.querySelectorAll('#langMenu button').forEach(b=>b.classList.toggle('on', b.dataset.lang===LANG));
   // 후원 버튼 + 광고 영역

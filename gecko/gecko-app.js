@@ -44,6 +44,8 @@
       let changed=false;
       if(m.data&&m.data.length){ applyMorphRows(m.data); changed=true; }
       if(c.data&&c.data.length){ COMBOS.length=0; c.data.forEach(r=>COMBOS.push({tokens:r.tokens||[], ko:r.ko, en:r.en, vintage:!!r.vintage, risk:!!r.risk})); changed=true; }
+      /* 문구(업데이트 노트·안내문)도 같이 불러옵니다. 표가 없으면 그냥 넘어갑니다. */
+      if(window.StudioText && await StudioText.load(SB, SERVICE_ID, I18N)) changed=true;
       if(changed){ hasResult=false; applyLang(); }
     }catch(e){}
   }

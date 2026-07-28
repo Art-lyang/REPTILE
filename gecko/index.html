@@ -41,6 +41,7 @@
 <script src="../assets/studio-config.js?v=113119"></script>
 <script src="gecko-core.js?v=151731"></script>
 <script src="../assets/analytics.js?v=113119"></script>
+<script src="../assets/uitext.js?v=160549"></script>
 <script src="gecko-boot.js?v=014345"></script>
 <link rel="stylesheet" href="../assets/base.css?v=024503">
 <link rel="stylesheet" href="gecko.css?v=031715">
@@ -151,17 +152,14 @@
       <button class="modal-x" onclick="closeUpd()" aria-label="close">✕</button>
     </div>
     <div class="modal-body">
+      <!-- 목록은 gecko-ui.js 가 채웁니다. 관리자에서 고치면 DB 값이 우선합니다. -->
       <div class="upd-section">
-        <div class="upd-title done">✅ 업데이트 됨</div>
-        <ul>
-          <li>V1.0 테스트버전 출시</li>
-        </ul>
+        <div class="upd-title done" id="lbl-upddone">✅ 업데이트 됨</div>
+        <ul id="updDone"></ul>
       </div>
       <div class="upd-section">
-        <div class="upd-title soon">🔜 업데이트 예정</div>
-        <ul>
-          <li>리스트 준비중</li>
-        </ul>
+        <div class="upd-title soon" id="lbl-updsoon">🔜 업데이트 예정</div>
+        <ul id="updSoon"></ul>
       </div>
       <div class="modal-mail">문의 · 건의: <a href="mailto:kmc612000@gmail.com">kmc612000@gmail.com</a></div>
     </div>
@@ -212,8 +210,8 @@
 <!-- 관리자 페이지 (#admin) -->
 <div id="adminRoot" class="admin-root"></div>
 
-<script src="gecko-ui.js?v=155646"></script>
+<script src="gecko-ui.js?v=160549"></script>
 
-<script src="gecko-app.js?v=014345"></script>
+<script src="gecko-app.js?v=160549"></script>
 </body>
 </html>

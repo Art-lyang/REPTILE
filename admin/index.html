@@ -10,6 +10,7 @@
 <script src="../assets/studio-config.js?v=113119"></script>
 <script src="../gecko/gecko-core.js?v=113119"></script>
 <script src="admin-crested.js?v=120918"></script>
+<script src="admin-text.js?v=160859"></script>
 <style>
   :root{
     --bg:#EDEAE1;            /* Cloud Dancer 톤 그룹 배경 */
@@ -221,11 +222,11 @@ async function seedCombos(){
 
   function renderPanel(){
     // 서비스가 늘면 여기에 탭을 추가하세요 (docs/STUDIO.md)
-    const tabs=[['info','한눈에'],['member','회원'],['stat','통계'],['code','코드'],['morph','레오 모프'],['combo','레오 콤보'],['crmorph','크레 모프']];
+    const tabs=[['info','한눈에'],['member','회원'],['stat','통계'],['code','코드'],['morph','레오 모프'],['combo','레오 콤보'],['crmorph','크레 모프'],['text','문구']];
     document.getElementById('adminRoot').innerHTML=shell('<div class="atabs">'+tabs.map(t=>'<button class="atab'+(adTab===t[0]?' on':'')+'" data-t="'+t[0]+'">'+t[1]+'</button>').join('')+'<button class="atab logout" id="adLogout">로그아웃</button></div><div id="adBody" class="apad"></div>');
     document.querySelectorAll('.atab[data-t]').forEach(b=>b.onclick=()=>{ adTab=b.dataset.t; renderPanel(); });
     document.getElementById('adLogout').onclick=async()=>{ await SB.auth.signOut(); adminUser=null; renderLogin(); };
-    ({info:tabInfo,morph:tabMorph,combo:tabCombo,stat:tabStat,code:tabCode,member:tabMember,crmorph:tabCrMorph}[adTab])();
+    ({info:tabInfo,morph:tabMorph,combo:tabCombo,stat:tabStat,code:tabCode,member:tabMember,crmorph:tabCrMorph,text:tabText}[adTab])();
   }
 
   /* ---------- 한눈에 보기 (대시보드) ---------- */
@@ -454,6 +455,13 @@ async function seedCombos(){
      사람으로 셉니다. supabase_v3.sql 을 아직 안 돌렸으면 전부 여기로 들어옵니다. */
   const KIND=[['human','사람','#075a48'],['bot','검색봇','#8a8375'],['ai','AI 수집기','#b47b1e']];
   const kindOf = r => (r.client==='bot'||r.client==='ai') ? r.client : 'human';
+
+  /* 업데이트 노트 · 안내 문구 — 구현은 admin-text.js 에 있습니다. */
+  function tabText(){
+    const body=document.getElementById('adBody');
+    if(!window.TextAdmin){ body.innerHTML='<div class="aerr">admin-text.js 를 불러오지 못했습니다.</div>'; return; }
+    TextAdmin.render({ SB, esc, body });
+  }
 
   /* 크레스티드 모프 관리 — 구현은 admin-crested.js 에 있습니다.
      레오파드와 표 구조가 달라서(유전형 표가 따로 필요) 파일을 나눴습니다. */

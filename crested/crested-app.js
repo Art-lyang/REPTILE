@@ -188,6 +188,14 @@
     return true;
   }
 
+  /* 문구(업데이트 노트·안내문) — 모프 데이터와 별개로 읽습니다.
+     표가 없거나 비어 있으면 코드의 기본 문구가 그대로 씁니다. */
+  if (window.StudioText && typeof I18N !== 'undefined') {
+    StudioText.load(SB, SERVICE_ID, I18N).then(function (changed) {
+      if (changed && typeof applyLang === 'function') applyLang();
+    });
+  }
+
   Promise.all([
     SB.from('cr_genes').select('*').order('ord'),
     SB.from('cr_genos').select('*').order('ord'),

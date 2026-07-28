@@ -118,6 +118,13 @@ header::before {
   height: 34px;
 }
 
+/* 밝은 바탕(#f5f1e8)에서는 로고 원본이 7.2:1 로 잘 읽힙니다. 어두운 모드로
+   가면 바탕이 #151a17 이 되어 짙은 초록이 묻힙니다. 그때만 밝혀 줍니다.
+   파일을 하나 더 만들지 않는 이유는 home-redesign.css 쪽과 같습니다. */
+@media (prefers-color-scheme: dark) {
+  .hd-mark img { filter: brightness(1.55); }
+}
+
 .hd-txt {
   max-width: 670px;
   padding: 0;

@@ -27,8 +27,13 @@
   /* ---------- 모프/콤보 오버라이드 로드 ---------- */
   function applyMorphRows(rows){
     const genes=[], poly=[];
+    /* 라인브리딩 계열(line)은 아직 morphs 표에 컬럼이 없습니다.
+       그냥 덮어쓰면 내장 값이 날아가서 만다린 × 블랙나이트 같은 계열 조합이
+       이름을 잎어버립니다. DB 값이 없으면 내장 계열을 그대로 유지합니다. */
+    const builtinLine={}; POLY.forEach(p=>{ if(p.line) builtinLine[p.id]=p.line; });
     rows.forEach(r=>{ if(r.color)GCOLOR[r.id]=r.color; if(r.image_url)MORPH_IMG[r.id]=r.image_url;
-      if(r.kind==='poly'){ poly.push({id:r.id,ko:r.ko,en:r.en,zh:r.zh,ja:r.ja}); }
+      if(r.kind==='poly'){ const q={id:r.id,ko:r.ko,en:r.en,zh:r.zh,ja:r.ja};
+        const ln=r.line||builtinLine[r.id]; if(ln) q.line=ln; poly.push(q); }
       else { const g={id:r.id,type:r.kind,family:r.family||'albino',ko:r.ko,en:r.en,zh:r.zh,ja:r.ja,risk:!!r.risk};
         if(r.super_ko){g.superKo=r.super_ko;g.superEn=r.super_en;g.superZh=r.super_zh;g.superJa=r.super_ja;} genes.push(g); } });
     if(genes.length){ GENES.length=0; genes.forEach(g=>GENES.push(g)); }

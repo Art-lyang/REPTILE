@@ -110,8 +110,8 @@ const FAMILIES = [
 
 /* ================= 라인브리딩(폴리제닉) 형질 ================= */
 const POLY = [
-  {id:'tangerine', ko:'탠저린', en:'Tangerine', zh:'橘化', ja:'タンジェリン'},
-  {id:'mandarin',  ko:'만다린', en:'Mandarin', zh:'曼达林', ja:'マンダリン'},
+  {id:'tangerine', line:'tangerine', ko:'탠저린', en:'Tangerine', zh:'橘化', ja:'タンジェリン'},
+  {id:'mandarin',  line:'tangerine', ko:'만다린', en:'Mandarin', zh:'曼达林', ja:'マンダリン'},
   {id:'blood',     ko:'블러드', en:'Blood', zh:'血红', ja:'ブラッド'},
   {id:'inferno',   ko:'인페르노', en:'Inferno', zh:'地狱火', ja:'インフェルノ'},
   {id:'sunglow',   ko:'썬글로우', en:'Sunglow', zh:'阳光', ja:'サングロー'},
@@ -124,8 +124,8 @@ const POLY = [
   {id:'white',     ko:'화이트', en:'White', zh:'白', ja:'ホワイト'},
   {id:'hypo',      ko:'하이포', en:'Hypo', zh:'少黑色素', ja:'ハイポ'},
   {id:'superhypo', ko:'슈퍼하이포', en:'Super Hypo', zh:'超级少黑', ja:'スーパーハイポ'},
-  {id:'melanistic',ko:'멜라니스틱', en:'Melanistic', zh:'黑化', ja:'メラニスティック'},
-  {id:'blacknight',ko:'블랙나이트', en:'Black Night', zh:'黑夜', ja:'ブラックナイト'},
+  {id:'melanistic',line:'melanistic', ko:'멜라니스틱', en:'Melanistic', zh:'黑化', ja:'メラニスティック'},
+  {id:'blacknight',line:'melanistic', ko:'블랙나이트', en:'Black Night', zh:'黑夜', ja:'ブラックナイト'},
   {id:'dark',      ko:'다크', en:'Dark', zh:'暗色', ja:'ダーク'},
   {id:'carrottail',ko:'캐럿 테일', en:'Carrot Tail', zh:'胡萝卜尾', ja:'キャロットテール'},
   {id:'carrothead',ko:'캐럿 헤드', en:'Carrot Head', zh:'胡萝卜头', ja:'キャロットヘッド'},
@@ -238,10 +238,19 @@ const POLY_COMBOS = [
   {tokens:['melanistic','tangerine'], ko:'멜라텐져린', en:'Mela Tangerine',
    zh:'黑化橘化', ja:'メラタンジェリン'},
 ];
+/* 형질 id 를 계열로 바꿉니다. 계열이 없으면 자기 자신이 계열입니다.
+   브리더가 말하는 기준은 개별 형질이 아니라 계열입니다.
+   만다린은 텐져린 계열, 블랙나이트는 멜라니스틱 계열이라
+   만다린 × 블랙나이트 도 멜라텐져린으로 불립니다. */
+function polyLineOf(id){
+  const p=POLY.filter(x=>x.id===id)[0];
+  return (p && p.line) || id;
+}
 function matchPolyCombo(idSet){
+  const lines=new Set([...idSet].map(polyLineOf));
   for(const c of POLY_COMBOS){
-    if(c.tokens.length!==idSet.size) continue;
-    if(c.tokens.every(t=>idSet.has(t))) return c;
+    if(c.tokens.length!==lines.size) continue;
+    if(c.tokens.every(t=>lines.has(t))) return c;
   }
   return null;
 }

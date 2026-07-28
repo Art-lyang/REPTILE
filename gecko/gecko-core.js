@@ -60,9 +60,9 @@ const DONATE_ACCT = '3333-17-6613203';
 const AD_ENABLED  = true;
 const AD_HTML     = '';
 const AD_PROVIDER = '';    // 예: 'Google AdSense' — 채우면 개인정보처리방침 안내에 표시됨
-/* --- 백엔드(Supabase) : 관리자·통계·코드 기능. 비워두면 계산기만 동작 --- */
-const SUPABASE_URL  = 'https://icjuhsktqcfloiqdfxtm.supabase.co';
-const SUPABASE_ANON = 'sb_publishable_uAf776_KFEyAqG_eWJdYRQ_zm3n_uKm';
+/* --- 백엔드(Supabase) 접속 정보는 assets/studio-config.js 로 옮겼습니다.
+   여기 있으면 이 파일을 읽지 않는 다른 도구(크레스티드 등)가 못 씁니다.
+   그 파일을 이 파일보다 먼저 읽어야 합니다. --- */
 /* ============================================================================== */
 const MORPH_IMG = {};       // 모프별 업로드 이미지 URL (관리자에서 채워짐)
 

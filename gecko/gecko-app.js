@@ -10,23 +10,18 @@
   function uid(){ return USER? 'u_'+USER.id : dev(); }   // 프리미엄·데이터 소유 키
   async function refreshUser(){ if(!SB) return null; try{ const r=await SB.auth.getSession(); USER=r.data.session? r.data.session.user : null; }catch(e){ USER=null; } return USER; }
 
-  /* ---------- 통계 ---------- */
-  // service 값을 함께 남깁니다 — 관리자에서 서비스별로 나눠 보기 위함 (docs/STUDIO.md)
-  // 서버에 service 컬럼이 아직 없으면 그 값만 빼고 재시도해 로그가 끊기지 않게 합니다.
-  async function logVisit(){ if(!SB)return;
-    const base={device:dev(), lang:LANG};
-    try{
-      const r=await SB.from('visits').insert(Object.assign({service:SERVICE_ID}, base));
-      if(r && r.error) await SB.from('visits').insert(base);
-    }catch(e){ try{ await SB.from('visits').insert(base); }catch(x){} } }
+  /* ---------- 통계 ----------
+     기록 자체는 assets/analytics.js 가 합니다. 크레스티드도 같은 코드를 쓰고,
+     사람/수집기 구분도 거기서 붙습니다. */
+  async function logVisit(){ if(!SB || !window.StudioAnalytics) return;
+    return StudioAnalytics.logVisit(SB, SERVICE_ID, LANG); }
   function sideKey(side){ const p=[]; GENES.forEach(g=>{const v=STATE[side][g.id]; if(v&&v!=='nn')p.push(g.id+':'+v);}); POLY.forEach(x=>{if(STATE[side][x.id]==='yes')p.push(x.id);}); return p.sort().join('+')||'normal'; }
   function sideLabel(side){ const t=[]; GENES.forEach(g=>{const v=STATE[side][g.id]; if(!v||v==='nn')return; let nm=(g.type==='incdom'&&v==='mm')?gSuper(g):gName(g); if(v==='het'&&g.type==='rec')nm='het '+nm; t.push(nm);}); POLY.forEach(x=>{if(STATE[side][x.id]==='yes')t.push(pName(x));}); return t.join(' ')||L().normal; }
   window.calcAndLog=function(){ calculate();
     if(SB){ const a=sideKey('A'),b=sideKey('B');
-      if(!(a==='normal'&&b==='normal')){
-        const base={ckey:[a,b].sort().join(' × '), label:sideLabel('A')+' × '+sideLabel('B')};
-        try{ SB.from('combo_queries').insert(Object.assign({service:SERVICE_ID}, base))
-               .then(r=>{ if(r && r.error) SB.from('combo_queries').insert(base); }); }catch(e){}
+      if(!(a==='normal'&&b==='normal') && window.StudioAnalytics){
+        StudioAnalytics.logCombo(SB, SERVICE_ID,
+          [a,b].sort().join(' × '), sideLabel('A')+' × '+sideLabel('B'));
       } } };
 
   /* ---------- 모프/콤보 오버라이드 로드 ---------- */

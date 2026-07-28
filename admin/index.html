@@ -7,7 +7,8 @@
 <meta name="robots" content="noindex, nofollow">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <!-- GENES / POLY / COMBOS / tokenOptions 를 쓰기 위해 게코 코어를 그대로 불러옵니다 -->
-<script src="../gecko/gecko-core.js"></script>
+<script src="../assets/studio-config.js?v=113119"></script>
+<script src="../gecko/gecko-core.js?v=113119"></script>
 <style>
   :root{
     --bg:#EDEAE1;            /* Cloud Dancer 톤 그룹 배경 */
@@ -109,6 +110,15 @@
   .arow.off{opacity:.5}
   .ordbtns{display:flex;flex-direction:column;gap:2px}
   .ordbtns button{border:none;background:rgba(120,120,128,.15);color:var(--ink);border-radius:5px;width:24px;height:17px;font-size:9px;cursor:pointer;line-height:1;padding:0}
+  /* 도구 선택 (전체 / 레오파드 / 크레스티드) */
+  .asvcbar{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 12px}
+  .asvc{min-height:34px;padding:0 13px;border:1px solid var(--hair,#e3ded2);border-radius:999px;
+        background:#fff;color:#4a4437;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit}
+  .asvc.on{background:#075a48;border-color:#075a48;color:#fff}
+  /* 사람/봇/AI 비율 막대 — .abar 는 이미 버튼 줄로 쓰이고 있어 다른 이름입니다 */
+  .aratio{display:flex;height:10px;border-radius:999px;overflow:hidden;background:#eee9dc;margin:4px 0 6px}
+  .aratio i{display:block;height:100%}
+  .daybar .dn em{color:#b47b1e;font-style:normal;font-size:11px}
   .daybar{display:flex;align-items:center;gap:8px;font-size:12px;margin:3px 0}
   .daybar .dl{width:74px;color:var(--ink2);flex:0 0 auto}
   .daybar .dt{height:9px;border-radius:5px;background:var(--teal);min-width:3px}
@@ -181,6 +191,27 @@ async function seedCombos(){
     document.getElementById('adminRoot').innerHTML=shell('<div class="apad"><div class="alabel">관리자 로그인</div><input id="adEmail" class="ain" placeholder="이메일" type="email"><input id="adPw" class="ain" placeholder="비밀번호" type="password"><button class="abtn" id="adLogin">로그인</button><div id="adErr" class="aerr"></div></div>');
     document.getElementById('adLogin').onclick=async()=>{ const e=document.getElementById('adEmail').value.trim(),p=document.getElementById('adPw').value,err=document.getElementById('adErr'); err.textContent='로그인 중…'; try{ const r=await SB.auth.signInWithPassword({email:e,password:p}); if(r.error)err.textContent='로그인 실패: '+r.error.message; else { adminUser=r.data.user; renderPanel(); } }catch(x){ err.textContent='오류'; } };
   }
+  /* 어느 도구를 보고 있는지. ''(전체) 또는 studio-config.js 의 서비스 키.
+     통계·콤보처럼 도구별로 갈리는 화면에만 적용되고, 회원·코드처럼 스튜디오
+     전체에 걸친 화면에는 적용되지 않습니다. */
+  let adSvc='';
+  const SVC = (typeof STUDIO_SERVICES!=='undefined') ? STUDIO_SERVICES : {gecko:'레오파드 게코'};
+  const svcName = k => SVC[k] || k || '전체';
+  /* 통계에 서비스 조건을 붙입니다. 전체를 볼 때는 그냥 통과시킵니다.
+     예전 기록에는 service 가 비어 있는데, 그건 전부 레오파드입니다. */
+  function svcFilter(q){
+    if(!adSvc) return q;
+    return adSvc==='gecko' ? q.or('service.eq.gecko,service.is.null') : q.eq('service',adSvc);
+  }
+  function svcBar(){
+    const opts=[['','전체']].concat(Object.keys(SVC).map(k=>[k,SVC[k]]));
+    return '<div class="asvcbar">'+opts.map(o=>
+      '<button class="asvc'+(adSvc===o[0]?' on':'')+'" data-s="'+o[0]+'">'+esc(o[1])+'</button>').join('')+'</div>';
+  }
+  function bindSvcBar(rerender){
+    document.querySelectorAll('.asvc').forEach(b=>b.onclick=()=>{ adSvc=b.dataset.s; rerender(); });
+  }
+
   function renderPanel(){
     // 서비스가 늘면 여기에 탭을 추가하세요 (docs/STUDIO.md)
     const tabs=[['info','한눈에'],['member','회원'],['stat','통계'],['code','코드'],['morph','모프'],['combo','콤보']];
@@ -200,10 +231,10 @@ async function seedCombos(){
     const rows=r=>(r&&r.data)||[];
 
     const [vTot,vToday,vWeek,vDev,prof,codes,anim,pair,clu,cq]=await Promise.all([
-      SB.from('visits').select('*',{count:'exact',head:true}),
-      SB.from('visits').select('*',{count:'exact',head:true}).eq('day',today),
-      SB.from('visits').select('*',{count:'exact',head:true}).gte('day',d7),
-      SB.from('visits').select('device,day,service').gte('day',d7).limit(5000),
+      svcFilter(SB.from('visits').select('*',{count:'exact',head:true})),
+      svcFilter(SB.from('visits').select('*',{count:'exact',head:true})).eq('day',today),
+      svcFilter(SB.from('visits').select('*',{count:'exact',head:true})).gte('day',d7),
+      svcFilter(SB.from('visits').select('device,day,service,client')).gte('day',d7).limit(5000),
       SB.from('profiles').select('*'),
       SB.from('access_codes').select('*'),
       SB.from('animals').select('id,device,created_at').limit(5000),
@@ -241,10 +272,21 @@ async function seedCombos(){
     const days=[]; for(let i=6;i>=0;i--) days.push(new Date(Date.now()-i*864e5).toISOString().slice(0,10));
     const mx=Math.max(1,...days.map(d=>byDay[d]||0));
 
-    let h='<div class="alabel2">📊 오늘</div><div class="statrow">'
+    // 최근 7일 방문자 종류 (client 컬럼이 없으면 전부 사람으로 잡힘)
+    const wk=rows(vDev), wkK={human:0,bot:0,ai:0};
+    wk.forEach(x=>{ wkK[(x.client==='bot'||x.client==='ai')?x.client:'human']++; });
+
+    let h=svcBar();
+    h+='<div class="alabel2">📊 오늘'+(adSvc?' · '+esc(svcName(adSvc)):'')+'</div><div class="statrow">'
       +card(num(vToday),'오늘 접속')
       +card(num(vWeek),'최근 7일','순 방문 '+uniqWeek)
       +card(num(vTot),'누적 접속')
+      +'</div>';
+
+    h+='<div class="alabel2">🙋 최근 7일 방문자</div><div class="statrow">'
+      +card(wkK.human,'사람')
+      +card(wkK.bot,'검색봇')
+      +card(wkK.ai,'AI 수집기')
       +'</div>';
 
     h+='<div class="alabel2">👥 회원</div><div class="statrow">'
@@ -267,13 +309,13 @@ async function seedCombos(){
       +'</div>';
 
     // 서비스별 접속 (docs/STUDIO.md) — service 컬럼이 아직 없으면 이 구역은 생략
-    const SVC={gecko:'🦎 게코 계산기', crested:'🦎 크레스티드', pygmy:'🐿 피그미 테스트', studio:'🏠 스튜디오 허브'};
-    const bySvc={}; let hasSvc=false;
-    rows(vDev).forEach(x=>{ if(x.service){ hasSvc=true; bySvc[x.service]=(bySvc[x.service]||0)+1; } });
+    const SVC_ICON={gecko:'🦎 레오파드 게코', crested:'🦎 크레스티드 게코', pygmy:'🐿 피그미 테스트', studio:'🏠 스튜디오 허브'};
+    const svcCnt={}; let hasSvc=false;
+    rows(vDev).forEach(x=>{ const k=x.service||'gecko'; hasSvc=true; svcCnt[k]=(svcCnt[k]||0)+1; });
     if(hasSvc){
       h+='<div class="alabel2">서비스별 접속 <span class="asub">최근 7일</span></div><div class="statrow">'
-        +Object.keys(bySvc).sort((a,b)=>bySvc[b]-bySvc[a])
-           .map(k=>card(bySvc[k], SVC[k]||k)).join('')
+        +Object.keys(svcCnt).sort((a,b)=>svcCnt[b]-svcCnt[a])
+           .map(k=>card(svcCnt[k], SVC_ICON[k]||k)).join('')
         +'</div>';
     }
 
@@ -296,7 +338,7 @@ async function seedCombos(){
     if(todos.length) h+='<div class="alabel2">🔔 점검할 것</div><div class="alist">'
       +todos.map(t=>'<div class="arow"><div class="arow-main">'+esc(t)+'</div></div>').join('')+'</div>';
 
-    body.innerHTML=h;
+    body.innerHTML=h; bindSvcBar(tabInfo);
   }
 
   let morphQ='';
@@ -400,21 +442,73 @@ async function seedCombos(){
     document.getElementById('cSave').onclick=async()=>{ const tk=[...document.querySelectorAll('.tokchk input:checked')].map(x=>x.value); if(!tk.length){document.getElementById('cErr').textContent='토큰을 하나 이상 선택하세요.';return;} const rec={ ko:document.getElementById('cf_ko').value.trim(), en:document.getElementById('cf_en').value.trim(), tokens:tk, vintage:document.getElementById('cf_vint').checked, risk:document.getElementById('cf_risk').checked, updated_at:new Date().toISOString() }; if(r.id)rec.id=r.id; const res=await SB.from('combos').upsert(rec); if(res.error){document.getElementById('cErr').textContent=res.error.message;return;} await loadOverrides(); tabCombo(); };
   }
 
+  /* 사람 / 검색봇 / AI 수집기 구분.
+     client 컬럼이 없던 시절 기록은 값이 비어 있는데, 그때는 구분 자체를 안 했으니
+     사람으로 셉니다. supabase_v3.sql 을 아직 안 돌렸으면 전부 여기로 들어옵니다. */
+  const KIND=[['human','사람','#075a48'],['bot','검색봇','#8a8375'],['ai','AI 수집기','#b47b1e']];
+  const kindOf = r => (r.client==='bot'||r.client==='ai') ? r.client : 'human';
+
   async function tabStat(){
     const body=document.getElementById('adBody'); body.innerHTML='불러오는 중…';
     try{
       const today=new Date().toISOString().slice(0,10);
-      const tot=await SB.from('visits').select('*',{count:'exact',head:true});
-      const td=await SB.from('visits').select('*',{count:'exact',head:true}).eq('day',today);
-      const dv=await SB.from('visits').select('device').limit(5000);
-      const uniq=new Set((dv.data||[]).map(x=>x.device)).size;
-      const tc=await SB.from('top_combos').select('*').limit(20);
-      const dv2=await SB.from('visits').select('day').limit(5000);
-      const byDay={}; (dv2.data||[]).forEach(x=>{ if(x.day) byDay[x.day]=(byDay[x.day]||0)+1; });
-      const days=Object.keys(byDay).sort().slice(-7);
-      const mx=Math.max(1,...days.map(d=>byDay[d]));
-      const trend=days.length? '<div class="alabel2">최근 7일 접속</div>'+days.map(d=>'<div class="daybar"><span class="dl">'+d.slice(5)+'</span><span class="dt" style="width:'+Math.round(byDay[d]/mx*60)+'%"></span><span class="dn">'+byDay[d]+'</span></div>').join('') : '';
-      body.innerHTML='<div class="statrow"><div class="statcard"><div class="statn">'+(tot.count||0)+'</div><div class="statl">누적 접속</div></div><div class="statcard"><div class="statn">'+(td.count||0)+'</div><div class="statl">오늘 접속</div></div><div class="statcard"><div class="statn">'+uniq+'</div><div class="statl">순 방문자</div></div></div>'+trend+'<div class="alabel2">자주 확인한 조합</div><div class="alist">'+(((tc.data||[]).map((r,i)=>'<div class="arow"><div class="arow-main"><b>'+(i+1)+'. '+esc(r.label||r.ckey)+'</b></div><div class="atag">'+r.cnt+'회</div></div>').join(''))||'<div class="asub">아직 데이터가 없어요.</div>')+'</div>';
+      /* 한 번만 내려받아 브라우저에서 나눕니다. 접속 수가 수만 건이 되면
+         supabase_v3.sql 의 visit_stats 뷰로 바꾸세요(집계를 서버가 합니다). */
+      const dv=await svcFilter(SB.from('visits').select('device,day,client,service').order('day',{ascending:false})).limit(20000);
+      if(dv.error) throw dv.error;
+      const rows=dv.data||[];
+
+      const cntK={human:0,bot:0,ai:0}, uniqK={human:new Set(),bot:new Set(),ai:new Set()};
+      let todayN=0; const byDay={};
+      rows.forEach(r=>{ const k=kindOf(r); cntK[k]++; uniqK[k].add(r.device);
+        if(r.day===today) todayN++;
+        if(r.day){ (byDay[r.day]=byDay[r.day]||{human:0,bot:0,ai:0})[k]++; } });
+      const human=cntK.human, machine=cntK.bot+cntK.ai;
+
+      const card=(n,l,sub)=>'<div class="statcard"><div class="statn">'+n+'</div><div class="statl">'+l+'</div>'
+        +(sub?'<div class="statx">'+sub+'</div>':'')+'</div>';
+      let h=svcBar();
+      h+='<div class="statrow">'
+        +card(rows.length,'누적 접속', adSvc? svcName(adSvc):'모든 도구')
+        +card(todayN,'오늘 접속')
+        +card(uniqK.human.size,'순 방문자','사람 기준')
+        +'</div>';
+
+      /* 종류별 */
+      h+='<div class="alabel2">🙋 사람 vs 기계</div><div class="statrow">'
+        +KIND.map(k=>card(cntK[k[0]], k[1], uniqK[k[0]].size+'개 기기')).join('')
+        +'</div>';
+      const tot=rows.length||1;
+      h+='<div class="aratio">'+KIND.map(k=>{
+            const w=cntK[k[0]]/tot*100;
+            return w>0? '<i style="width:'+w.toFixed(1)+'%;background:'+k[2]+'" title="'+k[1]+' '+w.toFixed(1)+'%"></i>':'';
+          }).join('')+'</div>'
+        +'<div class="asub">사람 '+Math.round(human/tot*100)+'% · 기계 '+Math.round(machine/tot*100)+'%</div>';
+
+      /* 최근 7일 — 사람만 세는 막대 + 기계 수를 옆에 */
+      const days=[]; for(let i=6;i>=0;i--) days.push(new Date(Date.now()-i*864e5).toISOString().slice(0,10));
+      const mx=Math.max(1,...days.map(d=>(byDay[d]||{}).human||0));
+      h+='<div class="alabel2">최근 7일 접속 <span class="asub">(막대는 사람)</span></div>'
+        +days.map(d=>{ const b=byDay[d]||{human:0,bot:0,ai:0}; const m=b.bot+b.ai;
+          return '<div class="daybar"><span class="dl">'+d.slice(5)+'</span>'
+            +'<span class="dt" style="width:'+Math.round(b.human/mx*60)+'%"></span>'
+            +'<span class="dn">'+b.human+(m?' <em>+'+m+'</em>':'')+'</span></div>'; }).join('');
+
+      /* 자주 확인한 조합 — 서비스별 뷰가 있으면 그걸, 없으면 예전 뷰를 씁니다. */
+      let combos=[];
+      const tcs=await SB.from('top_combos_by_service').select('*').limit(200);
+      if(!tcs.error && tcs.data){
+        combos=tcs.data.filter(r=>!adSvc || (adSvc==='gecko' ? (!r.service||r.service==='gecko') : r.service===adSvc))
+                       .sort((a,b)=>b.cnt-a.cnt).slice(0,20);
+      }else{
+        const tc=await SB.from('top_combos').select('*').limit(20);
+        combos=tc.data||[];
+      }
+      h+='<div class="alabel2">자주 확인한 조합</div><div class="alist">'
+        +(combos.map((r,i)=>'<div class="arow"><div class="arow-main"><b>'+(i+1)+'. '+esc(r.label||r.ckey)+'</b></div><div class="atag">'+r.cnt+'회</div></div>').join('')
+          ||'<div class="asub">아직 데이터가 없어요.</div>')+'</div>';
+
+      body.innerHTML=h; bindSvcBar(tabStat);
     }catch(e){ body.innerHTML='<div class="aerr">통계를 불러오지 못했어요. (권한/네트워크 확인)</div>'; }
   }
 

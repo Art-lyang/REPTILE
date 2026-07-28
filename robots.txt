@@ -1,5 +1,8 @@
 User-agent: *
 Allow: /
+# 관리자와 개인 데이터 화면은 수집 대상이 아닙니다.
 Disallow: /admin/
+Disallow: /gecko/login.html
+Disallow: /gecko/breeding.html
 
 Sitemap: https://ryangstudio.com/sitemap.xml

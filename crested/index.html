@@ -3,13 +3,46 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Crested Gecko Morph Calculator</title>
+<title>크레스티드 게코 모프 계산기 · Crested Gecko Morph Calculator</title>
+<meta name="description" content="크레스티드 게코 부모의 형질을 골라 새끼 모프 확률을 계산합니다. 릴리화이트, 카푸치노/세이블, 팬텀, 아잔틱과 치사 조합 경고, 다인자 크로스 표기를 지원합니다.">
+<meta name="keywords" content="크레스티드 게코, 크레 모프, 크레스티드게코 계산기, 모프 계산기, 릴리화이트, 카푸치노, 세이블, 팬텀, 아잔틱, 하네스, crested gecko morph calculator">
+<meta name="author" content="RYANG STUDIO">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="canonical" href="https://ryangstudio.com/crested/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="RYANG STUDIO">
+<meta property="og:title" content="크레스티드 게코 모프 계산기 · RYANG STUDIO">
+<meta property="og:description" content="크레스티드 게코 부모의 형질을 골라 새끼 모프 확률을 계산합니다. 릴리화이트, 카푸치노/세이블, 팬텀, 아잔틱과 치사 조합 경고, 다인자 크로스 표기를 지원합니다.">
+<meta property="og:url" content="https://ryangstudio.com/crested/">
+<meta property="og:image" content="https://ryangstudio.com/assets/crested-hero-v2.png">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="크레스티드 게코 모프 계산기 · RYANG STUDIO">
+<meta name="twitter:description" content="크레스티드 게코 부모의 형질을 골라 새끼 모프 확률을 계산합니다. 릴리화이트, 카푸치노/세이블, 팬텀, 아잔틱과 치사 조합 경고, 다인자 크로스 표기를 지원합니다.">
+<meta name="twitter:image" content="https://ryangstudio.com/assets/crested-hero-v2.png">
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
+<script type="application/ld+json">
+{
+  "@context":"https://schema.org",
+  "@type":"WebApplication",
+  "name":"크레스티드 게코 모프 계산기",
+  "url":"https://ryangstudio.com/crested/",
+  "applicationCategory":"UtilitiesApplication",
+  "operatingSystem":"Web",
+  "inLanguage":["ko","en","zh","ja"],
+  "offers":{"@type":"Offer","price":"0","priceCurrency":"KRW"},
+  "description":"크레스티드 게코 부모 조합으로 새끼 모프와 확률을 계산하는 무료 도구",
+  "publisher":{"@type":"Organization","name":"RYANG STUDIO","url":"https://ryangstudio.com/"}
+}
+</script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 <!-- ?v=014345 는 캐시 무효화용입니다. crested-core.js 를 고쳐 올릴 때마다 숫자를 바꿔주세요.
      (안 바꾸면 이미 방문했던 사람의 브라우저가 예전 파일을 계속 씁니다) -->
-<script src="crested-core.js?v=014345"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../assets/studio-config.js?v=113119"></script>
+<script src="crested-core.js?v=113119"></script>
+<script src="../assets/analytics.js?v=113119"></script>
 <script src="crested-boot.js?v=014345"></script>
 <link rel="stylesheet" href="../assets/base.css?v=024503">
 <link rel="stylesheet" href="crested.css?v=024503">
@@ -134,5 +167,6 @@
 </div>
 
 <script src="crested-ui.js?v=031542"></script>
+<script src="crested-app.js?v=113119"></script>
 </body>
 </html>

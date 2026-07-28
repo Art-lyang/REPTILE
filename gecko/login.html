@@ -179,6 +179,7 @@ function capOpts(o){
   return o;
 }
 
+const CR_MAIL_LINK='<a href="mailto:kmc612000@gmail.com">kmc612000@gmail.com</a>';
 const GOOGLE_SVG='<svg viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9 3.6l6.7-6.7C35.5 2.6 30.1 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.8 6.1C12.3 13.2 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.1 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.4c-.5 2.9-2.2 5.3-4.7 6.9l7.6 5.9c4.4-4.1 6.8-10.1 6.8-17.3z"/><path fill="#FBBC05" d="M10.4 28.7c-.5-1.4-.8-2.9-.8-4.7s.3-3.3.8-4.7l-7.8-6.1C.9 16.5 0 20.1 0 24s.9 7.5 2.6 10.8l7.8-6.1z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.6-5.9c-2.1 1.4-4.8 2.3-8.3 2.3-6.3 0-11.7-3.7-13.6-9.8l-7.8 6.1C6.5 42.6 14.6 48 24 48z"/></svg>';
 
 /* 회원이 원할 때만 적는 항목. 가입 화면과 내 정보 화면이 같이 씁니다.
@@ -310,6 +311,11 @@ function renderConsentGate(u){
     await claim(); renderMe(u);
   };
 }
+async function mustChangePw(){
+  try{ const r=await SB.rpc('my_consent');
+       return !!(r.data && r.data.must_change_password); }
+  catch(e){ return false; }
+}
 async function hasConsent(){
   try{ const r=await SB.rpc('my_consent'); return !!(r.data && r.data.agree_terms); }catch(e){ return true; }
 }
@@ -321,6 +327,8 @@ async function boot(){
   const s=await SB.auth.getSession();
   if(s.data.session){
     const u=s.data.session.user;
+    /* 임시 비밀번호로 들어온 경우 다른 화면보다 먼저 변경을 요구합니다. */
+    if(await mustChangePw()) return renderNewPw(true);
     if(await hasConsent()) return renderMe(u);
     return renderConsentGate(u);
   }
@@ -337,6 +345,7 @@ function render(){
     +'<button class="gbtn" id="google">'+GOOGLE_SVG+' Google로 '+(isUp?'가입':'로그인')+'</button>'
     +'<div class="divider">또는 이메일로</div>'
     +'<label class="fl">이메일</label><input class="in" id="email" type="email" autocomplete="email" placeholder="you@example.com">'
+    +(isUp? '<div class="hint" style="margin:-6px 0 12px 2px">⚠️ <b>실제로 사용하는 이메일 주소로 가입해 주세요.</b> 가입 확인 메일이 발송되고, 비밀번호를 잊으셨을 때 이 주소로만 임시 비밀번호를 보내드릴 수 있습니다. 받을 수 없는 주소로 가입하시면 계정을 되찾을 방법이 없습니다.</div>' : '')
     +'<label class="fl">비밀번호</label><input class="in" id="pw" type="password" autocomplete="'+(isUp?'new-password':'current-password')+'" placeholder="'+(isUp?'8자 이상 · 특수문자 포함':'비밀번호')+'">'
     +(isUp? '<label class="fl">비밀번호 확인</label><input class="in" id="pw2" type="password" autocomplete="new-password" placeholder="한 번 더 입력">' : '')
     +(isUp? profileHTML()+extraHTML()+consentHTML() : '')
@@ -355,27 +364,47 @@ function render(){
   ['email','pw','pw2'].forEach(id=>{ const el=$(id); if(el) el.addEventListener('keydown',e=>{ if(e.key==='Enter') $('go').click(); }); });
 }
 
+/* 비밀번호 재설정 — 자동 메일이 아니라 운영자가 직접 처리합니다.
+   요청만 남기고, 운영자가 관리자 화면에서 임시 비밀번호를 발급해
+   회원 이메일로 보내줍니다. */
 function renderReset(){
-  $('root').innerHTML='<h2 style="margin:0 0 6px;font-size:17px">비밀번호 재설정</h2>'
-    +'<div class="hint">가입한 이메일로 재설정 링크를 보내드려요.</div>'
-    +'<label class="fl">이메일</label><input class="in" id="email" type="email" placeholder="you@example.com">'
-    +'<button class="btn" id="go">재설정 메일 보내기</button>'
+  $('root').innerHTML='<h2 style="margin:0 0 6px;font-size:17px">비밀번호 찾기</h2>'
+    +'<div class="hint">가입하신 이메일 주소를 알려주시면, 운영자가 확인 후 <b>임시 비밀번호</b>를 그 주소로 보내드립니다.</div>'
+    +'<label class="fl">가입한 이메일</label><input class="in" id="email" type="email" placeholder="you@example.com">'
+    +'<label class="fl">남기실 말 (선택)</label>'
+    +'<input class="in" id="note" placeholder="예: 가입일, 닉네임 등 확인에 도움이 되는 정보">'
+    +'<button class="btn" id="go">임시 비밀번호 요청</button>'
     +'<button class="btn ghost" id="back" style="margin-top:8px">돌아가기</button>'
-    +'<div class="msg" id="msg"></div>';
+    +'<div class="msg" id="msg"></div>'
+    +'<div class="why"><b>어떻게 진행되나요?</b><br>'
+    +'① 요청을 남기시면 운영자가 확인합니다.<br>'
+    +'② <b>가입하실 때 쓰신 이메일 주소로</b> 임시 비밀번호를 보내드립니다.<br>'
+    +'③ 임시 비밀번호로 로그인하시면 바로 새 비밀번호를 정하는 화면이 나옵니다.<br><br>'
+    +'사람이 직접 확인하고 보내드리기 때문에 <b>시간이 걸릴 수 있습니다.</b> '
+    +'급하시면 '+CR_MAIL_LINK+' 로 함께 연락 주세요.</div>';
   $('back').onclick=()=>{ MODE='login'; render(); };
   $('go').onclick=async()=>{
     const em=$('email').value.trim(); clearMsg();
-    if(!em) return say('e','이메일을 입력해 주세요.');
+    if(!validEmail(em)) return say('e','이메일 형식을 확인해 주세요.');
     $('go').disabled=true; $('go').textContent='보내는 중…';
-    const r=await SB.auth.resetPasswordForEmail(em,{redirectTo:location.href.split('#')[0]});
-    $('go').disabled=false; $('go').textContent='재설정 메일 보내기';
-    if(r.error) say('e',err(r.error));
-    else say('o','메일을 보냈어요. 링크를 눌러 새 비밀번호를 설정해 주세요.<br>메일이 안 보이면 <b>스팸함</b>도 확인해 주세요.');
+    let ok=false;
+    try{
+      const r=await SB.rpc('request_password_reset',{p_email:em,p_note:$('note').value.trim()||null});
+      ok = !r.error;
+    }catch(e){}
+    $('go').disabled=false; $('go').textContent='임시 비밀번호 요청';
+    /* 가입 여부를 알려주지 않습니다. 알려주면 남의 가입 여부를 확인하는
+       수단이 됩니다. 가입되지 않은 주소여도 같은 안내가 나갑니다. */
+    if(ok) say('o','요청을 접수했어요.<br>가입된 주소라면 <b>'+esc(em)+'</b> 으로 임시 비밀번호를 보내드립니다.<br>메일이 안 보이면 <b>스팸함</b>도 확인해 주세요.');
+    else   say('e','요청을 보내지 못했어요. 잠시 후 다시 시도해 주세요.');
   };
 }
 
-function renderNewPw(){
-  $('root').innerHTML='<h2 style="margin:0 0 6px;font-size:17px">새 비밀번호 설정</h2>'
+/* forced=true 면 '나중에' 없이 변경만 가능합니다.
+   임시 비밀번호는 운영자와 메일에 남아 있으므로 계속 쓰면 안 됩니다. */
+function renderNewPw(forced){
+  $('root').innerHTML='<h2 style="margin:0 0 6px;font-size:17px">'+(forced?'새 비밀번호를 정해 주세요':'새 비밀번호 설정')+'</h2>'
+    +(forced? '<div class="hint">임시 비밀번호로 로그인하셨어요. <b>안전을 위해 지금 새 비밀번호로 바꿔 주세요.</b> 임시 비밀번호는 메일에 남아 있어 계속 쓰시면 위험합니다.</div>' : '')
     +'<label class="fl">새 비밀번호</label><input class="in" id="pw" type="password" placeholder="8자 이상 · 특수문자 포함">'
     +'<label class="fl">비밀번호 확인</label><input class="in" id="pw2" type="password" placeholder="한 번 더 입력">'
     +'<button class="btn" id="go">변경하기</button><div class="msg" id="msg"></div>';
@@ -387,6 +416,7 @@ function renderNewPw(){
     const r=await SB.auth.updateUser({password:a});
     $('go').disabled=false;
     if(r.error) return say('e',err(r.error));
+    try{ await SB.rpc('clear_must_change'); }catch(e){}
     say('o','변경되었어요! 잠시 후 이동합니다.');
     setTimeout(()=>{ location.href='login.html'; },1200);
   };
@@ -466,6 +496,29 @@ async function renderConsentSettings(){
       extra:extraValues()});
     $('sSave').disabled=false;
     if(r.error) say('e',err(r.error)); else say('o','저장되었어요.');
+  };
+
+  // 비밀번호 변경 — 지금 로그인한 본인만 바꿀 수 있습니다.
+  // 현재 비밀번호를 다시 묻지 않는 것은 이미 로그인된 세션이기 때문입니다.
+  const pwbox=document.createElement('div');
+  pwbox.className='consent'; pwbox.style.marginTop='12px';
+  pwbox.innerHTML='<div style="font-size:13px;font-weight:800;padding:2px 2px 8px">비밀번호 변경</div>'
+    +'<input class="in" id="npw" type="password" autocomplete="new-password" placeholder="새 비밀번호 (8자 이상 · 특수문자 포함)" style="margin-bottom:8px">'
+    +'<input class="in" id="npw2" type="password" autocomplete="new-password" placeholder="한 번 더 입력" style="margin-bottom:0">'
+    +'<button class="btn ghost" id="npwSave" style="margin-top:10px">비밀번호 변경</button>'
+    +'<div class="cNote">구글 계정으로만 로그인하신다면 비밀번호를 정하지 않아도 됩니다. 정해두시면 두 가지 방법 모두로 로그인할 수 있어요.</div>';
+  $('root').appendChild(pwbox);
+  $('npwSave').onclick=async()=>{
+    const a=$('npw').value, b=$('npw2').value;
+    const p=pwProblem(a); if(p) return say('e',p);
+    if(a!==b) return say('e','비밀번호가 서로 달라요.');
+    $('npwSave').disabled=true;
+    const r=await SB.auth.updateUser({password:a});
+    $('npwSave').disabled=false;
+    if(r.error) return say('e',err(r.error));
+    try{ await SB.rpc('clear_must_change'); }catch(e){}
+    $('npw').value=''; $('npw2').value='';
+    say('o','비밀번호가 변경되었어요.');
   };
 
   // 연결된 로그인 수단 (docs/AUTH.md 5장)
@@ -636,6 +689,7 @@ async function doLogin(){
   $('go').disabled=false; $('go').textContent='로그인';
   if(r.error) return say('e',err(r.error));
   await flushPendingConsent(); await claim();
+  if(await mustChangePw()) return renderNewPw(true);
   if(await hasConsent()) renderMe(r.data.user); else renderConsentGate(r.data.user);
 }
 

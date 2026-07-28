@@ -281,7 +281,7 @@ async function seedCombos(){
     // 서비스가 늘면 여기에 탭을 추가하세요 (docs/STUDIO.md)
     // 세 번째 값이 true 면 최고관리자 전용입니다. 부관리자에게는 안 보입니다.
     const ALL=[['info','한눈에',true],['member','회원',true],['stat','통계',true],
-               ['source','유입',true],
+               ['source','유입',true],['reset','비번',true],
                ['code','코드',false],['morph','레오 모프',false],['combo','레오 콤보',false],
                ['crmorph','크레 모프',false],['text','문구',true],['admin','관리자',true]];
     const tabs=ALL.filter(t=>!t[2]||isOwner());
@@ -306,7 +306,7 @@ async function seedCombos(){
     }
     ({info:tabInfo,morph:tabMorph,combo:tabCombo,stat:tabStat,code:tabCode,
       member:tabMember,crmorph:tabCrMorph,text:tabText,admin:tabAdmins,
-      source:tabSource}[adTab])();
+      source:tabSource,reset:tabReset}[adTab])();
   }
 
   /* ---------- 관리자 명단 (최고관리자 전용) ---------- */
@@ -717,6 +717,106 @@ async function seedCombos(){
     if(!rows.length) return '<div class="asub" style="margin-bottom:10px">아직 데이터가 없어요.</div>';
     return '<div class="alist">'+rows.map((r,i)=>'<div class="arow"><div class="arow-main"><b>'
       +(i+1)+'. '+esc(r.label||r.ckey)+'</b></div><div class="atag">'+r.cnt+'회</div></div>').join('')+'</div>';
+  }
+
+  /* ---------- 비밀번호 재설정 요청 (최고관리자 전용) ----------
+     원래 비밀번호는 단방향 해시로만 저장되어 아무도 볼 수 없습니다.
+     알려주는 게 아니라 임시 비밀번호로 덮어쓰고, 그걸 회원에게 전달합니다.
+     메일 발송은 자동화하지 않았습니다 — 운영자가 직접 보냅니다. */
+  let prFilter='open';
+
+  /* 읽어주기 쉬운 임시 비밀번호를 만듭니다.
+     0/O, 1/l/I 처럼 눈으로 헷갈리는 글자는 뺐습니다 — 메일로 받아 손으로
+     옮겨 적는 값이라, 헷갈리면 그대로 문의가 됩니다. */
+  function tempPw(){
+    const A='ABCDEFGHJKMNPQRSTUVWXYZ', a='abcdefghijkmnpqrstuvwxyz',
+          d='23456789', sp='!@#$%^&*';
+    const pick=s=>s[Math.floor(Math.random()*s.length)];
+    let out=[pick(A),pick(sp),pick(d)];
+    for(let i=0;i<7;i++) out.push(pick(A+a+d));
+    // 자리 섞기
+    for(let i=out.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [out[i],out[j]]=[out[j],out[i]]; }
+    return out.join('');
+  }
+
+  async function tabReset(){
+    const body=document.getElementById('adBody'); body.innerHTML='불러오는 중…';
+    const r=await SB.rpc('admin_list_resets',{p_status:prFilter});
+    if(r.error){ body.innerHTML='<div class="aerr"><b>재설정 요청을 불러오지 못했습니다.</b><br><br>'
+      +'<code>supabase_v15.sql</code> 을 적용했는지 확인하세요.<br>'
+      +'<span class="asub">'+esc((r.error&&r.error.message)||'')+'</span></div>'; return; }
+    const rows=r.data||[];
+    const fmt=d=>d? new Date(d).toLocaleString('ko-KR',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}) : '-';
+    const F=[['open','처리 대기'],['done','처리 완료'],['ignored','무시'],['all','전체']];
+
+    body.innerHTML='<div class="asvcbar">'+F.map(f=>
+        '<button class="asvc'+(prFilter===f[0]?' on':'')+'" data-f="'+f[0]+'">'+f[1]+'</button>').join('')+'</div>'
+      +'<div class="ahint">회원이 남긴 요청입니다. <b>임시 비밀번호를 발급하면 원래 비밀번호는 사라지고 되돌릴 수 없습니다.</b> '
+      +'발급 후 <b>회원이 가입한 이메일 주소로 직접 보내주세요.</b> 이 화면 말고는 비밀번호를 다시 볼 방법이 없습니다.</div>'
+      +'<div class="alabel2">요청 <span class="asub">'+rows.length+'건</span></div>'
+      +(rows.length
+        ? '<div class="atblwrap"><table class="atbl"><thead><tr><th>이메일</th><th>가입</th>'
+          +'<th>남긴 말</th><th>요청 시각</th><th>상태</th><th></th></tr></thead><tbody>'
+          +rows.map(x=>'<tr><td><b>'+esc(x.email)+'</b></td>'
+            +'<td class="acen">'+(x.has_account?'<span class="atag used">있음</span>':'<span class="asub">없음</span>')+'</td>'
+            +'<td>'+esc(x.note||'-')+'</td>'
+            +'<td class="anowrap">'+fmt(x.created_at)+'</td>'
+            +'<td class="anowrap">'+(x.status==='open'?'<b>대기</b>':esc(x.status)
+                +(x.handled_at? '<br><span class="asub">'+fmt(x.handled_at)+'</span>':''))+'</td>'
+            +'<td class="anowrap">'
+            +(x.status==='open'
+              ? (x.has_account? '<button class="abtn sm" data-iss="'+esc(x.email)+'">임시 비밀번호 발급</button> ' : '')
+                +'<button class="abtn sm ghost" data-ign="'+esc(x.id)+'">무시</button>'
+              : '<span class="asub">-</span>')
+            +'</td></tr>').join('')
+          +'</tbody></table></div>'
+        : '<div class="asub" style="padding:14px">해당 상태의 요청이 없습니다.</div>')
+      +'<div class="alabel2">직접 발급</div>'
+      +'<div class="ahint">요청이 없어도 이메일을 알면 바로 발급할 수 있습니다. 전화·메신저로 문의가 온 경우에 쓰세요.</div>'
+      +'<div class="abar"><input class="ain" id="prMail" type="email" placeholder="회원 이메일">'
+      +'<button class="abtn sm" id="prIssue">발급</button></div>'
+      +'<div id="prOut"></div>';
+
+    const out=document.getElementById('prOut');
+    const issue=async(email)=>{
+      if(!confirm(email+' 의 비밀번호를 임시 비밀번호로 바꿉니다.\n원래 비밀번호는 사라지고 되돌릴 수 없습니다. 진행할까요?')) return;
+      const pw=tempPw();
+      const w=await SB.rpc('admin_set_temp_password',{p_email:email,p_password:pw});
+      if(w.error){ out.innerHTML='<div class="aerr">'+esc(w.error.message||'발급 실패')+'</div>'; return; }
+      // 한 번만 보여줍니다. 새로고침하면 다시 볼 수 없습니다.
+      out.innerHTML='<div class="alabel2">발급 완료</div>'
+        +'<div class="atblwrap"><table class="atbl"><tbody>'
+        +'<tr><th style="width:110px">받는 사람</th><td><b>'+esc(email)+'</b></td></tr>'
+        +'<tr><th>임시 비밀번호</th><td><code style="font-size:15px;font-weight:800;letter-spacing:.5px">'+esc(pw)+'</code> '
+        +'<button class="abtn sm ghost" id="prCopy">복사</button></td></tr>'
+        +'</tbody></table></div>'
+        +'<div class="ahint">⚠️ <b>이 값은 지금만 볼 수 있습니다.</b> 화면을 벗어나면 다시 확인할 수 없고, 다시 발급하면 또 바뀝니다.<br>'
+        +'회원의 기존 로그인 세션은 모두 해제되었습니다. 회원이 이 비밀번호로 로그인하면 <b>새 비밀번호를 정하는 화면</b>이 바로 뜹니다.</div>'
+        +'<div class="alabel2">메일 본문 (복사해서 보내세요)</div>'
+        +'<textarea class="ain" id="prBody" rows="8" style="font-size:12.5px;line-height:1.6">'
+        +esc('안녕하세요, 량 스튜디오입니다.\n\n요청하신 임시 비밀번호를 보내드립니다.\n\n임시 비밀번호: '+pw
+             +'\n\n아래 주소에서 이 비밀번호로 로그인하시면 새 비밀번호를 정하는 화면이 나옵니다.\n'
+             +'https://ryangstudio.com/gecko/login.html\n\n'
+             +'※ 임시 비밀번호는 이 메일에 남아 있으므로, 로그인 후 반드시 새 비밀번호로 변경해 주세요.\n'
+             +'※ 본인이 요청하지 않으셨다면 이 메일을 무시하시고 알려주세요.\n\n량 스튜디오 드림')
+        +'</textarea>'
+        +'<div class="abar"><button class="abtn sm ghost" id="prCopyBody">본문 복사</button></div>';
+      const cp=(t,btn)=>{ if(navigator.clipboard) navigator.clipboard.writeText(t);
+        btn.textContent='복사됨'; setTimeout(()=>btn.textContent=btn.dataset.t,1400); };
+      const c1=document.getElementById('prCopy'); c1.dataset.t='복사'; c1.onclick=()=>cp(pw,c1);
+      const c2=document.getElementById('prCopyBody'); c2.dataset.t='본문 복사';
+      c2.onclick=()=>cp(document.getElementById('prBody').value,c2);
+    };
+
+    body.querySelectorAll('[data-f]').forEach(b=>b.onclick=()=>{ prFilter=b.dataset.f; tabReset(); });
+    body.querySelectorAll('[data-iss]').forEach(b=>b.onclick=()=>issue(b.dataset.iss));
+    body.querySelectorAll('[data-ign]').forEach(b=>b.onclick=async()=>{
+      await SB.rpc('admin_close_reset',{p_id:b.dataset.ign,p_status:'ignored'}); tabReset(); });
+    document.getElementById('prIssue').onclick=()=>{
+      const em=document.getElementById('prMail').value.trim();
+      if(!em||em.indexOf('@')<0) return alert('이메일을 확인해 주세요.');
+      issue(em);
+    };
   }
 
   /* ---------- 유입 경로 (최고관리자 전용) ---------- */

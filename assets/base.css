@@ -165,3 +165,8 @@
 
 /* 도움 주신 곳 표기 — 문의 안내 바로 아래, 한 단계 더 조용하게. */
 .mailnote.credit{margin-top:4px;opacity:.85}
+
+/* 검색 노출용 소개 문단 — 화면에는 두지 않습니다.
+   display:none 은 검색엔진이 무시할 수 있어, 자리만 없애는 방식으로 숨깁니다. */
+.seo-intro{position:absolute;width:1px;height:1px;margin:-1px;padding:0;
+  overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}

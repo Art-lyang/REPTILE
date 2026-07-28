@@ -45,7 +45,7 @@
 <script src="../assets/analytics.js?v=113119"></script>
 <script src="../assets/uitext.js?v=160549"></script>
 <script src="crested-boot.js?v=014345"></script>
-<link rel="stylesheet" href="../assets/base.css?v=222111">
+<link rel="stylesheet" href="../assets/base.css?v=013848">
 <link rel="stylesheet" href="crested.css?v=024503">
 <link rel="stylesheet" href="../assets/theme.css?v=012202">
 </head>
@@ -56,8 +56,8 @@
   <div class="hd">
     <div class="hd-mark"><img src="../assets/logo-paw.svg" alt=""></div>
     <div class="hd-txt">
-      <h1 id="h-title">Crested Gecko Morph Calculator</h1>
-      <div class="sub" id="h-sub"></div>
+      <h1 id="h-title">크레스티드 게코 모프 계산기</h1>
+      <div class="sub" id="h-sub">부모의 유전 형질을 선택해 새끼 모프 확률을 계산하세요</div>
     </div>
     <div class="hd-btns">
       <button class="blink" id="btn-upd" onclick="openUpd()"><i class="bi bi-file-earmark-text" aria-hidden="true"></i></button>
@@ -134,13 +134,20 @@
   <div class="bottom-links">
     <a class="blink" id="mailLink" href="#"><i class="bi bi-envelope" aria-hidden="true"></i><span id="lbl-contact"></span></a>
   </div>
-  <div class="mailnote" id="mailNote"></div>
+  <div class="mailnote" id="mailNote">정보 수정 요청 · 업데이트 건의는 <b>문의하기</b>로 보내주세요</div>
 
-  <div class="note" id="note"></div>
+  <div class="note" id="note"><b>이 계산기가 다루는 것</b> — 릴리화이트, 카푸치노·세이블(같은 자리), 팬텀, 초초, 아잔틱을 멘델 유전으로 계산합니다. </div>
   <div class="legal">
     <a href="../terms.html#terms" id="lbl-terms">이용약관</a> · <a href="../terms.html#privacy" id="lbl-privacy">개인정보처리방침</a>
   </div>
-  <footer id="footer"></footer>
+  <!-- 검색 노출용 소개. 화면에는 보이지 않지만 크롤러가 읽습니다.
+       JS 로 그리는 부분과 달리 첫 요청에서 바로 색인됩니다. -->
+  <section class="seo-intro">
+    <h2>크레스티드 게코 모프 계산기</h2>
+    <p>부모 개체의 형질을 고르면 새끼 모프와 확률을 계산합니다. 릴리화이트, 카푸치노·세이블(같은 자리의 3중 대립인자), 팬텀, 초초, 아잔틱, 화이트아웃, 엠티백, 달마시안, 파이드, 파이어를 다루며 루왁·프라푸치노·소락 같은 조합 명칭과 슈퍼릴리화이트 같은 치사 조합 경고를 함께 보여줍니다. 라인브리딩 형질도 참고용으로 표시합니다. 한국어·영어·중국어·일본어를 지원하며 회원가입 없이 무료로 쓸 수 있습니다.</p>
+  </section>
+
+  <footer id="footer">확률은 멘델 유전 법칙에 따른 이론값입니다 · 라인브리딩(폴리제닉) 형질은 확률 계산 대상이 아닙니다</footer>
 </div>
 
 <div class="modal-overlay" id="updModal">

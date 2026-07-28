@@ -96,6 +96,12 @@ create table if not exists public.cr_combos (
 do $pol$
 declare t text; p record;
 begin
+  /* v3 과 같은 이유로 먼저 확인합니다. 없는 채로 진행하면 표에 RLS 만 켜지고
+     쓰기 정책이 안 붙어서, 관리자도 값을 못 넣는 상태가 됩니다. */
+  if to_regprocedure('public.is_admin()') is null then
+    raise exception E'is_admin() 함수가 없습니다.\nsupabase_v2.sql → supabase_v3.sql 순서로 먼저 실행하세요.';
+  end if;
+
   foreach t in array array['cr_genes','cr_genos','cr_traits','cr_combos'] loop
     execute format('alter table public.%I enable row level security', t);
     for p in select policyname from pg_policies

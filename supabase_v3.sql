@@ -63,6 +63,18 @@ alter view public.visit_stats           set (security_invoker = on);
    관리자만 해야 합니다.
 
    아래는 기존 정책을 모두 걷어내고 필요한 것만 다시 답니다. */
+
+/* ⚠️ 걷어내기 전에 is_admin() 부터 확인합니다.
+   이 함수가 없는 상태로 진행하면, 정책을 다 지운 뒤 새 정책을 만들다 실패해서
+   visits 가 'RLS 켜짐 + 정책 0개' 로 남습니다. 그러면 아무도 아무것도 못 하고
+   사이트는 접속 기록조차 남기지 못합니다. 그래서 먼저 멈춥니다. */
+do $need$
+begin
+  if to_regprocedure('public.is_admin()') is null then
+    raise exception E'is_admin() 함수가 없습니다.\n먼저 supabase_v2.sql 을 실행한 뒤 이 파일을 다시 실행하세요.\n(아무것도 변경하지 않고 중단했습니다)';
+  end if;
+end $need$;
+
 -- 기존 정책 제거
 do $drop_pol$
 declare p record;
@@ -91,6 +103,16 @@ create policy combo_select_admin on public.combo_queries
   for select to authenticated using (public.is_admin());
 
 -- 수정·삭제 정책은 만들지 않습니다. RLS 가 켜져 있으면 정책 없는 동작은 전부 거부입니다.
+
+/* 예전에 만든 top_combos 뷰는 만든 사람 권한으로 돌아서, 위에서 combo_queries 를
+   막아도 이 뷰를 거치면 그대로 읽힙니다. 같은 방식으로 바꿔 막습니다.
+   (뷰가 없는 경우도 있어 있을 때만 실행합니다) */
+do $inv$
+begin
+  if to_regclass('public.top_combos') is not null then
+    execute 'alter view public.top_combos set (security_invoker = on)';
+  end if;
+end $inv$;
 
 /* ── F. 확인 ──────────────────────────────────────────────────────────── */
 do $check$

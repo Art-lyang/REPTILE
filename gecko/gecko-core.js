@@ -177,6 +177,11 @@ const COMBOS = [
      벨→레이다, 레인워터→타이푼, 트램퍼→랩터. 앞의 둘만 있고 랩터가 빠져 있었습니다.
      (랩터를 기반으로 하는 디아블로 블랑코는 이미 아래에 들어가 있었습니다) */
   {tokens:['tremper','eclipse'], ko:'랩터', en:'RAPTOR'},
+  {tokens:['tremper','eclipse','macksnow'], ko:'스노우 랩터', en:'Snow RAPTOR'},
+  /* 슈퍼맥스노우가 섞인 것은 '슈퍼 스노우 랩터' 가 아니라 그냥 '슈퍼 랩터' 로 부릅니다.
+     레이다·타이푼 계열(슈퍼 레이다·슈퍼 타이푼)과 같은 방식입니다. */
+  {tokens:['tremper','eclipse','super_macksnow'], ko:'슈퍼 랩터', en:'Super RAPTOR'},
+  {tokens:['tremper','eclipse','enigma'], ko:'노바', en:'Nova'},
   {tokens:['tremper','blizzard'], ko:'블레이징 블리자드', en:'Blazing Blizzard'},
   {tokens:['tremper','blizzard','eclipse'], ko:'디아블로 블랑코', en:'Diablo Blanco'},
   {tokens:['tremper','murphy'], ko:'알비노 루시스틱', en:'Albino Patternless', vintage:true},

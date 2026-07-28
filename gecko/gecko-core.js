@@ -173,6 +173,10 @@ const COMBOS = [
   {tokens:['super_macksnow','enigma'], ko:'달마시안', en:'Dalmatian', vintage:true},
   {tokens:['eclipse','enigma'], ko:'비 (Bee)', en:'Bee', vintage:true},
   {tokens:['blizzard','murphy'], ko:'바나나 블리자드', en:'Banana Blizzard'},
+  /* 알비노 3계통 + 이클립스는 각각 이름이 따로 있습니다.
+     벨→레이다, 레인워터→타이푼, 트램퍼→랩터. 앞의 둘만 있고 랩터가 빠져 있었습니다.
+     (랩터를 기반으로 하는 디아블로 블랑코는 이미 아래에 들어가 있었습니다) */
+  {tokens:['tremper','eclipse'], ko:'랩터', en:'RAPTOR'},
   {tokens:['tremper','blizzard'], ko:'블레이징 블리자드', en:'Blazing Blizzard'},
   {tokens:['tremper','blizzard','eclipse'], ko:'디아블로 블랑코', en:'Diablo Blanco'},
   {tokens:['tremper','murphy'], ko:'알비노 루시스틱', en:'Albino Patternless', vintage:true},

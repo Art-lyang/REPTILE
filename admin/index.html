@@ -9,7 +9,7 @@
 <!-- GENES / POLY / COMBOS / tokenOptions 를 쓰기 위해 게코 코어를 그대로 불러옵니다 -->
 <script src="../assets/studio-config.js?v=113119"></script>
 <script src="../gecko/gecko-core.js?v=113119"></script>
-<script src="admin-crested.js?v=113119"></script>
+<script src="admin-crested.js?v=120918"></script>
 <style>
   :root{
     --bg:#EDEAE1;            /* Cloud Dancer 톤 그룹 배경 */
@@ -163,15 +163,21 @@ async function seedMorphs(){
   if(r.error) throw r.error;
   return rows.length;
 }
+/* 콤보는 id 가 uuid 라 upsert 기준이 없습니다. 예전에는 그냥 insert 라서 두 번
+   누르면 목록이 통째로 두 배가 됐습니다. 구성(tokens)이 같으면 같은 콤보로 보고
+   빠진 것만 넣습니다. 그래서 새 콤보가 하나 늘었을 때 버튼을 눌러도 그 하나만
+   추가되고, 손으로 고쳐둔 이름은 그대로 남습니다. */
 async function seedCombos(){
   if(!SB) throw new Error('백엔드가 설정되지 않았습니다.');
-  const ex=await SB.from('combos').select('id').limit(1);
+  const ex=await SB.from('combos').select('id,tokens,sort');
   if(ex.error) throw ex.error;
-  if((ex.data||[]).length){
-    if(!confirm('이미 DB에 콤보가 있습니다. 중복으로 더 들어갈 수 있는데 계속할까요?')) return -1;
-  }
-  const rows=COMBOS.map((c,i)=>({ tokens:c.tokens||[], ko:c.ko, en:c.en,
-    vintage:!!c.vintage, risk:!!c.risk, sort:i+1, updated_at:new Date().toISOString() }));
+  const have=new Set((ex.data||[]).map(r=>[...(r.tokens||[])].sort().join('|')));
+  let sort=Math.max(0,...(ex.data||[]).map(r=>r.sort||0));
+  const rows=COMBOS
+    .filter(c=>!have.has([...(c.tokens||[])].sort().join('|')))
+    .map(c=>({ tokens:c.tokens||[], ko:c.ko, en:c.en,
+      vintage:!!c.vintage, risk:!!c.risk, sort:++sort, updated_at:new Date().toISOString() }));
+  if(!rows.length) return 0;
   const r=await SB.from('combos').insert(rows);
   if(r.error) throw r.error;
   return rows.length;
@@ -424,7 +430,7 @@ async function seedCombos(){
     body.innerHTML=html;
     document.getElementById('cNew').onclick=()=>comboForm(null);
     document.getElementById('cExp').onclick=()=>download('combos-backup.json',JSON.stringify(rows,null,1));
-    document.getElementById('cSeed').onclick=async(e)=>{ e.target.textContent='가져오는 중…'; try{ const n=await seedCombos(); if(n>=0){ await loadOverrides(); alert(n+'개를 DB에 넣었습니다.'); } }catch(x){ alert('실패: '+x.message); } tabCombo(); };
+    document.getElementById('cSeed').onclick=async(e)=>{ e.target.textContent='가져오는 중…'; try{ const n=await seedCombos(); await loadOverrides(); alert(n? (n+'개를 새로 넣었습니다.') : '새로 넣을 콤보가 없습니다. (이미 다 들어 있어요)'); }catch(x){ alert('실패: '+x.message); } tabCombo(); };
     body.querySelectorAll('[data-crk]').forEach(x=>x.onclick=async()=>{ const r=rows.find(y=>y.id===x.dataset.crk); await SB.from('combos').update({risk:!r.risk}).eq('id',r.id); await loadOverrides(); tabCombo(); });
     body.querySelectorAll('[data-cvt]').forEach(x=>x.onclick=async()=>{ const r=rows.find(y=>y.id===x.dataset.cvt); await SB.from('combos').update({vintage:!r.vintage}).eq('id',r.id); await loadOverrides(); tabCombo(); });
     body.querySelectorAll('[data-e]').forEach(x=>x.onclick=()=>comboForm(rows.find(y=>y.id===x.dataset.e)));

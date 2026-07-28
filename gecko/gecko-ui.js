@@ -426,7 +426,11 @@ function render(payload){
      라인이 섞였을 때만 씁니다. (현직 브리더 확인)
      gatherPoly 가 both=true 로 표시해 주므로 그것만 빼면 됩니다. */
   const crossPoly = (payload.poly || []).filter(p=>!p.both);
-  const crossTag = crossPoly.length
+  /* 라인브리딩 이름은 결과명에 직접 붙습니다(아래 polyName).
+     그러면 '(만다린 크로스)' 태그까지 붙이면 같은 말을 두 번 쓰게 돼서,
+     서로 다른 라인이 섞였을 때만 태그를 남깁니다. 안내문은 그대로 둘니다. */
+  const polyName = (typeof polyLabel==='function') ? polyLabel(payload.poly||[]) : '';
+  const crossTag = (crossPoly.length && crossPoly.length===(payload.poly||[]).length && !polyName)
     ? '(' + crossPoly.map(p=>p.name).join('·') + ' ' + t.crossTag + ')'
     : '';
   let html='';
@@ -442,8 +446,15 @@ function render(payload){
     rows.forEach(r=>{
       const pctNum=r.prob*100, pct= pctNum>=9.95? pctNum.toFixed(0):pctNum.toFixed(1);
       let vtext;
-      if(r.combo) vtext='<span class="combotag">'+t.comboTag+'</span>'+escapeHtml(r.combo)+'<div class="submorph">'+escapeHtml(r.visualLabel)+'</div>';
-      else vtext=escapeHtml(r.visualLabel);
+      /* 라인브리딩은 확률 대상이 아니라 모든 새끼에 똑같이 붙습니다.
+         유전 모프가 없으면 '노멀' 대신 라인 이름만 남습니다. */
+      const baseLabel = polyName
+        ? (r.isNormal ? polyName : (r.visualLabel+' '+polyName))
+        : r.visualLabel;
+      if(r.combo) vtext='<span class="combotag">'+t.comboTag+'</span>'+escapeHtml(r.combo)
+        +(polyName? ' '+escapeHtml(polyName):'')
+        +'<div class="submorph">'+escapeHtml(r.visualLabel)+'</div>';
+      else vtext=escapeHtml(baseLabel);
       // 다인자(라인브리딩) 크로스 표기 — 발현 여부와 무관하게 유전자에 섞였음을 남깁니다.
       if(crossTag) vtext+='<span class="crosstag">'+escapeHtml(crossTag)+'</span>';
       /* TODO(모프 설명): 여기에 r.tokens 기준 간략 설명을 넣을 자리입니다.

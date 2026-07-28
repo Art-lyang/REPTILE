@@ -223,6 +223,28 @@ function matchCombo(tokenSet){
   }
   return null;
 }
+
+/* ================= 라인브리딩 조합 명칭 =================
+   라인브리딩 형질도 새끼의 이름에 들어갑니다. 예전에는 참고용 칩으로만 보여주고
+   결과는 '노멀' 로 뒀는데, 현직 브리더 확인 결과 그렇게 쓰지 않습니다.
+
+     블나 × 블나            → 블랙나이트   (같은 라인이면 그 라인 이름)
+     멜라니스틱 × 텐져린     → 멜라텐져린   (섞이면 고유 이름)
+
+   두 번째처럼 단순히 이름을 잇는 게 아니라 따로 부르는 이름이 있는 조합은
+   아래 표에 둡니다. 표에 없으면 형질 이름을 그대로 나열합니다.
+   조합이 더 확인되면 관리자 → 레오 콤보 에서 추가할 수 있습니다. */
+const POLY_COMBOS = [
+  {tokens:['melanistic','tangerine'], ko:'멜라텐져린', en:'Mela Tangerine',
+   zh:'黑化橘化', ja:'メラタンジェリン'},
+];
+function matchPolyCombo(idSet){
+  for(const c of POLY_COMBOS){
+    if(c.tokens.length!==idSet.size) continue;
+    if(c.tokens.every(t=>idSet.has(t))) return c;
+  }
+  return null;
+}
 /* ================= 시각화: 모프 대표색 + 게코 일러스트 ================= */
 const GCOLOR={
   tremper:'#F0E0BE',bell:'#F0E0BE',rainwater:'#F0E0BE',
@@ -393,7 +415,16 @@ function buildPie(rows){
 function gatherPoly(){
   if(!showPoly) return [];
   return POLY.filter(p=>STATE.A[p.id]==='yes'||STATE.B[p.id]==='yes')
-    .map(p=>({name:pName(p), both:STATE.A[p.id]==='yes'&&STATE.B[p.id]==='yes'}));
+    .map(p=>({id:p.id, name:pName(p), both:STATE.A[p.id]==='yes'&&STATE.B[p.id]==='yes'}));
+}
+/* 새끼 이름에 붙을 라인브리딩 부분.
+   양쪽을 합친 형질 집합이 POLY_COMBOS 에 있으면 그 이름을, 없으면
+   형질 이름을 그대로 나열합니다. 라인브리딩은 확률 대상이 아니라
+   모든 새끼에 똑같이 붙습니다. */
+function polyLabel(poly){
+  if(!poly || !poly.length) return '';
+  const hit=matchPolyCombo(new Set(poly.map(p=>p.id)));
+  return hit ? (hit[LANG]||hit.en) : poly.map(p=>p.name).join(' ');
 }
 
 

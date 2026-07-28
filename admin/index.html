@@ -9,7 +9,7 @@
 <!-- GENES / POLY / COMBOS / tokenOptions 를 쓰기 위해 게코 코어를 그대로 불러옵니다 -->
 <script src="../assets/studio-config.js?v=113119"></script>
 <script src="../gecko/gecko-core.js?v=113119"></script>
-<script src="admin-crested.js?v=120918"></script>
+<script src="admin-crested.js?v=232324"></script>
 <script src="admin-text.js?v=222126"></script>
 <style>
   :root{
@@ -471,68 +471,105 @@ async function seedCombos(){
     CrestedAdmin.render({ SB, esc, body, download });
   }
 
+  /* 기간 선택 — 1시간 단위부터 6개월까지.
+     visits.day 는 UTC 기준이라 한국 시간과 하루가 어긋납니다(오전 8시 접속이
+     전날로 잡힘). 그래서 day 를 쓰지 않고 ts 를 브라우저 현지시간으로 묶습니다. */
+  const RANGES=[
+    ['24h','24시간',  1,      'hour'],
+    ['7d', '7일',     7,      'day'],
+    ['30d','30일',    30,     'day'],
+    ['3m', '3개월',   91,     'week'],
+    ['6m', '6개월',   182,    'week'],
+  ];
+  let adRange='7d';
+
+  function bucketKey(d, unit){
+    const p=n=>String(n).padStart(2,'0');
+    if(unit==='hour') return p(d.getHours())+'시';
+    if(unit==='week'){ const t=new Date(d); t.setDate(t.getDate()-t.getDay()); // 일요일 시작
+      return (t.getMonth()+1)+'/'+t.getDate(); }
+    return (d.getMonth()+1)+'/'+p(d.getDate());
+  }
+  function bucketList(days, unit){
+    const out=[], now=new Date();
+    if(unit==='hour'){ for(let i=23;i>=0;i--){ const d=new Date(now-i*3600e3); out.push(bucketKey(d,unit)); } return out; }
+    if(unit==='week'){ const step=7, n=Math.ceil(days/step);
+      for(let i=n-1;i>=0;i--) out.push(bucketKey(new Date(now-i*step*864e5), unit));
+      return [...new Set(out)]; }
+    for(let i=days-1;i>=0;i--) out.push(bucketKey(new Date(now-i*864e5), unit));
+    return out;
+  }
+
   async function tabStat(){
     const body=document.getElementById('adBody'); body.innerHTML='불러오는 중…';
     try{
-      const today=new Date().toISOString().slice(0,10);
-      /* 한 번만 내려받아 브라우저에서 나눕니다. 접속 수가 수만 건이 되면
-         supabase_v3.sql 의 visit_stats 뷰로 바꾸세요(집계를 서버가 합니다). */
-      const dv=await svcFilter(SB.from('visits').select('device,day,client,service').order('day',{ascending:false})).limit(20000);
+      const R=RANGES.filter(r=>r[0]===adRange)[0]||RANGES[1];
+      const days=R[2], unit=R[3];
+      const since=new Date(Date.now()-days*864e5).toISOString();
+      const dv=await svcFilter(SB.from('visits').select('ts,device,client,service')).gte('ts',since).limit(50000);
       if(dv.error) throw dv.error;
       const rows=dv.data||[];
 
       const cntK={human:0,bot:0,ai:0}, uniqK={human:new Set(),bot:new Set(),ai:new Set()};
-      let todayN=0; const byDay={};
+      const byB={}; const today=new Date().toDateString(); let todayN=0;
       rows.forEach(r=>{ const k=kindOf(r); cntK[k]++; uniqK[k].add(r.device);
-        if(r.day===today) todayN++;
-        if(r.day){ (byDay[r.day]=byDay[r.day]||{human:0,bot:0,ai:0})[k]++; } });
-      const human=cntK.human, machine=cntK.bot+cntK.ai;
+        const d=new Date(r.ts);
+        if(d.toDateString()===today) todayN++;
+        const b=bucketKey(d,unit); (byB[b]=byB[b]||{human:0,bot:0,ai:0})[k]++; });
+      const human=cntK.human, machine=cntK.bot+cntK.ai, tot=rows.length||1;
 
       const card=(n,l,sub)=>'<div class="statcard"><div class="statn">'+n+'</div><div class="statl">'+l+'</div>'
         +(sub?'<div class="statx">'+sub+'</div>':'')+'</div>';
+
       let h=svcBar();
+      h+='<div class="asvcbar">'+RANGES.map(r=>
+          '<button class="asvc'+(adRange===r[0]?' on':'')+'" data-rg="'+r[0]+'">'+r[1]+'</button>').join('')+'</div>';
       h+='<div class="statrow">'
-        +card(rows.length,'누적 접속', adSvc? svcName(adSvc):'모든 도구')
+        +card(rows.length,'기간 내 접속', R[1]+(adSvc? ' · '+svcName(adSvc):''))
         +card(todayN,'오늘 접속')
         +card(uniqK.human.size,'순 방문자','사람 기준')
         +'</div>';
 
-      /* 종류별 */
       h+='<div class="alabel2">🙋 사람 vs 기계</div><div class="statrow">'
-        +KIND.map(k=>card(cntK[k[0]], k[1], uniqK[k[0]].size+'개 기기')).join('')
-        +'</div>';
-      const tot=rows.length||1;
-      h+='<div class="aratio">'+KIND.map(k=>{
-            const w=cntK[k[0]]/tot*100;
-            return w>0? '<i style="width:'+w.toFixed(1)+'%;background:'+k[2]+'" title="'+k[1]+' '+w.toFixed(1)+'%"></i>':'';
-          }).join('')+'</div>'
+        +KIND.map(k=>card(cntK[k[0]], k[1], uniqK[k[0]].size+'개 기기')).join('')+'</div>'
+        +'<div class="aratio">'+KIND.map(k=>{ const w=cntK[k[0]]/tot*100;
+            return w>0? '<i style="width:'+w.toFixed(1)+'%;background:'+k[2]+'" title="'+k[1]+' '+w.toFixed(1)+'%"></i>':''; }).join('')+'</div>'
         +'<div class="asub">사람 '+Math.round(human/tot*100)+'% · 기계 '+Math.round(machine/tot*100)+'%</div>';
 
-      /* 최근 7일 — 사람만 세는 막대 + 기계 수를 옆에 */
-      const days=[]; for(let i=6;i>=0;i--) days.push(new Date(Date.now()-i*864e5).toISOString().slice(0,10));
-      const mx=Math.max(1,...days.map(d=>(byDay[d]||{}).human||0));
-      h+='<div class="alabel2">최근 7일 접속 <span class="asub">(막대는 사람)</span></div>'
-        +days.map(d=>{ const b=byDay[d]||{human:0,bot:0,ai:0}; const m=b.bot+b.ai;
-          return '<div class="daybar"><span class="dl">'+d.slice(5)+'</span>'
+      const labels=bucketList(days,unit);
+      const mx=Math.max(1,...labels.map(d=>(byB[d]||{}).human||0));
+      h+='<div class="alabel2">'+R[1]+' 접속 <span class="asub">(막대는 사람'
+        +(unit==='hour'?' · 1시간 단위':unit==='week'?' · 주 단위':'')+')</span></div>'
+        +labels.map(d=>{ const b=byB[d]||{human:0,bot:0,ai:0}; const m=b.bot+b.ai;
+          return '<div class="daybar"><span class="dl">'+d+'</span>'
             +'<span class="dt" style="width:'+Math.round(b.human/mx*60)+'%"></span>'
             +'<span class="dn">'+b.human+(m?' <em>+'+m+'</em>':'')+'</span></div>'; }).join('');
 
-      /* 자주 확인한 조합 — 서비스별 뷰가 있으면 그걸, 없으면 예전 뷰를 씁니다. */
-      let combos=[];
-      const tcs=await SB.from('top_combos_by_service').select('*').limit(200);
-      if(!tcs.error && tcs.data){
-        combos=tcs.data.filter(r=>!adSvc || (adSvc==='gecko' ? (!r.service||r.service==='gecko') : r.service===adSvc))
-                       .sort((a,b)=>b.cnt-a.cnt).slice(0,20);
+      /* 자주 확인한 조합 — 계산기별로 나눠 상위 10개씩. */
+      h+='<div class="alabel2">자주 확인한 조합 <span class="asub">계산기별 상위 10</span></div>';
+      const tcs=await SB.from('top_combos_by_service').select('*').limit(500);
+      if(tcs.error){
+        const tc=await SB.from('top_combos').select('*').limit(10);
+        h+=comboList(tc.data||[]);
       }else{
-        const tc=await SB.from('top_combos').select('*').limit(20);
-        combos=tc.data||[];
+        const all=tcs.data||[];
+        const keys=Object.keys(SVC).filter(k=>!adSvc||k===adSvc);
+        h+=keys.map(k=>{
+          const list=all.filter(r=>k==='gecko' ? (!r.service||r.service==='gecko') : r.service===k)
+                        .sort((a,b)=>b.cnt-a.cnt).slice(0,10);
+          return '<div class="alabel2">'+esc(svcName(k))+'</div>'+comboList(list);
+        }).join('');
       }
-      h+='<div class="alabel2">자주 확인한 조합</div><div class="alist">'
-        +(combos.map((r,i)=>'<div class="arow"><div class="arow-main"><b>'+(i+1)+'. '+esc(r.label||r.ckey)+'</b></div><div class="atag">'+r.cnt+'회</div></div>').join('')
-          ||'<div class="asub">아직 데이터가 없어요.</div>')+'</div>';
 
-      body.innerHTML=h; bindSvcBar(tabStat);
+      body.innerHTML=h;
+      bindSvcBar(tabStat);
+      body.querySelectorAll('[data-rg]').forEach(b=>b.onclick=()=>{ adRange=b.dataset.rg; tabStat(); });
     }catch(e){ body.innerHTML='<div class="aerr">통계를 불러오지 못했어요. (권한/네트워크 확인)</div>'; }
+  }
+  function comboList(rows){
+    if(!rows.length) return '<div class="asub" style="margin-bottom:10px">아직 데이터가 없어요.</div>';
+    return '<div class="alist">'+rows.map((r,i)=>'<div class="arow"><div class="arow-main"><b>'
+      +(i+1)+'. '+esc(r.label||r.ckey)+'</b></div><div class="atag">'+r.cnt+'회</div></div>').join('')+'</div>';
   }
 
   async function tabCode(){

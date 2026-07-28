@@ -102,6 +102,13 @@
   .atbl tbody tr:last-child td{border-bottom:0}
   .atbl td.acen{text-align:center}
   .atbl td.anowrap{white-space:nowrap;color:var(--ink2)}
+  /* 가입 수단 — 한 사람이 여러 개를 가질 수 있어 나란히 붙습니다 */
+  .aprov{display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;
+    border-radius:20px;margin-right:3px;background:rgba(120,120,128,.16);color:var(--ink2)}
+  .aprov.email {background:rgba(14,124,123,.14);color:var(--teal)}
+  .aprov.google{background:rgba(66,133,244,.16);color:#2A62C4}
+  .aprov.kakao {background:rgba(254,229,0,.42);color:#5A4A00}
+  .aprov.apple {background:rgba(30,30,30,.12);color:#2B2B2B}
   .arole{display:inline-block;font-size:10.5px;font-weight:700;padding:3px 9px;
     border-radius:20px;margin-left:8px;align-self:center}
   .arole.owner{background:rgba(14,124,123,.16);color:var(--teal)}
@@ -737,6 +744,14 @@ async function seedCombos(){
     const n=k=>all.filter(x=>x[k]).length;
     const fmt=d=>d? new Date(d).toLocaleDateString('ko-KR',{year:'2-digit',month:'2-digit',day:'2-digit'}) : '-';
 
+    // 가입 수단은 auth.identities 에 있어 표에서 못 읽습니다. 함수로 받아옵니다.
+    // supabase_v9.sql 을 아직 안 넣었으면 비어 있는 채로 나머지를 그립니다.
+    const prov={};
+    try{
+      const pv=await SB.rpc('admin_member_providers');
+      (pv.data||[]).forEach(x=>{ prov[x.user_id]=x.providers||[]; });
+    }catch(e){}
+
     const FILTERS=[['all','전체',x=>true],
                    ['mail','메일 수신',x=>x.agree_mkt_email],
                    ['sms','문자 수신',x=>x.agree_mkt_sms],
@@ -762,12 +777,19 @@ async function seedCombos(){
     // 수집 항목을 한 줄에 한 명씩, 칸을 맞춰 봅니다.
     // 좁은 화면에서는 표만 옆으로 넘겨 봅니다 (.atblwrap 이 가로 스크롤)
     const yn=v=>v? '<span class="atag used">○</span>' : '<span class="asub">–</span>';
+    // 한 사람이 여러 수단을 가질 수 있습니다 (이메일 가입 후 구글 연동 등)
+    const PLABEL={email:'자사',google:'구글',kakao:'카카오',apple:'애플'};
+    const pv=id=>{ const a=prov[id];
+      if(!a||!a.length) return '<span class="asub">-</span>';
+      return a.map(p=>'<span class="aprov '+esc(p)+'">'+esc(PLABEL[p]||p)+'</span>').join(''); };
+
     html+= rows.length
       ? '<div class="atblwrap"><table class="atbl"><thead><tr>'
-        +'<th>이메일</th><th>이름</th><th>닉네임</th><th>연락처</th><th>가입일</th>'
+        +'<th>이메일</th><th>가입</th><th>이름</th><th>닉네임</th><th>연락처</th><th>가입일</th>'
         +'<th>메일</th><th>문자</th><th>제3자</th><th>최종동의</th></tr></thead><tbody>'
         +rows.map(x=>'<tr>'
           +'<td><b>'+esc(x.email||'-')+'</b></td>'
+          +'<td class="anowrap">'+pv(x.user_id)+'</td>'
           +'<td>'+esc(x.name||'-')+'</td>'
           +'<td>'+(x.nickname? '@'+esc(x.nickname) : '-')+'</td>'
           +'<td class="anowrap">'+esc(x.phone||'-')+'</td>'
@@ -788,9 +810,10 @@ async function seedCombos(){
 
     const csv=(list,name)=>{
       if(!list.length){ alert('내보낼 회원이 없습니다.'); return; }
-      const head=['email','name','nickname','phone','mkt_email','mkt_sms','third_party','consent_at','mkt_at','created_at'];
+      const head=['email','providers','name','nickname','phone','mkt_email','mkt_sms','third_party','consent_at','mkt_at','created_at'];
       const esc2=v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"';
-      const lines=[head.join(',')].concat(list.map(x=>[x.email,x.name,x.nickname,x.phone,
+      const lines=[head.join(',')].concat(list.map(x=>[x.email,(prov[x.user_id]||[]).join('|'),
+        x.name,x.nickname,x.phone,
         x.agree_mkt_email,x.agree_mkt_sms,x.agree_third,x.consent_at,x.mkt_at,x.created_at].map(esc2).join(',')));
       download(name, '\ufeff'+lines.join('\n'));
     };

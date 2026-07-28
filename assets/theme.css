@@ -917,5 +917,9 @@ body.leo .filterbar{grid-template-columns:repeat(2,minmax(0,1fr)) auto}
 /* 얼굴 좌표가 사진마다 달라 밀어 넣는 양도 다릅니다.
    레오파드는 원본 640x341 의 (243,88), 크레스티드는 640x307 의 (247,112) 이
    눈 근처입니다. 그 점이 원 중앙에 오도록 계산한 값입니다. */
-body.leo  .avatar img{left:-86.7%; top:0.5%}
+/* 레오파드는 부모 A·B 각각 얼굴 사진을 따로 씁니다. 이미 얼굴만 잘린
+   정사각 이미지라 히어로 사진처럼 확대·이동할 필요가 없습니다. */
+body.leo .avatar img{position:static; width:100%; height:100%; object-fit:cover; left:auto; top:auto}
+/* 사진이 서로 다르므로 부모 B 색조 변조는 필요 없습니다. */
+body.leo .card.b .avatar img{filter:none}
 body.cres .avatar img{left:-88.9%; top:-13%}

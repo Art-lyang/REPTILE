@@ -112,12 +112,12 @@ const FAMILIES = [
 const POLY = [
   {id:'tangerine', line:'tangerine', ko:'탠저린', en:'Tangerine', zh:'橘化', ja:'タンジェリン'},
   {id:'mandarin',  line:'tangerine', ko:'만다린', en:'Mandarin', zh:'曼达林', ja:'マンダリン'},
-  {id:'blood',     ko:'블러드', en:'Blood', zh:'血红', ja:'ブラッド'},
-  {id:'inferno',   ko:'인페르노', en:'Inferno', zh:'地狱火', ja:'インフェルノ'},
-  {id:'sunglow',   ko:'썬글로우', en:'Sunglow', zh:'阳光', ja:'サングロー'},
-  {id:'electric',  ko:'일렉트릭', en:'Electric', zh:'电光', ja:'エレクトリック'},
-  {id:'atomic',    ko:'아토믹', en:'Atomic', zh:'原子', ja:'アトミック'},
-  {id:'tangerinered',ko:'레드', en:'Red', zh:'红', ja:'レッド'},
+  {id:'blood',     line:'tangerine', ko:'블러드', en:'Blood', zh:'血红', ja:'ブラッド'},
+  {id:'inferno',   line:'tangerine', ko:'인페르노', en:'Inferno', zh:'地狱火', ja:'インフェルノ'},
+  {id:'sunglow',   line:'tangerine', ko:'썬글로우', en:'Sunglow', zh:'阳光', ja:'サングロー'},
+  {id:'electric',  line:'tangerine', ko:'일렉트릭', en:'Electric', zh:'电光', ja:'エレクトリック'},
+  {id:'atomic',    line:'tangerine', ko:'아토믹', en:'Atomic', zh:'原子', ja:'アトミック'},
+  {id:'tangerinered',line:'tangerine', ko:'레드', en:'Red', zh:'红', ja:'レッド'},
   {id:'yellow',    ko:'옐로우', en:'Yellow', zh:'黄', ja:'イエロー'},
   {id:'green',     ko:'그린', en:'Green', zh:'绿', ja:'グリーン'},
   {id:'lavender',  ko:'라벤더', en:'Lavender', zh:'薰衣草', ja:'ラベンダー'},
@@ -126,7 +126,7 @@ const POLY = [
   {id:'superhypo', ko:'슈퍼하이포', en:'Super Hypo', zh:'超级少黑', ja:'スーパーハイポ'},
   {id:'melanistic',line:'melanistic', ko:'멜라니스틱', en:'Melanistic', zh:'黑化', ja:'メラニスティック'},
   {id:'blacknight',line:'melanistic', ko:'블랙나이트', en:'Black Night', zh:'黑夜', ja:'ブラックナイト'},
-  {id:'dark',      ko:'다크', en:'Dark', zh:'暗色', ja:'ダーク'},
+  {id:'dark',      line:'tangerine', ko:'다크', en:'Dark', zh:'暗色', ja:'ダーク'},
   {id:'carrottail',ko:'캐럿 테일', en:'Carrot Tail', zh:'胡萝卜尾', ja:'キャロットテール'},
   {id:'carrothead',ko:'캐럿 헤드', en:'Carrot Head', zh:'胡萝卜头', ja:'キャロットヘッド'},
   {id:'boldstripe',ko:'볼드 스트라이프', en:'Bold Stripe', zh:'粗条纹', ja:'ボールドストライプ'},
@@ -432,8 +432,24 @@ function gatherPoly(){
    모든 새끼에 똑같이 붙습니다. */
 function polyLabel(poly){
   if(!poly || !poly.length) return '';
-  const hit=matchPolyCombo(new Set(poly.map(p=>p.id)));
-  return hit ? (hit[LANG]||hit.en) : poly.map(p=>p.name).join(' ');
+  const ids=poly.map(p=>p.id);
+  const lines=new Set(ids.map(polyLineOf));
+
+  /* 서로 다른 계열이 섞였을 때 — 멜라텐져린 같은 고유 이름이 있으면 그걸 씁니다. */
+  if(lines.size>1){
+    const hit=matchPolyCombo(new Set(ids));
+    return hit ? (hit[LANG]||hit.en) : poly.map(p=>p.name).join(' ');
+  }
+
+  /* 같은 계열 안에서만 섞인 경우.
+     라인명이 붙었다는 건 그 형질의 고정률이 잡혔다는 뜻입니다.
+     그런데 같은 계열이라도 다른 라인을 섞으면 그 고정이 풀려
+     원점으로 돌아갑니다. 만다린 × 텐져린 이 만다린이 아니라
+     텐져린이 되는 이유입니다. (현직 브리더 확인)
+     한 가지 형질만 쓰였다면 고정이 유지되므로 그 라인명을 그대로 둡니다. */
+  if(ids.length===1) return poly[0].name;
+  const base=POLY.filter(p=>p.id===[...lines][0])[0];
+  return base ? pName(base) : poly.map(p=>p.name).join(' ');
 }
 
 

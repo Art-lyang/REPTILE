@@ -118,6 +118,9 @@ const POLY = [
   {id:'electric',  line:'tangerine', ko:'일렉트릭', en:'Electric', zh:'电光', ja:'エレクトリック'},
   {id:'atomic',    line:'tangerine', ko:'아토믹', en:'Atomic', zh:'原子', ja:'アトミック'},
   {id:'tangerinered',line:'tangerine', ko:'레드', en:'Red', zh:'红', ja:'レッド'},
+  /* 에머릴드 + 텐져린 계열. 예전에는 따로 보기도 했지만 요즘은
+     텐져린 계열로 취급합니다. (현직 브리더 확인) */
+  {id:'emerine',   line:'tangerine', ko:'에머린', en:'Emerine', zh:'翡翠橘', ja:'エメリン'},
   {id:'yellow',    ko:'옐로우', en:'Yellow', zh:'黄', ja:'イエロー'},
   {id:'green',     ko:'그린', en:'Green', zh:'绿', ja:'グリーン'},
   {id:'lavender',  ko:'라벤더', en:'Lavender', zh:'薰衣草', ja:'ラベンダー'},
@@ -263,7 +266,7 @@ const GCOLOR={
   enigma:'#DCC78C',wy:'#F1EBD2',
   tangerine:'#E8944A',mandarin:'#E07A2E',blood:'#C7502A',
   inferno:'#E0662E',sunglow:'#F0A83C',electric:'#E8B94A',atomic:'#C7D06A',
-  tangerinered:'#C7502A',yellow:'#EBD06A',green:'#A9B27A',lavender:'#B9A7C4',
+  tangerinered:'#C7502A',emerine:'#BFC06A',yellow:'#EBD06A',green:'#A9B27A',lavender:'#B9A7C4',
   white:'#EFEDE7',hypo:'#EED089',superhypo:'#EBD07E',
   melanistic:'#4A4640',blacknight:'#332F2A',dark:'#6E655A',
   carrottail:'#E8944A',carrothead:'#E8944A',boldstripe:'#E4C883',stripe:'#DEC98C',

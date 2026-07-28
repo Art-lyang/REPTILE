@@ -43,7 +43,7 @@
      (안 바꾸면 이미 방문했던 사람의 브라우저가 예전 파일을 계속 씁니다) -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="../assets/studio-config.js?v=113119"></script>
-<script src="fattail-core.js?v=072801"></script>
+<script src="fattail-core.js?v=072920"></script>
 <script src="../assets/analytics.js?v=113119"></script>
 <script src="../assets/uitext.js?v=160549"></script>
 <script src="fattail-boot.js?v=072801"></script>
@@ -54,10 +54,9 @@
 <body class="aft">
 <header>
   <img class="hd-deco leaf" src="../assets/leaf.svg" alt="" aria-hidden="true">
-  <!-- ⚠️ 임시 이미지: 펫테일 전용 일러스트가 아직 없어 레오파드 사진을 재사용합니다.
-       assets/fattail-hero-v1.png 가 준비되면 이 파일의 <img> 두 곳(헤더·아바타 2개)과
-       위쪽 og:image·twitter:image, assets/theme.css 의 body.aft .avatar img 좌표를
-       함께 바꿔주세요. -->
+  <!-- 헤더·부모A = 노멀 사진, 부모B = 오레오 사진. 사진을 바꿀 때는 이 파일의 <img>
+       세 곳과 위쪽 og:image·twitter:image, assets/theme.css 의 body.aft 규칙(자르는
+       기준점 object-position)을 함께 봐주세요. -->
   <img class="hd-deco hero fattail-hero" src="../assets/fattail-profile-normal-v1.jpg" alt="" aria-hidden="true" loading="eager">
   <div class="hd">
     <div class="hd-mark"><img src="../assets/logo-paw.svg" alt=""></div>
@@ -181,7 +180,7 @@
   </div>
 </div>
 
-<script src="fattail-ui.js?v=020520"></script>
+<script src="fattail-ui.js?v=072920"></script>
 <script src="fattail-app.js?v=024811"></script>
 </body>
 </html>

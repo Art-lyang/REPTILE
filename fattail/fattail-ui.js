@@ -51,6 +51,10 @@ const I18N = {
       +'<br><br><b>66% 헷 · 33% 헷</b> — 펫테일은 다른 종보다 가능성 헷 표기를 훨씬 자주 씁니다. 표현형 기준으로 보면 오른쪽 HET 칸에 '
       +'100% 헷(확정)과 66%·33% 헷(가능성)이 함께 나옵니다. 66% 헷은 ‘비주얼이 아닌 새끼 중 3분의 2가 보인자’라는 뜻이지 그 개체가 66% 만큼 보인자라는 뜻이 아닙니다. '
       +'확정하려면 검증 교배가 필요합니다.'
+      +'<br><br><b>고스트 · 캬라멜 암컷 불임</b> — 고스트 비주얼 암컷은 <b>불임 보고가 많고</b>, 캬라멜 알비노에서도 같은 보고가 있습니다. '
+      +'번식에 성공한 암컷 사례도 있어 전부가 불임이라고 단정할 수는 없지만, 이 형질의 비주얼 암컷을 번식 라인의 핵심으로 계획하는 것은 권하지 않습니다. '
+      +'수컷과 헷 개체에는 해당 보고가 없습니다. 초기 근친 교배의 영향이라는 견해가 있고 아웃크로스로 개선을 시도하는 브리더들이 있습니다. '
+      +'계산 결과에서 해당 조합이 나오면 <b>건강주의</b> 표시와 함께 안내가 뜹니다.'
       +'<br><br><b>꼭 알아두실 점</b> — 펫테일 게코의 유전학은 레오파드만큼 정리되어 있지 않습니다. 단일 유전자로 확실히 증명된 형질은 소수이며, '
       +'대부분의 모프 이름은 학술 논문이 아니라 브리더들의 사육 기록과 합의에 기반합니다. 이 계산기의 확률은 참고용이며, 실제 부화 개체의 외형은 여러 형질의 상호작용과 '
       +'성장에 따른 색 변화로 달라질 수 있습니다. 중요한 교배 결정은 계통 정보를 가진 브리더와 상의하십시오.',
@@ -61,7 +65,8 @@ const I18N = {
     updH:'업데이트 노트', updDone:'업데이트 됨', updSoon:'업데이트 예정',
     updDoneList:[
       'V1.0 테스트버전 출시',
-      '가능성 헷(66·33%) 표기 기본 켜짐'
+      '가능성 헷(66·33%) 표기 기본 켜짐',
+      '고스트·캬라멜 비주얼 암컷 불임 보고 경고 추가'
     ],
     updSoonList:[
       '모프별 사진·설명 추가 예정'
@@ -113,6 +118,10 @@ const I18N = {
       +'<b>Super White Out has no surviving animals</b>, so it is excluded from the parent options — it appears only in the offspring results, marked non-viable.'
       +'<br><br><b>66% het · 33% het</b> — fat-tails use possible-het labelling far more than most species. In phenotype view the right-hand HET column shows both 100% (guaranteed) '
       +'and 66% / 33% (possible) hets. A 66% het means “two out of three non-visual siblings carry it”, not that the animal is 66% of a carrier. Only a test breeding confirms it.'
+      +'<br><br><b>Ghost and Caramel female infertility</b> — visual Ghost females are <b>widely reported as infertile</b>, and the same has been reported for Caramel Albino. '
+      +'Proven fertile females exist, so it is not absolute, but building a breeding project around a visual female of either trait is not advised. '
+      +'There are no such reports for males or hets. Some breeders attribute it to early inbreeding and are outcrossing to reverse it. '
+      +'Whenever a pairing can produce these, the results show a <b>HEALTH</b> tag with an explanation.'
       +'<br><br><b>Please read</b> — Fat-tailed gecko genetics is far less settled than leopard gecko genetics. Only a handful of traits are firmly proven to be single-gene, and most morph names '
       +'come from breeder records and community consensus rather than published studies. The probabilities here are for reference only; a real hatchling’s appearance can differ because traits '
       +'interact and because colour changes as the animal grows. Consult a breeder who knows the lineage before making an important pairing decision.',
@@ -123,7 +132,8 @@ const I18N = {
     updH:'Update notes', updDone:'Shipped', updSoon:'Coming next',
     updDoneList:[
       'V1.0 test release',
-      'Possible-het (66 · 33%) display on by default'
+      'Possible-het (66 · 33%) display on by default',
+      'Warning added for reported infertility in visual Ghost / Caramel females'
     ],
     updSoonList:[
       'Photos and descriptions per morph'
@@ -175,6 +185,10 @@ const I18N = {
       +'また<b>スーパーホワイトアウトは生存個体が確認されていない</b>ため、親の選択肢から除外しています — 仔の結果にのみ生存困難として表示されます。'
       +'<br><br><b>66% ヘテロ・33% ヘテロ</b> — ファットテールは他種より可能性ヘテロの表記を多用します。表現型表示では右の HET 欄に 100%（確定）と 66%・33%（可能性）が並びます。'
       +'66% ヘテロとは「ビジュアルでない仔の3分の2が保因」という意味で、その個体が66%だけ保因という意味ではありません。確定には検証交配が必要です。'
+      +'<br><br><b>ゴースト・キャラメルの雌の不妊</b> — ゴーストのビジュアル雌は<b>不妊の報告が多数</b>あり、キャラメルアルビノでも同様の報告があります。'
+      +'繁殖に成功した雌の事例もあるため断定はできませんが、これらの形質のビジュアル雌を繁殖ラインの中心に据えることはお勧めしません。'
+      +'雄およびヘテロ個体には該当する報告はありません。初期の近親交配が原因という見方があり、アウトクロスで改善を試みるブリーダーもいます。'
+      +'該当する組み合わせが出る場合、結果に<b>健康注意</b>の表示と説明が出ます。'
       +'<br><br><b>ご留意ください</b> — ファットテールゲッコーの遺伝学は、レオパードゲッコーほど整理されていません。単一遺伝子であると確実に証明されている形質はごく少数で、'
       +'モルフ名の多くは学術論文ではなくブリーダーの飼育記録と合意に基づいています。この計算機の確率はあくまで参考であり、実際に孵化した個体の外見は、形質同士の相互作用や'
       +'成長に伴う色変化によって異なる場合があります。重要な交配の判断は、血統を把握しているブリーダーにご相談ください。',
@@ -185,7 +199,8 @@ const I18N = {
     updH:'アップデート情報', updDone:'更新済み', updSoon:'更新予定',
     updDoneList:[
       'V1.0 テスト版リリース',
-      '可能性 het（66・33%）表示をデフォルトでオン'
+      '可能性 het（66・33%）表示をデフォルトでオン',
+      'ゴースト・キャラメルのビジュアル雌の不妊報告について警告を追加'
     ],
     updSoonList:[
       'モルフごとの写真・解説を追加予定'
@@ -237,6 +252,10 @@ const I18N = {
       +'另外<b>超级 White Out 尚无存活个体</b>，因此已从亲本选项中移除 — 它只会出现在后代结果中并标注为不存活。'
       +'<br><br><b>66% het · 33% het</b> — 肥尾守宫比其他物种更常使用「可能 het」标注。表现型视图右侧的 HET 列会同时显示 100%（确定）与 66%／33%（可能）。'
       +'66% het 的含义是「非表现型的同窝个体中三分之二为携带者」，而不是该个体有 66% 的携带程度。要确定仍需做验证配对。'
+      +'<br><br><b>Ghost 与焦糖的雌性不育</b> — Ghost 表现型雌性<b>普遍被报告不育</b>，焦糖白化也有相同报告。'
+      +'虽有已证实可繁殖的雌性个体，并非绝对，但不建议把这两个性状的表现型雌性作为繁殖计划的核心。'
+      +'雄性与 het 个体未见相关报告。有观点认为这源于早期近亲繁殖，部分繁育者正通过外血尝试改善。'
+      +'当配对可能产出这些个体时，结果中会显示<b>健康提示</b>与说明。'
       +'<br><br><b>请务必了解</b> — 肥尾守宫的遗传学远不如豹纹守宫成熟。目前被确证为单基因的性状只有少数几个，大多数品系名称来自繁育者的饲养记录与社群共识，'
       +'而非已发表的研究。本计算器给出的概率仅供参考；由于性状之间会相互影响，且体色会随成长变化，实际孵化个体的外观可能与预测不同。'
       +'做重要配对决定前，请咨询了解血统的繁育者。',
@@ -247,7 +266,8 @@ const I18N = {
     updH:'更新说明', updDone:'已更新', updSoon:'计划中',
     updDoneList:[
       'V1.0 测试版发布',
-      '默认开启可能 het（66 · 33%）显示'
+      '默认开启可能 het（66 · 33%）显示',
+      '新增 Ghost／焦糖表现型雌性不育报告的警告'
     ],
     updSoonList:[
       '计划补充各形态的照片与说明'

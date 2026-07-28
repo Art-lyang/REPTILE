@@ -106,15 +106,22 @@ const FT_G_CARAMEL = {
   id:'caramel', kind:'bi', type:'rec', core:true, proof:'partial', order:5,
   ko:'캬라멜 알비노', en:'Caramel Albino', ja:'キャラメルアルビノ', zh:'焦糖白化',
   hetKo:'헷 캬라멜', hetEn:'het Caramel', hetJa:'ヘテロキャラメル', hetZh:'携带焦糖',
-  note:{ ko:'캬라멜 알비노는 아멜라니스틱과 <b>다른 자리</b>의 열성으로 계산합니다. 두 알비노 계통이 같은 자리인지(교배 시 비주얼이 나오는지)는 아직 정리된 자료가 없습니다.',
-         en:'Caramel Albino is calculated as a recessive at a <b>different locus</b> from Amelanistic. Whether the two albino lines are compatible (i.e. share a locus) is not settled.',
-         ja:'キャラメルアルビノはアメラニスティックとは<b>別の座</b>の劣性として計算します。2つのアルビノ系統が同座かどうか（交配で発現するか）は未整理です。',
-         zh:'焦糖白化按与 Amel <b>不同基因座</b>的隐性计算。两条白化品系是否兼容（同座）尚无定论。' },
+  /* 비주얼 개체에서만 보고된 문제 — 헷에는 붙이지 않습니다 */
+  warnOnVisual:'W5', healthOnVisual:true,
+  note:{ ko:'캬라멜 알비노는 아멜라니스틱과 <b>다른 자리</b>의 열성으로 계산합니다. 두 알비노 계통이 같은 자리인지(교배 시 비주얼이 나오는지)는 아직 정리된 자료가 없습니다. 고스트와 마찬가지로 <b>비주얼 암컷의 불임 보고</b>가 있습니다.',
+         en:'Caramel Albino is calculated as a recessive at a <b>different locus</b> from Amelanistic. Whether the two albino lines are compatible (i.e. share a locus) is not settled. Like Ghost, <b>infertility has been reported in visual females</b>.',
+         ja:'キャラメルアルビノはアメラニスティックとは<b>別の座</b>の劣性として計算します。2つのアルビノ系統が同座かどうか（交配で発現するか）は未整理です。ゴーストと同様に<b>ビジュアル雌の不妊報告</b>があります。',
+         zh:'焦糖白化按与 Amel <b>不同基因座</b>的隐性计算。两条白化品系是否兼容（同座）尚无定论。与 Ghost 一样，<b>有表现型雌性不育的报告</b>。' },
 };
 const FT_G_GHOST = {
   id:'ghost', kind:'bi', type:'rec', core:true, proof:'partial', order:6,
   ko:'고스트', en:'Ghost', ja:'ゴースト', zh:'Ghost',
   hetKo:'헷 고스트', hetEn:'het Ghost', hetJa:'ヘテロゴースト', hetZh:'携带 Ghost',
+  warnOnVisual:'W4', healthOnVisual:true,
+  note:{ ko:'<b>고스트 비주얼 암컷은 불임 보고가 많습니다.</b> 번식에 성공한 암컷 사례도 보고되어 있어 전부가 불임이라고 단정할 수는 없지만, 암컷을 번식 개체로 계획한다면 이 점을 먼저 고려하세요. 헷 개체에는 해당하지 않습니다.',
+         en:'<b>Visual Ghost females are widely reported as infertile.</b> At least one proven fertile female has been documented, so it is not absolute — but plan accordingly before counting on a visual female as a breeder. This does not apply to hets.',
+         ja:'<b>ゴーストのビジュアル雌は不妊の報告が多数あります。</b>繁殖に成功した雌の事例も報告されているため断定はできませんが、雌を繁殖個体として計画する場合はまずこの点を考慮してください。ヘテロ個体には当てはまりません。',
+         zh:'<b>Ghost 表现型雌性普遍被报告不育。</b>也有已证实可繁殖的雌性个体记录，故并非绝对；但若打算把表现型雌性作为种母，请先考虑这一点。该问题不涉及 het 个体。' },
 };
 const FT_G_ZULU = {
   id:'zulu', kind:'bi', type:'rec', core:true, proof:'partial', order:7,
@@ -373,7 +380,11 @@ function ftGenoInfo(g, key){
   if(key==='NN') return { name:null, token:null, isHet:false, warn:null, nonViable:false };
   if(g.type==='rec'){
     if(key==='Nm') return { name:gHet(g), token:null, isHet:true, hetOf:gName(g), warn:null, nonViable:false };
-    return { name:gName(g), token:g.id, isHet:false, warn:null, nonViable:false };
+    /* 비주얼(동형)일 때만 붙는 경고·건강 표시.
+       고스트·캬라멜처럼 '보인자는 멀쩡한데 비주얼 개체에서 문제가 보고된' 형질용입니다.
+       헷에는 붙이지 않습니다 — 붙이면 헷 개체까지 문제가 있는 것처럼 읽힙니다. */
+    return { name:gName(g), token:g.id, isHet:false,
+             warn:g.warnOnVisual||null, health:!!g.healthOnVisual, nonViable:false };
   }
   if(g.type==='incdom'){
     if(key==='Nm') return { name:gName(g), token:g.id, isHet:false, warn:null, nonViable:false };
@@ -422,7 +433,11 @@ function ftVisualBuckets(g, sA, sB){
   }
   /* 열성 */
   const mm=d.mm||0, NN=d.NN||0, Nm=d.Nm||0, nv=NN+Nm;
-  if(mm>0) out.push({ prob:mm, name:gName(g), token:g.id, het:null, warn:null, nonViable:false });
+  if(mm>0){
+    const vi=ftGenoInfo(g,'mm');
+    out.push({ prob:mm, name:vi.name, token:vi.token, het:null,
+               warn:vi.warn, health:vi.health, nonViable:false });
+  }
   if(nv>0) out.push({ prob:nv, name:null, token:null, warn:null, nonViable:false,
                       het: Nm>0 ? { name:gName(g), p:Nm/nv } : null });
   return out;
@@ -525,10 +540,28 @@ const FT_DANGER = {
     zh:'ℹ️ 本计算器把 <b>Stinger／Zero 与无纹视为同一基因座</b>。若其他计算器将其视作独立基因，结果会不同。此外早期曾有白化（Amel）与 Zero 系无法组合的报告，但之后已有组合个体孵化的记录，因此本计算器按常规计算。' },
 
   W3:{ level:'med',
-    ko:'ℹ️ <b>캬라멜 알비노 · 줄루 · 고스트</b>는 창시 개체군이 작은 열성 계통입니다. 비주얼을 얻으려고 반복 근친 교배를 하면 번식력 저하 등 근친 약세가 나타날 수 있습니다. 유전자 자체의 결함으로 확인된 것은 아니지만 계통 관리를 권장합니다.',
-    en:'ℹ️ <b>Caramel Albino, Zulu and Ghost</b> are recessive lines with small founder populations. Repeated inbreeding to obtain visuals can cause inbreeding depression, including reduced fertility. This is not a confirmed defect of any of these genes, but careful line management is recommended.',
-    ja:'ℹ️ <b>キャラメルアルビノ・ズールー・ゴースト</b>は創始個体群が小さい劣性系統です。ビジュアルを得るための反復的な近親交配は、繁殖力の低下を含む近交弱勢を招く可能性があります。遺伝子自体の欠陥として確認されたものではありませんが、系統管理をお勧めします。',
-    zh:'ℹ️ <b>焦糖白化、Zulu 与 Ghost</b> 均为奠基种群较小的隐性品系。为获得显性个体而反复近亲繁殖，可能导致近交衰退（包括繁殖力下降）。这并非已确认的基因缺陷，但仍建议做好血统管理。' },
+    ko:'ℹ️ <b>줄루 · 화이트삭스</b>처럼 창시 개체군이 작은 열성 계통은, 비주얼을 얻으려고 반복 근친 교배를 하면 번식력 저하 등 근친 약세가 나타날 수 있습니다. 유전자 자체의 결함으로 확인된 것은 아니지만 계통 관리를 권장합니다. 고스트·캬라멜의 불임 보고 역시 초기 근친 교배의 영향이라는 견해가 있고, 아웃크로스로 개선을 시도하는 브리더들이 있습니다.',
+    en:'ℹ️ Recessive lines with small founder populations such as <b>Zulu and White Socks</b> can show inbreeding depression — including reduced fertility — when visuals are produced by repeated inbreeding. This is not a confirmed defect of the genes themselves, but careful line management is recommended. Some breeders argue the Ghost / Caramel infertility also traces back to early inbreeding, and are outcrossing to reverse it.',
+    ja:'ℹ️ <b>ズールー・ホワイトソックス</b>のように創始個体群が小さい劣性系統は、ビジュアルを得るための反復的な近親交配で繁殖力の低下など近交弱勢が出ることがあります。遺伝子自体の欠陥として確認されたものではありませんが、系統管理をお勧めします。ゴースト・キャラメルの不妊報告も初期の近親交配が原因という見方があり、アウトクロスで改善を試みるブリーダーもいます。',
+    zh:'ℹ️ 像 <b>Zulu、White Socks</b> 这类奠基种群较小的隐性品系，若靠反复近亲繁殖来产出表现型个体，可能出现近交衰退（含繁殖力下降）。这并非基因本身已确认的缺陷，但建议做好血统管理。也有观点认为 Ghost／焦糖的不育问题同样源于早期近亲繁殖，部分繁育者正通过外血尝试改善。' },
+
+  W4:{ level:'high',
+    ko:'🛑 이 조합은 <b>고스트 비주얼</b>을 낼 수 있습니다. 고스트 비주얼 <b>암컷은 불임 보고가 많습니다</b> — 알을 낳지 못하거나 무정란만 낳는 사례가 브리더 커뮤니티에 반복해서 올라옵니다. 번식에 성공한 암컷 사례도 보고되어 있어 전부가 불임이라고 단정할 수는 없지만, 이 조합으로 나온 암컷을 <b>번식 라인의 핵심으로 계획하지 않는 편이 안전합니다.</b> 수컷과 헷 개체에는 해당 보고가 없습니다.',
+    en:'🛑 This pairing can produce <b>visual Ghost</b>. Visual Ghost <b>females are widely reported as infertile</b> — breeders repeatedly report females that never lay, or lay only infertile eggs. Proven fertile females do exist, so it is not absolute, but it is safer <b>not to build a breeding project around a visual female</b> from this pairing. No such reports for males or for hets.',
+    ja:'🛑 この組み合わせは<b>ゴーストのビジュアル</b>を出す可能性があります。ゴーストのビジュアル<b>雌は不妊の報告が多数</b>あります — 産卵しない、または無精卵しか産まないという報告がブリーダー間で繰り返し挙がっています。繁殖に成功した雌も報告されているため断定はできませんが、この組み合わせで出た雌を<b>繁殖ラインの中心に据えない方が安全</b>です。雄およびヘテロ個体には該当する報告はありません。',
+    zh:'🛑 此配对可能产出<b>Ghost 表现型</b>。Ghost 表现型<b>雌性普遍被报告不育</b> — 繁育者社群反复出现不产卵、或只产无精卵的案例。也有已证实可繁殖的雌性，故并非绝对，但<b>不建议把此配对产出的雌性作为繁殖计划的核心</b>。雄性与 het 个体未见相关报告。' },
+
+  W5:{ level:'med',
+    ko:'⚠️ 이 조합은 <b>캬라멜 알비노 비주얼</b>을 낼 수 있습니다. 캬라멜도 고스트와 마찬가지로 <b>비주얼 암컷의 불임 보고</b>가 있습니다. 다만 번식에 성공한 암컷이 확인된 사례가 있어 고스트보다는 보고가 적습니다. 번식 계획을 세울 때 참고하세요.',
+    en:'⚠️ This pairing can produce <b>visual Caramel Albino</b>. As with Ghost, <b>infertility has been reported in visual females</b>, though there are confirmed fertile females and the reports are less frequent than for Ghost. Worth factoring into a breeding plan.',
+    ja:'⚠️ この組み合わせは<b>キャラメルアルビノのビジュアル</b>を出す可能性があります。キャラメルもゴーストと同様に<b>ビジュアル雌の不妊報告</b>があります。ただし繁殖に成功した雌が確認されており、報告はゴーストより少なめです。繁殖計画の参考にしてください。',
+    zh:'⚠️ 此配对可能产出<b>焦糖白化表现型</b>。与 Ghost 一样，<b>有表现型雌性不育的报告</b>；不过已有确认可繁殖的雌性，报告频率低于 Ghost。制定繁殖计划时请纳入考虑。' },
+
+  W7:{ level:'med',
+    ko:'ℹ️ <b>아멜 · 캬라멜 · 고스트</b>처럼 색소가 줄어든 개체는 <b>빛에 민감</b>하다는 보고가 많습니다. 강한 조명 아래에서 눈을 감고 있거나 은신처에서 나오지 않는다면 조도를 낮추고 그늘·은신처를 넉넉히 만들어 주세요.',
+    en:'ℹ️ Reduced-pigment animals such as <b>Amel, Caramel and Ghost</b> are widely reported to be <b>light sensitive</b>. If an animal keeps its eyes shut under bright light or refuses to leave its hide, lower the light level and add more shade and hides.',
+    ja:'ℹ️ <b>アメラ・キャラメル・ゴースト</b>のように色素が少ない個体は<b>光に敏感</b>という報告が多くあります。強い照明下で目を閉じている、シェルターから出てこないといった様子があれば、照度を下げ、日陰やシェルターを十分に用意してください。',
+    zh:'ℹ️ <b>Amel、焦糖、Ghost</b> 等色素减少的个体普遍被报告<b>对光敏感</b>。若个体在强光下常闭眼或不愿离开躲避屋，请降低照度并增加遮蔽与躲避处。' },
 
   W6:{ level:'med',
     ko:'ℹ️ 이 결과에는 <b>유전 방식이 완전히 확립되지 않은 형질</b>이 포함되어 있습니다. 확률은 참고용 근사치이며, 실제 표현형은 다른 형질의 영향과 성장에 따른 색 변화로 달라질 수 있습니다.',
@@ -546,14 +579,22 @@ function ftCollectWarnings(genes, rows){
   if(wo){ const d=ftGenoDist(wo, FT_STATE.A.whiteout, FT_STATE.B.whiteout); if(d.mm>0) codes.add('W1'); }
   /* 패턴리스 로커스를 쓰면 계산 전제를 안내 */
   if(genes.some(g=>g.id==='pat')) codes.add('W2');
+  /* 비주얼이 나올 수 있을 때만 붙는 경고들.
+     W4(고스트 암컷 불임)·W5(캬라멜)는 유전자 정의의 warnOnVisual 로도 붙지만,
+     그건 '그 행이 실제로 만들어졌을 때' 입니다. 여기서 한 번 더 확인해 두면
+     표를 접어둔 상태에서도 경고가 빠지지 않습니다. */
+  const visualOf=id=>{
+    const g=genes.find(x=>x.id===id); if(!g) return 0;
+    return ftGenoDist(g, FT_STATE.A[id], FT_STATE.B[id]).mm || 0;
+  };
   /* 창시 개체군이 작은 열성 : 비주얼이 나올 수 있으면 W3 */
-  ['caramel','zulu','ghost'].forEach(id=>{
-    const g=genes.find(x=>x.id===id); if(!g) return;
-    const d=ftGenoDist(g, FT_STATE.A[id], FT_STATE.B[id]);
-    if((d.mm||0)>0) codes.add('W3');
-  });
+  ['zulu','whitesocks'].forEach(id=>{ if(visualOf(id)>0) codes.add('W3'); });
+  if(visualOf('ghost')>0)   { codes.add('W4'); codes.add('W3'); }
+  if(visualOf('caramel')>0) { codes.add('W5'); codes.add('W3'); }
+  /* 색소 결핍 계열의 빛 민감성 */
+  if(['amel','caramel','ghost'].some(id=>visualOf(id)>0)) codes.add('W7');
   /* 미확정 형질이 계산에 포함되면 W6 */
   if(genes.some(g=>g.proof==='contested')) codes.add('W6');
-  const order=['W1','W2','W3','W6'];
+  const order=['W1','W4','W5','W2','W3','W7','W6'];
   return order.filter(c=>codes.has(c)).map(c=>({ code:c, level:FT_DANGER[c].level, text:tr(FT_DANGER[c]) }));
 }

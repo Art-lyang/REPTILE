@@ -78,6 +78,11 @@ header {
   /* 여백은 .hd 가 전담합니다. crested.css 에 header{padding:24px 60px 18px} 이
      남아 있어서 크레스티드만 내용이 60px 씩 더 안쪽으로 들어가 있었습니다. */
   padding: 0;
+  /* 세 계산기가 서로 다르게 정렬돼 있었습니다. gecko.css 는 text-align:left 로
+     덮었는데 crested.css·fattail.css 에는 v1 시절의 text-align:center 가 그대로
+     남아, 같은 화면인데 레오만 왼쪽이고 나머지 둘은 가운데였습니다.
+     여기서 정해 세 곳 모두 같게 만듭니다. */
+  text-align: left;
   border-bottom: 1px solid rgba(43, 57, 48, .06);
   background-color: #fbf7ed;
   overflow: hidden;
@@ -93,36 +98,12 @@ header::before {
   display: none;
 }
 
-/* align-items 를 center 로 두면 로고가 '제목 + 부제' 전체의 한가운데에 놓여
-   제목보다 한참 아래로 내려앉습니다. 제목 첫 줄에 맞추려고 위로 올린 뒤,
-   로고 높이의 절반과 제목 줄높이의 절반 차이만큼 margin 으로 되돌립니다.
-   (margin-top = (제목 줄높이 - 로고 높이) / 2) */
 .hd {
   max-width: 1440px;
   min-height: 160px;
   padding: 32px 72px 28px;
   align-items: flex-start;
   gap: 16px;
-}
-
-.hd-mark {
-  width: 56px;
-  height: 56px;
-  margin-top: -6px;   /* 제목 38.4px · 줄높이 44.5px 기준 */
-  border-color: rgba(7, 90, 72, .2);
-  box-shadow: none;
-}
-
-.hd-mark img {
-  width: 34px;
-  height: 34px;
-}
-
-/* 밝은 바탕(#f5f1e8)에서는 로고 원본이 7.2:1 로 잘 읽힙니다. 어두운 모드로
-   가면 바탕이 #151a17 이 되어 짙은 초록이 묻힙니다. 그때만 밝혀 줍니다.
-   파일을 하나 더 만들지 않는 이유는 home-redesign.css 쪽과 같습니다. */
-@media (prefers-color-scheme: dark) {
-  .hd-mark img { filter: brightness(1.55); }
 }
 
 .hd-txt {
@@ -141,7 +122,9 @@ header h1 {
 
 header .sub {
   max-width: 620px;
-  margin-top: 10px;
+  /* 세 계산기 모두 v1 때 header .sub 에 margin-left/right:auto 가 붙어 있어
+     제목은 왼쪽인데 부제만 가운데로 밀려 있었습니다. 여기서 되돌립니다. */
+  margin: 10px 0 0;
   color: var(--ink2);
   font-size: 16px;
   letter-spacing: -.01em;
@@ -636,19 +619,10 @@ header .sub {
     align-items: flex-start;
   }
 
-  .hd-mark {
-    width: 46px;
-    height: 46px;
-    margin-top: -7px;   /* 제목 27px · 줄높이 31.3px 기준 */
-  }
-
-  .hd-mark img {
-    width: 28px;
-    height: 28px;
-  }
-
+  /* 72px 은 왼쪽 로고 자리였습니다. 로고를 뺐으니 글이 그만큼 더 쓸 수
+     있습니다. 오른쪽 아래 도마뱀 그림과 겹치지 않을 만큼만 남깁니다. */
   .hd-txt {
-    max-width: calc(100% - 72px);
+    max-width: calc(100% - 32px);
     position: relative;
     z-index: 5;
   }
@@ -730,12 +704,8 @@ header .sub {
     flex-wrap: wrap;
   }
 
-  .hd-mark {
-    margin-top: -10px;   /* 제목 23px . 줄높이 26.7px 기준 */
-  }
-
   .hd-txt {
-    max-width: calc(100% - 62px);
+    max-width: calc(100% - 24px);
   }
 
   header h1 {

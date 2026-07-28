@@ -10,21 +10,17 @@
       각 계산기의 *-redesign.css 는 이 파일을 덮어쓰는 용도로만 쓰세요.
    ============================================================================= */
 
-/* ── 헤더: 로고 + 좌측 정렬 제목, 우측 버튼 ── */
+/* ── 헤더: 좌측 정렬 제목, 우측 버튼 ──
+   로고는 뺐습니다. 제목 옆에 원형 마크를 두니 화면 폭에 따라 제목 첫 줄과
+   어긋나 보였고, 세 계산기가 저마다 다르게 정렬돼 있었습니다. */
   header{padding:0;text-align:left;position:relative;overflow:hidden}
   .hd{max-width:880px;margin:0 auto;padding:26px 16px 22px;display:flex;align-items:flex-start;gap:14px;position:relative;z-index:2}
-  .hd-mark{
-    width:56px;height:56px;border-radius:50%;background:var(--card);border:1px solid var(--hair);
-    display:flex;align-items:center;justify-content:center;flex:0 0 auto;box-shadow:var(--shadow);
-  }
-  .hd-mark img{width:30px;height:30px;display:block}
   .hd-txt{flex:1;min-width:0;padding-top:2px}
   header h1{margin:0;font-size:clamp(21px,4.4vw,28px);font-weight:800;letter-spacing:-.7px;line-height:1.25}
   header .sub{color:var(--ink2);font-size:13px;margin-top:5px;max-width:none;margin-left:0;margin-right:0}
   .hd-btns{display:flex;gap:8px;align-items:center;flex:0 0 auto;padding-top:4px}
   @media (max-width:620px){
     .hd{flex-wrap:wrap;padding:18px 16px 16px;gap:11px}
-    .hd-mark{width:44px;height:44px} .hd-mark img{width:24px;height:24px}
     .hd-btns{width:100%;order:3}
   }
   /* 헤더 배경 장식 (은은한 원형 그라데이션) */

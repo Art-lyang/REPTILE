@@ -576,7 +576,7 @@ header {
   }
 
   .hd-txt {
-    max-width: calc(100% - 70px);
+    max-width: calc(100% - 32px);   /* 로고를 빼서 70px 자리가 필요 없어졌습니다 */
   }
 
   .hd-btns {

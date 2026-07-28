@@ -78,6 +78,10 @@ const GENES = [
   {id:'marble',   type:'rec', family:'eye', ko:'마블 아이', en:'Marble Eye', zh:'大理石眼', ja:'マーブルアイ'},
   {id:'blizzard', type:'rec', family:'patternless', ko:'블리자드', en:'Blizzard', zh:'暴雪', ja:'ブリザード'},
   {id:'murphy',   type:'rec', family:'patternless', ko:'머피 패턴리스', en:'Murphy Patternless', zh:'墨菲无纹', ja:'マーフィーパターンレス'},
+  /* 라인브리딩에 '자이언트' 로 있던 것을 열성 유전 형질로 옮기고 이름을
+     '슈퍼자이언트' 로 바꿨습니다. 이제 확률 계산 대상이고, 한 개만 있으면
+     헷 보인자로 표시됩니다. */
+  {id:'giant',    type:'rec', family:'size', ko:'슈퍼자이언트', en:'Super Giant', zh:'超级巨人', ja:'スーパージャイアント'},
   {id:'macksnow', type:'incdom', family:'snowcolor', ko:'맥스노우', en:'Mack Snow', zh:'麦克雪花', ja:'マックスノー',
      superKo:'슈퍼 스노우', superEn:'Super Snow', superZh:'超级雪花', superJa:'スーパースノー'},
   {id:'lemonfrost',type:'incdom', family:'snowcolor', risk:true, ko:'레몬 프로스트', en:'Lemon Frost', zh:'柠檬霜', ja:'レモンフロスト',
@@ -94,6 +98,8 @@ const FAMILIES = [
      desc:{ko:'눈 색·구조 변이', en:'Eye color / structure', zh:'眼睛颜色 / 结构', ja:'眼の色・構造'}},
   {id:'patternless', type:'rec', ko:'패턴리스·화이트', en:'Patternless & White', zh:'无纹·白', ja:'パターンレス・白',
      desc:{ko:'패턴·색소 감소', en:'Reduced pattern / pigment', zh:'斑纹 / 色素减少', ja:'模様・色素の減少'}},
+  {id:'size', type:'rec', ko:'크기', en:'Size', zh:'体型', ja:'サイズ',
+     desc:{ko:'몸 크기 · 두 개가 모두 모여야 발현', en:'Body size · needs two copies', zh:'体型 · 需两个拷贝', ja:'体の大きさ · 2つ揃って発現'}},
   {id:'snowcolor', type:'incdom', ko:'스노우·색', en:'Snow & Color', zh:'雪花·颜色', ja:'スノー・カラー',
      desc:{ko:'지색·색 변이 (슈퍼폼 발현)', en:'Ground / color (homozygous = super)', zh:'底色 / 颜色（纯合 = 超级）', ja:'地色・色（スーパーフォームあり）'}},
   {id:'dominant', type:'dom', ko:'우성 형질', en:'Dominant traits', zh:'显性性状', ja:'優性形質',
@@ -127,7 +133,6 @@ const POLY = [
   {id:'stripe',    ko:'스트라이프', en:'Stripe', zh:'条纹', ja:'ストライプ'},
   {id:'jungle',    ko:'정글', en:'Jungle', zh:'丛林', ja:'ジャングル'},
   {id:'ghost',     ko:'고스트', en:'Ghost', zh:'幽灵', ja:'ゴースト'},
-  {id:'giant',     ko:'자이언트', en:'Giant', zh:'巨人', ja:'ジャイアント'},
 ];
 
 /* ================= 위험 조합 메시지 ================= */

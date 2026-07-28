@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>펫테일 게코 모프 계산기 · African Fat-Tailed Gecko Morph Calculator</title>
+<meta name="description" content="펫테일(아프리카 팻테일) 게코 부모의 형질을 골라 새끼 모프 확률을 계산합니다. 화이트아웃 치사 조합 경고, 패턴리스·스팅어 같은 자리 계산, 제로/슈퍼 제로 표기, 66%·33% 가능성 헷 표기를 지원합니다.">
+<meta name="keywords" content="펫테일 게코, 팻테일 게코, 아프리카 팻테일, 펫테일 모프, 모프 계산기, 화이트아웃, 오레오, 스팅어, 제로, 패턴리스, 66헷, 33헷, african fat tailed gecko morph calculator">
+<meta name="author" content="RYANG STUDIO">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="canonical" href="https://ryangstudio.com/fattail/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="RYANG STUDIO">
+<meta property="og:title" content="펫테일 게코 모프 계산기 · RYANG STUDIO">
+<meta property="og:description" content="펫테일(아프리카 팻테일) 게코 부모의 형질을 골라 새끼 모프 확률을 계산합니다. 66%·33% 가능성 헷 표기를 기본으로 보여줍니다.">
+<meta property="og:url" content="https://ryangstudio.com/fattail/">
+<meta property="og:image" content="https://ryangstudio.com/assets/leopard-hero-v1.png">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="펫테일 게코 모프 계산기 · RYANG STUDIO">
+<meta name="twitter:description" content="펫테일(아프리카 팻테일) 게코 부모의 형질을 골라 새끼 모프 확률을 계산합니다.">
+<meta name="twitter:image" content="https://ryangstudio.com/assets/leopard-hero-v1.png">
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<script type="application/ld+json">
+{
+  "@context":"https://schema.org",
+  "@type":"WebApplication",
+  "name":"펫테일 게코 모프 계산기",
+  "url":"https://ryangstudio.com/fattail/",
+  "applicationCategory":"UtilitiesApplication",
+  "operatingSystem":"Web",
+  "inLanguage":["ko","en","zh","ja"],
+  "offers":{"@type":"Offer","price":"0","priceCurrency":"KRW"},
+  "description":"아프리카 팻테일 게코 부모 조합으로 새끼 모프와 확률을 계산하는 무료 도구",
+  "publisher":{"@type":"Organization","name":"RYANG STUDIO","url":"https://ryangstudio.com/"}
+}
+</script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<!-- ?v=… 는 캐시 무효화용입니다. js/css 를 고쳐 올릴 때마다 숫자를 바꿔주세요.
+     (안 바꾸면 이미 방문했던 사람의 브라우저가 예전 파일을 계속 씁니다) -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../assets/studio-config.js?v=113119"></script>
+<script src="fattail-core.js?v=072801"></script>
+<script src="../assets/analytics.js?v=113119"></script>
+<script src="../assets/uitext.js?v=160549"></script>
+<script src="fattail-boot.js?v=072801"></script>
+<link rel="stylesheet" href="../assets/base.css?v=024503">
+<link rel="stylesheet" href="fattail.css?v=072801">
+<link rel="stylesheet" href="../assets/theme.css?v=072801">
+</head>
+<body class="aft">
+<header>
+  <img class="hd-deco leaf" src="../assets/leaf.svg" alt="" aria-hidden="true">
+  <!-- ⚠️ 임시 이미지: 펫테일 전용 일러스트가 아직 없어 레오파드 사진을 재사용합니다.
+       assets/fattail-hero-v1.png 가 준비되면 이 파일의 <img> 두 곳(헤더·아바타 2개)과
+       위쪽 og:image·twitter:image, assets/theme.css 의 body.aft .avatar img 좌표를
+       함께 바꿔주세요. -->
+  <img class="hd-deco hero" src="../assets/leopard-hero-v1.png" alt="" aria-hidden="true" loading="eager">
+  <div class="hd">
+    <div class="hd-mark"><img src="../assets/logo-paw.svg" alt=""></div>
+    <div class="hd-txt">
+      <h1 id="h-title">African Fat-Tailed Gecko Morph Calculator</h1>
+      <div class="sub" id="h-sub"></div>
+    </div>
+    <div class="hd-btns">
+      <button class="blink" id="btn-upd" onclick="openUpd()"><i class="bi bi-file-earmark-text" aria-hidden="true"></i></button>
+      <button class="langbtn" id="langBtn" aria-label="Language" title="Language">
+        <i class="bi bi-globe2" aria-hidden="true"></i>
+        <span class="lgtxt">Language</span>
+        <i class="bi bi-chevron-down lang-chevron" aria-hidden="true"></i>
+      </button>
+    </div>
+  </div>
+  <div class="langmenu" id="langMenu">
+    <div class="mtitle" id="lbl-langtitle">Language</div>
+    <button data-lang="ko">한국어</button>
+    <button data-lang="en">English</button>
+    <button data-lang="ja">日本語</button>
+    <button data-lang="zh">中文</button>
+  </div>
+</header>
+
+<div class="wrap">
+  <!-- 표시 기준 · 옵션을 한 줄 세그먼트로 통합 -->
+  <div class="filterbar" id="modeSeg" role="group">
+    <button type="button" class="fseg on" data-mode="visual"><i class="bi bi-eye fico" aria-hidden="true"></i><span id="lbl-mode-visual"></span></button>
+    <button type="button" class="fseg" data-mode="geno"><i class="bi bi-diagram-3 fico" aria-hidden="true"></i><span id="lbl-mode-geno"></span></button>
+    <!-- 펫테일은 66%·33% 헷 표기를 실제로 많이 써서 기본 켜짐입니다 (fattail-ui.js 참고) -->
+    <button type="button" class="fseg" id="partialchk" aria-pressed="true"><i class="bi bi-percent fico" aria-hidden="true"></i><span id="lbl-partial"></span></button>
+    <button type="button" class="fseg" id="extrachk" aria-pressed="false"><i class="bi bi-bezier2 fico" aria-hidden="true"></i><span id="lbl-extra"></span></button>
+    <button type="button" class="fseg" id="polychk" aria-pressed="true"><i class="bi bi-share fico" aria-hidden="true"></i><span id="lbl-poly"></span></button>
+    <button type="button" class="optinfo" id="optInfoBtn" aria-expanded="false"><i class="bi bi-info-circle" aria-hidden="true"></i><span class="oitxt" id="lbl-optinfo"></span></button>
+    <div class="optnote" id="optNote"></div>
+  </div>
+
+  <div class="parents">
+    <div class="card a">
+      <div class="card-top">
+        <div class="avatar"><img src="../assets/leopard-hero-v1.png" alt="" aria-hidden="true"></div>
+        <div class="card-name">
+          <h2><span class="dot a"></span> <span id="lbl-pa"></span></h2>
+          <div class="card-role" id="lbl-pa-role"></div>
+        </div>
+        <button type="button" class="helpbtn" onclick="toggleOptNote()"><i class="bi bi-info-circle" aria-hidden="true"></i><span id="lbl-help"></span></button>
+      </div>
+      <div id="parentA"></div>
+    </div>
+    <div class="card b">
+      <div class="card-top">
+        <div class="avatar"><img src="../assets/leopard-hero-v1.png" alt="" aria-hidden="true"></div>
+        <div class="card-name">
+          <h2><span class="dot b"></span> <span id="lbl-pb"></span></h2>
+          <div class="card-role" id="lbl-pb-role"></div>
+        </div>
+        <button type="button" class="helpbtn" onclick="toggleOptNote()"><i class="bi bi-info-circle" aria-hidden="true"></i><span id="lbl-help2"></span></button>
+      </div>
+      <div id="parentB"></div>
+    </div>
+  </div>
+
+  <!-- 선택된 형질 요약 + 실행 -->
+  <div class="selbar">
+    <div class="sel-left">
+      <div class="sel-label" id="lbl-selected"></div>
+      <div class="sel-lines">
+        <div class="sel-line"><span class="sel-who a"><i class="bi bi-person" aria-hidden="true"></i><span id="lbl-sel-a"></span></span><span id="selA"></span></div>
+        <div class="sel-line"><span class="sel-who b"><i class="bi bi-person" aria-hidden="true"></i><span id="lbl-sel-b"></span></span><span id="selB"></span></div>
+      </div>
+    </div>
+    <div class="sel-right actions">
+      <button class="act btn-reset" id="btn-reset" onclick="resetAll()"></button>
+      <button class="act btn-calc" id="btn-calc" onclick="calculate()"></button>
+    </div>
+  </div>
+
+  <div class="results" id="results"></div>
+
+  <div class="bottom-links">
+    <a class="blink" id="mailLink" href="#"><i class="bi bi-envelope" aria-hidden="true"></i><span id="lbl-contact"></span></a>
+  </div>
+  <div class="mailnote" id="mailNote"></div>
+
+  <div class="note" id="note"></div>
+  <div class="legal">
+    <a href="../terms.html#terms" id="lbl-terms">이용약관</a> · <a href="../terms.html#privacy" id="lbl-privacy">개인정보처리방침</a>
+  </div>
+  <footer id="footer"></footer>
+</div>
+
+<div class="modal-overlay" id="updModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="lbl-updh"><i class="bi bi-megaphone" aria-hidden="true"></i></h3>
+      <button class="modal-x" onclick="closeUpd()" aria-label="close"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="upd-section">
+        <div class="upd-title done" id="lbl-upddone"></div>
+        <ul id="updDone"></ul>
+      </div>
+      <div class="upd-section">
+        <div class="upd-title soon" id="lbl-updsoon"></div>
+        <ul id="updSoon"></ul>
+      </div>
+      <div class="modal-mail" id="updMail"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-today" onclick="dismissToday()" id="lbl-today"></button>
+      <button class="btn-close" onclick="closeUpd()" id="lbl-mclose"></button>
+    </div>
+  </div>
+</div>
+
+<script src="fattail-ui.js?v=072801"></script>
+<script src="fattail-app.js?v=072801"></script>
+</body>
+</html>

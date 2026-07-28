@@ -76,6 +76,7 @@ alter table public.combo_queries add column if not exists service text default '
 |---|---|
 | `gecko` | 레오파드 게코 모프 계산기 |
 | `crested` | 크레스티드 모프 계산기 (준비 중) |
+| `fattail` | 펫테일(아프리카 팻테일) 모프 계산기 |
 | `pygmy` | 피그미다람쥐 모프 테스트 |
 | `studio` | 허브 페이지 |
 
@@ -202,6 +203,10 @@ ryangstudio-deploy/
 - `assets/analytics.js` — 접속·조합 기록과 사람/수집기 판별. 두 계산기가 공용.
 - `crested/crested-app.js` — 크레스티드의 백엔드 연결. `calculate()` 를 감싸서
   계산 결과는 그대로 두고 기록만 덧붙입니다.
+- `fattail/fattail-app.js` — 펫테일도 같은 방식입니다. 다만 **관리자에서 모프를
+  고치는 부분(`ft_*` 표)은 아직 없습니다.** 접속·조합 로그와 문구(ui_texts ·
+  update_notes)만 붙어 있습니다. 나중에 admin 을 붙일 때 `crested-app.js` 의
+  두 번째 블록과 `supabase_v4.sql` 의 `cr_*` 표를 `ft_*` 로 복제하면 됩니다.
 
 새 도구를 추가할 때: `studio-config.js` → 코어에서 `SERVICE_ID` 정의 →
 `analytics.js` 순서로 읽히게 하고, `STUDIO_SERVICES` 에 이름을 등록하면

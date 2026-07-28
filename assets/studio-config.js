@@ -17,5 +17,6 @@ var SUPABASE_ANON = 'sb_publishable_uAf776_KFEyAqG_eWJdYRQ_zm3n_uKm';
 /* 서비스 이름표 — 관리자 화면에서 도구별로 나눠 볼 때 씁니다. */
 var STUDIO_SERVICES = {
   gecko:   '레오파드 게코',
-  crested: '크레스티드 게코'
+  crested: '크레스티드 게코',
+  fattail: '펫테일 게코'
 };

@@ -13,6 +13,16 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="../assets/studio-config.js?v=113119"></script>
 <script src="gecko-core.js"></script>
+<!-- 가입 봇 차단. TURNSTILE_SITE_KEY 가 비어 있으면 이 스크립트를 아예
+     읽지 않습니다 — 키 없이 위젯만 띄우면 토큰이 안 나와 가입이 막힙니다. -->
+<script>
+if (typeof TURNSTILE_SITE_KEY === 'string' && TURNSTILE_SITE_KEY.trim()) {
+  var _ts = document.createElement('script');
+  _ts.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+  _ts.async = true; _ts.defer = true;
+  document.head.appendChild(_ts);
+}
+</script>
 <style>
   :root{
     --bg:#EDEAE1; --card:#FDFCF9; --card2:#F4F1E9; --ink:#26221D; --ink2:#8A8375;
@@ -97,6 +107,8 @@
   .idrow .mini{flex:0 0 auto;background:var(--card);border:1px solid var(--hair);color:var(--ink);
     border-radius:8px;padding:5px 11px;font-size:11.5px;font-weight:700;cursor:pointer;font-family:inherit}
   /* 회원탈퇴 */
+  .tokgrid2{display:grid;grid-template-columns:1fr 1fr;gap:0 8px;margin-bottom:4px}
+  .tokgrid2 .cRow{font-size:12.5px}
   .quit{display:inline-block;color:var(--ink2);font-size:12px;text-decoration:underline;cursor:pointer;padding:6px}
   .quitbox{background:var(--card2);border-radius:12px;padding:12px 14px;margin-top:10px;font-size:12.5px;line-height:1.6;color:var(--ink2)}
   .quitbox b{color:var(--ink);display:block;margin-bottom:4px;font-size:13px}
@@ -138,7 +150,75 @@ function err(e){
   if(/provider is not enabled|Unsupported provider/i.test(t)) return '구글 로그인이 아직 설정되지 않았어요. (관리자 설정 필요)';
   return t;
 }
+/* ---------- 가입 봇 차단 (Cloudflare Turnstile) ----------
+   키가 없으면 모든 함수가 조용히 통과합니다. 지금은 꺼진 상태이고,
+   assets/studio-config.js 에 사이트 키를 넣는 순간 켜집니다.
+   ⚠️ Supabase 쪽 CAPTCHA 설정도 같이 켜야 실제로 검사가 이뤄집니다.
+      화면만 켜면 토큰을 보내도 서버가 확인하지 않습니다. */
+const CAP_ON = (typeof TURNSTILE_SITE_KEY==='string') && !!TURNSTILE_SITE_KEY.trim();
+let capWidget=null;
+function capHTML(){ return CAP_ON ? '<div id="capBox" style="margin:10px 0"></div>' : ''; }
+function capMount(){
+  if(!CAP_ON || !$('capBox')) return;
+  const go=()=>{ try{
+      capWidget=turnstile.render('#capBox',{sitekey:TURNSTILE_SITE_KEY,theme:'auto'});
+    }catch(e){} };
+  if(window.turnstile) go();
+  else { let n=0; const t=setInterval(()=>{ if(window.turnstile||++n>50){ clearInterval(t); if(window.turnstile) go(); } },100); }
+}
+/* 토큰은 1회용입니다. 로그인에 실패하고 다시 누르면 새 토큰을 받아야 합니다. */
+function capToken(){
+  if(!CAP_ON) return null;
+  try{ return turnstile.getResponse(capWidget)||null; }catch(e){ return null; }
+}
+function capReset(){ if(CAP_ON){ try{ turnstile.reset(capWidget); }catch(e){} } }
+function capOpts(o){
+  const tk=capToken();
+  if(!CAP_ON || !tk) return o;
+  o.options=Object.assign({}, o.options, {captchaToken:tk});
+  return o;
+}
+
 const GOOGLE_SVG='<svg viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9 3.6l6.7-6.7C35.5 2.6 30.1 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.8 6.1C12.3 13.2 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.1 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.4c-.5 2.9-2.2 5.3-4.7 6.9l7.6 5.9c4.4-4.1 6.8-10.1 6.8-17.3z"/><path fill="#FBBC05" d="M10.4 28.7c-.5-1.4-.8-2.9-.8-4.7s.3-3.3.8-4.7l-7.8-6.1C.9 16.5 0 20.1 0 24s.9 7.5 2.6 10.8l7.8-6.1z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.6-5.9c-2.1 1.4-4.8 2.3-8.3 2.3-6.3 0-11.7-3.7-13.6-9.8l-7.8 6.1C6.5 42.6 14.6 48 24 48z"/></svg>';
+
+/* 회원이 원할 때만 적는 항목. 가입 화면과 내 정보 화면이 같이 씁니다.
+   지역은 시·도까지만 받습니다 — 상세 주소는 이 서비스가 쓸 데가 없고,
+   받아두면 유출 시 피해만 커집니다. */
+const SPECIES=['레오파드 게코','크레스티드 게코','펫테일 게코','기타 파충류','소형 포유류','아직 없음'];
+const EXPERIENCE=[['','선택 안 함'],['new','입문 (1년 미만)'],['mid','1~3년'],['exp','3년 이상'],['pro','전문 브리더']];
+const REGIONS=['','서울','부산','대구','인천','광주','대전','울산','세종','경기','강원',
+               '충북','충남','전북','전남','경북','경남','제주','해외'];
+const PURPOSE=[['','선택 안 함'],['hobby','취미 사육'],['breed','브리딩'],['shop','분양샵·업체'],['study','학습·연구']];
+
+function extraHTML(p){
+  p=p||{}; const keep=p.keep_species||[];
+  const opt=(list,cur)=>list.map(x=>{
+    const v=Array.isArray(x)?x[0]:x, t=Array.isArray(x)?x[1]:(x||'선택 안 함');
+    return '<option value="'+esc(v)+'"'+((cur||'')===v?' selected':'')+'>'+esc(t)+'</option>'; }).join('');
+  return '<div class="consent" id="extraBox">'
+    +'<div style="font-size:13px;font-weight:800;padding:2px 2px 4px">알려주시면 도움이 되는 정보 <span class="opt">[선택]</span></div>'
+    +'<div class="cNote" style="margin:0 0 8px">모두 비워두셔도 됩니다. 계산기 기본값을 맞추고 어떤 기능을 먼저 만들지 정하는 데만 씁니다.</div>'
+    +'<label class="fl">주로 키우는 종 (복수 선택)</label>'
+    +'<div class="tokgrid2">'+SPECIES.map((x,i)=>
+       '<label class="cRow" style="padding:4px 2px"><input type="checkbox" class="xSp" value="'+esc(x)+'"'
+       +(keep.indexOf(x)>=0?' checked':'')+'><span>'+esc(x)+'</span></label>').join('')+'</div>'
+    +'<label class="fl" style="margin-top:8px">사육 경력</label>'
+    +'<select class="in" id="xExp" style="margin-bottom:8px">'+opt(EXPERIENCE,p.experience)+'</select>'
+    +'<label class="fl">활동 지역 <span class="opt">시·도만</span></label>'
+    +'<select class="in" id="xReg" style="margin-bottom:8px">'+opt(REGIONS,p.region)+'</select>'
+    +'<label class="fl">이용 목적</label>'
+    +'<select class="in" id="xPur" style="margin-bottom:8px">'+opt(PURPOSE,p.purpose)+'</select>'
+    +'<label class="fl">하고 싶은 말</label>'
+    +'<textarea class="in" id="xNote" rows="2" placeholder="바라는 기능, 잘못된 정보 제보 등 (선택)" style="margin-bottom:0;resize:vertical">'+esc(p.note||'')+'</textarea>'
+    +'</div>';
+}
+function extraValues(){
+  const g=id=>{ const el=$(id); return el? el.value.trim() : ''; };
+  if(!$('extraBox')) return {};
+  return { species:[...document.querySelectorAll('.xSp:checked')].map(e=>e.value),
+           experience:g('xExp')||null, region:g('xReg')||null,
+           purpose:g('xPur')||null, note:g('xNote')||null };
+}
 
 function consentHTML(){
   return '<div class="consent" id="consentBox">'
@@ -149,6 +229,9 @@ function consentHTML(){
     +'<label class="cRow"><input type="checkbox" class="cItem" id="cThird"><span><span class="opt">[선택]</span>개인정보 제3자 제공에 동의합니다<a href="../terms.html#privacy" target="_blank">보기</a></span></label>'
     +'<label class="cRow"><input type="checkbox" class="cItem" id="cMailAd"><span><span class="opt">[선택]</span>이메일로 이벤트·혜택 정보를 받겠습니다</span></label>'
     +'<label class="cRow"><input type="checkbox" class="cItem" id="cSms"><span><span class="opt">[선택]</span>문자로 이벤트·혜택 정보를 받겠습니다</span></label>'
+    +'<label class="cRow"><input type="checkbox" class="cItem" id="cAi"><span><span class="opt">[선택]</span>등록한 사진·개체 정보를 <b>AI 모델 학습</b>에 이용하는 것에 동의합니다'
+      +'<a href="../terms.html#terms" target="_blank">약관 제9조 ③</a>'
+      +'<br><span style="font-size:11px;color:var(--ink2)">동의하지 않아도 모든 기능을 그대로 쓸 수 있어요. 언제든 해제할 수 있지만, <b>이미 학습이 끝난 모델은 되돌릴 수 없습니다.</b></span></span></label>'
     +'<div id="phoneWrap" style="display:none;margin-top:8px"><input class="in" id="cPhone" type="tel" placeholder="휴대전화번호 (예: 010-1234-5678)" style="margin-bottom:0"></div>'
     +'<div class="cNote">선택 항목에 동의하지 않아도 서비스를 이용할 수 있어요. 동의는 계정 화면에서 언제든 철회할 수 있습니다.</div>'
     +'</div>';
@@ -174,24 +257,44 @@ function consentValues(){
   const g=id=>{ const el=$(id); return el? el.value.trim() : ''; };
   return { terms:$('cTerms').checked, privacy:$('cPrivacy').checked, age:$('cAge').checked,
            third:$('cThird').checked, mail:$('cMailAd').checked, sms:$('cSms').checked,
+           ai:!!($('cAi')&&$('cAi').checked),
            phone:($('cPhone')&&$('cPhone').value.trim())||null,
-           name:g('pName')||null, nickname:g('pNick')||null };
+           name:g('pName')||null, nickname:g('pNick')||null,
+           extra:extraValues() };
 }
 async function saveConsent(c){
   const base={ p_terms:c.terms, p_privacy:c.privacy, p_age14:c.age,
     p_third:c.third, p_mkt_email:c.mail, p_mkt_sms:c.sms, p_phone:c.phone,
     p_nickname:c.nickname||null };
-  const r=await SB.rpc('save_consent', Object.assign({p_name:c.name||null}, base));
-  // 서버에 아직 p_name 파라미터가 없는 구버전이면 이름 없이 재시도 (가입이 막히지 않도록)
+  // 인자가 많은 것부터 시도하고, 서버가 아직 그 인자를 모르면 줄여서 다시 부릅니다.
+  // supabase_v14.sql 적용 전에도 가입이 막히지 않게 하기 위한 것입니다.
+  const full=Object.assign({p_name:c.name||null, p_ai_train:!!c.ai}, base);
+  let r=await SB.rpc('save_consent', full);
+  if(r.error && /p_ai_train|does not exist|function .*save_consent/i.test(r.error.message||''))
+    r=await SB.rpc('save_consent', Object.assign({p_name:c.name||null}, base));
   if(r.error && /p_name|does not exist|function .*save_consent/i.test(r.error.message||''))
-    return SB.rpc('save_consent', base);
+    r=await SB.rpc('save_consent', base);
+  if(!r.error && c.extra) await saveExtra(c.extra);
   return r;
+}
+/* 선택 정보는 profiles 를 직접 고칩니다. 본인 줄만 고칠 수 있게
+   supabase_v14.sql 에서 정책을 걸어 두었습니다.
+   실패해도 가입 자체는 진행되어야 하므로 오류를 삼킵니다. */
+async function saveExtra(x){
+  try{
+    const u=(await SB.auth.getUser()).data.user; if(!u) return;
+    await SB.from('profiles').update({
+      keep_species:(x.species&&x.species.length)?x.species:null,
+      experience:x.experience||null, region:x.region||null,
+      purpose:x.purpose||null, note:x.note||null
+    }).eq('user_id', u.id);
+  }catch(e){}
 }
 // 로그인은 됐지만 동의 기록이 없는 경우 (구글 가입 등) 동의 화면
 function renderConsentGate(u){
   $('root').innerHTML='<h2 style="margin:0 0 4px;font-size:17px">서비스 이용 동의</h2>'
     +'<div class="hint">'+esc(u.email||'')+' 계정으로 계속하려면 아래에 동의해 주세요.</div>'
-    +profileHTML()+consentHTML()
+    +profileHTML()+extraHTML()+consentHTML()
     +'<button class="btn" id="go">동의하고 시작하기</button>'
     +'<button class="btn ghost" id="out" style="margin-top:8px">다른 계정으로</button>'
     +'<div class="msg" id="msg"></div>';
@@ -236,7 +339,8 @@ function render(){
     +'<label class="fl">이메일</label><input class="in" id="email" type="email" autocomplete="email" placeholder="you@example.com">'
     +'<label class="fl">비밀번호</label><input class="in" id="pw" type="password" autocomplete="'+(isUp?'new-password':'current-password')+'" placeholder="6자 이상">'
     +(isUp? '<label class="fl">비밀번호 확인</label><input class="in" id="pw2" type="password" autocomplete="new-password" placeholder="한 번 더 입력">' : '')
-    +(isUp? profileHTML()+consentHTML() : '')
+    +(isUp? profileHTML()+extraHTML()+consentHTML() : '')
+    +capHTML()
     +'<button class="btn" id="go">'+(isUp?'가입하기':'로그인')+'</button>'
     +'<div class="msg" id="msg"></div>'
     +(isUp? '' : '<div class="sub"><a id="toReset">비밀번호를 잊으셨나요?</a></div>')
@@ -245,6 +349,7 @@ function render(){
   $('tSignup').onclick=()=>{ MODE='signup'; render(); };
   const rs=$('toReset'); if(rs) rs.onclick=()=>{ MODE='reset'; render(); };
   if(isUp) wireConsent();
+  capMount();
   $('google').onclick=isUp? doGoogleSignup : doGoogle;
   $('go').onclick=isUp? doSignup : doLogin;
   ['email','pw','pw2'].forEach(id=>{ const el=$(id); if(el) el.addEventListener('keydown',e=>{ if(e.key==='Enter') $('go').click(); }); });
@@ -319,24 +424,47 @@ async function renderConsentSettings(){
     +'<div class="cNote">비워두고 저장하면 기존 값이 유지됩니다. 완전히 지우려면 회원탈퇴를 이용해 주세요.</div>';
   $('root').appendChild(info);
 
+  // 회원이 원할 때만 적는 정보 — 가입 화면과 같은 입력란을 그대로 씁니다.
+  const ex=document.createElement('div');
+  ex.style.marginTop='12px'; ex.innerHTML=extraHTML(c);
+  $('root').appendChild(ex);
+
   const box=document.createElement('div');
   box.className='consent'; box.style.marginTop='12px';
+  // 가입 화면에는 '전체 선택'이 있는데 여기만 없어서, 항목을 하나씩 눌러야 했습니다.
   box.innerHTML='<div style="font-size:13px;font-weight:800;padding:2px 2px 8px">수신 및 제공 동의 (선택)</div>'
-    +'<label class="cRow"><input type="checkbox" id="sThird" '+(c.agree_third?'checked':'')+'><span>개인정보 제3자 제공</span></label>'
-    +'<label class="cRow"><input type="checkbox" id="sMail" '+(c.agree_mkt_email?'checked':'')+'><span>이메일로 이벤트·혜택 받기</span></label>'
-    +'<label class="cRow"><input type="checkbox" id="sSms" '+(c.agree_mkt_sms?'checked':'')+'><span>문자로 이벤트·혜택 받기</span></label>'
+    +'<label class="cAll"><input type="checkbox" id="sAll"><span>전체 선택</span></label>'
+    +'<label class="cRow"><input type="checkbox" class="sItem" id="sThird" '+(c.agree_third?'checked':'')+'><span>개인정보 제3자 제공</span></label>'
+    +'<label class="cRow"><input type="checkbox" class="sItem" id="sMail" '+(c.agree_mkt_email?'checked':'')+'><span>이메일로 이벤트·혜택 받기</span></label>'
+    +'<label class="cRow"><input type="checkbox" class="sItem" id="sSms" '+(c.agree_mkt_sms?'checked':'')+'><span>문자로 이벤트·혜택 받기</span></label>'
     +'<div id="sPhoneWrap" style="display:'+(c.agree_mkt_sms?'block':'none')+';margin-top:6px">'
     +'<input class="in" id="sPhone" type="tel" placeholder="휴대전화번호" value="'+esc(c.phone||'')+'" style="margin-bottom:0"></div>'
+    +'<label class="cRow" style="margin-top:4px"><input type="checkbox" class="sItem" id="sAi" '+(c.agree_ai_train?'checked':'')+'>'
+      +'<span>등록한 사진·개체 정보를 <b>AI 모델 학습</b>에 이용'
+      +'<a href="../terms.html#terms" target="_blank">약관 제9조 ③</a>'
+      +'<br><span style="font-size:11px;color:var(--ink2)">해제하면 이후 학습에서 제외하고 원본은 삭제합니다. 다만 <b>이미 학습이 끝난 모델은 되돌릴 수 없습니다.</b></span></span></label>'
+    +(c.ai_at? '<div class="cNote" style="margin-top:2px">AI 학습 동의 '+new Date(c.ai_at).toLocaleDateString('ko-KR')+'</div>' : '')
     +'<button class="btn ghost" id="sSave" style="margin-top:10px">기본 정보 · 동의 설정 저장</button>'
     +'<div class="cNote">필수 동의는 서비스 이용에 필요해 해제할 수 없어요.'
     +(c.consent_at? ' 최종 동의 '+new Date(c.consent_at).toLocaleDateString('ko-KR')+'.' : '')+'</div>';
   $('root').appendChild(box);
-  $('sSms').onchange=()=>{ $('sPhoneWrap').style.display=$('sSms').checked?'block':'none'; };
+
+  const sAll=$('sAll'), sItems=[...document.querySelectorAll('.sItem')];
+  const syncAll=()=>{ sAll.checked=sItems.every(x=>x.checked); };
+  sAll.onchange=()=>{ sItems.forEach(i=>i.checked=sAll.checked); togglePhone(); };
+  sItems.forEach(i=>i.onchange=()=>{ syncAll(); togglePhone(); });
+  function togglePhone(){ $('sPhoneWrap').style.display=$('sSms').checked?'block':'none'; }
+  syncAll();
+
   $('sSave').onclick=async()=>{
     if($('sSms').checked && !$('sPhone').value.trim()) return say('e','문자 수신을 위해 휴대전화번호를 입력해 주세요.');
+    $('sSave').disabled=true;
     const r=await saveConsent({terms:true,privacy:true,age:true,third:$('sThird').checked,
-      mail:$('sMail').checked, sms:$('sSms').checked, phone:$('sPhone').value.trim()||null,
-      name:$('iName').value.trim()||null, nickname:$('iNick').value.trim()||null});
+      mail:$('sMail').checked, sms:$('sSms').checked, ai:$('sAi').checked,
+      phone:$('sPhone').value.trim()||null,
+      name:$('iName').value.trim()||null, nickname:$('iNick').value.trim()||null,
+      extra:extraValues()});
+    $('sSave').disabled=false;
     if(r.error) say('e',err(r.error)); else say('o','저장되었어요.');
   };
 
@@ -503,7 +631,8 @@ async function doLogin(){
   if(!validEmail(em)) return say('e','이메일 형식을 확인해 주세요.');
   if(!pw) return say('e','비밀번호를 입력해 주세요.');
   $('go').disabled=true; $('go').textContent='로그인 중…';
-  const r=await SB.auth.signInWithPassword({email:em,password:pw});
+  const r=await SB.auth.signInWithPassword(capOpts({email:em,password:pw}));
+  if(r.error) capReset();
   $('go').disabled=false; $('go').textContent='로그인';
   if(r.error) return say('e',err(r.error));
   await flushPendingConsent(); await claim();
@@ -519,7 +648,8 @@ async function doSignup(){
   if(!(c.terms&&c.privacy&&c.age)) return say('e','필수 항목([필수] 표시)에 모두 동의해 주세요.');
   if(c.sms&&!c.phone) return say('e','문자 수신에 동의하셨어요. 휴대전화번호를 입력해 주세요.');
   $('go').disabled=true; $('go').textContent='가입 중…';
-  const r=await SB.auth.signUp({email:em,password:pw,options:{emailRedirectTo:location.href.split('#')[0]}});
+  const r=await SB.auth.signUp(capOpts({email:em,password:pw,options:{emailRedirectTo:location.href.split('#')[0]}}));
+  if(r.error) capReset();
   $('go').disabled=false; $('go').textContent='가입하기';
   if(r.error) return say('e',err(r.error));
   if(r.data.session){ await saveConsent(c); await claim(); return renderMe(r.data.user); }

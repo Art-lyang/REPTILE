@@ -66,10 +66,16 @@
   .admin-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
   .admin-top h1{font-size:20px;font-weight:800;margin:0}
   .admin-back{color:var(--teal);text-decoration:none;font-weight:700;font-size:13px}
-  .atabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
-  .atab{border:1px solid var(--hair);background:var(--card);color:var(--ink);border-radius:10px;padding:9px 14px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit}
+  /* 탭 줄과 오른쪽 끝(등급 배지·로그아웃)을 나눠 둡니다.
+     한 줄에 전부 넣고 로그아웃에 margin-left:auto 를 주면, 탭이 많아져
+     줄바꿈되는 순간 배지는 둘째 줄 왼쪽 끝, 로그아웃은 오른쪽 끝으로
+     떨어져 가운데가 텅 빕니다. 이제 오른쪽 끝은 한 덩어리로 움직입니다. */
+  .atabs{display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:12px}
+  .atablist{display:flex;gap:6px;flex-wrap:wrap;flex:1 1 auto;min-width:0}
+  .atabend{display:flex;align-items:center;gap:8px;flex:0 0 auto;margin-left:auto}
+  .atab{border:1px solid var(--hair);background:var(--card);color:var(--ink);border-radius:10px;padding:9px 14px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap}
   .atab.on{background:var(--teal);border-color:var(--teal);color:#fff}
-  .atab.logout{margin-left:auto;color:var(--warn-hi-fg)}
+  .atab.logout{color:var(--warn-hi-fg)}
   .apad{background:var(--card);border-radius:14px;padding:16px;box-shadow:var(--shadow)}
   .alabel{font-size:15px;font-weight:800;margin-bottom:10px}
   .alabel2{font-size:12px;font-weight:700;color:var(--ink2);margin:14px 0 6px}
@@ -113,9 +119,23 @@
   .aprov.kakao {background:rgba(254,229,0,.42);color:#5A4A00}
   .aprov.apple {background:rgba(30,30,30,.12);color:#2B2B2B}
   .arole{display:inline-block;font-size:10.5px;font-weight:700;padding:3px 9px;
-    border-radius:20px;margin-left:8px;align-self:center}
+    border-radius:20px;white-space:nowrap}
   .arole.owner{background:rgba(14,124,123,.16);color:var(--teal)}
   .arole.staff{background:rgba(120,120,128,.16);color:var(--ink2)}
+  /* 도넛 그래프 + 범례. 넓으면 나란히, 좁으면 그래프 아래로 범례가 갑니다. */
+  .dwrap{display:flex;gap:18px;align-items:center;flex-wrap:wrap;
+    background:var(--card2);border-radius:12px;padding:16px;margin-bottom:4px}
+  .dsvg{width:150px;height:150px;flex:0 0 auto;overflow:visible}
+  .dseg{transition:opacity .15s}
+  .dwrap:hover .dseg{opacity:.55}
+  .dseg:hover{opacity:1}
+  .dctr{font-size:9px;font-weight:800;fill:var(--ink);text-anchor:middle}
+  .dctr2{font-size:3.4px;fill:var(--ink2);text-anchor:middle;letter-spacing:.4px}
+  .dlgs{flex:1 1 220px;min-width:200px;display:flex;flex-direction:column;gap:7px}
+  .dlg{display:flex;align-items:center;gap:8px;font-size:12.5px}
+  .dlg i{width:11px;height:11px;border-radius:3px;flex:0 0 auto}
+  .dlg .dlgn{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .dlg b{font-variant-numeric:tabular-nums}
   .achk{display:flex;align-items:center;gap:8px;font-size:13.5px;margin:6px 0}
   .achk input{width:18px;height:18px;accent-color:var(--teal)}
   .aimg{max-width:120px;border-radius:10px;margin-top:6px}
@@ -261,6 +281,7 @@ async function seedCombos(){
     // 서비스가 늘면 여기에 탭을 추가하세요 (docs/STUDIO.md)
     // 세 번째 값이 true 면 최고관리자 전용입니다. 부관리자에게는 안 보입니다.
     const ALL=[['info','한눈에',true],['member','회원',true],['stat','통계',true],
+               ['source','유입',true],
                ['code','코드',false],['morph','레오 모프',false],['combo','레오 콤보',false],
                ['crmorph','크레 모프',false],['text','문구',true],['admin','관리자',true]];
     const tabs=ALL.filter(t=>!t[2]||isOwner());
@@ -269,8 +290,11 @@ async function seedCombos(){
     const badge=adRole? '<span class="arole '+adRole+'">'
       +(isOwner()?'최고관리자':'부관리자')+'</span>' : '';
     document.getElementById('adminRoot').innerHTML=shell(
-      '<div class="atabs">'+tabs.map(t=>'<button class="atab'+(adTab===t[0]?' on':'')+'" data-t="'+t[0]+'">'+t[1]+'</button>').join('')
-      +badge+'<button class="atab logout" id="adLogout">로그아웃</button></div><div id="adBody" class="apad"></div>');
+      '<div class="atabs"><div class="atablist">'
+      +tabs.map(t=>'<button class="atab'+(adTab===t[0]?' on':'')+'" data-t="'+t[0]+'">'+t[1]+'</button>').join('')
+      +'</div><div class="atabend">'+badge
+      +'<button class="atab logout" id="adLogout">로그아웃</button></div></div>'
+      +'<div id="adBody" class="apad"></div>');
     document.querySelectorAll('.atab[data-t]').forEach(b=>b.onclick=()=>{ adTab=b.dataset.t; renderPanel(); });
     document.getElementById('adLogout').onclick=async()=>{ await SB.auth.signOut(); adminUser=null; adRole=null; renderLogin(); };
 
@@ -281,7 +305,8 @@ async function seedCombos(){
       return;
     }
     ({info:tabInfo,morph:tabMorph,combo:tabCombo,stat:tabStat,code:tabCode,
-      member:tabMember,crmorph:tabCrMorph,text:tabText,admin:tabAdmins}[adTab])();
+      member:tabMember,crmorph:tabCrMorph,text:tabText,admin:tabAdmins,
+      source:tabSource}[adTab])();
   }
 
   /* ---------- 관리자 명단 (최고관리자 전용) ---------- */
@@ -692,6 +717,130 @@ async function seedCombos(){
     if(!rows.length) return '<div class="asub" style="margin-bottom:10px">아직 데이터가 없어요.</div>';
     return '<div class="alist">'+rows.map((r,i)=>'<div class="arow"><div class="arow-main"><b>'
       +(i+1)+'. '+esc(r.label||r.ckey)+'</b></div><div class="atag">'+r.cnt+'회</div></div>').join('')+'</div>';
+  }
+
+  /* ---------- 유입 경로 (최고관리자 전용) ---------- */
+
+  /* 도넛 그래프. 라이브러리를 쓰지 않고 SVG 원 하나로 그립니다.
+     외부 스크립트를 붙이면 배포한 페이지가 그 CDN 이 죽는 날 같이 죽습니다.
+
+     원 둘레를 100 으로 잡아 두면(r = 100/2π) 비율을 그대로 dasharray 에
+     넣을 수 있어 계산이 사라집니다. */
+  const DONUT_COLORS=['#075a48','#3B8DA0','#b47b1e','#6B5686','#0E7C7B','#A4553B','#8a8375'];
+  function donut(items, centerLabel){
+    const tot=items.reduce((s,x)=>s+x.n,0);
+    if(!tot) return '<div class="asub" style="padding:14px">아직 데이터가 없어요.</div>';
+    const R=100/(2*Math.PI);
+    let off=0;
+    const arcs=items.map((x,i)=>{
+      const pct=x.n*100/tot;
+      const c=x.color||DONUT_COLORS[i%DONUT_COLORS.length];
+      const s='<circle class="dseg" r="'+R.toFixed(4)+'" cx="0" cy="0" fill="none" stroke="'+c+'"'
+        +' stroke-width="13" stroke-dasharray="'+pct.toFixed(3)+' '+(100-pct).toFixed(3)+'"'
+        +' stroke-dashoffset="'+(-off).toFixed(3)+'"><title>'+esc(x.label)+' '+x.n+'회 ('+pct.toFixed(1)+'%)</title></circle>';
+      off+=pct; return s;
+    }).join('');
+    const legend=items.map((x,i)=>{
+      const c=x.color||DONUT_COLORS[i%DONUT_COLORS.length];
+      return '<div class="dlg"><i style="background:'+c+'"></i>'
+        +'<span class="dlgn">'+esc(x.label)+'</span>'
+        +'<b>'+(x.n*100/tot).toFixed(1)+'%</b>'
+        +'<span class="asub">'+x.n+'회</span></div>';
+    }).join('');
+    return '<div class="dwrap"><svg class="dsvg" viewBox="-25 -25 50 50" role="img" aria-label="'+esc(centerLabel||'비율')+'">'
+      +'<g transform="rotate(-90)">'+arcs+'</g>'
+      +'<text class="dctr" x="0" y="1">'+tot+'</text>'
+      +'<text class="dctr2" x="0" y="7">'+esc(centerLabel||'건')+'</text></svg>'
+      +'<div class="dlgs">'+legend+'</div></div>';
+  }
+
+  const REF_KIND=[['search','검색','#075a48'],['sns','SNS·커뮤니티','#3B8DA0'],
+                  ['site','다른 사이트','#b47b1e'],['direct','직접 방문','#6B5686'],
+                  ['unknown','알 수 없음','#8a8375']];
+  /* 국기 이모지는 국가코드 두 글자를 지역표시기호로 옮기면 나옵니다.
+     이미지가 필요 없고 어느 기기에서나 같은 값이 나옵니다. */
+  function flag(cc){
+    if(!cc||cc.length!==2||cc==='??') return '🏳';
+    try{ return String.fromCodePoint(...[...cc.toUpperCase()].map(c=>0x1F1E6+c.charCodeAt(0)-65)); }
+    catch(e){ return '🏳'; }
+  }
+  const CC_NAME={KR:'대한민국',US:'미국',JP:'일본',CN:'중국',TW:'대만',HK:'홍콩',
+    GB:'영국',DE:'독일',FR:'프랑스',CA:'캐나다',AU:'호주',SG:'싱가포르',
+    TH:'태국',VN:'베트남',ID:'인도네시아',MY:'말레이시아',PH:'필리핀',
+    IN:'인도',RU:'러시아',BR:'브라질',NL:'네덜란드',IT:'이탈리아',ES:'스페인',
+    PL:'폴란드',SE:'스웨덴',MX:'멕시코','??':'알 수 없음'};
+
+  async function tabSource(){
+    const body=document.getElementById('adBody'); body.innerHTML='불러오는 중…';
+    try{
+      const R=RANGES.filter(r=>r[0]===adRange)[0]||RANGES[1];
+      const since=new Date(Date.now()-R[2]*864e5).toISOString();
+
+      const [src,cty]=await Promise.all([
+        svcFilter(SB.from('visit_sources').select('ref_kind,ref_name,ref_host,device,service')).gte('ts',since).limit(50000),
+        svcFilter(SB.from('visit_countries').select('country,device,service')).gte('ts',since).limit(50000)
+      ]);
+      if(src.error) throw src.error;
+
+      const rows=src.data||[], crows=(cty.data||[]);
+
+      /* 종류별 */
+      const byKind={};
+      rows.forEach(r=>{ const k=r.ref_kind||'unknown'; byKind[k]=(byKind[k]||0)+1; });
+      const kindItems=REF_KIND.filter(k=>byKind[k[0]])
+        .map(k=>({label:k[1], n:byKind[k[0]], color:k[2]}))
+        .sort((a,b)=>b.n-a.n);
+
+      /* 유입처별 — 어디를 타고 왔는지 */
+      const byName={};
+      rows.filter(r=>r.ref_kind!=='direct').forEach(r=>{
+        const nm=r.ref_name||r.ref_host||'알 수 없음';
+        (byName[nm]=byName[nm]||{n:0,host:r.ref_host,kind:r.ref_kind,dev:new Set()});
+        byName[nm].n++; byName[nm].dev.add(r.device);
+      });
+      const nameList=Object.keys(byName).map(k=>({name:k,...byName[k]}))
+        .sort((a,b)=>b.n-a.n).slice(0,15);
+
+      /* 국가별 */
+      const byC={};
+      crows.forEach(r=>{ const c=r.country||'??'; byC[c]=(byC[c]||0)+1; });
+      const cList=Object.keys(byC).map(c=>({cc:c,n:byC[c]})).sort((a,b)=>b.n-a.n);
+      const cItems=cList.slice(0,7).map(x=>({label:flag(x.cc)+' '+(CC_NAME[x.cc]||x.cc), n:x.n}));
+      const rest=cList.slice(7).reduce((s,x)=>s+x.n,0);
+      if(rest) cItems.push({label:'기타', n:rest, color:'#8a8375'});
+
+      let h=svcBar();
+      h+='<div class="asvcbar">'+RANGES.map(r=>
+          '<button class="asvc'+(adRange===r[0]?' on':'')+'" data-rg="'+r[0]+'">'+r[1]+'</button>').join('')+'</div>';
+
+      h+='<div class="ahint">사이트 안에서 계산기끼리 오간 이동과 수집기 접속은 빼고 셉니다. '
+        +'<b>직접 방문은 실제보다 많게 잡힙니다</b> — 카카오톡·인스타 앱 안에서 열면 브라우저가 '
+        +'어디서 왔는지를 알려주지 않아 전부 직접 방문으로 떨어집니다.</div>';
+
+      h+='<div class="alabel2">📊 어떻게 들어왔나</div>'+donut(kindItems,'유입');
+
+      h+='<div class="alabel2">🔗 어디를 타고 왔나 <span class="asub">상위 '+nameList.length+'곳</span></div>';
+      h+= nameList.length
+        ? '<div class="atblwrap"><table class="atbl"><thead><tr><th>유입처</th><th>종류</th>'
+          +'<th>방문</th><th>기기</th><th>주소</th></tr></thead><tbody>'
+          +nameList.map(x=>'<tr><td><b>'+esc(x.name)+'</b></td>'
+            +'<td>'+esc((REF_KIND.filter(k=>k[0]===x.kind)[0]||['','기타'])[1])+'</td>'
+            +'<td class="acen">'+x.n+'</td><td class="acen">'+x.dev.size+'</td>'
+            +'<td class="asub">'+esc(x.host||'-')+'</td></tr>').join('')
+          +'</tbody></table></div>'
+        : '<div class="asub" style="padding:14px">아직 없어요. 검색이나 링크를 타고 들어온 방문이 생기면 여기에 쌓입니다.</div>';
+
+      h+='<div class="alabel2">🌏 어느 나라에서</div>'+donut(cItems,'접속');
+
+      body.innerHTML=h;
+      bindSvcBar(tabSource);
+      body.querySelectorAll('[data-rg]').forEach(b=>b.onclick=()=>{ adRange=b.dataset.rg; tabSource(); });
+    }catch(e){
+      body.innerHTML='<div class="aerr"><b>유입 통계를 불러오지 못했습니다.</b><br><br>'
+        +'<code>supabase_v11.sql</code> 을 적용했는지 확인하세요. '
+        +'적용 전에는 <code>visit_sources</code> 뷰가 없습니다.<br>'
+        +'<span class="asub">'+esc((e&&e.message)||'')+'</span></div>';
+    }
   }
 
   async function tabCode(){

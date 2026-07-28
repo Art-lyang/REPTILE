@@ -187,6 +187,11 @@ const CR_TRAITS = [
   { id:'patternless', grp:'base', ko:'패턴리스',      en:'Patternless',       ja:'パターンレス',              zh:'无纹' },
   { id:'bicolor',     grp:'base', ko:'바이',          en:'Bicolor',           ja:'バイカラー',                zh:'双色' },
   { id:'tricolor',    grp:'base', ko:'트라이',        en:'Tricolor',          ja:'トライカラー',              zh:'三色' },
+  /* 슈퍼트라이컬러(SPT). 유전자가 아니라 발색·패턴의 등급 표현이라 fakeSuper 로
+     둡니다 — 슈퍼하이포·슈퍼달마시안과 같은 취급입니다. 붙여 두면 화면에
+     "슈퍼끼리 교배해도 100% 슈퍼가 나오지 않습니다" 안내가 함께 나옵니다.
+     한국에서 많이 찾고 분양도 이 이름으로 오갑니다. */
+  { id:'supertricolor', grp:'base', ko:'슈퍼트라이컬러', en:'Super Tricolor',  ja:'スーパートライカラー',      zh:'超级三色', fakeSuper:true },
   { id:'flame',       grp:'base', ko:'플레임',        en:'Flame',             ja:'フレイム',                  zh:'火焰' },
   { id:'harlequin',   grp:'base', ko:'할리퀸',        en:'Harlequin',         ja:'ハーレクイン',              zh:'小丑' },
   { id:'exharlequin', grp:'base', ko:'익스트림할리퀸', en:'Extreme Harlequin', ja:'エクストリームハーレクイン', zh:'极端小丑' },
@@ -254,7 +259,7 @@ const CR_COLOR = {
   phantom:'#8E8478', chocho:'#6B4A3E', axanthic:'#A9AAA4',
   whiteout:'#E8E2D4', super_whiteout:'#F4F1E9', empty_back:'#C9A878', super_empty_back:'#D6BA92',
   dalmatian:'#C7A87A', pied:'#DCCFB4', fire:'#D9A05B', super_fire:'#EDE7DA',
-  patternless:'#C08E55', bicolor:'#C9A063', tricolor:'#D2AE72',
+  patternless:'#C08E55', bicolor:'#C9A063', tricolor:'#D2AE72', supertricolor:'#DBB87E',
   flame:'#C98A3C', harlequin:'#C4762F', exharlequin:'#CE7A24', hypo:'#E0B372', superhypo:'#E8BE79',
   tiger:'#C98F3A', brindle:'#9A7A4A', superdal:'#BFA070',
   pinstripe:'#C89A55', fullpin:'#CFA054', whitepin:'#E4D8C0', superstripe:'#CB9A4F',

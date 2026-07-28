@@ -54,6 +54,98 @@
     }
   }
 
+  /* ── 어디서 들어왔는가 ──────────────────────────────────────────────────
+     document.referrer 는 직전 페이지의 주소입니다. 검색으로 왔는지, 링크를
+     타고 왔는지, 주소를 직접 쳤는지를 여기서 가릅니다.
+
+     주소 전체는 남기지 않고 호스트만 남깁니다. 검색어가 붙은 전체 주소를
+     저장하면 남의 검색 기록을 우리가 들고 있게 됩니다.
+
+     ⚠️ 안 잡히는 경우가 있습니다 — 카카오톡·인스타 같은 앱 안 브라우저나
+        https→http 이동은 referrer 를 아예 안 줍니다. 그건 '직접'으로 잡힙니다.
+        실제 '직접 방문'보다 항상 부풀어 있다고 보시면 됩니다. */
+  var SEARCH = {
+    'google': '구글', 'naver': '네이버', 'daum': '다음', 'bing': '빙',
+    'yahoo': '야후', 'duckduckgo': '덕덕고', 'baidu': '바이두',
+    'yandex': '얀덱스', 'ecosia': '에코시아', 'zum': '줌'
+  };
+  var SNS = {
+    'instagram': '인스타그램', 'youtube': '유튜브', 'youtu.be': '유튜브',
+    'facebook': '페이스북', 'twitter': 'X(트위터)', 'x.com': 'X(트위터)',
+    'threads': '스레드', 'tiktok': '틱톡', 'kakao': '카카오',
+    'band.us': '밴드', 'reddit': '레딧', 'discord': '디스코드',
+    't.co': 'X(트위터)', 'linkedin': '링크드인'
+  };
+
+  function refInfo() {
+    var out = { kind: 'direct', host: null, name: '직접' };
+    try {
+      var r = document.referrer;
+      if (!r) return out;
+      var h = new URL(r).hostname.toLowerCase().replace(/^www\./, '');
+      if (!h) return out;
+
+      /* 우리 사이트 안에서의 이동은 '유입'이 아닙니다. 이걸 세면
+         계산기끼리 오간 것이 전부 유입으로 잡혀 숫자가 의미를 잃습니다. */
+      if (h === location.hostname.toLowerCase().replace(/^www\./, '')) {
+        return { kind: 'internal', host: h, name: '사이트 내부' };
+      }
+      out.host = h.slice(0, 120);
+
+      /* 네이버 블로그·카페는 검색이 아니라 커뮤니티 유입으로 봅니다.
+         검색 판정보다 먼저 봐야 blog.naver.com 이 '네이버 검색'이 안 됩니다. */
+      var k;
+      for (k in SNS) {
+        if (h.indexOf(k) >= 0) { out.kind = 'sns'; out.name = SNS[k]; return out; }
+      }
+      if (/^(blog|cafe|post|m\.blog|m\.cafe)\./.test(h)) {
+        out.kind = 'sns'; out.name = '블로그·카페'; return out;
+      }
+      for (k in SEARCH) {
+        if (h.indexOf(k) >= 0) { out.kind = 'search'; out.name = SEARCH[k]; return out; }
+      }
+      out.kind = 'site'; out.name = out.host;
+      return out;
+    } catch (e) {
+      return out;
+    }
+  }
+
+  /* ── 어느 나라에서 들어왔는가 ────────────────────────────────────────────
+     Cloudflare 가 모든 도메인에 붙여주는 /cdn-cgi/trace 를 씁니다. 워커를
+     따로 만들 필요도, 외부 위치조회 서비스에 방문자를 넘길 필요도 없습니다.
+
+     응답에는 ip= 도 들어 있지만 국가(loc=)만 꺼내 씁니다. IP 는 개인정보라
+     저장하지 않습니다.
+
+     하루에 한 번만 물어보고 저장해 둡니다. 페이지를 열 때마다 부르면
+     느려지기만 하고 답은 늘 같습니다. */
+  function country() {
+    var K = 'studioGeo';
+    try {
+      var c = JSON.parse(localStorage.getItem(K) || 'null');
+      if (c && c.v && Date.now() - c.t < 864e5) return Promise.resolve(c.v);
+    } catch (e) {}
+
+    /* 실패하거나 느리면 그냥 국가 없이 기록합니다. 국가 때문에 접속 기록
+       자체가 안 남는 일은 없어야 합니다. */
+    return new Promise(function (done) {
+      var settled = false;
+      var finish = function (v) { if (!settled) { settled = true; done(v || null); } };
+      setTimeout(function () { finish(null); }, 1500);
+      try {
+        fetch('/cdn-cgi/trace', { cache: 'no-store' })
+          .then(function (r) { return r.text(); })
+          .then(function (t) {
+            var m = /(^|\n)loc=([A-Z]{2})/.exec(t);
+            var v = m ? m[2] : null;
+            if (v) { try { localStorage.setItem(K, JSON.stringify({ v: v, t: Date.now() })); } catch (e) {} }
+            finish(v);
+          }, function () { finish(null); });
+      } catch (e) { finish(null); }
+    });
+  }
+
   /* 컬럼이 아직 없는 서버에서도 로그가 끊기지 않게, 넓은 것부터 좁혀가며 넣습니다.
      supabase_v3.sql 을 적용하기 전에는 client/ua 없이 저장됩니다. */
   function insertWithFallback(sb, table, variants) {
@@ -72,17 +164,25 @@
     kind: clientKind,
     device: deviceId,
 
+    ref: refInfo,
+    country: country,
+
     /* 접속 1건 기록 */
     logVisit: function (sb, service, lang) {
       if (!sb) return Promise.resolve();
       var kind = clientKind();
       var base = { device: deviceId(), lang: lang || 'ko' };
       var ua = String(navigator.userAgent || '').slice(0, 300);
-      return insertWithFallback(sb, 'visits', [
-        { device: base.device, lang: base.lang, service: service, client: kind, ua: ua },
-        { device: base.device, lang: base.lang, service: service },
-        base
-      ]);
+      var rf = refInfo();
+      return country().then(function (cc) {
+        return insertWithFallback(sb, 'visits', [
+          { device: base.device, lang: base.lang, service: service, client: kind, ua: ua,
+            ref_kind: rf.kind, ref_host: rf.host, ref_name: rf.name, country: cc },
+          { device: base.device, lang: base.lang, service: service, client: kind, ua: ua },
+          { device: base.device, lang: base.lang, service: service },
+          base
+        ]);
+      });
     },
 
     /* 조합 검색 1건 기록. 수집기가 만든 건 통계를 흐리므로 남기지 않습니다. */

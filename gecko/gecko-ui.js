@@ -37,6 +37,8 @@ const I18N = {
     updDone:'업데이트 됨', updSoon:'업데이트 예정',
     updDoneList:['V1.0 테스트버전 출시'],
     updSoonList:['리스트 준비중'],
+    mailNote:'정보수정, 버그 및 업데이트 건의는 <b>문의하기</b>로 보내주세요',
+    credit:'해당 레오파드 모프 계산기는 <b>Stylish Gecko</b> 의 자문 및 도움을 받아 제작되었습니다.',
     footer:'확률은 멘델 유전 법칙에 따른 이론값입니다 · 라인브리딩(폴리제닉) 형질은 확률 계산 대상이 아닙니다',
   },
   en:{
@@ -73,6 +75,8 @@ const I18N = {
     updDone:'Shipped', updSoon:'Coming next',
     updDoneList:['V1.0 test release'],
     updSoonList:['List coming soon'],
+    mailNote:'Corrections, bug reports and feature requests are welcome via <b>Contact</b>',
+    credit:'This leopard gecko morph calculator was built with advice and help from <b>Stylish Gecko</b>.',
     footer:'Probabilities are theoretical values from Mendelian inheritance · line-bred (polygenic) traits are not probability-based',
   },
   zh:{
@@ -109,6 +113,8 @@ const I18N = {
     updDone:'已更新', updSoon:'计划中',
     updDoneList:['V1.0 测试版发布'],
     updSoonList:['列表准备中'],
+    mailNote:'信息更正、错误报告与功能建议请通过<b>联系我们</b>发送',
+    credit:'本豹纹守宫基因计算器在 <b>Stylish Gecko</b> 的指导与协助下制作。',
     footer:'概率为基于孟德尔遗传的理论值 · 线育（多基因）性状不在概率计算范围内',
   },
   ja:{
@@ -145,6 +151,8 @@ const I18N = {
     updDone:'更新済み', updSoon:'更新予定',
     updDoneList:['V1.0 テスト版リリース'],
     updSoonList:['リスト準備中'],
+    mailNote:'情報の修正・不具合のご報告・ご要望は<b>お問い合わせ</b>からお送りください',
+    credit:'本モルフ計算機は <b>Stylish Gecko</b> の助言と協力を得て制作しました。',
     footer:'確率はメンデル遺伝に基づく理論値です · ラインブリード（ポリジェニック）形質は確率計算の対象外です',
   },
 };
@@ -291,6 +299,10 @@ function applyLang(){
   document.getElementById('optNote').innerHTML='<b>'+escapeHtml(t.partialToggle)+'</b> — '+escapeHtml(t.partialHint)
     +'<br><b>'+escapeHtml(t.vintageToggle)+'</b> — '+escapeHtml(t.vintageHint);
   document.getElementById('note').innerHTML=t.note+'<br><br>'+t.comboNote;
+  const MAIL='kmc612000@gmail.com';
+  const setTx=(id,html)=>{ const e=document.getElementById(id); if(e) e.innerHTML=html; };
+  setTx('mailNote', t.mailNote+' ('+MAIL+')');
+  setTx('creditNote', t.credit);
   document.getElementById('footer').textContent=t.footer;
   /* 업데이트 노트 — 예전에는 index.html 에 <li> 로 박혀 있어서 문구 하나 고치려면
      배포를 해야 했습니다. 이제 여기서 그리고, 관리자에서 고친 값이 있으면

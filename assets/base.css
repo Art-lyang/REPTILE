@@ -162,3 +162,6 @@
   .crossnote b{color:var(--ink)}
   /* TODO(모프 설명): 결과 행에 들어갈 설명 스타일. 데이터 준비되면 사용합니다. */
   .morphdesc{font-size:11px;color:var(--ink2);font-weight:500;line-height:1.6;margin-top:3px}
+
+/* 도움 주신 곳 표기 — 문의 안내 바로 아래, 한 단계 더 조용하게. */
+.mailnote.credit{margin-top:4px;opacity:.85}

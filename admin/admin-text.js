@@ -30,6 +30,8 @@
     ['emptyNone',      '빈 화면 — 선택 없음'],
     ['optNote',        '표시 옵션 설명'],
     ['fakeSuperNote',  '이름만 슈퍼인 형질 안내'],
+    ['mailNote',       '문의 안내'],
+    ['credit',         '도움 주신 곳 표기'],
     ['footer',         '하단 면책 문구']
   ];
   var SRC = { gecko: '../gecko/gecko-ui.js', crested: '../crested/crested-ui.js' };

@@ -427,9 +427,9 @@ function render(payload){
   if(!payload || !payload.anything){ host.innerHTML='<div class="empty">'+t.emptyNone+'</div>'; return; }
   /* 다인자(라인브리딩) 크로스 표기 — 발현이 안 보여도 유전자에 섞였음을 남깁니다.
      자세한 취지는 gecko/index.html 의 같은 주석 참고. */
-  const crossTag = (payload.poly && payload.poly.length)
-    ? '(' + payload.poly.map(p=>p.name).join('·') + ' ' + t.crossTag + ')'
-    : '';
+  /* 크로스 표기는 레오파드에서만 씁니다. 크레스티드는 표기하지 않기로 했습니다.
+     번역 문구(t.crossTag / t.crossNote)는 나중에 되살릴 수 있게 남겨둡니다. */
+  const crossTag = '';
   let html='';
   if(payload.warnings && payload.warnings.length){
     html+='<div class="warnhead"><i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i> '+t.warnH+'</div>';

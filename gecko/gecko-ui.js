@@ -364,6 +364,15 @@ function calculate(){
   }
   const warnings=computeWarnings(dists);
   const poly=gatherPoly();
+  /* 라인브리딩 형질만 고른 경우에도 결과 한 줄은 나와야 합니다.
+     유전 모프가 없으면 위에서 rows 를 아예 만들지 않아 표가 통째로 빠지고,
+     그 안에 붙는 크로스 표기도 같이 사라졌습니다. 만다린 × 블랙나이트처럼
+     라인만 섞은 교배야말로 크로스 표기가 필요한 경우인데 안 보였습니다.
+     유전적으로는 전부 노멀이므로 100% 노멀 한 줄을 만들어 줍니다. */
+  if((!rows || !rows.length) && poly.length){
+    rows=[{ prob:1, combo:null, visualLabel:buildVisualLabel([],[]), isNormal:true,
+            tokens:[], guaranteed:[], partial:[] }];
+  }
   const anything = (rows&&rows.length) || warnings.length || poly.length;
   hasResult=!!anything;
   render({rows, warnings, poly, anything});
@@ -392,8 +401,13 @@ function render(payload){
      보일 수도 안 보일 수도 있지만 유전자에는 이미 섞여 있습니다.
      그래서 결과 모프명 옆에 '(탠저린 크로스)' 를 남겨 순수 개체와
      구분할 수 있게 합니다. 분양·재교배 때 이력이 남아야 하기 때문입니다. */
-  const crossTag = (payload.poly && payload.poly.length)
-    ? '(' + payload.poly.map(p=>p.name).join('·') + ' ' + t.crossTag + ')'
+  /* ⚠️ 양쪽 부모가 '같은' 라인브리딩 형질을 가진 경우는 크로스가 아닙니다.
+     만다린 × 만다린은 그냥 만다린 라인이지 크로스가 아니고, 크로스는 서로 다른
+     라인이 섞였을 때만 씁니다. (현직 브리더 확인)
+     gatherPoly 가 both=true 로 표시해 주므로 그것만 빼면 됩니다. */
+  const crossPoly = (payload.poly || []).filter(p=>!p.both);
+  const crossTag = crossPoly.length
+    ? '(' + crossPoly.map(p=>p.name).join('·') + ' ' + t.crossTag + ')'
     : '';
   let html='';
   if(payload.warnings && payload.warnings.length){

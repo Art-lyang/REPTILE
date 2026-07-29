@@ -150,6 +150,11 @@ textarea.in{min-height:70px;resize:vertical}
 .safety{font-size:11.5px;color:var(--ink2);line-height:1.7;margin-top:12px;
   padding-top:12px;border-top:1px solid var(--hair)}
 
+/* ── 약관 링크 ────────────────────────────────────────────────────────── */
+.legal{text-align:center;font-size:11.5px;color:var(--ink2);margin:26px 0 10px}
+.legal a{color:var(--ink2);text-decoration:none;border-bottom:1px solid var(--hair)}
+.legal a:hover{color:var(--teal)}
+
 /* ── 토스트 ───────────────────────────────────────────────────────────── */
 #toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(80px);
   background:var(--ink);color:var(--bg);padding:12px 20px;border-radius:24px;font-size:13.5px;

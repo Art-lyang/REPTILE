@@ -41,6 +41,17 @@
   .em p{margin:7px 0;color:inherit}
   .doc ul,.em ul{margin:7px 0;padding-left:19px}
   .doc li,.em li{margin:4px 0;line-height:1.6}
+  /* 다른 언어 안내. 한국어 문서 위에 얹히므로 본문보다 조용해야 하지만,
+     '이 문서는 한국어만 있다' 는 사실은 놓치면 안 되는 정보라 접지 않고
+     항상 펼쳐 둡니다. 요약만 접습니다. */
+  .i18n{background:var(--card2);border:1px solid var(--hair);border-radius:12px;
+    padding:13px 15px;margin-bottom:16px;font-size:12.5px;color:var(--ink2);line-height:1.65}
+  .i18n p{margin:5px 0;color:inherit}
+  .i18n b{color:var(--ink)}
+  .i18n details{margin-top:9px}
+  .i18n summary{cursor:pointer;font-weight:700;color:var(--teal);padding:3px 0}
+  .i18n details ul{margin:7px 0;padding-left:18px}
+  .i18n details li{margin:4px 0}
 </style>
 </head>
 <body>
@@ -52,6 +63,40 @@
   <div class="seg">
     <button id="t1" class="on">이용약관</button>
     <button id="t2">개인정보처리방침</button>
+  </div>
+
+  <!-- ⚠️ 이 문서는 한국어뿐입니다. 그런데 /en/gecko/ · /ja/ · /zh/ 로 만든
+       계산기 페이지가 여기를 가리킵니다. 한국어를 못 읽는 사람이 무슨
+       문서인지도 모른 채 도착하게 되므로, 최소한 '한국어만 있다' 는 것과
+       무엇을 모으는지는 그 사람 언어로 알려야 합니다.
+
+       아래 요약은 **법적 효력이 없습니다.** 번역본을 효력 있는 문서로 두려면
+       법률 검토를 받은 정식 번역이어야 하고, 그건 별도 작업입니다. 그래서
+       '참고용, 한국어가 유일한 정본' 이라고 못 박아 두었습니다.
+
+       가입을 열 때(SHOW_ACCOUNT_UI = true) 다시 보세요. 동의 화면
+       (gecko/login.html)도 한국어뿐이라, 한국어를 못 읽는 사람에게서 받은
+       동의는 '이해하고 한 동의' 로 보기 어렵습니다. -->
+  <div class="i18n">
+    <p lang="en"><b>English</b> — These documents are provided in Korean only, and the Korean text is the only binding version. A short summary is below for convenience; it has no legal effect. Questions: <a href="mailto:kmc612000@gmail.com">kmc612000@gmail.com</a></p>
+    <p lang="ja"><b>日本語</b> — 本書類は韓国語のみで提供され、効力を持つのは韓国語版のみです。概要は下記の英語版をご覧ください。</p>
+    <p lang="zh-Hans"><b>中文</b> — 本文件仅提供韩语版本，且仅韩语版本具有法律效力。摘要请参见下方英文说明。</p>
+
+    <details lang="en">
+      <summary>Summary in English (not legally binding)</summary>
+      <ul>
+        <li><b>Who</b> — RYANG STUDIO, a one-person studio based in the Republic of Korea.</li>
+        <li><b>What we store</b> — your email and a hashed password; access logs (a device identifier, the host of the referring page, and a two-letter country code — <b>your IP address is not stored</b>); and, if you enter them, your animals, breeding records, care records, weights and photos.</li>
+        <li><b>Why</b> — to run your account and the tools. Aggregated figures that cannot identify you or an individual animal may be used to check and improve the calculators.</li>
+        <li><b>AI training</b> — opt-in only, through a separate consent you can withdraw at any time. Note that a model already trained cannot be un-trained.</li>
+        <li><b>Calculator results</b> are theoretical Mendelian probabilities and may differ from real hatch results.</li>
+        <li><b>Care summaries are not veterinary advice.</b> They only count what you entered. Consult a veterinarian about an animal's health.</li>
+        <li><b>We do not send reminders.</b> You export your schedule as a calendar file; your own calendar app shows the alerts. Anything you import into an external calendar service is then held by that service under its own policy.</li>
+        <li><b>Deleting your account</b> — available at any time from the account screen and irreversible. Records of your consent are kept for five years without identifying information, as Korean law requires.</li>
+        <li><b>We do not knowingly collect data from children under 14.</b></li>
+        <li><b>Governing law</b> — Republic of Korea, including for users outside Korea.</li>
+      </ul>
+    </details>
   </div>
 
   <div class="doc" id="terms">
@@ -88,11 +133,27 @@
     </ul>
 
     <h2>제5조 (서비스의 제공)</h2>
-    <p>서비스는 모프 유전 확률 계산, 콤보 명칭 안내, 개체·페어링·클러치 관리 등의 기능을 제공하며, 량 스튜디오가 제작하는 게임·콘텐츠 등 그 밖의 서비스를 포함할 수 있습니다. 서비스는 운영상·기술상 필요에 따라 제공 기능의 전부 또는 일부를 변경하거나 중단할 수 있으며, <b>회원에게 불리한 중대한 변경이나 서비스 전체의 종료는 최소 30일 전에 서비스 화면에 공지합니다.</b> 다만 시스템 장애·보안 사고 등 긴급한 사유가 있는 경우에는 먼저 조치한 뒤 지체 없이 공지합니다. 서비스가 종료되는 경우 회원이 등록한 데이터를 내려받을 수 있는 방법을 함께 안내합니다.</p>
+    <p>서비스는 모프 유전 확률 계산, 콤보 명칭 안내, 개체·페어링·클러치 관리, 사육 케어 기록(급여·청소·영양제 등 반복 일정과 그 수행 기록, 체중 기록) 및 케어 일정의 캘린더 파일 내려받기 등의 기능을 제공하며, 량 스튜디오가 제작하는 게임·콘텐츠 등 그 밖의 서비스를 포함할 수 있습니다. 서비스는 운영상·기술상 필요에 따라 제공 기능의 전부 또는 일부를 변경하거나 중단할 수 있으며, <b>회원에게 불리한 중대한 변경이나 서비스 전체의 종료는 최소 30일 전에 서비스 화면에 공지합니다.</b> 다만 시스템 장애·보안 사고 등 긴급한 사유가 있는 경우에는 먼저 조치한 뒤 지체 없이 공지합니다. 서비스가 종료되는 경우 회원이 등록한 데이터를 내려받을 수 있는 방법을 함께 안내합니다.</p>
 
     <h2>제6조 (계산 결과의 성격 및 면책)</h2>
     <div class="em">
       본 서비스가 제공하는 확률은 <b>멘델 유전 법칙에 근거한 이론값</b>이며, 실제 부화 결과와 다를 수 있습니다. 라인브리딩(다인자) 형질은 확률 계산의 대상이 아닙니다. 서비스는 계산 결과를 근거로 한 개체의 매매·교배·사육 판단 및 그로 인한 손해에 대하여 책임을 지지 않습니다. 개체의 건강 및 사육 관련 사항은 반드시 전문 수의사 등 전문가와 상담하시기 바랍니다.
+    </div>
+
+    <!-- 케어 기능은 확률 계산이 아니라 '사육 중 판단' 에 쓰입니다. 제6조의
+         면책은 계산 결과를 전제로 쓰여 있어 그대로는 덮이지 않습니다.
+         특히 아래 두 가지를 반드시 적어야 합니다.
+           · 요약이 진단이 아니라는 것 — 오해하면 개체가 죽습니다
+           · 알림을 우리가 보내지 않는다는 것 — 안 울렸다는 항의의 근거가 됩니다 -->
+    <h2>제6조의2 (케어 기록 · 알림의 성격 및 면책)</h2>
+    <div class="em">
+      <b>주간 요약은 진료·진단·처방이 아닙니다.</b> 회원이 직접 입력한 기록을 세어 보여주고 눈에 띄는 항목을 짚어줄 뿐이며, 질병 여부나 원인을 판단하지 않습니다. 이상 증상이 이어지거나 건강이 걱정되는 경우에는 반드시 수의사와 상담하시기 바랍니다.
+      <br><br>
+      <b>종별로 미리 채워지는 기본 주기는 흔히 쓰이는 값을 옮겨 둔 출발점입니다.</b> 적정한 급여·청소 주기는 개체의 종·나이·크기·계절·건강 상태에 따라 달라지며, 실제 사육 방법은 회원이 스스로 판단하고 조정해야 합니다.
+      <br><br>
+      <b>서비스는 알림을 직접 보내지 않습니다.</b> 회원이 케어 일정을 캘린더 파일(.ics)로 내려받아 자신의 캘린더 앱에 등록하면, 이후 알림은 <b>그 캘린더 앱이</b> 표시합니다. 알림이 실제로 도달하는지는 회원의 기기·운영체제·캘린더 앱 설정에 따르며 서비스가 보장하지 않습니다. 또한 서비스에서 일정을 고치더라도 이미 내려받아 등록한 캘린더 일정은 자동으로 바뀌지 않으므로, 다시 내려받아 등록해야 합니다.
+      <br><br>
+      서비스의 고의 또는 중대한 과실이 없는 한, 기록의 누락·알림 미수신·기본 주기의 부적합으로 인한 손해에 대하여 서비스는 책임을 지지 않습니다.
     </div>
 
     <h2>제7조 (회원의 의무)</h2>
@@ -256,6 +317,13 @@
       <!-- 통계 이용은 약관 제9조 ②와 같은 내용입니다. 약관에만 적고 처리방침에
            빠뜨리면 '고지하지 않은 목적으로 이용' 이 됩니다. -->
       <tr><td>선택</td><td>등록한 개체·페어링·클러치 정보 및 사진</td><td>브리딩 관리 기능 제공, 실제 부화 결과와의 대조를 통한 데이터 검증, 모프 분류 기준 개선, 계산기 및 관련 도구 개선 (<a href="#terms" onclick="show('terms');return false;">약관 제9조 ②</a>) — 외부 공개 시에는 개인·개체를 식별할 수 없게 가공한 수치만 공개</td><td>회원 탈퇴 또는 삭제 시까지<br><span class="sub">가공된 통계 수치는 탈퇴 후에도 남습니다</span></td></tr>
+      <!-- 케어 기록은 개체 기록과 목적을 나눠 적습니다. 약관 제9조 ② 의
+           '데이터 검증' 은 모프 조합·부화 결과·사진을 대상으로 쓰여 있어
+           급여·청소·체중 기록까지 덮지 않습니다. 여기에 슬쩍 끼워 넣으면
+           고지하지 않은 목적으로 쓰는 것이 됩니다.
+           ⚠️ 나중에 케어 기록으로 통계를 내려면 약관 제9조를 먼저 고치고
+              그 다음에 이 칸을 넓히세요. 순서가 바뀌면 안 됩니다. -->
+      <tr><td>선택</td><td>케어 계획 및 수행 기록(급여·물·청소·바닥재·영양제 등의 종류, 반복 주기, 수행 일자, 메모), 체중 기록, 개체의 종</td><td>케어 관리 기능 제공 — 오늘 할 일 표시, 밀린 항목 안내, 주간 요약, 캘린더 파일 생성</td><td>회원 탈퇴 또는 삭제 시까지</td></tr>
       <!-- 되돌릴 수 없는 처리라 별도 동의 항목으로 뺐습니다. 보유기간 칸에
            "모델은 회수 불가" 를 반드시 적어야 합니다 — 철회하면 다 없어진다고
            오해할 수 있고, 그 오해가 곧 분쟁이 됩니다. -->
@@ -270,6 +338,13 @@
       <tr><td>제휴 분양샵·용품 판매처 등 제휴사</td><td>이메일, 닉네임, (동의 시) 휴대전화번호</td><td>제휴 상품·이벤트 안내</td><td>동의 철회 시까지</td></tr>
     </table>
     <p>실제 제휴가 발생하는 시점에 제공받는 자와 항목을 구체적으로 고지하고 별도 동의를 받습니다.</p>
+
+    <!-- 캘린더 내보내기는 우리가 어디로 보내는 것이 아니라 이용자가 파일을
+         받아 가는 것이라 제3자 제공이 아닙니다. 다만 그 파일을 구글 캘린더에
+         넣으면 결과적으로 구글이 그 내용을 갖게 됩니다. 우리가 한 일이
+         아니라는 이유로 안 적으면, 나중에 "왜 구글에 내 기록이 있냐" 는
+         물음에 답할 근거가 없습니다. -->
+    <div class="em"><b>캘린더 내보내기에 대하여</b> — 케어 일정을 캘린더 파일(.ics)로 내려받는 기능은 <b>이용자의 기기에서 파일을 만들어 저장하는 것</b>이며, 서비스가 외부에 개인정보를 제공하는 것이 아닙니다. 다만 이용자가 그 파일을 구글 캘린더 등 <b>외부 캘린더 서비스에 등록하면, 그 일정에 담긴 내용(일정 이름, 반복 주기, 개체 이름, 메모)은 해당 서비스에 저장됩니다.</b> 이후 그 정보의 처리에는 해당 서비스의 개인정보처리방침이 적용되며, 서비스는 이를 통제하거나 회수할 수 없습니다. 개체 이름이나 메모에 알려지기를 원하지 않는 내용이 있다면 내보내기 전에 확인해 주세요.</div>
 
     <h2>3. 광고성 정보 전송 (선택)</h2>
     <p>이용자가 마케팅 정보 수신에 동의한 경우, 이메일 또는 문자메시지로 신규 기능·이벤트·제휴 혜택 등의 광고성 정보를 전송할 수 있습니다. 동의는 선택 사항이며 언제든지 계정 화면에서 철회할 수 있습니다. 「정보통신망법」에 따라 2년마다 수신 동의 여부를 확인합니다.</p>
@@ -311,7 +386,9 @@
     <p>회원은 <b>계정 화면의 [회원탈퇴]</b>를 통해 언제든지 직접 탈퇴할 수 있으며, 탈퇴 시 처리는 다음과 같습니다.</p>
     <table>
       <tr><th>구분</th><th>대상</th><th>처리</th></tr>
-      <tr><td>즉시 삭제</td><td>이메일, 이름, 닉네임, 휴대전화번호, 등록한 개체·페어링·클러치 정보 및 사진, 마케팅·제3자 제공 동의</td><td>탈퇴 즉시 복구 불가능하게 삭제</td></tr>
+      <!-- supabase_v16.sql 의 delete_my_account() 가 실제로 지우는 목록과
+           같아야 합니다. 한쪽만 고치면 방침과 동작이 어긋납니다. -->
+      <tr><td>즉시 삭제</td><td>이메일, 이름, 닉네임, 휴대전화번호, 등록한 개체·페어링·클러치 정보 및 사진, <b>케어 계획·수행 기록·체중 기록</b>, 마케팅·제3자 제공 동의</td><td>탈퇴 즉시 복구 불가능하게 삭제</td></tr>
       <tr><td>분리 보관</td><td>약관·개인정보 동의 사실 및 동의 일시</td><td>신원정보를 제거하고 동의 이력만 <b>탈퇴 후 5년</b> 보관 후 파기 (전자상거래법)</td></tr>
       <tr><td>분리 보관</td><td>접속 기록</td><td>개인을 식별할 수 없는 형태로 <b>1년</b> 보관 후 파기 (통신비밀보호법)</td></tr>
     </table>

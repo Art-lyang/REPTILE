@@ -95,6 +95,27 @@ def url_of(calc, lang):
     return '%s/%s/' % (SITE, calc) if lang == 'ko' else '%s/%s/%s/' % (SITE, lang, calc)
 
 
+# 약관·처리방침 링크 문구. 문서 자체는 한국어뿐이지만(terms.html 상단 안내 참고),
+# 링크 글자까지 한국어로 두면 영어 화면에서 어디로 가는 링크인지조차 알 수 없습니다.
+# 문서가 한국어라는 것은 눌러서 도착한 페이지가 알려줍니다.
+LEGAL_TEXT = {
+    'ko': ('이용약관', '개인정보처리방침'),
+    'en': ('Terms of Service', 'Privacy Policy'),
+    'ja': ('利用規約', 'プライバシーポリシー'),
+    'zh': ('服务条款', '隐私政策'),
+}
+
+
+def localize_legal(html, lang):
+    """숨겨진 상태라도 크롤러는 읽고, SHOW_LEGAL_LINKS 를 켜는 순간 그대로 보입니다."""
+    terms, privacy = LEGAL_TEXT[lang]
+    html = html.replace('<a href="/terms.html#terms">이용약관</a>',
+                        '<a href="/terms.html#terms">%s</a>' % terms)
+    html = html.replace('<a href="/terms.html#privacy">개인정보처리방침</a>',
+                        '<a href="/terms.html#privacy">%s</a>' % privacy)
+    return html
+
+
 def absolutize(html, calc):
     """상대경로를 절대경로로. 언어 사본은 한 단계 깊어서 ../ 계산이 어긋납니다."""
     html = html.replace('href="../assets/', 'href="/assets/')
@@ -164,6 +185,9 @@ def build(calc, ui_path, dist):
 
         # 언어 사본은 경로가 한 단계 깊어집니다
         h = absolutize(h, calc)
+        # 약관 링크 문구도 그 언어로. absolutize 뒤에 불러야 합니다 —
+        # 그 전에는 주소가 아직 ../terms.html 이라 아래 치환이 빗나갑니다.
+        h = localize_legal(h, lang)
         # 첫 화면부터 그 언어로 뜨게
         h = h.replace('<script src="/%s/' % calc,
                       "<script>var LANG='%s';</script>\n<script src=\"/%s/" % (lang, calc), 1)

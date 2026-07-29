@@ -19,6 +19,9 @@ mkdir -p dist
 git -c core.quotepath=false ls-files -z | while IFS= read -r -d '' f; do
   case "$f" in
     docs/*|README*|supabase_*|구글로그인*|build.sh|wrangler.jsonc|.assetsignore|tools/*) continue ;;
+    # 개발용 설정(로컬 미리보기 서버 등). 사이트 파일이 아니고, 올려두면
+    # 우리가 어떤 도구로 작업하는지만 드러납니다.
+    .claude/*) continue ;;
     # 작업용으로 주고받은 압축본. 안은 이미 풀어서 반영했고, 그대로 두면
     # 누구나 내려받을 수 있는 자리에 옛날 소스가 한 벌 더 남습니다.
     *.zip) continue ;;

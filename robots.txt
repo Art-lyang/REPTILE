@@ -4,5 +4,6 @@ Allow: /
 Disallow: /admin/
 Disallow: /gecko/login.html
 Disallow: /gecko/breeding.html
+Disallow: /care/
 
 Sitemap: https://ryangstudio.com/sitemap.xml

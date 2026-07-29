@@ -1,0 +1,16 @@
+{
+  "name": "케어 관리 · 량 스튜디오",
+  "short_name": "케어",
+  "description": "급여·청소·영양제 주기와 체중을 기록하고 캘린더로 알림을 받습니다.",
+  "lang": "ko",
+  "start_url": "/care/",
+  "scope": "/care/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f5f1e8",
+  "theme_color": "#f5f1e8",
+  "icons": [
+    { "src": "/assets/logo-mark-180.png", "sizes": "180x180", "type": "image/png" },
+    { "src": "/assets/logo-mark.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

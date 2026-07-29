@@ -106,6 +106,21 @@ LEGAL_TEXT = {
 }
 
 
+# 쿠키 안내 바. 문구가 index.html 에 그대로 박혀 있고 I18N 에 키가 없어,
+# 언어 사본에서도 한국어로 남습니다. 읽을 수 없는 언어로 띄우는 쿠키 안내는
+# 안내한 것으로 치기 어렵습니다.
+COOKIE_TEXT = {
+    'ko': ('이 사이트는 로그인 유지와 이용 통계를 위해 쿠키 및 브라우저 저장소를 사용합니다.',
+           '자세히', '확인'),
+    'en': ('This site uses cookies and browser storage to keep you signed in and to measure usage.',
+           'Details', 'OK'),
+    'ja': ('このサイトはログイン状態の保持と利用統計のために Cookie とブラウザストレージを使用します。',
+           '詳細', 'OK'),
+    'zh': ('本站使用 Cookie 和浏览器存储以保持登录状态并统计使用情况。',
+           '详情', '确定'),
+}
+
+
 def localize_legal(html, lang):
     """숨겨진 상태라도 크롤러는 읽고, SHOW_LEGAL_LINKS 를 켜는 순간 그대로 보입니다."""
     terms, privacy = LEGAL_TEXT[lang]
@@ -113,6 +128,16 @@ def localize_legal(html, lang):
                         '<a href="/terms.html#terms">%s</a>' % terms)
     html = html.replace('<a href="/terms.html#privacy">개인정보처리방침</a>',
                         '<a href="/terms.html#privacy">%s</a>' % privacy)
+
+    body, more, ok = COOKIE_TEXT[lang]
+    # 안내 문구와 '자세히' 링크는 한 덩어리로 갈아끼웁니다. 링크 글자만 바꾸면
+    # 문장은 한국어인데 링크만 영어인 상태가 됩니다.
+    html = re.sub(
+        r'(<div class="cb-txt">).*?(</div>)',
+        lambda m: '%s%s\n    <a href="/terms.html#privacy">%s</a>%s' % (m.group(1), body, more, m.group(2)),
+        html, count=1, flags=re.S)
+    html = html.replace('<button class="cb-ok" onclick="okCookie()">확인</button>',
+                        '<button class="cb-ok" onclick="okCookie()">%s</button>' % ok)
     return html
 
 

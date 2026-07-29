@@ -245,7 +245,7 @@
 
   function pedFace(a) {
     if (!a) return '<div class="pedface none">?</div>';
-    if (a.photo_url) return '<div class="pedface"><img src="' + esc(a.photo_url) + '" alt=""></div>';
+    if (a.photo_url) return '<div class="pedface">' + Photo.tag(a.photo_url, '') + '</div>';
     return '<div class="pedface">' + speciesOf(a).icon + '</div>';
   }
 
@@ -557,6 +557,8 @@
       + '여기 숫자는 <b>적어 넣은 기록</b>을 센 것입니다. 했는데 안 적으면 안 한 것으로 나옵니다.<br>'
       + '건강 판단의 근거로 쓰지 마시고, 이상이 의심되면 수의사와 상담하세요.</div>';
 
+    /* 사진은 비공개 버킷이라 서명 주소를 받아야 보입니다 (assets/photo.js) */
+    Photo.hydrate($('body'), A.sb);
     drawQr();
   }
 

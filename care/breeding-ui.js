@@ -118,7 +118,7 @@
     const sex = a.sex === 'male' ? '<span class="chip">♂ 수컷</span>'
               : a.sex === 'female' ? '<span class="chip">♀ 암컷</span>' : '';
     return '<div class="card">'
-      + '<div class="thumb">' + (a.photo_url ? '<img src="' + esc(a.photo_url) + '" alt="">' : '🦎') + '</div>'
+      + '<div class="thumb">' + (a.photo_url ? Photo.tag(a.photo_url, a.name || '') : '🦎') + '</div>'
       + '<div class="info"><div class="nm">' + esc(a.name || '이름 없음') + sex
       + (combo ? '<span class="chip" style="color:var(--teal);border-color:var(--teal)">' + esc(combo) + '</span>' : '')
       + '</div>'
@@ -213,7 +213,7 @@
       + '<div class="lbl2">사진 (선택)</div>'
       + '<div class="photorow">'
       + '<div class="photoprev" id="f_prev">'
-      + (a.photo_url ? '<img src="' + esc(a.photo_url) + '" alt="">' : '<span>없음</span>') + '</div>'
+      + (a.photo_url ? Photo.tag(a.photo_url, '') : '<span>없음</span>') + '</div>'
       + '<div class="photoside">'
       + '<label class="btn ghost sm" for="f_img">' + icon('bi-image') + '사진 고르기</label>'
       + '<input type="file" id="f_img" accept="image/*" hidden>'
@@ -245,7 +245,8 @@
     try {
       const url = await A.uploadPhoto(file, m => { if (msg) msg.textContent = m; });
       pendingPhoto = url;
-      if (prev) prev.innerHTML = '<img src="' + esc(url) + '" alt="">';
+      /* 방금 올렸어도 비공개 버킷이라 그냥은 안 보입니다. 서명을 받아 겁니다. */
+      if (prev) { prev.innerHTML = Photo.tag(url, ''); Photo.hydrate(prev, A.sb); }
       if (msg) msg.textContent = '올렸습니다. 저장을 눌러야 반영됩니다.';
     } catch (e) {
       if (msg) msg.textContent = A.friendly(e);
@@ -509,6 +510,10 @@
       t.classList.toggle('on', t.getAttribute('data-t') === S.tab));
     $('body').innerHTML =
       ({ animals: tabAnimals, pair: tabPair, clutch: tabClutch, goal: tabGoal }[S.tab])();
+    /* 사진은 비공개 버킷이라 서명 주소를 받아야 보입니다.
+       다 그린 뒤 한 번에 채웁니다 (assets/photo.js). */
+    Photo.hydrate($('body'), A.sb);
+
   }
 
   document.addEventListener('click', function (ev) {

@@ -54,12 +54,12 @@
       return '<div class="pnophoto">' + sp.icon + '</div>';
     }
     if (all.length === 1) {
-      return '<div class="pphoto"><img src="' + esc(all[0]) + '" alt="' + esc(a.name || '개체') + '"></div>';
+      return '<div class="pphoto">' + Photo.tag(all[0], a.name || '개체') + '</div>';
     }
-    return '<div class="pphoto"><img src="' + esc(all[0]) + '" alt="' + esc(a.name || '개체') + '"></div>'
+    return '<div class="pphoto">' + Photo.tag(all[0], a.name || '개체') + '</div>'
       + '<div class="pthumbs">' + all.slice(1).map((u, i) =>
-          '<button class="pth" data-photo="' + esc(u) + '" aria-label="사진 ' + (i + 2) + '">'
-          + '<img src="' + esc(u) + '" alt=""></button>').join('') + '</div>';
+          '<button class="pth" aria-label="사진 ' + (i + 2) + '">'
+          + Photo.tag(u, '') + '</button>').join('') + '</div>';
   }
 
   function parentRow(side, p) {
@@ -123,19 +123,23 @@
       + icon('bi-clipboard-heart') + '나도 크리처 케어로그 시작하기</a></div>';
 
     $('body').innerHTML = h;
+    /* 익명 방문자도 서명을 받습니다 — 공개된 개체에 붙은 사진이면
+       읽기 정책이 허용합니다 (supabase_v25.sql ap_read). 공개를 끄면
+       그 순간부터 서명이 안 나옵니다. */
+    Photo.hydrate($('body'), SB);
   }
 
   /* 작은 사진을 누르면 큰 자리와 바꿉니다. 라이트박스를 따로 만들지 않은 것은
      이 화면이 링크 하나로 열리는 가벼운 곳이라서입니다. */
   document.addEventListener('click', function (ev) {
-    const b = ev.target.closest('[data-photo]');
+    const b = ev.target.closest('.pth');
     if (!b) return;
     const main = document.querySelector('.pphoto img');
-    if (!main) return;
+    const thumb = b.querySelector('img');
+    if (!main || !thumb) return;
     const cur = main.getAttribute('src');
-    main.setAttribute('src', b.dataset.photo);
-    b.querySelector('img').setAttribute('src', cur);
-    b.dataset.photo = cur;
+    main.setAttribute('src', thumb.getAttribute('src'));
+    thumb.setAttribute('src', cur);
   });
 
   (async function boot() {

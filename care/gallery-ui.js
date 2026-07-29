@@ -34,7 +34,7 @@
     const morphs = (a.morphs || []).slice(0, 3);
     return '<a class="gcard" href="p.html?t=' + encodeURIComponent(a.token) + '">'
       + '<div class="gphoto">'
-      + (a.photo ? '<img src="' + esc(a.photo) + '" alt="" loading="lazy">'
+      + (a.photo ? Photo.tag(a.photo, '')
                  : '<span class="gnone">' + sp.icon + '</span>')
       + '</div>'
       + '<div class="ginfo">'
@@ -69,6 +69,8 @@
         $('body').innerHTML = '<div class="ggrid">' + list.map(card).join('') + '</div>'
           + '<div class="hint" style="text-align:center;margin-top:16px">'
           + '주인이 공개하기로 한 개체만 보입니다. 사육 기록·체중 같은 개인 기록은 포함되지 않습니다.</div>';
+        /* 사진은 비공개 버킷이라 서명 주소를 받아야 보입니다 (assets/photo.js) */
+        Photo.hydrate($('body'), SB);
       }
     } catch (e) {
       $('body').innerHTML = '<div class="empty">' + icon('bi-exclamation-triangle')

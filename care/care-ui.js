@@ -205,7 +205,7 @@
               : a.sex === 'female' ? '<span class="chip">♀ 암컷</span>' : '';
 
     return '<div class="card">'
-      + '<div class="thumb">' + (a.photo_url ? '<img src="' + esc(a.photo_url) + '" alt="">' : info.icon) + '</div>'
+      + '<div class="thumb">' + (a.photo_url ? Photo.tag(a.photo_url, a.name || '') : info.icon) + '</div>'
       + '<div class="info"><div class="nm">' + esc(a.name || '이름 없음') + sex + '</div>'
       + '<div class="ms">' + esc(bits.join(' · ')) + '</div></div>'
       + '<div class="acts">'
@@ -756,6 +756,10 @@
     $('body').innerHTML =
       ({ today: tabToday, animals: tabAnimals, plans: tabPlans,
          feed: tabFeed, health: tabHealth, report: tabReport }[S.tab])();
+    /* 사진은 비공개 버킷이라 서명 주소를 받아야 보입니다.
+       다 그린 뒤 한 번에 채웁니다 (assets/photo.js). */
+    Photo.hydrate($('body'), A.sb);
+
   }
 
   function go(tab) {

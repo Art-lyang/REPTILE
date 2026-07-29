@@ -65,6 +65,9 @@ const CareApp = (function () {
 
   return {
     ready: !!SB,
+    /* 사진 서명에 쓰라고 내보냅니다. 화면 쪽에서 Supabase 를 다시 만들면
+       로그인 세션이 갈라져서 자기 사진도 서명을 못 받습니다. */
+    get sb() { return SB; },
     get user() { return USER; },
     get premium() { return PREM; },
     device: devId,
@@ -134,16 +137,23 @@ const CareApp = (function () {
       const blob = await window.ImgTool.resize(file, 900);
       say('올리는 중… (' + Math.round(blob.size / 1024) + 'KB 로 줄임)');
 
-      /* 파일 이름에 계정 id 를 넣습니다. 버킷이 공개라 경로를 훑는 사람이
-         있을 수 있는데, 무작위 부분이 있어야 남의 사진 주소를 맞힐 수 없습니다. */
+      /* 파일 이름에 계정 id 를 넣습니다. 정책이 이 접두사로 주인을 가리므로
+         (supabase_v25.sql) 마음대로 바꾸면 안 올라갑니다. 무작위 부분은
+         남이 경로를 맞히지 못하게 하는 용도로 그대로 둡니다. */
       const rand = Math.random().toString(36).slice(2, 10);
       const path = 'a/' + ('u_' + USER.id).replace(/[^\w-]/g, '') + '_' + Date.now() + '_' + rand + '.jpg';
 
-      const up = await SB.storage.from('morph-images')
+      /* 비공개 버킷입니다. 공개 버킷(morph-images)에 두면 주소가 한 번
+         나간 뒤로는 회수할 방법이 없습니다. */
+      const up = await SB.storage.from(window.Photo.BUCKET)
         .upload(path, blob, { contentType: 'image/jpeg', upsert: true });
       if (up.error) throw new Error(friendly(up.error));
 
-      return SB.storage.from('morph-images').getPublicUrl(path).data.publicUrl;
+      /* 저장해 두는 문자열입니다. 이 주소로는 사진이 안 열립니다 —
+         비공개니까요. 화면에 그릴 때 Photo 가 여기서 경로를 잘라내
+         서명 주소를 받아옵니다. 예전 데이터와 모양을 맞추려고 이 형태를
+         그대로 씁니다(끝부분이 곧 파일 경로). */
+      return SB.storage.from(window.Photo.BUCKET).getPublicUrl(path).data.publicUrl;
     },
 
     /* ── 페어링 · 클러치 ───────────────────────────────────────────────

@@ -724,6 +724,115 @@ function signStatus(records, endDate) {
 
 
 /* =============================================================================
+   족보
+   -----------------------------------------------------------------------------
+   animals 의 parent_a · parent_b 가 이미 그래프입니다. 여기서는 그것을 세대별
+   자리로 펴서, 화면이 좌표만 붙이면 되게 만듭니다.
+
+   자리 잡는 법 — 세대 g 는 2^g 칸입니다.
+       0세대            [ 본인 ]
+       1세대       [ 부 ]      [ 모 ]
+       2세대   [조부][조모] [외조부][외조모]
+   칸 s 의 부모는 다음 세대의 칸 2s(부) · 2s+1(모) 입니다. 비어 있는 자리는
+   그냥 없습니다 — 미등록 조상까지 빈칸으로 그리면 화면이 대부분 빈칸이 됩니다.
+
+   ---------------------------------------------------------------------------
+   두 가지를 반드시 잡아야 합니다
+   ---------------------------------------------------------------------------
+   ① 순환 — 실수로 자기 자손을 부모로 지정하면 위로 무한히 올라갑니다.
+      화면이 멈추고 사용자는 이유를 모릅니다. 지나온 경로를 들고 다니며
+      다시 만나면 거기서 끊고 따로 알려줍니다.
+
+   ② 겹치는 조상 — 같은 개체가 족보에 두 번 이상 나오면 근친입니다.
+      이게 족보를 그리는 가장 큰 이유이므로 눈에 띄게 표시할 수 있도록
+      횟수를 함께 돌려줍니다.
+   ============================================================================= */
+
+/* animals 전체와 중심 개체 id 를 받아 세대별로 폅니다.
+
+   반환
+     root      중심 개체
+     up        [[{slot, id, animal, repeated}], …]  가까운 세대부터
+     slots     up 각 세대의 칸 수 (2^(g+1))
+     children  [{animal, mate}]  이 개체가 부모로 들어간 자식
+     repeats   [{id, name, count}]  두 번 이상 나온 조상
+     cycles    [{id, name}]  자기 조상이면서 자손인 잘못된 입력
+     known     조상 칸 중 실제로 채워진 개수 / 전체 칸 수 */
+function buildPedigree(animals, rootId, upGen) {
+  const list = animals || [];
+  const byId = {};
+  list.forEach(a => { byId[a.id] = a; });
+  const root = byId[rootId];
+  if (!root) return null;
+
+  /* upGen 을 안 주면 3세대. 0 을 줬을 때 기본값으로 새지 않게 NaN 만 봅니다 —
+     parseInt(0) || 3 은 0 이 falsy 라 3 이 됩니다. */
+  const asked = parseInt(upGen, 10);
+  const maxUp = Math.max(1, Math.min(isNaN(asked) ? 3 : asked, 5));
+  const up = [], slots = [];
+  const seen = {}, cycles = [];
+
+  /* 경로(path)는 이 노드까지 내려온 조상 사슬입니다. 순환을 잡는 데만 쓰고,
+     다 훑은 뒤 화면에 넘기기 전에 떼어냅니다. */
+  let cur = [{ slot: 0, animal: root, path: [rootId] }];
+  for (let g = 0; g < maxUp; g++) {
+    const next = [];
+    cur.forEach(function (node) {
+      if (!node.animal) return;
+      [['parent_a', 0], ['parent_b', 1]].forEach(function (side) {
+        const pid = node.animal[side[0]];
+        if (!pid) return;
+        /* 순환. 여기서 끊지 않으면 세대 제한에 걸릴 때까지 같은 개체가
+           계속 올라가고, 근친 표시도 거짓으로 부풀려집니다. */
+        if (node.path.indexOf(pid) >= 0) {
+          if (!cycles.some(c => c.id === pid)) {
+            cycles.push({ id: pid, name: (byId[pid] && byId[pid].name) || '이름 없음' });
+          }
+          return;
+        }
+        seen[pid] = (seen[pid] || 0) + 1;
+        next.push({
+          slot: node.slot * 2 + side[1],
+          id: pid,
+          animal: byId[pid] || null,      // 지워진 개체를 가리킬 수 있습니다
+          path: node.path.concat([pid])
+        });
+      });
+    });
+    if (!next.length) break;
+    up.push(next);
+    slots.push(Math.pow(2, g + 1));
+    cur = next;
+  }
+  /* 화면에는 경로가 필요 없습니다. 들고 나가면 그만큼 무거워지기만 합니다. */
+  up.forEach(row => row.forEach(n => { delete n.path; }));
+
+  up.forEach(row => row.forEach(n => { n.repeated = seen[n.id] > 1; }));
+
+  const repeats = Object.keys(seen).filter(k => seen[k] > 1).map(k => ({
+    id: k, name: (byId[k] && byId[k].name) || '이름 없음', count: seen[k]
+  })).sort((a, b) => b.count - a.count);
+
+  /* 이 개체가 부모로 들어간 자식. 짝(다른 부모)도 함께 — '누구와 낳았나' 가
+     족보에서 자식만큼 중요합니다. */
+  const children = list.filter(a => a.parent_a === rootId || a.parent_b === rootId)
+    .map(function (a) {
+      const mateId = a.parent_a === rootId ? a.parent_b : a.parent_a;
+      return { animal: a, mate: mateId ? (byId[mateId] || null) : null, mateId: mateId || null };
+    });
+
+  const totalSlots = slots.reduce((s, n) => s + n, 0);
+  const filled = up.reduce((s, row) => s + row.filter(n => n.animal).length, 0);
+
+  return {
+    root: root, up: up, slots: slots, children: children,
+    repeats: repeats, cycles: cycles,
+    known: { filled: filled, total: totalSlots }
+  };
+}
+
+
+/* =============================================================================
    개체별 통계
    -----------------------------------------------------------------------------
    개체 하나를 오래 키우면 기록이 쌓입니다. 그걸 한 화면에서 보기 위한 계산들이
@@ -841,7 +950,7 @@ if (typeof window !== 'undefined') {
     isDueOn, lastDueBefore, nextDueAfter, planStatus, cycleLabel,
     buildIcs, icsEscape, icsFold, weeklySummary,
     completionRate, streakDays, lastDoneByKind, weightSummary, dailyCounts, ageText,
-    SIGNS, signsFor, signStatus,
+    SIGNS, signsFor, signStatus, buildPedigree,
     FEED_KINDS, FEED_LEVEL, feedKindInfo, planPerDay, feedForecast
   };
 }

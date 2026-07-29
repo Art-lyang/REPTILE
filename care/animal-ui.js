@@ -39,7 +39,8 @@
   }
   function icon(n) { return '<i class="bi ' + n + '" aria-hidden="true"></i>'; }
 
-  const S = { id: null, animal: null, plans: [], records: [], weights: [], busy: false, range: 90 };
+  const S = { id: null, animal: null, animals: [], plans: [], records: [], weights: [],
+              busy: false, range: 90, upGen: 2 };
 
   function toast(m) {
     const t = $('toast'); t.textContent = m; t.classList.add('on');
@@ -51,6 +52,7 @@
     const [animals, plans, records, weights] = await Promise.all([
       A.listAnimals(), A.listPlans(), A.listRecords(C.addDays(C.today(), -400)), A.listWeights(S.id)
     ]);
+    S.animals = animals;                       // 족보가 부모·자식을 찾을 때 씁니다
     S.animal = animals.filter(a => a.id === S.id)[0] || null;
     /* 계획·기록은 이 개체 것과 '개체 공통' 을 함께 봅니다. 랙 전체 청소는
        개체에 매여 있지 않지만 이 개체에도 해당하는 일입니다. */
@@ -147,6 +149,127 @@
         }).join('')
       + '<a class="btn ghost wide" style="text-decoration:none;margin-top:12px" href="/care/#health">'
       + icon('bi-clipboard-pulse') + '건강 탭에서 기록·해소하기</a></div>';
+  }
+
+  /* =============================================================================
+     족보
+     -----------------------------------------------------------------------------
+     계산은 care-core 의 buildPedigree 가 합니다. 여기서는 자리에 좌표만 붙입니다.
+
+     SVG 가 아니라 HTML 로 그립니다. 사진을 원형으로 자르고, 이름을 줄바꿈하고,
+     눌러서 그 개체로 넘어가는 것 — 셋 다 HTML 이 그냥 되는 일이고 SVG 에서는
+     foreignObject 나 clipPath 를 얹어야 합니다. 세대를 잇는 선도 SVG 대신
+     CSS 로 긋습니다(care.css 의 .pedlink). 좌표를 계산해 선을 그리지 않고
+     세대 사이에 높이 있는 칸을 하나 두는 방식이라, 칸 수가 바뀌어도
+     따라 그릴 것이 없습니다.
+
+     ⚠️ 세대가 늘면 폭이 두 배씩 커집니다. 3세대면 조부모 4칸이라 폰에서
+        넘칩니다. 가로 스크롤을 허용하되, 화면 밖으로 나가는 것이 아니라
+        스크롤되는 상자 안에 가둡니다. */
+  function pedigreeBlock() {
+    const up = S.upGen || 2;
+    const p = C.buildPedigree(S.animals, S.id, up);
+    if (!p) return '';
+
+    const hasAny = p.up.length || p.children.length;
+    if (!hasAny) {
+      return '<div class="pad"><div class="lbl">족보</div>'
+        + '<div class="empty">' + icon('bi-diagram-3')
+        + '부모나 자식이 등록되어 있지 않습니다.<br>'
+        + '개체를 수정해 <b>혈통</b>을 지정하면 여기에 이어집니다.</div></div>';
+    }
+
+    /* 세대별 칸 수가 2·4·8 로 늘어납니다. 카드 하나에 최소 폭을 주고
+       그 배수로 전체 폭을 잡습니다. */
+    const CARD = 92, GAP = 10;
+    const widest = p.slots.length ? p.slots[p.slots.length - 1] : 1;
+    const W = Math.max(widest * (CARD + GAP), 300);
+
+    let rows = '';
+    /* 위 세대부터 아래로 그립니다 — 화면에서 조상이 위에 있어야 읽힙니다. */
+    for (let g = p.up.length - 1; g >= 0; g--) {
+      const n = p.slots[g];
+      const cells = [];
+      for (let s = 0; s < n; s++) {
+        const node = p.up[g].filter(x => x.slot === s)[0];
+        cells.push(pedCell(node, g));
+      }
+      rows += '<div class="pedrow" style="grid-template-columns:repeat(' + n + ',1fr)">'
+            + cells.join('') + '</div>'
+            + '<div class="pedlink" aria-hidden="true"></div>';
+    }
+    /* 본인 */
+    rows += '<div class="pedrow" style="grid-template-columns:1fr">'
+          + pedCell({ animal: p.root, slot: 0 }, -1, true) + '</div>';
+
+    let h = '<div class="pad"><div class="lbl">족보</div>'
+      + '<div class="hint">등록된 혈통만 그립니다 — '
+      + p.known.filled + '/' + p.known.total + '칸이 채워져 있습니다. '
+      + '빈 자리는 <b>모른다</b>는 뜻이지 없다는 뜻이 아닙니다.</div>'
+      + '<div class="pedgens">' + [2, 3, 4].map(v =>
+          '<button class="mode' + (up === v ? ' on' : '') + '" data-upgen="' + v + '">'
+          + v + '대</button>').join('') + '</div>'
+      + '<div class="pedscroll"><div class="pedtree" style="min-width:' + W + 'px">'
+      + rows + '</div></div>';
+
+    /* 근친 신호 — 족보를 그리는 가장 큰 이유입니다 */
+    if (p.repeats.length) {
+      h += '<div class="note warn">' + icon('bi-exclamation-triangle')
+        + '<span>같은 조상이 양쪽 혈통에 나옵니다 — '
+        + p.repeats.map(r => esc(r.name) + ' ' + r.count + '회').join(', ')
+        + '. 근친 정도를 판단할 때 참고하세요.</span></div>';
+    }
+    if (p.cycles.length) {
+      h += '<div class="note warn">' + icon('bi-exclamation-triangle')
+        + '<span>혈통이 자기 자신으로 돌아옵니다 ('
+        + p.cycles.map(c => esc(c.name)).join(', ')
+        + '). 부모 지정을 잘못한 것으로 보입니다 — 개체 수정에서 확인해 주세요.</span></div>';
+    }
+
+    /* 자식 */
+    if (p.children.length) {
+      h += '<div class="lbl2">자식 ' + p.children.length + '마리</div>'
+        + '<div class="pedkids">' + p.children.map(function (c) {
+            return '<a class="pedkid" href="animal.html?id=' + encodeURIComponent(c.animal.id) + '">'
+              + pedFace(c.animal)
+              + '<div class="pedname">' + esc(c.animal.name || '이름 없음') + '</div>'
+              /* 족보에서 쓰는 표기 그대로 '× 짝이름'. 조사를 붙이면
+                 이름 끝 받침에 따라 '와/과' 가 갈려서 틀린 쪽이 나옵니다. */
+              + '<div class="pedmate">' + (c.mate ? '× ' + esc(c.mate.name || '이름 없음')
+                                                  : (c.mateId ? '× 지워진 개체' : '짝 미등록'))
+              + '</div></a>';
+          }).join('') + '</div>';
+    }
+    return h + '</div>';
+  }
+
+  function pedFace(a) {
+    if (!a) return '<div class="pedface none">?</div>';
+    if (a.photo_url) return '<div class="pedface"><img src="' + esc(a.photo_url) + '" alt=""></div>';
+    return '<div class="pedface">' + speciesOf(a).icon + '</div>';
+  }
+
+  function pedCell(node, gen, isRoot) {
+    if (!node) return '<div class="pedcell empty"></div>';
+    const a = node.animal;
+    /* 부모 칸은 짝수=부, 홀수=모 입니다 (buildPedigree 의 자리 규칙) */
+    const role = isRoot ? '' : (node.slot % 2 === 0 ? '부' : '모');
+
+    if (!a) {
+      return '<div class="pedcell"><div class="pedbox missing">'
+        + '<div class="pedface none">?</div>'
+        + '<div class="pedname">지워진 개체</div>'
+        + (role ? '<div class="pedrole">' + role + '</div>' : '') + '</div></div>';
+    }
+    const cls = 'pedbox' + (isRoot ? ' root' : '') + (node.repeated ? ' repeated' : '');
+    const inner = pedFace(a)
+      + '<div class="pedname">' + esc(a.name || '이름 없음') + '</div>'
+      + (role ? '<div class="pedrole">' + role + '</div>' : '');
+    return '<div class="pedcell">'
+      + (isRoot
+          ? '<div class="' + cls + '">' + inner + '</div>'
+          : '<a class="' + cls + '" href="animal.html?id=' + encodeURIComponent(a.id) + '">' + inner + '</a>')
+      + '</div>';
   }
 
   /* 체중 곡선. 종별로 흔한 범위를 배경 띠로 함께 그립니다 — 값 하나만 보면
@@ -425,6 +548,7 @@
       + quickBar()
       + lastBar()
       + weightBlock()
+      + pedigreeBlock()
       + heatmap()
       + timeline()
       + planList()
@@ -446,6 +570,7 @@
       return act(() => A.addRecord({ animal_id: S.id, kind: d.quick, title: i.ko }), i.ko + ' 기록됨');
     }
     if (d.delrec) return act(() => A.deleteRecord(d.delrec), '지웠습니다');
+    if (d.upgen) { S.upGen = parseInt(d.upgen, 10); return render(); }
 
     /* ── 공유 ── */
     if (t.id === 'sh_toggle') {

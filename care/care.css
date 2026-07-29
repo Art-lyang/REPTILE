@@ -534,6 +534,65 @@ textarea.in{min-height:76px;resize:vertical;line-height:1.6}
 .lastrow.old .lago{color:var(--warn-fg)}
 @media (max-width:440px){ .lastgrid{grid-template-columns:1fr} }
 
+/* ── 족보 ─────────────────────────────────────────────────────────────── */
+/* 세대가 늘면 폭이 두 배씩 커집니다. 화면 밖으로 흘리지 않고 이 상자 안에서만
+   가로로 스크롤되게 가둡니다 — 페이지 전체가 옆으로 밀리면 다른 것도 다 깨집니다. */
+.pedscroll{overflow-x:auto;padding:4px 2px 8px;margin:10px -2px 0}
+.pedtree{display:flex;flex-direction:column}
+.pedrow{display:grid;gap:8px}
+.pedcell{display:flex;justify-content:center;min-width:0}
+.pedcell.empty{visibility:hidden}
+
+/* 세대 사이를 잇는 선. 좌표를 계산해 긋는 대신 세대마다 높이 있는 칸을
+   하나 두고, 그 안에 세로선을 가운데 놓습니다. 칸 수가 바뀌어도 손댈 게 없습니다. */
+.pedlink{height:16px;position:relative}
+.pedlink::before{
+  content:'';position:absolute;left:50%;top:0;bottom:0;width:1px;
+  background:var(--hair);transform:translateX(-.5px);
+}
+
+.pedbox{
+  display:flex;flex-direction:column;align-items:center;gap:5px;
+  width:84px;padding:9px 6px;text-decoration:none;color:inherit;
+  background:var(--card2);border:1px solid var(--hair);border-radius:14px;
+  transition:border-color .12s,transform .12s;
+}
+a.pedbox:hover{border-color:var(--teal);transform:translateY(-1px)}
+.pedbox.root{background:var(--card);border-color:var(--teal);box-shadow:inset 0 0 0 1px var(--teal)}
+/* 같은 조상이 양쪽 혈통에 나오는 것 = 근친 신호. 족보를 그리는 가장 큰 이유라
+   테두리로도 구분합니다 — 색만으로는 색을 구별하기 어려운 사람에게 안 보입니다. */
+.pedbox.repeated{border-color:var(--warn-fg);border-style:dashed;background:var(--warn-bg)}
+.pedbox.missing{opacity:.6;border-style:dashed}
+
+.pedface{
+  width:42px;height:42px;border-radius:50%;flex:0 0 auto;overflow:hidden;
+  background:var(--gtile);border:1.5px solid rgba(7,90,72,.14);
+  display:flex;align-items:center;justify-content:center;font-size:19px;
+}
+.pedface img{width:100%;height:100%;object-fit:cover;display:block}
+.pedface.none{color:var(--ink2);font-weight:800}
+.pedname{
+  font-size:11.5px;font-weight:750;text-align:center;line-height:1.3;
+  width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.pedrole{font-size:10px;font-weight:800;color:var(--ink2)}
+.pedbox.repeated .pedrole,.pedbox.repeated .pedname{color:var(--warn-fg)}
+
+/* 세대 수 고르기 */
+.pedgens{display:flex;gap:6px;margin-top:10px}
+.pedgens .mode{flex:0 0 auto;min-width:60px;padding:8px 14px;font-size:12.5px}
+
+/* 자식은 세대가 아니라 목록입니다 — 몇 마리가 될지 모르므로 흐르게 둡니다 */
+.pedkids{display:flex;flex-wrap:wrap;gap:9px;margin-top:8px}
+.pedkid{
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  width:84px;padding:9px 6px;text-decoration:none;color:inherit;
+  background:var(--card2);border:1px solid var(--hair);border-radius:14px;
+}
+.pedkid:hover{border-color:var(--teal)}
+.pedmate{font-size:10px;color:var(--ink2);text-align:center;line-height:1.3;
+  width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
 /* ── 기록 히트맵 ──────────────────────────────────────────────────────── */
 /* 세로가 요일(일~토), 가로가 주. grid-auto-flow:column 으로 열 단위로 채웁니다. */
 .heat{

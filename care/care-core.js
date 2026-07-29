@@ -31,11 +31,25 @@ const CARE_KINDS = {
   custom:     { ko: '기타',     icon: 'bi-pin-angle',    emoji: '📌', color: '#746f64' }
 };
 
-/* 기록에만 쓰이고 계획으로는 만들지 않는 종류 (v16 의 care_records 제약 참고) */
+/* 기록에만 쓰이고 계획으로는 만들지 않는 종류 (supabase_v17.sql 3장 참고)
+
+   탈피·배변·거식은 '일정을 잡아 하는 일' 이 아니라 '일어나면 적는 일' 이라
+   반복 주기를 물어볼 수 없습니다. 그래서 계획 종류에서 뺐습니다.
+
+   거식은 급여와 별개입니다 — 줬는데 안 먹은 것과 아예 안 준 것은 다른
+   이야기이고, 파충류에서는 앞의 것이 먼저 보는 신호입니다. */
 const RECORD_ONLY_KINDS = {
-  memo:     { ko: '메모', icon: 'bi-sticky',  emoji: '📝', color: '#746f64' },
-  behavior: { ko: '행동', icon: 'bi-eye',     emoji: '👀', color: '#4E7CA8' }
+  shed:     { ko: '탈피', icon: 'bi-arrow-repeat',   emoji: '🍂', color: '#a9682f' },
+  poop:     { ko: '배변', icon: 'bi-record-circle',  emoji: '💩', color: '#8a6d3b' },
+  refusal:  { ko: '거식', icon: 'bi-slash-circle',   emoji: '🚫', color: '#b4402a' },
+  memo:     { ko: '메모', icon: 'bi-sticky',         emoji: '📝', color: '#746f64' },
+  behavior: { ko: '행동', icon: 'bi-eye',            emoji: '👀', color: '#4E7CA8' }
 };
+
+/* 개체 화면의 '빠른 기록' 버튼. 케어 앱들이 공통으로 두는, 한 번 눌러 바로
+   남기는 자리입니다. 계획에 없는 일을 적으려고 폼을 여는 것이 번거로워서
+   결국 안 적게 되는 것을 막습니다. */
+const QUICK_KINDS = ['feed', 'water', 'poop', 'shed', 'refusal', 'clean', 'health', 'memo'];
 
 function kindInfo(k) {
   return CARE_KINDS[k] || RECORD_ONLY_KINDS[k]
@@ -461,12 +475,123 @@ function weeklySummary(records, weights, endDate) {
 }
 
 
+/* =============================================================================
+   개체별 통계
+   -----------------------------------------------------------------------------
+   개체 하나를 오래 키우면 기록이 쌓입니다. 그걸 한 화면에서 보기 위한 계산들이
+   여기 있습니다. 전부 순수 함수라 값만 넣어 확인할 수 있습니다.
+
+   ⚠️ 여기 숫자는 '적어 넣은 기록' 을 센 것입니다. 실제로 한 것과 다를 수
+      있습니다 — 했는데 안 적으면 안 한 것으로 나옵니다. 화면에도 그렇게
+      적어야 하고, 이 숫자로 건강을 판단해서는 안 됩니다.
+   ============================================================================= */
+
+/* 지난 days 일 동안 계획이 몇 번 예정됐고 몇 번 해냈는가.
+   오늘은 세지 않습니다 — 아직 하루가 끝나지 않았는데 '안 한 것' 으로 세면
+   수행률이 매일 아침 떨어졌다가 저녁에 회복되는 이상한 값이 됩니다. */
+function completionRate(plans, records, days, endDate) {
+  const end = addDays(endDate || today(), -1);      // 어제까지
+  const start = addDays(end, -(Math.max(1, days || 30) - 1));
+  const donePairs = new Set((records || [])
+    .filter(r => r.plan_id).map(r => r.plan_id + '|' + r.done_date));
+
+  let due = 0, done = 0;
+  (plans || []).filter(p => p.is_active !== false).forEach(function (p) {
+    for (let d = start; d <= end; d = addDays(d, 1)) {
+      if (!isDueOn(p, d)) continue;
+      due++;
+      if (donePairs.has(p.id + '|' + d)) done++;
+    }
+  });
+  return { due: due, done: done, rate: due ? Math.round(done / due * 100) : null, days: days || 30 };
+}
+
+/* 기록을 남긴 날이 며칠이나 이어졌는가.
+   오늘 아직 안 적었으면 어제부터 셉니다. 저녁에 적는 사람의 연속이 아침마다
+   끊긴 것처럼 보이면 안 됩니다. */
+function streakDays(records, endDate) {
+  const end = endDate || today();
+  const has = new Set((records || []).map(r => r.done_date));
+  let cur = has.has(end) ? end : addDays(end, -1);
+  if (!has.has(cur)) return 0;
+  let n = 0;
+  while (has.has(cur) && n < 3650) { n++; cur = addDays(cur, -1); }
+  return n;
+}
+
+/* 종류별로 마지막에 한 날과 그 뒤로 며칠 지났는가 */
+function lastDoneByKind(records, endDate) {
+  const end = endDate || today();
+  const out = {};
+  (records || []).forEach(function (r) {
+    if (!out[r.kind] || out[r.kind].date < r.done_date) {
+      out[r.kind] = { date: r.done_date, ago: daysBetween(r.done_date, end) };
+    }
+  });
+  return out;
+}
+
+/* 체중 한눈에 */
+function weightSummary(weights) {
+  const w = (weights || []).slice().sort((a, b) => a.measured_on < b.measured_on ? -1 : 1);
+  if (!w.length) return { count: 0 };
+  const g = w.map(x => Number(x.grams));
+  const round1 = v => Math.round(v * 10) / 10;
+  return {
+    count: w.length,
+    latest: round1(g[g.length - 1]),
+    latestOn: w[w.length - 1].measured_on,
+    first: round1(g[0]),
+    firstOn: w[0].measured_on,
+    min: round1(Math.min.apply(null, g)),
+    max: round1(Math.max.apply(null, g)),
+    /* 전체 증감과 최근 30일 증감을 나눠 둡니다. 자란 개체는 전체가 크게
+       늘어 있어서, 최근에 빠지고 있어도 전체만 보면 안 보입니다. */
+    delta: w.length >= 2 ? round1(g[g.length - 1] - g[0]) : null,
+    delta30: (function () {
+      const cut = addDays(w[w.length - 1].measured_on, -30);
+      const recent = w.filter(x => x.measured_on >= cut);
+      return recent.length >= 2
+        ? round1(Number(recent[recent.length - 1].grams) - Number(recent[0].grams))
+        : null;
+    })()
+  };
+}
+
+/* 히트맵용 — 최근 days 일의 날짜별 기록 수. 오래된 날짜부터 */
+function dailyCounts(records, days, endDate) {
+  const end = endDate || today();
+  const n = Math.max(1, days || 84);
+  const bucket = {};
+  (records || []).forEach(r => { bucket[r.done_date] = (bucket[r.done_date] || 0) + 1; });
+  const out = [];
+  for (let i = n - 1; i >= 0; i--) {
+    const d = addDays(end, -i);
+    out.push({ date: d, count: bucket[d] || 0, weekday: weekdayOf(d) });
+  }
+  return out;
+}
+
+/* 나이. 해칭일이 없으면 null 입니다 — 모르는 것을 0살로 보여주면 안 됩니다. */
+function ageText(hatchDate, endDate) {
+  if (!hatchDate) return null;
+  const d = daysBetween(hatchDate, endDate || today());
+  if (d < 0) return null;
+  if (d < 31) return d + '일';
+  const m = Math.floor(d / 30.44);
+  if (m < 12) return m + '개월';
+  const y = Math.floor(m / 12), rm = m % 12;
+  return y + '년' + (rm ? ' ' + rm + '개월' : '');
+}
+
+
 /* ── 밖에서 쓰도록 내보내기 ─────────────────────────────────────────────── */
 if (typeof window !== 'undefined') {
   window.CareCore = {
-    SERVICE_ID, CARE_KINDS, RECORD_ONLY_KINDS, SPECIES, WEEKDAY_KO, SAFETY_NOTE,
+    SERVICE_ID, CARE_KINDS, RECORD_ONLY_KINDS, QUICK_KINDS, SPECIES, WEEKDAY_KO, SAFETY_NOTE,
     kindInfo, ymd, parseYmd, today, addDays, daysBetween, weekdayOf,
     isDueOn, lastDueBefore, nextDueAfter, planStatus, cycleLabel,
-    buildIcs, icsEscape, icsFold, weeklySummary
+    buildIcs, icsEscape, icsFold, weeklySummary,
+    completionRate, streakDays, lastDoneByKind, weightSummary, dailyCounts, ageText
   };
 }

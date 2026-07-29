@@ -85,7 +85,28 @@ update public.animals
  where species is null or btrim(species) = '';
 
 
-/* ── 3. 확인 ─────────────────────────────────────────────────────────────
+/* ── 3. 기록 종류 넓히기 ─────────────────────────────────────────────────
+   강아지·고양이 케어 앱들이 공통으로 남기는 것 중 파충류에 그대로 오는 것을
+   더합니다. 개·고양이 앱의 '산책·미용' 자리에 파충류는 다른 것이 옵니다.
+
+     shed     탈피    — 주기가 흐트러지면 습도·영양을 먼저 의심하는 신호
+     poop     배변    — 개·고양이 앱도 거의 다 남깁니다
+     refusal  거식    — 먹이를 거부한 날. 파충류에서 가장 먼저 보는 항목
+
+   거식은 '급여를 안 한 날' 과 다릅니다. 줬는데 안 먹은 것이라 따로 세야
+   합니다. 급여 기록이 없는 것과 같이 묶으면 둘 다 뜻을 잃습니다.
+
+   계획(care_plans)에는 넣지 않습니다. 탈피와 거식은 일정을 잡아 하는 일이
+   아니라 일어나면 적는 일입니다. 반복 주기를 물어보는 것 자체가 말이 안 됩니다.
+   그래서 care_records 의 제약만 넓힙니다. */
+alter table public.care_records drop constraint if exists care_records_kind_ck;
+alter table public.care_records add constraint care_records_kind_ck
+  check (kind in ('feed','water','clean','bedding','supplement','weigh','health',
+                  'memo','behavior','custom',
+                  'shed','poop','refusal'));
+
+
+/* ── 4. 확인 ─────────────────────────────────────────────────────────────
    트리거가 붙었는지, 빈 값이 없는지 봅니다. */
 select '트리거' as 항목, tgname as 이름,
        case when tgenabled = 'O' then '켜짐' else tgenabled::text end as 상태

@@ -199,7 +199,9 @@
       + '<div class="info"><div class="nm">' + esc(a.name || '이름 없음') + sex + '</div>'
       + '<div class="ms">' + esc(bits.join(' · ')) + '</div></div>'
       + '<div class="acts">'
-      + '<button class="mini" data-weigh="' + a.id + '">' + icon('bi-speedometer2') + '체중</button>'
+      /* 개체 관리 화면으로. 주소에 id 가 들어가 즐겨찾기에 둘 수 있습니다. */
+      + '<a class="mini" href="animal.html?id=' + encodeURIComponent(a.id) + '">'
+      + icon('bi-graph-up') + '관리</a>'
       + '<button class="mini" data-editanimal="' + a.id + '">' + icon('bi-pencil') + '수정</button>'
       + '</div></div>'
       + (S.focus === a.id ? weightPanel(a) : '');

@@ -131,9 +131,31 @@ function gate(){
     +'<div class="formbtns"><a class="btn" href="index.html" style="flex:1;text-decoration:none;text-align:center">계산기에서 코드 입력하기</a></div>'
     +'</div></div>';
 }
+/* 이 화면은 레오파드 전용입니다. 모프·헷·역산이 전부 gecko-core.js 의
+   레오파드 유전자로 계산되기 때문입니다.
+
+   케어 화면(/care/)이 생기면서 한 계정에 크레스티드·팻테일·피그미도 등록될
+   수 있게 됐습니다. 그걸 걸러내지 않으면 이런 일이 납니다.
+
+     · 역산의 '보유 N' 뱃지가 다른 종까지 세어 실제보다 부풀려 나옵니다.
+       morphs 배열에 같은 이름의 토큰이 들어 있으면 종을 안 가리고 세니까요.
+     · 페어링 후보에 피그미다람쥐가 뜹니다.
+
+   그래서 여기서는 레오파드만 다룹니다. 다른 종은 케어 화면에서 관리합니다.
+   OTHERS 는 '다른 종도 있다' 는 안내를 띄우는 데만 씁니다. */
+let OTHERS=0;
 async function loadAll(){
   const g=async t=>{ try{ const r=await SB.rpc('my_rows',{p_device:uid(),p_table:t}); return r.data||[]; }catch(e){ return []; } };
-  A=await g('animals'); P=await g('pairings'); C=await g('clutches');
+  const all=await g('animals');
+  /* species 가 없는 옛 기록은 레오파드로 봅니다 (supabase_v16.sql 1장과 같은 기준) */
+  A=all.filter(a=>!a.species||a.species==='leopard');
+  OTHERS=all.length-A.length;
+  P=await g('pairings'); C=await g('clutches');
+}
+/* 다른 종이 있을 때만 뜨는 안내 */
+function otherNote(){
+  return OTHERS? '<div class="hint">이 화면은 <b>레오파드 게코</b> 전용입니다 — 모프·헷·역산이 레오파드 유전자로 계산됩니다. '
+    +'다른 종 '+OTHERS+'마리는 <a href="/care/">케어 관리</a>에서 볼 수 있어요.</div>' : '';
 }
 async function save(t,row){ const r=await SB.rpc('save_row',{p_device:uid(),p_table:t,p_row:row}); if(r.error) throw r.error; return r.data; }
 async function del(t,id){ await SB.rpc('delete_row',{p_device:uid(),p_table:t,p_id:id}); }
@@ -157,8 +179,9 @@ function card(a){
 }
 function nameById(id){ const x=A.filter(y=>y.id===id)[0]; return x? (x.name||'이름없음') : '-'; }
 function tabAnimals(){
-  $('body').innerHTML='<div class="pad"><div class="bar"><button class="btn sm" id="new">+ 개체 등록</button><span class="hint">'+A.length+'마리</span></div>'
-    +(A.length? A.map(card).join('') : '<div class="empty">등록된 개체가 없어요.<br>보유 중인 게코를 등록하면 페어링·클러치 관리를 할 수 있습니다.</div>')+'</div>';
+  $('body').innerHTML='<div class="pad"><div class="bar"><button class="btn sm" id="new">+ 개체 등록</button><span class="hint">레오파드 '+A.length+'마리</span></div>'
+    +otherNote()
+    +(A.length? A.map(card).join('') : '<div class="empty">등록된 레오파드가 없어요.<br>보유 중인 게코를 등록하면 페어링·클러치 관리를 할 수 있습니다.</div>')+'</div>';
   $('new').onclick=()=>form(null);
   document.querySelectorAll('[data-e]').forEach(x=>x.onclick=()=>form(A.filter(y=>y.id===x.dataset.e)[0]));
   document.querySelectorAll('[data-d]').forEach(x=>x.onclick=async()=>{ if(!confirm('삭제할까요?'))return; await del('animals',x.dataset.d); await loadAll(); tabAnimals(); });
@@ -328,7 +351,8 @@ function tabGoal(){
     return A.filter(a=>carries(a,gene)).length;
   };
   $('body').innerHTML='<div class="pad"><div class="lbl">목표 모프 역산</div>'
-    +'<div class="hint">만들고 싶은 모프를 고르면 <b>내가 등록한 개체</b> 기준으로 가능한지, 무엇이 부족한지 알려드려요.</div>'
+    +'<div class="hint">만들고 싶은 모프를 고르면 <b>내가 등록한 레오파드</b> 기준으로 가능한지, 무엇이 부족한지 알려드려요.</div>'
+    +otherNote()
     +(A.length? '<div class="hint">등록된 개체 <b>'+A.length+'마리</b> ('
         +A.filter(a=>a.sex==='male').length+'♂ / '+A.filter(a=>a.sex==='female').length+'♀'
         +(A.filter(a=>!a.sex||a.sex==='unknown').length? ' / 성별미상 '+A.filter(a=>!a.sex||a.sex==='unknown').length : '')+')</div>'

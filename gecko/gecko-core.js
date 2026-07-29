@@ -120,18 +120,22 @@ const POLY = [
   {id:'tangerinered',line:'tangerine', ko:'레드', en:'Red', zh:'红', ja:'レッド'},
   /* 레드데빌 — 붉은 발색 라인. 텐져린 계열로 묶었습니다.
 
-     ⚠️ implies — 이 라인은 벨 알비노를 깔고 갑니다.
+     ⚠️ implies — 이 라인은 벨 알비노를 물고 있습니다.
      붉은 발색 자체는 다인자라 확률 계산 대상이 아니지만, 벨 알비노는
      열성 유전자라 계산 대상입니다. 그래서 레드데빌을 골랐는데 벨 알비노가
-     꺼져 있으면 확률이 조용히 틀립니다 — 레드데빌끼리 붙이면 새끼는 100%
-     벨 알비노인데 0% 로 나오고, 노멀과 붙이면 100% het 벨인데 그것도
-     안 나옵니다.
+     꺼져 있으면 확률이 조용히 틀립니다 — 노멀과 붙여도 최소 50% 는 het
+     벨인데 화면에는 0% 로 나옵니다.
 
-     그래서 이 칩을 켜면 벨 알비노도 함께 켭니다. 라인에 따라 아닐 수도
-     있으니 벨 알비노 칩을 따로 끄면 그대로 꺼집니다.
+     'mm' 이 아니라 'het' 인 이유. 벨 알비노는 열성이라 라인 안에 겉으로
+     드러나지 않는 보인자가 섞여 있습니다. 레드데빌이라고 전부 비주얼
+     알비노는 아니라는 뜻이고, 모든 레드데빌에 대해 확실히 말할 수 있는
+     선은 '최소 보인자' 까지입니다.
 
-     값 'mm' 은 열성 두 개(=비주얼 발현) 입니다. */
-  {id:'reddevil',  line:'tangerine', implies:{bell:'mm'},
+     그래서 implies 는 **최소값** 으로 다룹니다 (genoRank 참고).
+     내 개체가 눈으로 봐서 알비노면 벨 알비노 칩을 '비주얼' 로 올리면
+     되고, 그때 경고는 안 뜹니다 — 어긋난 게 아니라 더 진한 경우니까요.
+     반대로 아예 꺼버리면 확률이 실제보다 낮다고 알려줍니다. */
+  {id:'reddevil',  line:'tangerine', implies:{bell:'het'},
      ko:'레드데빌', en:'Red Devil', zh:'红魔', ja:'レッドデビル'},
   /* 에머릴드 + 텐져린 계열. 예전에는 따로 보기도 했지만 요즘은
      텐져린 계열로 취급합니다. (현직 브리더 확인) */
@@ -378,14 +382,28 @@ POLY.forEach(p=>{STATE.A[p.id]='no';STATE.B[p.id]='no';});
    있을 때만 되돌립니다. 사용자가 중간에 직접 바꿨으면 그 값을 존중합니다. */
 const IMPLIED={A:{}, B:{}};
 
+/* implies 는 '이만큼은 확실하다' 는 **최소값** 입니다. 정확한 값이 아닙니다.
+   레드데빌은 벨 알비노를 물고 있지만 열성이라 보인자인지 발현인지는
+   개체마다 다릅니다. 그래서 het 을 깔되, 사용자가 비주얼로 올려둔 것을
+   het 으로 끌어내리지 않고, 올려둔 것을 어긋났다고 경고하지도 않습니다.
+
+   nn(정상) < het(보인자) < mm(발현) 순서. 'no' 는 라인브리딩 칩의 꺼짐입니다. */
+const GENO_RANK={no:0, nn:0, het:1, mm:2};
+function genoRank(v){ return GENO_RANK[v]===undefined? 0 : GENO_RANK[v]; }
+
 function applyImplies(side, poly){
   if(!poly.implies) return;
-  const prev={};
+  const prev={}, set={};
   Object.keys(poly.implies).forEach(gid=>{
+    const want=poly.implies[gid];
+    /* 이미 최소치 이상이면 그대로 둡니다 — 비주얼을 het 으로 내리면
+       사용자가 아는 사실을 우리가 지우는 셈입니다. */
+    if(genoRank(STATE[side][gid]) >= genoRank(want)) return;
     prev[gid]=STATE[side][gid];
-    STATE[side][gid]=poly.implies[gid];
+    STATE[side][gid]=want;
+    set[gid]=want;
   });
-  IMPLIED[side][poly.id]={prev:prev, set:Object.assign({}, poly.implies)};
+  IMPLIED[side][poly.id]={prev:prev, set:set};
 }
 
 function clearImplies(side, poly){
@@ -409,7 +427,11 @@ function impliesReport(side){
     if(!p.implies || STATE[side][p.id]==='no') return;
     Object.keys(p.implies).forEach(gid=>{
       const g=GENES.find(x=>x.id===gid); if(!g) return;
-      (STATE[side][gid]===p.implies[gid] ? on : off).push({poly:p, gene:g, val:p.implies[gid]});
+      const cur=STATE[side][gid];
+      /* 최소치 이상이면 정상입니다. het 을 요구하는데 비주얼이면 그건
+         어긋난 게 아니라 더 진한 경우라 경고하지 않습니다. */
+      (genoRank(cur) >= genoRank(p.implies[gid]) ? on : off)
+        .push({poly:p, gene:g, val:p.implies[gid], cur:cur});
     });
   });
   return {on:on, off:off};

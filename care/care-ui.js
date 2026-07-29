@@ -413,6 +413,97 @@
   }
 
   /* =============================================================================
+     건강 — 증세 관찰
+     -----------------------------------------------------------------------------
+     루틴 케어(급여·청소)와 성격이 다릅니다. 저건 '할 일' 이고 이건 '본 것'
+     입니다. 주기가 없고, 해소될 때까지 이어지며, 수의사에게 보여줄 자료가
+     됩니다. 그래서 탭을 나눴습니다.
+
+     ⚠️ 여기서 병명을 말하지 않습니다. 무엇이 보였는지와 언제부터인지만
+        남깁니다. care-core.js 의 SIGNS 머리말에 이유가 있습니다.
+     ============================================================================= */
+  function tabHealth() {
+    if (!S.animals.length) {
+      return '<div class="pad"><div class="empty">' + icon('bi-heart-pulse')
+        + '먼저 개체를 등록해 주세요.<br>증세는 개체별로 남깁니다.</div></div>';
+    }
+    /* 개체를 골라야 합니다. 어느 개체의 증세인지 모르면 기록이 쓸모없습니다. */
+    if (!S.focus) {
+      return '<div class="pad"><div class="lbl">증세 관찰</div>'
+        + '<div class="hint">개체를 고르면 그 종에서 볼 항목이 나옵니다.</div>'
+        + '<div class="empty" style="margin-top:12px">' + icon('bi-arrow-up')
+        + '위 <b>개체</b> 에서 한 마리를 골라주세요.</div></div>';
+    }
+
+    const a = animalById(S.focus);
+    const recs = S.records.filter(r => r.animal_id === S.focus);
+    const status = C.signStatus(recs, C.today());
+    const open = status.filter(s => s.open);
+    const closed = status.filter(s => !s.open);
+    const codes = C.signsFor(a.species);
+
+    let h = '';
+
+    /* 1. 지금 보고 있는 것 */
+    if (open.length) {
+      h += '<div class="sect"><h2>관찰 중</h2><span class="n">' + open.length + '</span></div>';
+      h += open.map(function (s) {
+        const g = C.SIGNS[s.code] || { ko: s.code, what: '' };
+        return '<div class="signcard' + (g.vet ? ' vet' : '') + '">'
+          + '<div class="sgtop"><div class="sgname">' + esc(g.ko) + '</div>'
+          + '<div class="sgdays">' + s.days + '일째</div></div>'
+          + '<div class="sgwhat">' + esc(g.what) + '</div>'
+          + (g.vet ? '<div class="sgvet">' + icon('bi-hospital') + '수의사에게 보이시길 권합니다</div>' : '')
+          + '<div class="sgfoot"><span>최초 ' + esc(s.first) + ' · 마지막 '
+          + (s.ago === 0 ? '오늘' : s.ago + '일 전') + ' · ' + s.n + '회 기록</span>'
+          + '<span class="sgbtns">'
+          + '<button class="mini" data-sign="' + s.code + '" data-sact="again">' + icon('bi-plus-lg') + '오늘도</button>'
+          + '<button class="mini" data-sign="' + s.code + '" data-sact="end">' + icon('bi-check-lg') + '해소</button>'
+          + '</span></div></div>';
+      }).join('');
+    }
+
+    /* 2. 기록하기 */
+    h += '<div class="pad"><div class="lbl">증세 남기기</div>'
+      + '<div class="hint">' + esc(a.name || '이 개체') + ' 에서 보인 것을 고르세요. '
+      + '<b>진단이 아니라 관찰 기록</b>입니다 — 무엇이 보였는지와 언제부터인지만 남습니다.</div>'
+      + '<div class="signgrid">' + codes.map(function (code) {
+          const g = C.SIGNS[code];
+          const on = open.some(s => s.code === code);
+          return '<button class="sgpick' + (on ? ' on' : '') + '" data-sign="' + code + '" data-sact="new">'
+            + esc(g.ko) + (g.vet ? '<i class="bi bi-hospital" aria-hidden="true" title="수의사 상담 권고"></i>' : '')
+            + '</button>';
+        }).join('') + '</div>'
+      + '<input class="in" id="sg_note" placeholder="메모 (선택) — 며칠째인지, 어느 쪽인지 등" style="margin-top:10px">'
+      + '</div>';
+
+    /* 3. 지난 것 */
+    if (closed.length) {
+      h += '<div class="sect"><h2>해소된 것</h2><span class="n">' + closed.length + '</span></div>';
+      h += closed.map(function (s) {
+        const g = C.SIGNS[s.code] || { ko: s.code };
+        return '<div class="card"><div class="info"><div class="nm">' + esc(g.ko)
+          + '<span class="chip">해소</span></div>'
+          + '<div class="ms">' + esc(s.first) + ' ~ ' + esc(s.last) + ' · ' + s.n + '회 기록</div></div>'
+          + '<div class="acts"><button class="mini" data-sign="' + s.code + '" data-sact="again">'
+          + icon('bi-arrow-counterclockwise') + '다시</button></div></div>';
+      }).join('');
+    }
+
+    /* 4. 유전 관련은 계산기가 봅니다 */
+    const calc = (C.SPECIES[a.species] || {}).calc;
+    h += '<div class="pad"><div class="lbl">모프와 관련된 위험</div>'
+      + '<div class="hint">에니그마 계열의 신경 증상, 레몬 프로스트의 종양처럼 <b>모프에 따라 알려진 위험</b>은 '
+      + '태어나기 전에 확인하는 편이 낫습니다. 계산기가 교배 조합을 넣는 단계에서 알려줍니다.</div>'
+      + (calc ? '<a class="btn ghost wide" style="text-decoration:none;margin-top:10px" href="' + calc + '">'
+                + icon('bi-calculator') + esc((C.SPECIES[a.species] || {}).ko) + ' 계산기 열기</a>'
+              : '<div class="hint">이 종은 아직 계산기가 없습니다.</div>')
+      + '<div class="safety">' + esc(C.SAFETY_NOTE) + '</div></div>';
+
+    return h;
+  }
+
+  /* =============================================================================
      요약
      ============================================================================= */
   function tabReport() {
@@ -468,10 +559,23 @@
       t.classList.toggle('on', t.getAttribute('data-t') === S.tab));
 
     $('body').innerHTML =
-      ({ today: tabToday, animals: tabAnimals, plans: tabPlans, report: tabReport }[S.tab])();
+      ({ today: tabToday, animals: tabAnimals, plans: tabPlans,
+         health: tabHealth, report: tabReport }[S.tab])();
   }
 
-  function go(tab) { S.tab = tab; S.editAnimal = null; S.editPlan = null; render(); }
+  function go(tab) {
+    S.tab = tab; S.editAnimal = null; S.editPlan = null;
+    /* 주소에 남겨 둡니다. 개체 관리 화면에서 /care/#health 로 보내는 링크가
+       실제로 그 탭을 열게 하려면 이게 있어야 합니다. 뒤로 가기도 자연스러워집니다. */
+    try { history.replaceState(null, '', '#' + tab); } catch (e) {}
+    render();
+  }
+
+  const TABS = ['today', 'animals', 'plans', 'health', 'report'];
+  function tabFromHash() {
+    const h = (location.hash || '').replace('#', '');
+    return TABS.indexOf(h) >= 0 ? h : 'today';
+  }
 
   /* 화면을 다시 그릴 때마다 요소가 새로 만들어지므로, 각 버튼에 리스너를 달지
      않고 문서 하나에서 받아 처리합니다. */
@@ -516,7 +620,9 @@
       if (!confirm('이 계획을 지울까요? 이미 남긴 완료 기록은 그대로 둡니다.')) return;
       return act(async () => { await A.deletePlan(d.delplan); S.editPlan = null; }, '삭제했습니다');
     }
-    if (d.mode) {
+    /* 계획 폼의 반복 방식 토글. 그 폼이 열려 있을 때만 동작해야 합니다 —
+       다른 화면에도 data-mode 가 생기면 여기서 없는 요소를 만지고 죽습니다. */
+    if (d.mode && $('m_days') && $('m_week')) {
       document.querySelectorAll('.mode').forEach(m => m.classList.toggle('on', m === t));
       $('m_days').style.display = d.mode === 'days' ? 'block' : 'none';
       $('m_week').style.display = d.mode === 'week' ? 'block' : 'none';
@@ -525,6 +631,19 @@
     if (d.wd !== undefined) { t.classList.toggle('on'); return; }
     if (t.id === 'preset') return addPreset();
     if (t.id === 'ics') return exportIcs();
+
+    /* ── 증세 ── */
+    if (d.sign) {
+      const g = C.SIGNS[d.sign];
+      if (!g || !S.focus) return;
+      const noteEl = $('sg_note');
+      const note = noteEl ? noteEl.value.trim() : '';
+      const end = d.sact === 'end';
+      return act(() => A.addRecord({
+        animal_id: S.focus, kind: 'symptom', detail: d.sign,
+        title: end ? '해소' : '관찰', note: note || null
+      }), end ? '해소로 표시했습니다' : g.ko + ' 기록됨');
+    }
   });
 
   document.addEventListener('change', function (ev) {
@@ -674,6 +793,7 @@
       + (A.premium.kind === 'sub' ? ' · 구독' : A.premium.kind ? ' · 체험판' : '');
     $('acctBtn').style.display = '';
     $('tabs').style.display = '';
+    S.tab = tabFromHash();
     await reload();
   }
 

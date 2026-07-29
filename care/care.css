@@ -114,7 +114,7 @@ header .sub{
 
 /* ── 탭 : 계산기의 .filterbar / .fseg ─────────────────────────────────── */
 .tabs{
-  display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:6px;
+  display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:6px;
   margin:-6px 0 18px; padding:7px;
   border:1px solid var(--hair); border-radius:20px;    /* (theme) */
   background:var(--card); box-shadow:var(--shadow);
@@ -345,6 +345,55 @@ textarea.in{min-height:76px;resize:vertical;line-height:1.6}
   font-size:11.5px; color:var(--ink2); line-height:1.75; margin-top:14px;
   padding-top:13px; border-top:1px solid var(--hair);
 }
+
+/* =============================================================================
+   증세 관찰 (건강 탭)
+   ============================================================================= */
+
+/* 관찰 중인 증세 카드. 수의사 상담을 권하는 것은 테두리로 구분합니다 —
+   색만 다르게 하면 색을 구별하기 어려운 사람에게 아무 차이가 없습니다. */
+.signcard{
+  background:var(--card); border:1px solid var(--hair); border-left:4px solid var(--patina);
+  border-radius:var(--radius-sm); padding:14px 16px; margin-bottom:9px; box-shadow:var(--shadow);
+}
+.signcard.vet{border-left-color:var(--warn-fg);background:var(--warn-bg);border-color:var(--warn-bd)}
+.sgtop{display:flex;align-items:baseline;gap:10px}
+.sgname{flex:1;min-width:0;font-size:15px;font-weight:800;letter-spacing:-.03em}
+.sgdays{font-size:12px;font-weight:800;color:var(--ink2);white-space:nowrap}
+.signcard.vet .sgdays{color:var(--warn-fg)}
+.sgwhat{font-size:12.5px;color:var(--ink2);line-height:1.7;margin-top:5px}
+.signcard.vet .sgwhat{color:var(--warn-fg);opacity:.92}
+.sgvet{
+  display:inline-flex; align-items:center; gap:6px; margin-top:9px;
+  font-size:12px; font-weight:800; color:var(--warn-fg);
+  background:var(--card); border:1px solid var(--warn-bd); border-radius:999px; padding:5px 12px;
+}
+.sgfoot{
+  display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:space-between;
+  margin-top:11px; padding-top:10px; border-top:1px solid var(--hair);
+  font-size:11px; color:var(--ink2);
+}
+.signcard.vet .sgfoot{border-top-color:var(--warn-bd)}
+.sgbtns{display:flex;gap:6px}
+
+/* 증세 고르기 — 계산기 칩과 같은 규칙 */
+.signgrid{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
+.sgpick{
+  display:inline-flex; align-items:center; gap:6px;
+  min-height:40px; padding:8px 15px;
+  border:1px solid var(--chipbd); border-radius:999px;
+  background:var(--card); color:var(--ink);
+  font-size:13px; font-weight:650; font-family:inherit; cursor:pointer;
+  box-shadow:0 1px 2px rgba(36,48,41,.02);
+  transition:background .12s,border-color .12s,color .12s;
+}
+.sgpick:hover{border-color:rgba(7,90,72,.55);background:rgba(7,90,72,.035)}
+.sgpick.on{
+  border-color:var(--warn-fg); background:var(--warn-bg); color:var(--warn-fg);
+  box-shadow:inset 0 0 0 1px var(--warn-fg); font-weight:750;
+}
+.sgpick i{font-size:12px;opacity:.55;color:var(--warn-fg)}
+.sgpick.on i{opacity:1}
 
 /* =============================================================================
    개체 관리 화면 (animal.html) 전용

@@ -99,11 +99,15 @@ update public.animals
    계획(care_plans)에는 넣지 않습니다. 탈피와 거식은 일정을 잡아 하는 일이
    아니라 일어나면 적는 일입니다. 반복 주기를 물어보는 것 자체가 말이 안 됩니다.
    그래서 care_records 의 제약만 넓힙니다. */
+/* symptom 은 '증세를 봤다' 는 기록입니다. 무엇을 봤는지는 detail 에 코드로,
+   관찰인지 해소인지는 title 에 넣습니다 (care-core.js 의 SIGNS 참고).
+   진단이 아니라 관찰이라 종류를 하나만 둡니다 — 병명별로 칸을 나누면
+   그 칸을 고르는 행위가 곧 진단이 됩니다. */
 alter table public.care_records drop constraint if exists care_records_kind_ck;
 alter table public.care_records add constraint care_records_kind_ck
   check (kind in ('feed','water','clean','bedding','supplement','weigh','health',
                   'memo','behavior','custom',
-                  'shed','poop','refusal'));
+                  'shed','poop','refusal','symptom'));
 
 
 /* ── 4. 확인 ─────────────────────────────────────────────────────────────

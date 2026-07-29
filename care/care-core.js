@@ -39,6 +39,7 @@ const CARE_KINDS = {
    거식은 급여와 별개입니다 — 줬는데 안 먹은 것과 아예 안 준 것은 다른
    이야기이고, 파충류에서는 앞의 것이 먼저 보는 신호입니다. */
 const RECORD_ONLY_KINDS = {
+  symptom:  { ko: '증세', icon: 'bi-clipboard-pulse', emoji: '🔍', color: '#b4402a' },
   shed:     { ko: '탈피', icon: 'bi-arrow-repeat',   emoji: '🍂', color: '#a9682f' },
   poop:     { ko: '배변', icon: 'bi-record-circle',  emoji: '💩', color: '#8a6d3b' },
   refusal:  { ko: '거식', icon: 'bi-slash-circle',   emoji: '🚫', color: '#b4402a' },
@@ -476,6 +477,97 @@ function weeklySummary(records, weights, endDate) {
 
 
 /* =============================================================================
+   증세 관찰
+   -----------------------------------------------------------------------------
+   ⚠️ 여기 있는 것은 전부 '무엇이 보이는가' 입니다. 원인도, 병명도, 처치도
+      적지 않습니다. 그건 수의사의 영역이고, 우리가 적는 순간 사육자는 그것을
+      진단으로 읽습니다. 잘못 읽으면 개체가 죽습니다.
+
+      그래서 각 항목은 이렇게만 이루어져 있습니다.
+        ko    무엇이 보이는가 (증세 이름)
+        what  어디를 어떻게 보는가 (관찰 방법)
+        vet   이건 기록만 하지 말고 수의사에게 보이라고 권할 것인가
+
+      vet 는 한 방향으로만 씁니다 — '보이세요' 라고 말할 뿐, '괜찮습니다'
+      라고는 하지 않습니다. 판단을 미루는 쪽으로 틀리는 편이 안전합니다.
+      vet 가 false 인 항목도 걱정되면 상담하라는 문구를 화면에 함께 답니다.
+
+   유전 관련(에니그마 신경증상·레몬 프로스트 종양 등)은 여기서 다루지 않습니다.
+   그건 이미 태어나기 전에 계산기가 교배 단계에서 경고합니다
+   (gecko-core.js 의 DANGER). 같은 이야기를 두 곳에 두면 한쪽만 고쳐집니다.
+
+   species 가 null 이면 모든 종에 보여줍니다. 목록이 있으면 그 종에서만
+   보여줍니다 — 크레스티드에 없는 증세를 크레스티드 화면에 늘어놓으면
+   정작 봐야 할 것이 묻힙니다.
+   ============================================================================= */
+const SIGNS = {
+  floppy_tail: { ko: '플로피테일', species: ['crested'], vet: false,
+    what: '수직면에 붙어 쉴 때 꼬리가 등 쪽으로 넘어가 있는지. 같은 자세를 사진으로 남겨두면 비교하기 쉽습니다.' },
+  kinked_tail: { ko: '꼬리 꺾임 · 구불거림', species: null, vet: false,
+    what: '꼬리 어느 지점이 꺾이거나 구부러져 있는지. 언제부터인지 함께 적어두세요.' },
+  autotomy: { ko: '자절 (꼬리 끊김)', species: null, vet: false,
+    what: '끊어진 날짜와 끊긴 자리 상태. 붓거나 진물이 나면 수의사에게 보이세요.' },
+  wobble: { ko: '균형 이상 · 머리 흔들림', species: null, vet: true,
+    what: '걸을 때 기울거나 도는지, 머리가 흔들리는지. 언제 심해지는지(먹이 반응 시 등) 함께.' },
+  stargazing: { ko: '별보기 자세', species: null, vet: true,
+    what: '머리를 위나 뒤로 젖힌 자세를 유지하는지.' },
+  stereotypy: { ko: '정형행동', species: null, vet: false,
+    what: '유리 타기, 같은 자리 반복 왕복 등이 하루 중 언제 얼마나 이어지는지. 은신처·온도·시야를 함께 점검해 보세요.' },
+  shed_stuck: { ko: '탈피 부전', species: null, vet: true,
+    what: '허물이 남아 있는 자리. 특히 발가락 끝·꼬리 끝·눈 주위를 확인하세요. 발가락을 조이고 있으면 서두르는 편이 좋습니다.' },
+  abscess: { ko: '부기 · 고름', species: null, vet: true,
+    what: '어디가 부었는지, 색과 크기. 만지지 말고 사진으로 남기세요.' },
+  mouth: { ko: '입 주변 이상', species: null, vet: true,
+    what: '침·거품·부기가 있는지, 입을 다물지 못하는지.' },
+  resp: { ko: '호흡 이상', species: null, vet: true,
+    what: '콧구멍에 거품이 있는지, 입을 벌리고 숨 쉬는지, 숨소리가 나는지.' },
+  prolapse: { ko: '탈출 (총배설강)', species: null, vet: true,
+    what: '총배설강 밖으로 조직이 나와 있는지. 마르지 않게 두고 바로 상담하세요.' },
+  bone: { ko: '뼈 · 사지 이상', species: null, vet: true,
+    what: '턱이 물렁한지, 사지가 휘었는지, 떨림이 있는지.' },
+  eye: { ko: '눈 이상', species: null, vet: true,
+    what: '한쪽을 계속 감고 있는지, 분비물이나 부기가 있는지.' },
+  bloat: { ko: '복부 팽만 · 배변 없음', species: null, vet: true,
+    what: '배가 부풀어 있는지, 며칠째 배변 기록이 없는지.' },
+  skin: { ko: '피부 이상', species: null, vet: true,
+    what: '색이 변한 자리, 혹, 딱지, 진물이 있는지.' },
+  appetite: { ko: '먹이 거부가 이어짐', species: null, vet: false,
+    what: '며칠째인지, 먹이 종류를 바꿔도 그런지. 체중을 함께 재두면 판단에 도움이 됩니다.' }
+};
+
+/* 이 종에서 볼 항목만 */
+function signsFor(species) {
+  return Object.keys(SIGNS).filter(function (k) {
+    const s = SIGNS[k];
+    return !s.species || s.species.indexOf(species) >= 0;
+  });
+}
+
+/* 증세 기록은 kind='symptom', detail=코드, title='관찰' 또는 '해소' 입니다.
+   코드별로 가장 최근 기록이 '관찰' 이면 아직 보고 있는 것으로 봅니다.
+
+   상태 칼럼을 따로 두지 않은 이유 — 상태는 기록에서 나옵니다. 칼럼으로 두면
+   기록과 상태가 어긋날 수 있고, 그때 어느 쪽이 맞는지 알 수 없습니다. */
+function signStatus(records, endDate) {
+  const end = endDate || today();
+  const by = {};
+  (records || []).filter(r => r.kind === 'symptom' && r.detail).forEach(function (r) {
+    const g = by[r.detail] || (by[r.detail] = { code: r.detail, first: r.done_date, last: r.done_date, n: 0, open: true });
+    if (r.done_date < g.first) g.first = r.done_date;
+    if (r.done_date >= g.last) { g.last = r.done_date; g.latestTitle = r.title; }
+    g.n++;
+  });
+  return Object.keys(by).map(function (code) {
+    const g = by[code];
+    g.open = g.latestTitle !== '해소';
+    g.days = daysBetween(g.first, end) + 1;
+    g.ago = daysBetween(g.last, end);
+    return g;
+  }).sort((a, b) => (a.open === b.open) ? (a.last < b.last ? 1 : -1) : (a.open ? -1 : 1));
+}
+
+
+/* =============================================================================
    개체별 통계
    -----------------------------------------------------------------------------
    개체 하나를 오래 키우면 기록이 쌓입니다. 그걸 한 화면에서 보기 위한 계산들이
@@ -592,6 +684,7 @@ if (typeof window !== 'undefined') {
     kindInfo, ymd, parseYmd, today, addDays, daysBetween, weekdayOf,
     isDueOn, lastDueBefore, nextDueAfter, planStatus, cycleLabel,
     buildIcs, icsEscape, icsFold, weeklySummary,
-    completionRate, streakDays, lastDoneByKind, weightSummary, dailyCounts, ageText
+    completionRate, streakDays, lastDoneByKind, weightSummary, dailyCounts, ageText,
+    SIGNS, signsFor, signStatus
   };
 }

@@ -129,6 +129,26 @@
       + '<div class="lastgrid">' + rows.join('') + '</div></div>';
   }
 
+  /* 관찰 중인 증세. 이 화면은 '한눈에 보는 곳' 이라, 지금 보고 있는 것이
+     있으면 위쪽에 있어야 합니다. 기록·해소는 케어 화면의 건강 탭에서 합니다 —
+     같은 조작을 두 곳에 두면 한쪽만 고쳐집니다. */
+  function openSigns() {
+    const st = C.signStatus(S.records, C.today()).filter(s => s.open);
+    if (!st.length) return '';
+    return '<div class="pad"><div class="lbl">관찰 중인 증세</div>'
+      + st.map(function (s) {
+          const g = C.SIGNS[s.code] || { ko: s.code, what: '' };
+          return '<div class="signcard' + (g.vet ? ' vet' : '') + '" style="margin-top:10px">'
+            + '<div class="sgtop"><div class="sgname">' + esc(g.ko) + '</div>'
+            + '<div class="sgdays">' + s.days + '일째</div></div>'
+            + '<div class="sgwhat">' + esc(g.what) + '</div>'
+            + (g.vet ? '<div class="sgvet">' + icon('bi-hospital') + '수의사에게 보이시길 권합니다</div>' : '')
+            + '</div>';
+        }).join('')
+      + '<a class="btn ghost wide" style="text-decoration:none;margin-top:12px" href="/care/#health">'
+      + icon('bi-clipboard-pulse') + '건강 탭에서 기록·해소하기</a></div>';
+  }
+
   /* 체중 곡선. 종별로 흔한 범위를 배경 띠로 함께 그립니다 — 값 하나만 보면
      그게 큰 편인지 작은 편인지 알 수 없습니다. */
   function weightBlock() {
@@ -293,6 +313,7 @@
 
     $('body').innerHTML =
         statCards()
+      + openSigns()
       + quickBar()
       + lastBar()
       + weightBlock()

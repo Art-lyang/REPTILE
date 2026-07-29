@@ -170,8 +170,12 @@ function form(a){
   const popt=id=>'<option value="">부모 선택 안 함</option>'+A.filter(x=>x.id!==a.id).map(x=>'<option value="'+x.id+'"'+(id===x.id?' selected':'')+'>'+esc(x.name||'이름없음')+'</option>').join('');
   $('body').innerHTML='<div class="pad"><div class="lbl">'+(a.id?'개체 수정':'개체 등록')+'</div>'
     +'<input class="in" id="f_name" placeholder="이름 / 개체번호" value="'+esc(a.name||'')+'">'
-    +'<div class="row2"><select class="in" id="f_sex"><option value="">성별 미상</option><option value="male">수컷 ♂</option><option value="female">암컷 ♀</option></select>'
-    +'<input class="in" id="f_hatch" type="date" value="'+esc(a.hatch_date||'')+'"></div>'
+    +'<div class="row2"><div><div class="lbl2" style="margin-top:0">성별</div>'
+    +'<select class="in" id="f_sex"><option value="">성별 미상</option><option value="male">수컷 ♂</option><option value="female">암컷 ♀</option></select></div>'
+    /* 날짜 칸은 비어 있으면 브라우저에 따라 아무것도 안 보입니다. 눌러봐야
+       무슨 칸인지 알 수 있다는 지적이 있어 제목을 밖으로 뺐습니다. */
+    +'<div><div class="lbl2" style="margin-top:0"><label for="f_hatch">해칭일 (선택)</label></div>'
+    +'<input class="in" id="f_hatch" type="date" value="'+esc(a.hatch_date||'')+'"></div></div>'
     +'<div class="lbl2">비주얼 (발현 모프)</div><div class="tokgrid">'
     +tokenOptions().map(t=>'<label class="tokchk"><input type="checkbox" class="v" value="'+esc(t[0])+'"'+(sv.has(t[0])?' checked':'')+'>'+esc(t[1])+'</label>').join('')
     +POLY.map(x=>'<label class="tokchk"><input type="checkbox" class="v" value="'+esc(x.id)+'"'+(sv.has(x.id)?' checked':'')+'>'+esc(pName(x))+'</label>').join('')+'</div>'
@@ -203,7 +207,17 @@ function form(a){
     }catch(x){ pv.textContent='실패: '+(x.message||'사진을 처리하지 못했어요.'); } };
   $('cancel').onclick=()=>tabAnimals();
   $('save').onclick=async()=>{
-    const row={ id:a.id||null, name:$('f_name').value.trim(), sex:$('f_sex').value||null,
+    /* species 를 반드시 실어 보냅니다.
+       animals.species 는 not null 인데, save_row 안의 jsonb_populate_record 는
+       칼럼 기본값을 적용하지 않습니다. 빠뜨리면 NULL 이 그대로 들어가
+       23502 로 저장이 통째로 거부됩니다. (supabase_v17.sql 머리말 참고)
+
+       이 화면은 레오파드 계산기의 브리딩 관리라 'leopard' 로 고정합니다.
+       다른 종은 케어 화면(/care/)에서 종을 골라 등록합니다. 수정할 때는
+       원래 종을 지켜야 합니다 — 케어에서 피그미로 등록한 개체를 여기서
+       열었다가 저장하면 레오파드로 바뀌어 버립니다. */
+    const row={ id:a.id||null, species:a.species||'leopard',
+      name:$('f_name').value.trim(), sex:$('f_sex').value||null,
       hatch_date:$('f_hatch').value||null,
       morphs:[...document.querySelectorAll('.v:checked')].map(x=>x.value),
       hets:[...document.querySelectorAll('.h:checked')].map(x=>x.value),

@@ -217,13 +217,16 @@
       + '<div class="lbl2">종</div><select class="in" id="f_species">' + spOpts + '</select>'
       + '<div class="hint">종을 고르면 그 종에 흔히 쓰는 케어 계획을 한 번에 만들 수 있습니다.</div>'
       + '<div class="row2">'
-      + '<div><div class="lbl2">성별</div><select class="in" id="f_sex">'
+      + '<div><div class="lbl2"><label for="f_sex">성별</label></div><select class="in" id="f_sex">'
       + ['unknown:미상', 'male:수컷', 'female:암컷'].map(o => {
           const [v, t] = o.split(':');
           return '<option value="' + v + '"' + ((a.sex || 'unknown') === v ? ' selected' : '') + '>' + t + '</option>';
         }).join('')
       + '</select></div>'
-      + '<div><div class="lbl2">해칭·입양일</div><input class="in" id="f_hatch" type="date" value="' + esc(a.hatch_date || '') + '"></div>'
+      /* 빈 날짜 칸은 브라우저에 따라 아무것도 안 보입니다. 눌러야 무슨 칸인지
+         알 수 있다는 지적이 있어 제목을 밖에 두고 label 로 묶었습니다. */
+      + '<div><div class="lbl2"><label for="f_hatch">해칭·입양일 (선택)</label></div>'
+      + '<input class="in" id="f_hatch" type="date" value="' + esc(a.hatch_date || '') + '"></div>'
       + '</div>'
       + '<div class="lbl2">메모</div><textarea class="in" id="f_note">' + esc(a.note || '') + '</textarea>'
       + '<div class="err" id="f_err"></div>'

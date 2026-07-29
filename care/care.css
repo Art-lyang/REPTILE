@@ -131,9 +131,18 @@ header .sub{
 .tab:hover{background:var(--card2);color:var(--ink)}
 .tab.on{background:var(--teal);color:#fff}
 .tab i{font-size:14px}
+/* 탭이 5개라 좁은 화면에서 빠듯합니다. 실제로 재보니 아이콘이 켜지는
+   421px 에서 내용 폭(71px)이 탭 폭(70.6px)을 아주 조금 넘었습니다. 눈에 띄는
+   깨짐은 아니지만 글꼴이 조금만 커져도 바로 넘칩니다.
+
+   그래서 아이콘은 520px 부터 보여줍니다. 그 지점의 탭 폭은 88px 이라 여유가
+   충분합니다. 그 아래에서는 두 글자 이름만 남습니다 — 다섯 개가 모두 두
+   글자라 이름만으로 구분됩니다. */
+@media (max-width:520px){
+  .tab i{display:none}
+}
 @media (max-width:420px){
   .tab{font-size:12.5px;padding:9px 4px}
-  .tab i{display:none}
 }
 
 /* 개체 고르기 — 헤더 아래 한 줄 */
@@ -485,6 +494,119 @@ textarea.in{min-height:76px;resize:vertical;line-height:1.6}
 .legal{text-align:center;font-size:11.5px;color:var(--ink2);margin:30px 0 10px}
 .legal a{color:var(--ink2);text-decoration:none;border-bottom:1px solid var(--hair)}
 .legal a:hover{color:var(--teal)}
+
+/* =============================================================================
+   공개 프로필 (p.html) — 링크를 받은 남이 보는 화면
+   ============================================================================= */
+body.pub{padding-top:18px}
+body.pub .wrap{max-width:560px}
+
+.phead{margin-bottom:14px}
+.pphoto{
+  width:100%; aspect-ratio:4/3; border-radius:var(--radius); overflow:hidden;
+  background:var(--gtile); border:1px solid var(--hair); box-shadow:var(--shadow);
+}
+.pphoto img{width:100%;height:100%;object-fit:cover;display:block}
+.pnophoto{
+  width:100%; aspect-ratio:4/3; border-radius:var(--radius);
+  background:var(--gtile); border:1px solid var(--hair);
+  display:flex; align-items:center; justify-content:center; font-size:64px;
+}
+.pthumbs{display:flex;gap:8px;margin-top:8px;overflow-x:auto;padding-bottom:2px}
+.pth{
+  width:64px;height:64px;flex:0 0 auto;padding:0;overflow:hidden;cursor:pointer;
+  border:1px solid var(--hair);border-radius:12px;background:var(--gtile);
+}
+.pth img{width:100%;height:100%;object-fit:cover;display:block}
+.pth:hover{border-color:var(--teal)}
+
+.ptitle{font-size:24px;font-weight:820;letter-spacing:-.045em;line-height:1.2}
+.pbreeder{
+  display:inline-flex;align-items:center;gap:5px;margin-top:7px;
+  font-size:12px;font-weight:700;color:var(--ink2);
+  background:var(--card2);border:1px solid var(--hair);border-radius:999px;padding:4px 11px;
+}
+.pfacts{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:14px}
+.pfacts>div{background:var(--card2);border:1px solid var(--hair);border-radius:13px;padding:10px 12px}
+.pfacts .pk{display:block;font-size:10.5px;font-weight:800;color:var(--ink2);letter-spacing:.3px}
+.pfacts .pv{display:block;font-size:14px;font-weight:750;margin-top:2px}
+.pchips{display:flex;flex-wrap:wrap;gap:7px}
+.pchip{
+  display:inline-flex;align-items:center;min-height:32px;padding:5px 14px;
+  border:1px solid var(--chipbd);border-radius:999px;background:var(--card);
+  font-size:12.5px;font-weight:650;
+}
+.pchip.het{border-style:dashed;color:var(--eggplant);border-color:var(--eggplant)}
+.pnote{
+  background:var(--card2);border:1px solid var(--hair);border-radius:14px;
+  padding:13px 15px;font-size:13.5px;line-height:1.8;white-space:pre-wrap;word-break:break-word;
+}
+.pside{
+  flex:0 0 auto;width:34px;height:34px;border-radius:50%;
+  background:var(--card2);border:1px solid var(--hair);
+  display:flex;align-items:center;justify-content:center;
+  font-size:12.5px;font-weight:800;color:var(--ink2);
+}
+@media (max-width:380px){ .pfacts{grid-template-columns:1fr} }
+
+/* =============================================================================
+   갤러리 (gallery.html)
+   ============================================================================= */
+.ggrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px}
+.gcard{
+  display:block;text-decoration:none;color:inherit;
+  background:var(--card);border:1px solid var(--hair);border-radius:var(--radius-sm);
+  overflow:hidden;box-shadow:var(--shadow);transition:transform .12s,border-color .12s;
+}
+.gcard:hover{transform:translateY(-2px);border-color:var(--teal)}
+.gphoto{aspect-ratio:1/1;background:var(--gtile);display:flex;align-items:center;justify-content:center}
+.gphoto img{width:100%;height:100%;object-fit:cover;display:block}
+.gnone{font-size:40px;opacity:.5}
+.ginfo{padding:11px 13px 13px}
+.gname{font-size:14.5px;font-weight:780;letter-spacing:-.025em;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gsex{color:var(--ink2);font-weight:700}
+.gsp{font-size:11.5px;color:var(--ink2);margin-top:2px}
+.gmorphs{display:flex;flex-wrap:wrap;gap:4px;margin-top:7px}
+.gmorphs span{
+  font-size:10px;font-weight:700;padding:2px 7px;border-radius:999px;
+  background:var(--card2);border:1px solid var(--hair);color:var(--ink2);
+  max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.gmorphs .gmore{background:transparent;border-color:transparent}
+/* 갤러리의 종 필터는 개수가 유동적이라 고정 5칸 대신 흐르게 둡니다. */
+#filter{display:flex;flex-wrap:wrap;grid-template-columns:none}
+#filter .tab{flex:1 1 auto;min-width:76px}
+@media (max-width:380px){ .ggrid{grid-template-columns:repeat(2,1fr);gap:9px} }
+
+/* =============================================================================
+   공유 설정 (개체 관리 화면 안)
+   ============================================================================= */
+.shareon{display:flex;align-items:center;gap:10px;margin:12px 0}
+.shareon .sw{
+  position:relative;width:48px;height:28px;flex:0 0 auto;border-radius:999px;
+  background:var(--chipbd);border:none;cursor:pointer;padding:0;transition:background .16s;
+}
+.shareon .sw::after{
+  content:'';position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;
+  background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform .16s;
+}
+.shareon .sw.on{background:var(--teal)}
+.shareon .sw.on::after{transform:translateX(20px)}
+.shareon .swl{font-size:14px;font-weight:750}
+.shareon .swl small{display:block;font-size:11.5px;font-weight:600;color:var(--ink2);margin-top:1px}
+
+.shareurl{display:flex;gap:8px;margin-top:10px}
+.shareurl input{
+  flex:1;min-width:0;padding:11px 13px;border:1px solid var(--chipbd);border-radius:12px;
+  background:var(--card2);color:var(--ink2);font-size:12.5px;font-family:inherit;
+}
+.qrbox{
+  display:flex;flex-direction:column;align-items:center;gap:10px;margin-top:14px;
+  padding:18px;background:#fff;border:1px solid var(--hair);border-radius:16px;
+}
+.qrbox img,.qrbox canvas,.qrbox table{max-width:200px;width:100%;height:auto;image-rendering:pixelated}
+.qrbox .qcap{font-size:11.5px;color:#746f64;font-weight:700;text-align:center}
 
 /* ── 토스트 ───────────────────────────────────────────────────────────── */
 #toast{

@@ -223,6 +223,20 @@ const CareApp = (function () {
 
     async deleteWeight(id) {
       return req(SB.from('weight_logs').delete().eq('id', id));
+    },
+
+    /* ── 공유 ──────────────────────────────────────────────────────────
+       animals 를 직접 update 하지 않고 함수를 부릅니다. 직접 고치게 열어두면
+       공개 여부만 바꾸려던 정책이 개체 전체를 쓰기 가능하게 만듭니다.
+       (supabase_v18.sql 3장) */
+    async setShare(animalId, isPublic, note, showBreeder, rotate) {
+      return req(SB.rpc('set_animal_share', {
+        p_id: animalId,
+        p_public: !!isPublic,
+        p_note: note || null,
+        p_breeder: !!showBreeder,
+        p_rotate: !!rotate
+      }));
     }
   };
 })();

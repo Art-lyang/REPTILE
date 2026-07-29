@@ -274,6 +274,114 @@
     return h + '</div></div>';
   }
 
+  /* =============================================================================
+     공유 — QR · 링크
+     -----------------------------------------------------------------------------
+     주인이 켜면 주소가 하나 생기고, 그 주소를 받은 사람은 로그인 없이
+     '보여주기로 한 것' 만 봅니다. 무엇이 나갈지는 서버가 정합니다
+     (supabase_v18.sql 의 public_animal). 여기서는 켜고 끄고 주소를 보여줄 뿐,
+     내보낼 항목을 화면에서 고르지 않습니다 — 그렇게 만들면 화면을 고치다가
+     실수로 내보내게 됩니다.
+
+     ⚠️ 사진은 지금도 누구나 열 수 있는 주소에 있습니다. 공개를 꺼도 사진
+        주소를 이미 받은 사람은 그 사진을 계속 볼 수 있습니다. 그래서 화면에
+        그대로 적어 둡니다 — 끄면 사진까지 회수된다고 믿게 두면 안 됩니다.
+     ============================================================================= */
+  function shareBlock() {
+    const a = S.animal;
+    const on = a.is_public === true;
+    const url = a.share_token
+      ? location.origin + '/care/p.html?t=' + encodeURIComponent(a.share_token) : '';
+
+    let h = '<div class="pad"><div class="lbl">공유 · QR</div>'
+      + '<div class="hint">주소나 QR 을 받은 사람이 이 개체를 볼 수 있습니다. '
+      + '분양·판매 기능이 아니라 <b>보여주기 위한 페이지</b>입니다.</div>'
+
+      + '<div class="shareon">'
+      + '<button class="sw' + (on ? ' on' : '') + '" id="sh_toggle" role="switch" '
+      + 'aria-checked="' + (on ? 'true' : 'false') + '" aria-label="공개"></button>'
+      + '<span class="swl">' + (on ? '공개 중' : '비공개')
+      + '<small>' + (on ? '주소를 아는 사람만 볼 수 있습니다 (검색에는 안 뜹니다)'
+                        : '켜면 공유 주소가 만들어집니다') + '</small></span></div>'
+
+      + '<div class="lbl2"><label for="sh_note">공개 소개글</label></div>'
+      + '<textarea class="in" id="sh_note" placeholder="이 개체를 소개하는 글 (선택)">'
+      + esc(a.public_note || '') + '</textarea>'
+      /* 비공개 메모와 다른 칸이라는 것을 반드시 알려야 합니다. 같은 칸으로
+         오해하면 개인 메모를 적어두고 공개하는 사고가 납니다. */
+      + '<div class="hint">' + icon('bi-shield-check')
+      + ' 개체 정보의 <b>메모</b>는 공개되지 않습니다. 공개 화면에는 이 칸만 나갑니다.</div>'
+
+      + '<label class="tokchk" style="display:flex;align-items:center;gap:8px;margin:10px 0;font-size:13px">'
+      + '<input type="checkbox" id="sh_breeder"' + (a.public_breeder ? ' checked' : '') + '>'
+      + '내 닉네임을 브리더로 표시</label>'
+      + '<div class="hint">계정에 닉네임을 적어두었을 때만 나옵니다. 이메일은 어떤 경우에도 나가지 않습니다.</div>'
+
+      /* 링크 공유와 목록 노출은 전혀 다른 결정이라 따로 묻습니다.
+         분양 상대 한 사람에게 보여주려고 켠 것이 갤러리에 함께 올라가면
+         주인은 그런 선택을 한 줄도 모릅니다. */
+      + '<label class="tokchk" style="display:flex;align-items:center;gap:8px;margin:12px 0 0;font-size:13px">'
+      + '<input type="checkbox" id="sh_listed"' + (a.is_listed ? ' checked' : '') + '>'
+      + '<b>다른 집사들의 개체</b> 목록에도 올리기</label>'
+      + '<div class="hint">끄면 <b>주소를 아는 사람만</b> 볼 수 있습니다. 켜면 '
+      + '<a href="/care/gallery.html" target="_blank" rel="noopener">공개 목록</a>에서 누구나 찾아볼 수 있습니다.</div>'
+
+      + '<div class="err" id="sh_err"></div>'
+      + '<button class="btn wide" id="sh_save" style="margin-top:10px">'
+      + icon('bi-check-lg') + '공개 설정 저장</button>';
+
+    if (on && url) {
+      h += '<div class="lbl2">공유 주소</div>'
+        + '<div class="shareurl"><input id="sh_url" value="' + esc(url) + '" readonly aria-label="공유 주소">'
+        + '<button class="btn sm" id="sh_copy">' + icon('bi-clipboard') + '복사</button></div>'
+        + '<div class="row2" style="margin-top:8px">'
+        + '<a class="btn ghost sm" href="' + esc(url) + '" target="_blank" rel="noopener" style="text-decoration:none">'
+        + icon('bi-box-arrow-up-right') + '열어보기</a>'
+        + '<button class="btn ghost sm" id="sh_rotate">' + icon('bi-arrow-clockwise') + '주소 새로 만들기</button>'
+        + '</div>'
+        + '<div id="sh_qr"></div>'
+        + '<div class="hint" style="margin-top:12px">' + icon('bi-exclamation-triangle')
+        + ' 사진은 공개를 꺼도 <b>이미 사진 주소를 받은 사람은 계속 볼 수 있습니다.</b> '
+        + '완전히 막으려면 개체에서 사진을 바꾸거나 지우세요.</div>'
+        + '<div class="hint">주소를 새로 만들면 <b>이전 주소는 즉시 열리지 않습니다.</b> '
+        + '이미 나눠준 QR 도 함께 죽습니다.</div>';
+    }
+    return h + '</div>';
+  }
+
+  /* QR 은 그릴 때만 라이브러리를 받아옵니다. 공개하지 않는 사람에게는
+     필요 없는 파일이라 페이지에 미리 걸어두지 않았습니다. */
+  let qrLoading = null;
+  function ensureQr() {
+    if (window.qrcode) return Promise.resolve(true);
+    if (qrLoading) return qrLoading;
+    qrLoading = new Promise(function (done) {
+      const s = document.createElement('script');
+      s.src = 'https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js';
+      s.onload = () => done(true);
+      s.onerror = () => done(false);
+      document.head.appendChild(s);
+    });
+    return qrLoading;
+  }
+
+  async function drawQr() {
+    const box = $('sh_qr');
+    if (!box || !S.animal.share_token || S.animal.is_public !== true) return;
+    const url = location.origin + '/care/p.html?t=' + encodeURIComponent(S.animal.share_token);
+    const ok = await ensureQr();
+    if (!ok) {
+      box.innerHTML = '<div class="hint">QR 을 만들지 못했습니다. 위 주소를 복사해 쓰세요.</div>';
+      return;
+    }
+    /* typeNumber 0 = 내용 길이에 맞춰 자동. 'M' 은 흔히 쓰는 오류정정 수준입니다. */
+    const qr = window.qrcode(0, 'M');
+    qr.addData(url);
+    qr.make();
+    box.innerHTML = '<div class="qrbox">' + qr.createImgTag(5, 8)
+      + '<div class="qcap">이 QR 을 찍으면 위 주소가 열립니다</div></div>';
+  }
+
   /* 이 개체의 반복 계획 */
   function planList() {
     const mine = S.plans.filter(p => p.animal_id === S.id);
@@ -320,9 +428,12 @@
       + heatmap()
       + timeline()
       + planList()
+      + shareBlock()
       + '<div class="hint" style="text-align:center;margin-top:18px">'
       + '여기 숫자는 <b>적어 넣은 기록</b>을 센 것입니다. 했는데 안 적으면 안 한 것으로 나옵니다.<br>'
       + '건강 판단의 근거로 쓰지 마시고, 이상이 의심되면 수의사와 상담하세요.</div>';
+
+    drawQr();
   }
 
   document.addEventListener('click', function (ev) {
@@ -335,6 +446,45 @@
       return act(() => A.addRecord({ animal_id: S.id, kind: d.quick, title: i.ko }), i.ko + ' 기록됨');
     }
     if (d.delrec) return act(() => A.deleteRecord(d.delrec), '지웠습니다');
+
+    /* ── 공유 ── */
+    if (t.id === 'sh_toggle') {
+      /* 화면에서만 뒤집고 저장은 아래 버튼으로 합니다. 토글이 곧 저장이면
+         소개글을 적기 전에 공개돼 버립니다. */
+      t.classList.toggle('on');
+      t.setAttribute('aria-checked', t.classList.contains('on') ? 'true' : 'false');
+      const l = t.parentNode.querySelector('.swl');
+      const on = t.classList.contains('on');
+      l.firstChild.textContent = on ? '공개 중' : '비공개';
+      l.querySelector('small').textContent = on
+        ? '아래 저장을 눌러야 실제로 공개됩니다'
+        : '아래 저장을 눌러야 실제로 닫힙니다';
+      return;
+    }
+    if (t.id === 'sh_save') {
+      const want = $('sh_toggle').classList.contains('on');
+      return act(() => A.setShare(S.id, want, $('sh_note').value, $('sh_breeder').checked, false, $('sh_listed').checked),
+                 want ? '공개했습니다' : '비공개로 바꿨습니다');
+    }
+    if (t.id === 'sh_rotate') {
+      if (!confirm('주소를 새로 만들면 이전 주소와 이미 나눠준 QR 이 즉시 열리지 않습니다.\n계속할까요?')) return;
+      return act(() => A.setShare(S.id, true, $('sh_note').value, $('sh_breeder').checked, true, $('sh_listed').checked),
+                 '새 주소를 만들었습니다');
+    }
+    if (t.id === 'sh_copy') {
+      const el = $('sh_url');
+      el.select();
+      const done = () => toast('주소를 복사했습니다');
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(el.value).then(done, () => toast('복사하지 못했습니다. 길게 눌러 복사해 주세요.'));
+      } else {
+        /* 구형 브라우저와 일부 인앱 브라우저용. 실패해도 값은 선택돼 있어
+           사용자가 직접 복사할 수 있습니다. */
+        try { document.execCommand('copy'); done(); }
+        catch (e) { toast('복사하지 못했습니다. 길게 눌러 복사해 주세요.'); }
+      }
+      return;
+    }
     if (t.id === 'w_save') {
       const g = parseFloat($('w_g').value);
       if (!(g > 0)) { $('w_err').textContent = '무게를 적어주세요.'; return; }

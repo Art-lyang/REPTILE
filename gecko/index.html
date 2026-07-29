@@ -61,6 +61,10 @@
     </div>
     <div class="hd-btns">
       <nav class="topnav">
+        <!-- 스튜디오로 돌아가는 길. 계산기만 검색으로 들어온 사람은 여기가
+             더 큰 사이트의 일부라는 것을 알 방법이 없었습니다.
+             좁은 화면에서는 base.css 가 글자를 숨기고 아이콘만 남깁니다. -->
+        <a class="blink home" href="/" title="량 스튜디오"><i class="bi bi-house" aria-hidden="true"></i><span>스튜디오</span></a>
         <a class="blink" id="acctBtn" href="login.html" style="display:none"><i class="bi bi-person" aria-hidden="true"></i><span>내 정보</span></a>
         <a class="blink" id="proBtn" href="breeding.html" style="display:none"><i class="bi bi-journal-check" aria-hidden="true"></i><span>브리딩 관리</span></a>
         <button class="blink prem" id="premBtn" onclick="openPrem()" style="display:none"><i class="bi bi-gem" aria-hidden="true"></i><span>프리미엄 코드</span></button>
@@ -129,6 +133,7 @@
   <div class="donate-wrap"><button class="donate" id="donateBtn" type="button" onclick="openPrem()"></button></div>
 
   <div class="bottom-links">
+    <a class="blink" href="/care/gallery.html"><i class="bi bi-binoculars" aria-hidden="true"></i><span>다른 집사들의 개체 구경하기</span></a>
     <a class="blink" id="mailLink" href="mailto:kmc612000@gmail.com"><i class="bi bi-envelope" aria-hidden="true"></i><span>문의하기</span></a>
   </div>
   <div class="mailnote" id="mailNote">정보수정, 버그 및 업데이트 건의는 <b>문의하기</b>로 보내주세요</div>

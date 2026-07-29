@@ -3,21 +3,17 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>개체 관리 · 량 스튜디오</title>
+<title>다른 집사들의 개체 · 량 스튜디오</title>
+<meta name="description" content="량 스튜디오 케어를 쓰는 집사들이 공개한 개체들을 구경하세요.">
 
-<!-- 개인 사육 기록 화면입니다. 검색에 절대 노출되면 안 됩니다. -->
+<!-- 주인이 '목록에 올리기' 를 켠 개체만 나오지만, 그래도 개인이 키우는
+     생물의 사진과 이름입니다. 검색엔진이 퍼가지 않게 둡니다. -->
 <meta name="robots" content="noindex, nofollow">
 
 <link rel="icon" type="image/png" sizes="32x32" href="/assets/logo-mark-32.png">
-<link rel="icon" type="image/png" sizes="512x512" href="/assets/logo-mark.png">
 <link rel="apple-touch-icon" href="/assets/logo-mark-180.png">
-<link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#f5f1e8" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#151a17" media="(prefers-color-scheme: dark)">
-<meta name="apple-mobile-web-app-capable" content="yes">
-
-<!-- 테스트 중 임시 잠금. 케어 화면과 같은 비밀번호를 씁니다. -->
-<script src="/assets/gate.js?v=1"></script>
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
@@ -29,31 +25,35 @@
   <img class="hd-deco leaf" src="/assets/leaf.svg" alt="" aria-hidden="true">
   <div class="hd">
     <div class="hd-txt">
-      <h1 id="aname">개체</h1>
-      <div class="sub" id="asub"></div>
+      <h1>다른 집사들의 개체</h1>
+      <div class="sub">공개하기로 한 개체만 보입니다. 눌러서 자세히 볼 수 있어요.</div>
     </div>
     <div class="hd-btns">
-      <a class="blink" href="/care/" title="케어 목록"><i class="bi bi-arrow-left" aria-hidden="true"></i><span>목록</span></a>
+      <a class="blink home" href="/" title="량 스튜디오"><i class="bi bi-house" aria-hidden="true"></i><span>스튜디오</span></a>
     </div>
   </div>
 </header>
 
 <div class="wrap">
+  <div class="tabs" id="filter">
+    <button class="tab on" data-sp="">전체</button>
+    <button class="tab" data-sp="leopard">레오파드</button>
+    <button class="tab" data-sp="crested">크레스티드</button>
+    <button class="tab" data-sp="fattail">팻테일</button>
+    <button class="tab" data-sp="pygmy">피그미</button>
+  </div>
+
   <div id="body"><div class="empty">불러오는 중…</div></div>
 
   <div class="legal">
-    <a href="/terms.html#terms">이용약관</a> ·
+    <a href="/care/">케어 관리</a> ·
     <a href="/terms.html#privacy">개인정보처리방침</a>
   </div>
 </div>
 
-<div id="toast" role="status" aria-live="polite"></div>
-
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="/assets/studio-config.js?v=113119"></script>
 <script src="care-core.js?v=5"></script>
-<script src="/assets/analytics.js?v=1"></script>
-<script src="care-app.js?v=5"></script>
-<script src="animal-ui.js?v=5"></script>
+<script src="gallery-ui.js?v=1"></script>
 </body>
 </html>

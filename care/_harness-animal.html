@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>animal 하네스 (임시)</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<link rel="stylesheet" href="care.css?v=5">
+</head>
+<body>
+<header><div class="hd"><div class="hd-txt">
+  <h1 id="aname">개체</h1><div class="sub" id="asub"></div>
+</div></div></header>
+<div class="wrap"><div id="body"></div></div>
+<div id="toast"></div>
+<script src="care-core.js?v=5"></script>
+<script>
+(function () {
+  const C = window.CareCore, T = C.today();
+  const ID = 'a1';
+  let animal = { id: ID, name: '노랑이', species: 'leopard', sex: 'female', hatch_date: '2024-05-02',
+                 note: '비공개 메모 — 새면 안 됨', is_public: true, is_listed: false,
+                 public_note: '2024년 5월 해칭. 순한 편입니다.', public_breeder: true,
+                 share_token: 'DEMOtoken1234567890ab' };
+  const plans = C.SPECIES.leopard.plans.map((t, i) => ({ id: 'p' + i, animal_id: ID, kind: t.kind,
+    title: t.title, interval_days: t.interval_days || null, weekdays: t.weekdays || null,
+    start_date: C.addDays(T, -120), is_active: true }));
+  let records = [];
+  for (let i = 60; i >= 0; i--) { const d = C.addDays(T, -i);
+    plans.forEach(p => { if (C.isDueOn(p, d) && Math.random() > .25)
+      records.push({ id: 'r' + records.length, plan_id: p.id, animal_id: ID, kind: p.kind, done_date: d, title: p.title }); }); }
+  records.push({ id: 'sg1', animal_id: ID, kind: 'symptom', detail: 'wobble', title: '관찰', done_date: C.addDays(T, -3) });
+  const weights = [10,8,6,4,2,0].map((i, n) => ({ id: 'w' + n, animal_id: ID,
+    measured_on: C.addDays(T, -i * 7), grams: 48 + n * 2.4 }));
+  const noop = async () => {};
+  window.CareApp = { ready: true, user: { id: 'u1', email: 'demo@x' }, premium: { active: true, kind: 'sub' },
+    device: () => 'd', friendly: e => String((e && e.message) || e), boot: async () => ({}), logVisit: () => {},
+    listAnimals: async () => [animal], listPlans: async () => plans,
+    listRecords: async () => records, listWeights: async () => weights,
+    addRecord: async r => { records.push(Object.assign({ id: 'n' + records.length, done_date: T }, r)); },
+    deleteRecord: noop, saveWeight: noop,
+    setShare: async (id, pub, note, br, rot, listed) => {
+      animal = Object.assign({}, animal, { is_public: pub, is_listed: listed,
+        public_note: note, public_breeder: br, share_token: rot ? 'ROTATED' + Date.now() : animal.share_token });
+    }
+  };
+  history.replaceState(null, '', '?id=' + ID);
+})();
+</script>
+<script src="animal-ui.js?v=5"></script>
+</body>
+</html>

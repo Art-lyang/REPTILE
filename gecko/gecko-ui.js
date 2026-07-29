@@ -298,9 +298,10 @@ function chipFor(g, side, isPoly){
     +(g.risk?' <i class="bi bi-exclamation-triangle-fill chiprisk" aria-hidden="true"></i>':'');
   chip.onclick=()=>{
     STATE[side][g.id]= on? off : (isPoly? 'yes' : defaultOn(g));
-    /* 라인이 유전자를 깔고 가면(레드데빌 → 벨 알비노) 같이 켜고 끕니다.
-       안 그러면 확률이 조용히 틀립니다. */
-    if(isPoly && g.implies){ if(on) clearImplies(side, g); else applyImplies(side, g); }
+    /* 라인이 유전자를 물고 있으면(레드데빌·오렌지스모그 → 벨 알비노)
+       같이 맞춰줍니다. 안 그러면 확률이 조용히 틀립니다.
+       여러 라인이 같은 유전자를 요구할 수 있어 전체를 다시 맞춥니다. */
+    if(isPoly) syncImplies(side);
     buildParent(side);
     if(hasResult) calculate();
   };
@@ -408,6 +409,9 @@ function toggleLeoOptNote(){
 function resetAll(){
   GENES.forEach(g=>{STATE.A[g.id]='nn';STATE.B[g.id]='nn';});
   POLY.forEach(p=>{STATE.A[p.id]='no';STATE.B[p.id]='no';});
+  /* STATE 를 통째로 갈아엎었으니 implies 기억도 비웁니다.
+     안 비우면 '우리가 넣은 값' 이 안 맞아 다음에 라인을 켜도 안 올라갑니다. */
+  resetImplies();
   hasResult=false;
   buildParent('A'); buildParent('B');
   document.getElementById('results').innerHTML='<div class="empty">'+L().emptyStart+'</div>';

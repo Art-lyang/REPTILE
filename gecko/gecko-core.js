@@ -163,6 +163,48 @@ const POLY = [
   {id:'stripe',    ko:'스트라이프', en:'Stripe', zh:'条纹', ja:'ストライプ'},
   {id:'jungle',    ko:'정글', en:'Jungle', zh:'丛林', ja:'ジャングル'},
   {id:'ghost',     ko:'고스트', en:'Ghost', zh:'幽灵', ja:'ゴースト'},
+
+  /* ── 흑화·다크 계열 라인 (브리더 '레게 태영이' 제공, 2026-07-29) ──────
+     "전부 라인. 얘들끼리 나오는 조합이나 뭐끼리 붙이면 만들어지고
+      그런 건 없다" 고 확인받았습니다. 그래서 전부 POLY 이고 COMBOS 에는
+     넣지 않습니다. 확률 계산에는 들어가지 않습니다.
+
+     gt · gg · gct.m · gct.s · BMD 는 약칭 그대로 씁니다. 브리더 사이에서
+     쓰이는 이름이라 억지로 풀어 쓰면 오히려 못 알아봅니다. 정식 명칭을
+     아시면 알려주세요 — ko/en/zh/ja 만 바꾸면 됩니다. */
+  {id:'charcoal',  line:'melanistic', ko:'차콜', en:'Charcoal', zh:'木炭黑', ja:'チャコール'},
+  {id:'blackblood',line:'melanistic', ko:'블랙블러드', en:'Black Blood', zh:'黑血', ja:'ブラックブラッド'},
+  {id:'blackpearl',line:'melanistic', ko:'블랙펄', en:'Black Pearl', zh:'黑珍珠', ja:'ブラックパール'},
+  {id:'pepper',    line:'melanistic', ko:'페퍼', en:'Pepper', zh:'胡椒', ja:'ペッパー'},
+  /* 아프간은 원래 아종(E. m. afghanicus) 이름이지만, 국내에서는 흑화
+     라인명으로 씁니다. 여기서도 라인으로 다룹니다. */
+  {id:'afghan',    line:'melanistic', ko:'아프간', en:'Afghan', zh:'阿富汗', ja:'アフガン'},
+  {id:'gt',        ko:'GT', en:'GT', zh:'GT', ja:'GT'},
+  {id:'gg',        ko:'GG', en:'GG', zh:'GG', ja:'GG'},
+  {id:'gctm',      ko:'GCT.M', en:'GCT.M', zh:'GCT.M', ja:'GCT.M'},
+  {id:'gcts',      ko:'GCT.S', en:'GCT.S', zh:'GCT.S', ja:'GCT.S'},
+  {id:'bmd',       ko:'BMD', en:'BMD', zh:'BMD', ja:'BMD'},
+  {id:'ccdm',      ko:'차콜카본다크만다린', en:'Charcoal Carbon Dark Mandarin',
+     zh:'木炭碳黑暗曼陀林', ja:'チャコールカーボンダークマンダリン'},
+
+  /* ── 붉은 계열 라인 (같은 출처) ──────────────────────────────────── */
+  {id:'crimson',       line:'tangerine', ko:'크림슨', en:'Crimson', zh:'深红', ja:'クリムゾン'},
+  {id:'bordeaux',      line:'tangerine', ko:'보르도', en:'Bordeaux', zh:'波尔多', ja:'ボルドー'},
+  {id:'darktangerine', line:'tangerine', ko:'다크텐져린', en:'Dark Tangerine', zh:'暗橘', ja:'ダークタンジェリン'},
+
+  /* ── 알비노를 물고 있는 라인 ──────────────────────────────────────
+     레드데빌과 같은 구조입니다. implies 설명은 위 reddevil 항목 참고.
+
+     스모그는 트램퍼를, 오렌지 스모그는 벨을 물고 있습니다. 둘 다 열성이라
+     '최소 보인자(het)' 로 잡습니다. 스모그가 연기처럼 어둡게 나오는 라인인
+     만큼 알비노가 발현된 개체는 아닐 가능성이 큰데, 발현 개체를 가지고
+     계시면 계산기에서 해당 알비노를 '비주얼' 로 올리시면 됩니다.
+
+     ⚠️ 트램퍼와 벨은 서로 다른 유전자입니다. 스모그(het 트램퍼) 와
+        오렌지 스모그(het 벨) 를 붙여도 알비노는 안 나옵니다 — 더블 het
+        가 될 뿐입니다. 계산기가 이 부분을 이미 안내합니다. */
+  {id:'smog',       implies:{tremper:'het'}, ko:'스모그', en:'Smog', zh:'烟灰', ja:'スモッグ'},
+  {id:'orangesmog', implies:{bell:'het'},    ko:'오렌지 스모그', en:'Orange Smog', zh:'橙烟灰', ja:'オレンジスモッグ'},
 ];
 
 /* ================= 위험 조합 메시지 ================= */
@@ -376,11 +418,17 @@ POLY.forEach(p=>{STATE.A[p.id]='no';STATE.B[p.id]='no';});
 
    그래서 implies 가 붙은 칩을 켜면 해당 유전자도 같이 켭니다.
 
-   끌 때 되돌리는 게 까다롭습니다. 사용자가 벨 알비노를 먼저 켜 둔 상태에서
-   레드데빌을 켰다 끄면, 벨 알비노까지 꺼지는 건 남의 선택을 지우는 겁니다.
-   그래서 켤 때 이전 값을 적어두고, 끌 때는 우리가 넣은 값이 그대로 남아
-   있을 때만 되돌립니다. 사용자가 중간에 직접 바꿨으면 그 값을 존중합니다. */
-const IMPLIED={A:{}, B:{}};
+   기록을 **라인별이 아니라 유전자별로** 남깁니다. 벨 알비노는 레드데빌도
+   오렌지 스모그도 물고 있어서, 라인별로 기억하면 이런 일이 납니다.
+   레드데빌을 켜서 벨이 het 이 되고 → 오렌지 스모그를 켜면 이미 het 이라
+   아무 기록도 안 남고 → 레드데빌을 끄면 오렌지 스모그가 넘겨받고 →
+   오렌지 스모그를 끄면 되돌릴 값이 없어 het 이 그대로 남습니다.
+
+   그래서 '사용자가 원래 두었던 값(base)' 과 '우리가 넣은 값(set)' 을
+   유전자 하나당 한 벌만 기억하고, 켜고 끌 때마다 syncImplies() 로
+   전체를 다시 맞춥니다. 우리가 넣은 값이 그대로 남아 있을 때만 되돌리기
+   때문에, 중간에 사용자가 직접 바꿨으면 그 값을 그대로 둡니다. */
+const IMPLIED={A:{}, B:{}};   // {유전자id: {base:원래값, set:우리가넣은값|null}}
 
 /* implies 는 '이만큼은 확실하다' 는 **최소값** 입니다. 정확한 값이 아닙니다.
    레드데빌은 벨 알비노를 물고 있지만 열성이라 보인자인지 발현인지는
@@ -391,31 +439,53 @@ const IMPLIED={A:{}, B:{}};
 const GENO_RANK={no:0, nn:0, het:1, mm:2};
 function genoRank(v){ return GENO_RANK[v]===undefined? 0 : GENO_RANK[v]; }
 
-function applyImplies(side, poly){
-  if(!poly.implies) return;
-  const prev={}, set={};
-  Object.keys(poly.implies).forEach(gid=>{
-    const want=poly.implies[gid];
-    /* 이미 최소치 이상이면 그대로 둡니다 — 비주얼을 het 으로 내리면
-       사용자가 아는 사실을 우리가 지우는 셈입니다. */
-    if(genoRank(STATE[side][gid]) >= genoRank(want)) return;
-    prev[gid]=STATE[side][gid];
-    STATE[side][gid]=want;
-    set[gid]=want;
+/* 켜져 있는 라인들이 요구하는 최소치를 유전자별로 모읍니다.
+   같은 유전자를 둘 이상이 요구하면 가장 높은 값이 이깁니다. */
+function impliesNeeded(side){
+  const need={};
+  POLY.forEach(p=>{
+    if(!p.implies || STATE[side][p.id]==='no') return;
+    Object.keys(p.implies).forEach(gid=>{
+      if(!GENES.some(g=>g.id===gid)) return;   // DB 에서 유전자가 빠졌을 수도
+      if(genoRank(p.implies[gid]) > genoRank(need[gid])) need[gid]=p.implies[gid];
+    });
   });
-  IMPLIED[side][poly.id]={prev:prev, set:set};
+  return need;
 }
 
-function clearImplies(side, poly){
-  const rec=IMPLIED[side][poly.id];
-  delete IMPLIED[side][poly.id];
-  if(!rec) return;
-  Object.keys(rec.set).forEach(gid=>{
-    /* 우리가 넣은 값이 그대로일 때만 되돌립니다 */
-    if(STATE[side][gid]===rec.set[gid] && rec.prev[gid]!==undefined)
-      STATE[side][gid]=rec.prev[gid];
+/* 라인 칩을 켜든 끄든 이거 하나만 부르면 상태가 맞춰집니다. */
+function syncImplies(side){
+  const need=impliesNeeded(side), rec=IMPLIED[side];
+
+  /* 1) 이제 아무도 요구하지 않는 유전자 — 사용자 값으로 되돌립니다.
+        단 우리가 넣은 값이 그대로 남아 있을 때만. */
+  Object.keys(rec).forEach(gid=>{
+    if(need[gid]!==undefined) return;
+    if(rec[gid].set!==null && STATE[side][gid]===rec[gid].set) STATE[side][gid]=rec[gid].base;
+    delete rec[gid];
+  });
+
+  /* 2) 요구되는 유전자 — 최소치까지 올립니다. 내리지는 않습니다. */
+  Object.keys(need).forEach(gid=>{
+    const want=need[gid];
+    if(!rec[gid]){
+      /* 처음 요구됨 — 사용자가 두었던 값을 여기서 기억해 둡니다 */
+      const base=STATE[side][gid];
+      if(genoRank(base) >= genoRank(want)){ rec[gid]={base:base, set:null}; return; }
+      STATE[side][gid]=want; rec[gid]={base:base, set:want};
+      return;
+    }
+    /* 우리가 넣은 값이 사라졌다면 사용자가 손댄 것 — 건드리지 않습니다.
+       (그 상태는 impliesReport 가 경고로 잡아줍니다) */
+    if(rec[gid].set!==null && STATE[side][gid]!==rec[gid].set) return;
+    if(genoRank(STATE[side][gid]) >= genoRank(want)) return;
+    STATE[side][gid]=want; rec[gid].set=want;
   });
 }
+
+/* 초기화처럼 STATE 를 통째로 갈아엎을 때 기억을 비웁니다.
+   안 비우면 '우리가 넣은 값' 이 안 맞아 다음에 켤 때 안 올라갑니다. */
+function resetImplies(){ IMPLIED.A={}; IMPLIED.B={}; }
 
 /* 지금 켜져 있는 라인브리딩 형질 중 implies 가 있는 것들을 훑어서,
    딸린 유전자가 실제로 맞게 켜져 있는지 봅니다. IMPLIED 기록이 아니라

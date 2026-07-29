@@ -118,6 +118,12 @@ const POLY = [
   {id:'electric',  line:'tangerine', ko:'일렉트릭', en:'Electric', zh:'电光', ja:'エレクトリック'},
   {id:'atomic',    line:'tangerine', ko:'아토믹', en:'Atomic', zh:'原子', ja:'アトミック'},
   {id:'tangerinered',line:'tangerine', ko:'레드', en:'Red', zh:'红', ja:'レッド'},
+  /* 레드데빌 — 붉은 계열 라인.
+     ⚠️ 공개 자료에서 계열을 확인하지 못했습니다. 붉은 발색 라인명이라
+        텐져린 계열로 넣었는데, 다른 계열이면 line 만 바꾸면 됩니다.
+        계열이 틀려도 확률에는 영향이 없습니다 — 라인브리딩은 계산 대상이
+        아니고, line 은 두 형질을 섞었을 때 보여줄 이름만 정합니다. */
+  {id:'reddevil',  line:'tangerine', ko:'레드데빌', en:'Red Devil', zh:'红魔', ja:'レッドデビル'},
   /* 에머릴드 + 텐져린 계열. 예전에는 따로 보기도 했지만 요즘은
      텐져린 계열로 취급합니다. (현직 브리더 확인) */
   {id:'emerine',   line:'tangerine', ko:'에머린', en:'Emerine', zh:'翡翠橘', ja:'エメリン'},
@@ -129,9 +135,17 @@ const POLY = [
   {id:'superhypo', ko:'슈퍼하이포', en:'Super Hypo', zh:'超级少黑', ja:'スーパーハイポ'},
   {id:'melanistic',line:'melanistic', ko:'멜라니스틱', en:'Melanistic', zh:'黑化', ja:'メラニスティック'},
   {id:'blacknight',line:'melanistic', ko:'블랙나이트', en:'Black Night', zh:'黑夜', ja:'ブラックナイト'},
+  /* 카본 — 흑화 계열 라인. 블랙나이트·차콜·블랙펄과 같은 부류로,
+     단일 유전자가 아니라 검은 발색을 골라 고정한 라인입니다. */
+  {id:'carbon',    line:'melanistic', ko:'카본', en:'Carbon', zh:'碳黑', ja:'カーボン'},
   {id:'dark',      line:'tangerine', ko:'다크', en:'Dark', zh:'暗色', ja:'ダーク'},
   {id:'carrottail',ko:'캐럿 테일', en:'Carrot Tail', zh:'胡萝卜尾', ja:'キャロットテール'},
   {id:'carrothead',ko:'캐럿 헤드', en:'Carrot Head', zh:'胡萝卜头', ja:'キャロットヘッド'},
+  /* 발디 — 머리에 반점이 없는 개체. 슈퍼하이포처럼 반점이 적은 개체를
+     골라 붙여 고정한 라인이라 확률 계산 대상이 아닙니다.
+     캐럿헤드·볼드스트라이프처럼 계열(line)을 두지 않습니다 — 다른 형질과
+     섞였을 때 되돌아갈 상위 라인이 없습니다. */
+  {id:'baldy',     ko:'발디', en:'Baldy', zh:'无斑头', ja:'ボールディ'},
   {id:'boldstripe',ko:'볼드 스트라이프', en:'Bold Stripe', zh:'粗条纹', ja:'ボールドストライプ'},
   {id:'stripe',    ko:'스트라이프', en:'Stripe', zh:'条纹', ja:'ストライプ'},
   {id:'jungle',    ko:'정글', en:'Jungle', zh:'丛林', ja:'ジャングル'},

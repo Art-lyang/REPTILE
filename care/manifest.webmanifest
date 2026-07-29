@@ -1,6 +1,6 @@
 {
-  "name": "케어 관리 · 량 스튜디오",
-  "short_name": "케어",
+  "name": "크리처 케어로그 · 량 스튜디오",
+  "short_name": "케어로그",
   "description": "급여·청소·영양제 주기와 체중을 기록하고 캘린더로 알림을 받습니다.",
   "lang": "ko",
   "start_url": "/care/",

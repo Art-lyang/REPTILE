@@ -88,7 +88,7 @@
   function otherNote() {
     return S.others
       ? '<div class="hint">' + icon('bi-info-circle') + ' 다른 종 ' + S.others
-        + '마리는 위에서 종을 바꾸거나 <a href="/care/">케어 관리</a>에서 볼 수 있어요.</div>'
+        + '마리는 위에서 종을 바꾸거나 <a href="/care/">크리처 케어로그</a>에서 볼 수 있어요.</div>'
       : '';
   }
 

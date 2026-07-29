@@ -120,7 +120,7 @@
       + '<div class="hint">이 페이지는 개체의 주인이 공유한 것입니다. '
       + '사육 기록·체중 같은 개인 기록은 포함되지 않습니다.</div>'
       + '<a class="btn ghost wide" style="text-decoration:none;margin-top:12px" href="/care/">'
-      + icon('bi-clipboard-heart') + '나도 케어 관리 시작하기</a></div>';
+      + icon('bi-clipboard-heart') + '나도 크리처 케어로그 시작하기</a></div>';
 
     $('body').innerHTML = h;
   }

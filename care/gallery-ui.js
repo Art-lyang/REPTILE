@@ -62,9 +62,9 @@
       if (!list.length) {
         $('body').innerHTML = '<div class="pad"><div class="empty">' + icon('bi-binoculars')
           + '아직 공개된 개체가 없습니다.<br>'
-          + '<b>케어 관리</b>에서 개체를 공개하면 여기에 함께 보입니다.</div>'
+          + '<b>크리처 케어로그</b>에서 개체를 공개하면 여기에 함께 보입니다.</div>'
           + '<a class="btn wide" style="text-decoration:none;margin-top:12px" href="/care/">'
-          + icon('bi-clipboard-heart') + '케어 관리 열기</a></div>';
+          + icon('bi-clipboard-heart') + '크리처 케어로그 열기</a></div>';
       } else {
         $('body').innerHTML = '<div class="ggrid">' + list.map(card).join('') + '</div>'
           + '<div class="hint" style="text-align:center;margin-top:16px">'

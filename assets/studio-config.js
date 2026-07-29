@@ -20,7 +20,7 @@ var STUDIO_SERVICES = {
   crested: '크레스티드 게코',
   fattail: '펫테일 게코',
   ballpython: '볼파이톤',
-  care:    '케어 관리'
+  care:    '크리처 케어로그'
 };
 
 /* 가입 봇 차단 (Cloudflare Turnstile)

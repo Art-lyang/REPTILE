@@ -125,6 +125,7 @@ const CareApp = (function () {
         kind: p.kind,
         title: p.title || null,
         detail: p.detail || null,
+        feed_item_id: p.feed_item_id || null,
         interval_days: p.interval_days || null,
         weekdays: (p.weekdays && p.weekdays.length) ? p.weekdays : null,
         start_date: p.start_date || CareCore.today(),
@@ -223,6 +224,45 @@ const CareApp = (function () {
 
     async deleteWeight(id) {
       return req(SB.from('weight_logs').delete().eq('id', id));
+    },
+
+    /* ── 먹이 · 용품 ───────────────────────────────────────────────────
+       재고는 여기서 깎지 않습니다. 기록이 들어가면 DB 트리거가 같이 줄입니다
+       (supabase_v20.sql 4장). 화면에서 두 번 부르면 하나만 성공했을 때
+       기록과 재고가 어긋납니다. */
+    async listFeeds() {
+      return req(SB.from('feed_items').select('*').order('is_active', { ascending: false })
+        .order('name', { ascending: true })) || [];
+    },
+
+    async saveFeed(f) {
+      const row = {
+        name: f.name,
+        kind: f.kind || 'staple',
+        brand: f.brand || null,
+        unit: f.unit || 'g',
+        per_use: f.per_use == null || f.per_use === '' ? null : Number(f.per_use),
+        amount_left: f.amount_left == null || f.amount_left === '' ? null : Number(f.amount_left),
+        amount_full: f.amount_full == null || f.amount_full === '' ? null : Number(f.amount_full),
+        opened_on: f.opened_on || null,
+        expires_on: f.expires_on || null,
+        buy_url: f.buy_url || null,
+        lead_days: f.lead_days == null || f.lead_days === '' ? 3 : parseInt(f.lead_days, 10),
+        note: f.note || null,
+        is_active: f.is_active !== false
+      };
+      if (f.id) return req(SB.from('feed_items').update(row).eq('id', f.id).select().single());
+      return req(SB.from('feed_items').insert(row).select().single());
+    },
+
+    async deleteFeed(id) {
+      return req(SB.from('feed_items').delete().eq('id', id));
+    },
+
+    /* 새로 사서 채우기. amount_full 을 모르면 넘어온 값을 씁니다. */
+    async refillFeed(id, amount) {
+      const row = { amount_left: Number(amount), opened_on: CareCore.today() };
+      return req(SB.from('feed_items').update(row).eq('id', id).select().single());
     },
 
     /* ── 공유 ──────────────────────────────────────────────────────────

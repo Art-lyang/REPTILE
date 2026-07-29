@@ -6,6 +6,13 @@
       "runtimeExecutable": "python3",
       "runtimeArgs": ["-m", "http.server", "8788"],
       "port": 8788
+    },
+    {
+      "//": "8788 이 다른 세션에 잡혀 있을 때 쓰는 예비 포트입니다.",
+      "name": "static-alt",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "http.server", "8790"],
+      "port": 8790
     }
   ]
 }

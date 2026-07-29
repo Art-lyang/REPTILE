@@ -363,8 +363,39 @@ function icsEvent(plan, animalName, host) {
   return L;
 }
 
-/* 계획 여러 개를 캘린더 파일 하나로. animalNames 는 { 개체id: 이름 } */
-function buildIcs(plans, animalNames, host) {
+/* 주문 안내 — 반복하지 않는 하루짜리 일정.
+   UID 를 먹이 id 로 고정합니다. 소진 예상일이 바뀐 뒤 다시 내려받으면 캘린더가
+   같은 일정으로 알아보고 날짜를 옮깁니다. 매번 새 UID 를 주면 옛 날짜의 안내가
+   그대로 남아, 이미 산 것을 또 사라고 알리게 됩니다. */
+function icsOrderEvent(order, host) {
+  const stamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+  const day = String(order.orderOn).replace(/-/g, '');
+  const title = '🛒 ' + order.name + ' 주문';
+  const desc = (order.emptyOn ? order.emptyOn + ' 쯤 떨어질 것으로 보입니다.' : '')
+             + (order.buyUrl ? '\n' + order.buyUrl : '');
+
+  const L = [];
+  L.push('BEGIN:VEVENT');
+  L.push('UID:feed-' + order.id + '@' + (host || 'ryangstudio.com'));
+  L.push('DTSTAMP:' + stamp);
+  L.push('DTSTART;VALUE=DATE:' + day);
+  L.push('DURATION:P1D');
+  L.push('SUMMARY:' + icsEscape(title));
+  if (desc) L.push('DESCRIPTION:' + icsEscape(desc));
+  if (order.buyUrl) L.push('URL:' + icsEscape(order.buyUrl));
+  L.push('CATEGORIES:' + icsEscape('주문'));
+  L.push('BEGIN:VALARM');
+  L.push('ACTION:DISPLAY');
+  L.push('DESCRIPTION:' + icsEscape(title));
+  L.push('TRIGGER:PT9H');
+  L.push('END:VALARM');
+  L.push('END:VEVENT');
+  return L;
+}
+
+/* 계획 여러 개를 캘린더 파일 하나로. animalNames 는 { 개체id: 이름 }
+   orders 는 주문 안내 목록 (선택) — [{id, name, orderOn, emptyOn, buyUrl}] */
+function buildIcs(plans, animalNames, host, orders) {
   const names = animalNames || {};
   let L = [
     'BEGIN:VCALENDAR',
@@ -377,6 +408,10 @@ function buildIcs(plans, animalNames, host) {
   (plans || []).forEach(function (p) {
     if (p.is_active === false) return;
     L = L.concat(icsEvent(p, p.animal_id ? names[p.animal_id] : null, host));
+  });
+  (orders || []).forEach(function (o) {
+    if (!o || !o.orderOn) return;
+    L = L.concat(icsOrderEvent(o, host));
   });
   L.push('END:VCALENDAR');
   /* 규격이 CRLF 를 요구합니다. LF 만 쓰면 읽는 앱에 따라 통째로 실패합니다. */
@@ -474,6 +509,116 @@ function weeklySummary(records, weights, endDate) {
     notes: notes
   };
 }
+
+
+/* =============================================================================
+   먹이 · 용품
+   -----------------------------------------------------------------------------
+   쓰는 사람이 자기가 실제로 먹이는 것을 직접 등록합니다. 우리가 제품 목록을
+   들고 있지 않습니다 — 브랜드도 유통도 계속 바뀌고, 목록을 관리하는 순간
+   그게 틀린 채로 남습니다.
+
+   여기 계산의 핵심은 하나입니다: **언제 떨어지는가.**
+   그걸 알면 주문할 날을 캘린더에 넣어줄 수 있습니다.
+   ============================================================================= */
+
+const FEED_KINDS = {
+  staple:     { ko: '주식',   icon: 'bi-egg-fried',   emoji: '🍽', color: '#075a48' },
+  treat:      { ko: '간식',   icon: 'bi-cookie',      emoji: '🍪', color: '#b07d15' },
+  special:    { ko: '특식',   icon: 'bi-stars',       emoji: '✨', color: '#a9682f' },
+  supplement: { ko: '영양제', icon: 'bi-capsule',     emoji: '💊', color: '#675780' },
+  substrate:  { ko: '바닥재', icon: 'bi-layers',      emoji: '🪵', color: '#5c8a3a' },
+  other:      { ko: '기타',   icon: 'bi-box-seam',    emoji: '📦', color: '#746f64' }
+};
+function feedKindInfo(k) {
+  return FEED_KINDS[k] || FEED_KINDS.other;
+}
+
+/* 이 계획이 하루 평균 몇 번 도는가.
+     3일마다  → 0.333
+     월·목    → 2/7 = 0.286
+   주기가 규칙적이라 평균으로 환산해도 오차가 크지 않습니다. */
+function planPerDay(plan) {
+  if (!plan || plan.is_active === false) return 0;
+  if (Array.isArray(plan.weekdays) && plan.weekdays.length) return plan.weekdays.length / 7;
+  const n = parseInt(plan.interval_days, 10);
+  return (n && n > 0) ? 1 / n : 0;
+}
+
+/* 먹이 하나의 소진 전망.
+   plans 는 전체 계획 목록을 넘겨도 됩니다 — 이 먹이를 쓰는 것만 골라 씁니다.
+
+   반환
+     perDay      하루 평균 소비량
+     daysLeft    며칠 남았는가 (소비가 없으면 null)
+     emptyOn     소진 예상일
+     orderOn     주문해야 하는 날 (소진일 - lead_days)
+     level       ok | soon | now | out | expiring | expired
+     pct         남은 비율 (amount_full 이 있을 때만)
+
+   ⚠️ 이건 '계획대로 먹였을 때' 의 추정입니다. 실제로 얼마나 먹었는지가 아니라
+      얼마나 먹이기로 했는지에서 나옵니다. 굶기거나 더 준 날은 반영되지
+      않습니다. 화면에도 그렇게 적어야 합니다. */
+function feedForecast(item, plans, endDate) {
+  const today0 = endDate || today();
+  const out = { perDay: 0, daysLeft: null, emptyOn: null, orderOn: null, level: 'ok', pct: null };
+  if (!item) return out;
+
+  const mine = (plans || []).filter(p => p.feed_item_id === item.id);
+  const per = Number(item.per_use) || 0;
+  out.perDay = per > 0 ? mine.reduce((s, p) => s + planPerDay(p) * per, 0) : 0;
+
+  const left = item.amount_left == null ? null : Number(item.amount_left);
+  const full = item.amount_full == null ? null : Number(item.amount_full);
+  if (left != null && full > 0) out.pct = Math.max(0, Math.min(100, Math.round(left / full * 100)));
+
+  const lead = Math.max(0, parseInt(item.lead_days, 10) || 0);
+
+  /* 유통기한이 소진보다 먼저 오면 그쪽이 답입니다. 남았어도 못 씁니다. */
+  if (item.expires_on) {
+    const d = daysBetween(today0, item.expires_on);
+    if (d < 0) { out.level = 'expired'; out.expiresIn = d; return out; }
+    if (d <= 14) { out.level = 'expiring'; out.expiresIn = d; }
+  }
+
+  if (left != null && left <= 0) { out.level = 'out'; out.daysLeft = 0; out.emptyOn = today0; return out; }
+  if (left == null || out.perDay <= 0) {
+    /* 소진은 계산할 수 없지만 기한은 압니다. 기한이 있으면 그것만으로도
+       언제 새로 사야 하는지 알려줄 수 있습니다. */
+    if (item.expires_on) out.orderOn = addDays(item.expires_on, -lead);
+    return out;
+  }
+
+  out.daysLeft = Math.floor(left / out.perDay);
+  out.emptyOn = addDays(today0, out.daysLeft);
+
+  /* 주문일은 '언제 못 쓰게 되는가' 에서 거꾸로 셉니다. 다 먹어서 없어지는 날과
+     기한이 끝나는 날 중 **먼저 오는 쪽**이 그 날입니다.
+
+     이걸 안 하면 8월 5일에 기한이 끝나는 영양제를 10월에 주문하라고 알려주게
+     됩니다 — 소진일만 보고 계산하기 때문입니다. 화면에는 '기한 임박' 이라고
+     떠 있는데 캘린더에는 두 달 뒤 일정이 들어가면, 둘 중 뭘 믿어야 할지
+     알 수 없습니다. */
+  const endOn = (item.expires_on && item.expires_on < out.emptyOn) ? item.expires_on : out.emptyOn;
+  out.endOn = endOn;
+  out.orderOn = addDays(endOn, -lead);
+
+  if (out.level === 'ok') {
+    const untilEnd = daysBetween(today0, endOn);
+    if (untilEnd <= lead) out.level = 'now';            // 지금 주문해야 도착이 맞음
+    else if (untilEnd <= lead + 7) out.level = 'soon';
+  }
+  return out;
+}
+
+const FEED_LEVEL = {
+  ok:       { ko: '넉넉',       tone: 'good' },
+  soon:     { ko: '곧 주문',    tone: 'info' },
+  now:      { ko: '지금 주문',  tone: 'warn' },
+  out:      { ko: '떨어짐',     tone: 'warn' },
+  expiring: { ko: '기한 임박',  tone: 'warn' },
+  expired:  { ko: '기한 지남',  tone: 'warn' }
+};
 
 
 /* =============================================================================
@@ -685,6 +830,7 @@ if (typeof window !== 'undefined') {
     isDueOn, lastDueBefore, nextDueAfter, planStatus, cycleLabel,
     buildIcs, icsEscape, icsFold, weeklySummary,
     completionRate, streakDays, lastDoneByKind, weightSummary, dailyCounts, ageText,
-    SIGNS, signsFor, signStatus
+    SIGNS, signsFor, signStatus,
+    FEED_KINDS, FEED_LEVEL, feedKindInfo, planPerDay, feedForecast
   };
 }

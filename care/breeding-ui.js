@@ -92,14 +92,12 @@
       : '';
   }
 
-  /* 레오파드는 기존 화면에만 있는 것이 아직 있습니다 — 사진 업로드와
-     라인브리딩 색 강도. 감추지 말고 어디로 가면 되는지 알려줍니다.
-     옮겨오기 전까지는 두 화면이 함께 있는 편이 낫습니다 — 여기서 사진을
-     못 넣는 줄 모르고 헤매는 것보다요. */
+  /* 레오파드는 기존 화면에만 있는 것이 아직 하나 남았습니다 — 라인브리딩
+     색 강도. 감추지 말고 어디로 가면 되는지 알려줍니다. */
   function legacyNote() {
     if (S.species !== 'gecko') return '';
     return '<div class="hint">' + icon('bi-info-circle')
-      + ' 사진 등록과 라인브리딩 색 강도는 아직 '
+      + ' 라인브리딩 색 강도는 아직 '
       + '<a href="/gecko/breeding.html">레오파드 전용 화면</a>에 있습니다.</div>';
   }
 
@@ -193,6 +191,17 @@
       + '<select class="in" id="f_pa" aria-label="부">' + popt(a.parent_a) + '</select>'
       + '<select class="in" id="f_pb" aria-label="모">' + popt(a.parent_b) + '</select></div>'
 
+      + '<div class="lbl2">사진 (선택)</div>'
+      + '<div class="photorow">'
+      + '<div class="photoprev" id="f_prev">'
+      + (a.photo_url ? '<img src="' + esc(a.photo_url) + '" alt="">' : '<span>없음</span>') + '</div>'
+      + '<div class="photoside">'
+      + '<label class="btn ghost sm" for="f_img">' + icon('bi-image') + '사진 고르기</label>'
+      + '<input type="file" id="f_img" accept="image/*" hidden>'
+      + (a.photo_url ? '<button class="mini del" id="f_imgdel">' + icon('bi-x-lg') + '사진 지우기</button>' : '')
+      + '<div class="hint" id="f_imgmsg">올리기 전에 자동으로 줄입니다.</div>'
+      + '</div></div>'
+
       + '<div class="lbl2"><label for="f_note">메모 (선택)</label></div>'
       + '<input class="in" id="f_note" value="' + esc(a.note || '') + '">'
       + '<div class="hint">' + icon('bi-shield-check')
@@ -204,6 +213,24 @@
       + (isNew ? '' : '<button class="btn danger" data-del="animal:' + a.id + '" style="margin-left:auto">'
                     + icon('bi-trash3') + '삭제</button>')
       + '</div></div>';
+  }
+
+  /* 고른 사진은 저장을 누르기 전에 미리 올려 둡니다. 저장할 때 한꺼번에
+     올리면 사진이 큰 경우 몇 초 동안 아무 반응이 없어서 두 번 누르게 됩니다.
+     여기 담아뒀다가 저장할 때 주소만 실어 보냅니다. */
+  let pendingPhoto;   // undefined = 안 건드림 · null = 지움 · string = 새 주소
+
+  async function pickPhoto(file) {
+    const msg = $('f_imgmsg'), prev = $('f_prev');
+    if (!file) return;
+    try {
+      const url = await A.uploadPhoto(file, m => { if (msg) msg.textContent = m; });
+      pendingPhoto = url;
+      if (prev) prev.innerHTML = '<img src="' + esc(url) + '" alt="">';
+      if (msg) msg.textContent = '올렸습니다. 저장을 눌러야 반영됩니다.';
+    } catch (e) {
+      if (msg) msg.textContent = A.friendly(e);
+    }
   }
 
   function saveAnimal() {
@@ -222,6 +249,9 @@
       parent_a: $('f_pa').value || null, parent_b: $('f_pb').value || null,
       note: $('f_note').value.trim() || null
     });
+    /* undefined 면 손대지 않습니다 — v19 이후 save_row 가 합치므로 안 보내면
+       기존 사진이 그대로 남습니다. null 을 보내야 지워집니다. */
+    if (pendingPhoto !== undefined) row.photo_url = pendingPhoto;
     act(async () => { await A.saveAnimal(row); S.edit = null; }, '저장했습니다');
   }
 
@@ -470,11 +500,12 @@
       return render();
     }
     if (d.cancel) { S.edit = null; return render(); }
-    if (d.new) { S.edit = { what: d.new, row: null }; return render(); }
+    if (d.new) { S.edit = { what: d.new, row: null }; pendingPhoto = undefined; return render(); }
     if (d.edit) {
       const [what, id] = d.edit.split(':');
       const src = { animal: S.animals, pair: S.pairs, clutch: S.clutches }[what];
       S.edit = { what: what, row: src.filter(x => x.id === id)[0] };
+      pendingPhoto = undefined;
       return render();
     }
     if (d.del) {
@@ -483,6 +514,14 @@
       if (!confirm('이 ' + label + '을(를) 지울까요? 되돌릴 수 없습니다.')) return;
       const table = { animal: 'animals', pair: 'pairings', clutch: 'clutches' }[what];
       return act(async () => { await A.deleteRow(table, id); S.edit = null; }, '삭제했습니다');
+    }
+    if (t.id === 'f_imgdel') {
+      pendingPhoto = null;
+      const p = $('f_prev'), m = $('f_imgmsg');
+      if (p) p.innerHTML = '<span>없음</span>';
+      if (m) m.textContent = '저장을 눌러야 지워집니다.';
+      t.remove();
+      return;
     }
     if (t.id === 'f_save') return saveAnimal();
     if (t.id === 'p_save') {
@@ -515,6 +554,7 @@
   });
 
   document.addEventListener('change', function (ev) {
+    if (ev.target.id === 'f_img') { pickPhoto(ev.target.files && ev.target.files[0]); return; }
     if (ev.target.id !== 'species') return;
     /* 코어를 갈아끼울 수 없으므로 페이지를 다시 엽니다 (머리말 참고) */
     location.href = 'breeding.html?species=' + encodeURIComponent(ev.target.value) + '#' + S.tab;
@@ -555,8 +595,8 @@
 
     /* 종 코어 → 어댑터 순서로 넣습니다. 어댑터가 코어를 보고 종을 알아냅니다. */
     try {
-      await loadScript(CORES[S.species].src + '?v=12');
-      await loadScript('breeding-spec.js?v=12');
+      await loadScript(CORES[S.species].src + '?v=13');
+      await loadScript('breeding-spec.js?v=13');
     } catch (e) {
       gate('bi-exclamation-triangle', '계산기 데이터를 불러오지 못했습니다', esc(e.message), '/care/', '케어로');
       return;

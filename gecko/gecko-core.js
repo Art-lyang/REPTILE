@@ -461,61 +461,18 @@ function polyLabel(poly){
    - EXIF 회전 자동 보정 (createImageBitmap)
    - 최대 변 길이 제한 + 목표 용량(기본 350KB)까지 화질 자동 조정
    - 아주 큰 이미지는 단계적으로 축소해 모바일 브라우저 메모리 초과 방지 */
+/* 사진 줄이기는 assets/imgtool.js 로 옮겼습니다.
+   케어·브리딩 화면이 종을 가리지 않게 되면서 크레스티드·팻테일·볼파이썬
+   에서도 필요해졌는데, 그쪽은 이 파일을 읽지 않기 때문입니다. 구현을 두 벌
+   두면 한쪽만 고쳐지므로 여기서는 넘기기만 합니다.
+
+   ⚠️ 이 함수를 쓰는 페이지는 assets/imgtool.js 를 먼저 읽어야 합니다.
+      (gecko/index.html · gecko/breeding.html · gecko/login.html · admin/index.html) */
 async function resizeImage(file, max, opt){
-  opt = opt || {};
-  const maxBytes = opt.maxBytes || 350*1024;   // 목표 용량
-  const minQ     = opt.minQ     || 0.5;        // 최저 화질
-  max = max || 900;
-
-  if(!file || !/^image\//.test(file.type||'')) throw new Error('이미지 파일이 아니에요.');
-
-  // 1) 디코딩 (EXIF 회전 반영)
-  let src = null, useBitmap = false;
-  try{
-    if(window.createImageBitmap){
-      src = await createImageBitmap(file, {imageOrientation:'from-image'});
-      useBitmap = true;
-    }
-  }catch(e){ src = null; }
-  if(!src){
-    src = await new Promise((res,rej)=>{ const i=new Image();
-      i.onload=()=>res(i); i.onerror=()=>rej(new Error('이미지를 열 수 없어요.'));
-      i.src=URL.createObjectURL(file); });
+  if(!window.ImgTool || !window.ImgTool.resize){
+    throw new Error('사진 도구를 불러오지 못했습니다. 새로고침 후 다시 시도해 주세요.');
   }
-
-  let sw = src.width, sh = src.height;
-  if(!sw || !sh) throw new Error('이미지 크기를 읽을 수 없어요.');
-
-  // 2) 목표 크기 계산
-  const scale = Math.min(1, max/Math.max(sw,sh));
-  let tw = Math.max(1, Math.round(sw*scale)), th = Math.max(1, Math.round(sh*scale));
-
-  // 3) 단계적 축소 (한 번에 1/2 이하로 줄이면 계단현상 → 반씩 줄임)
-  let cur = document.createElement('canvas');
-  cur.width = sw; cur.height = sh;
-  cur.getContext('2d').drawImage(src, 0, 0);
-  if(useBitmap && src.close) src.close();
-
-  let cw = sw, ch = sh;
-  while(cw > tw*2 || ch > th*2){
-    const nw = Math.max(tw, Math.round(cw/2)), nh = Math.max(th, Math.round(ch/2));
-    const nx = document.createElement('canvas'); nx.width=nw; nx.height=nh;
-    const cx = nx.getContext('2d'); cx.imageSmoothingQuality='high';
-    cx.drawImage(cur, 0, 0, nw, nh);
-    cur = nx; cw = nw; ch = nh;
-  }
-  const out = document.createElement('canvas'); out.width=tw; out.height=th;
-  const ox = out.getContext('2d'); ox.imageSmoothingQuality='high';
-  ox.drawImage(cur, 0, 0, tw, th);
-
-  // 4) 용량이 목표보다 크면 화질을 낮춰 재인코딩
-  const encode = q => new Promise((res,rej)=>
-    out.toBlob(b=> b? res(b) : rej(new Error('이미지 변환에 실패했어요.')), 'image/jpeg', q));
-  let q = 0.85, blob = await encode(q);
-  while(blob.size > maxBytes && q > minQ){
-    q = Math.max(minQ, q - 0.12);
-    blob = await encode(q);
-  }
-  return blob;
+  return window.ImgTool.resize(file, max, opt);
 }
+
 if(typeof window!=='undefined') window.resizeImage = resizeImage;

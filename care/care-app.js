@@ -114,6 +114,38 @@ const CareApp = (function () {
       return req(SB.rpc('delete_row', { p_device: devId(), p_table: 'animals', p_id: id }));
     },
 
+    /* ── 사진 ──────────────────────────────────────────────────────────
+       올리기 전에 줄입니다. 폰 사진은 4~12MB 라 그대로 두면 무료 저장소가
+       금방 차고, 목록에서 20장을 받느라 한참 걸립니다.
+
+       ⚠️ 이 버킷은 공개입니다. 주소를 아는 사람은 로그인 없이 사진을 볼 수
+          있습니다. 공개 프로필이 사진을 보여주려면 그래야 하고, 대신
+          '공개를 꺼도 사진 주소를 이미 받은 사람은 계속 본다' 는 것을
+          공유 설정 화면에 적어두었습니다. */
+    async uploadPhoto(file, onStep) {
+      if (!USER) throw new Error('로그인이 필요합니다.');
+      if (!window.ImgTool || !window.ImgTool.resize) {
+        throw new Error('사진 도구를 불러오지 못했습니다. 새로고침 후 다시 시도해 주세요.');
+      }
+      const say = m => { try { onStep && onStep(m); } catch (e) {} };
+
+      const mb = (file.size / 1048576).toFixed(1);
+      say(file.size > 1048576 ? '사진을 줄이는 중… (' + mb + 'MB)' : '준비 중…');
+      const blob = await window.ImgTool.resize(file, 900);
+      say('올리는 중… (' + Math.round(blob.size / 1024) + 'KB 로 줄임)');
+
+      /* 파일 이름에 계정 id 를 넣습니다. 버킷이 공개라 경로를 훑는 사람이
+         있을 수 있는데, 무작위 부분이 있어야 남의 사진 주소를 맞힐 수 없습니다. */
+      const rand = Math.random().toString(36).slice(2, 10);
+      const path = 'a/' + ('u_' + USER.id).replace(/[^\w-]/g, '') + '_' + Date.now() + '_' + rand + '.jpg';
+
+      const up = await SB.storage.from('morph-images')
+        .upload(path, blob, { contentType: 'image/jpeg', upsert: true });
+      if (up.error) throw new Error(friendly(up.error));
+
+      return SB.storage.from('morph-images').getPublicUrl(path).data.publicUrl;
+    },
+
     /* ── 페어링 · 클러치 ───────────────────────────────────────────────
        개체와 같은 통로(my_rows/save_row)를 씁니다. 브리딩 화면이 쓰는
        세 표는 전부 이 RPC 화이트리스트 안에 있습니다 (supabase_v7.sql).

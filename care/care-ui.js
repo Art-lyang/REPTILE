@@ -405,14 +405,32 @@
       + '<button class="mode' + (mode === 'days' ? ' on' : '') + '" data-mode="days">며칠마다</button>'
       + '<button class="mode' + (mode === 'week' ? ' on' : '') + '" data-mode="week">요일 지정</button>'
       + '</div>'
+      /* 자주 쓰는 주기는 버튼으로 바로 고릅니다. 숫자를 직접 적는 칸도
+         남겨둡니다 — 5일·10일처럼 버튼에 없는 주기를 쓰는 사람이 있습니다. */
       + '<div id="m_days" style="display:' + (mode === 'days' ? 'block' : 'none') + '">'
+      + '<div class="presets">' + [
+          [1, '매일'], [2, '2일마다'], [3, '3일마다'], [4, '4일마다'],
+          [7, '주 1회'], [14, '2주마다'], [30, '월 1회']
+        ].map(x =>
+          '<button class="preset' + (Number(p.interval_days) === x[0] ? ' on' : '') + '" '
+          + 'data-preset="' + x[0] + '">' + x[1] + '</button>').join('') + '</div>'
+      + '<div class="lbl2" style="margin-top:12px"><label for="p_interval">직접 넣기 (일)</label></div>'
       + '<input class="in" id="p_interval" type="number" min="1" max="365" inputmode="numeric" '
-      + 'value="' + (p.interval_days || 1) + '" placeholder="며칠마다">'
-      + '<div class="hint">1 = 매일, 3 = 3일마다, 30 = 30일마다</div></div>'
+      + 'value="' + (p.interval_days || 1) + '">'
+      + '<div class="hint">시작일부터 이 간격으로 돌아옵니다.</div></div>'
+
       + '<div id="m_week" style="display:' + (mode === 'week' ? 'block' : 'none') + '">'
       + '<div class="wdays">' + C.WEEKDAY_KO.map((w, i) =>
           '<button class="wd' + ((p.weekdays || []).indexOf(i) >= 0 ? ' on' : '') + '" data-wd="' + i + '">' + w + '</button>').join('')
-      + '</div></div>'
+      + '</div>'
+      /* 요일도 자주 쓰는 묶음을 한 번에. 파충류는 '월·목 급여' 처럼
+         주 2~3회가 흔합니다. */
+      + '<div class="presets">' + [
+          [[1, 4], '월·목'], [[2, 5], '화·금'], [[1, 3, 5], '월·수·금'],
+          [[0, 6], '주말'], [[0, 1, 2, 3, 4, 5, 6], '매일']
+        ].map(x =>
+          '<button class="preset" data-wdset="' + x[0].join(',') + '">' + x[1] + '</button>').join('') + '</div>'
+      + '<div class="hint">누른 요일마다 돌아옵니다. 위 요일 버튼으로 직접 골라도 됩니다.</div></div>'
 
       + '<div class="row2">'
       + '<div><div class="lbl2">시작일</div><input class="in" id="p_start" type="date" value="' + esc(p.start_date || C.today()) + '"></div>'
@@ -826,6 +844,22 @@
       return;
     }
     if (d.wd !== undefined) { t.classList.toggle('on'); return; }
+
+    /* 주기 프리셋 — 누르면 숫자 칸에 넣고 그 버튼만 켜둡니다. 숫자만 바꾸고
+       버튼은 그대로 두면 어떤 게 골라진 건지 알 수 없습니다. */
+    if (d.preset) {
+      const el = $('p_interval');
+      if (el) el.value = d.preset;
+      t.parentNode.querySelectorAll('.preset').forEach(b => b.classList.toggle('on', b === t));
+      return;
+    }
+    /* 요일 묶음 — 해당 요일만 켭니다 (더하는 게 아니라 갈아끼웁니다) */
+    if (d.wdset !== undefined) {
+      const want = d.wdset.split(',');
+      document.querySelectorAll('.wd').forEach(b => b.classList.toggle('on', want.indexOf(b.dataset.wd) >= 0));
+      t.parentNode.querySelectorAll('.preset').forEach(b => b.classList.toggle('on', b === t));
+      return;
+    }
     if (t.id === 'preset') return addPreset();
     if (t.id === 'ics') return exportIcs();
 

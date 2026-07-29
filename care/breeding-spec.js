@@ -82,7 +82,7 @@
       matchCombo: s => (has('ftMatchCombo') ? get('ftMatchCombo')(s) : null)
     },
     ballpython: {
-      ko: '볼파이썬', calc: '/ballpython/',
+      ko: '볼파이톤', calc: '/ballpython/',
       genes: () => (has('BP_ALL_GENES') ? get('BP_ALL_GENES')() : []),
       traits: () => get('BP_TRAITS') || [],
       traitGroup: t => t.grp,
@@ -116,7 +116,7 @@
        incdom  홑(id) 과 슈퍼(super_id) 가 따로 보임
        dom     id 하나
 
-     type 이 없는 유전자는 다중 대립인자 복합(볼파이썬 BEL 등)입니다.
+     type 이 없는 유전자는 다중 대립인자 복합(볼파이톤 BEL 등)입니다.
      '이 개체가 무엇을 갖고 있나' 를 체크박스 하나로 물을 수 없어서 뺍니다.
      그 개체는 콤보 이름이나 메모로 적는 편이 정확합니다.
 

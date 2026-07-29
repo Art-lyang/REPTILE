@@ -19,7 +19,7 @@
    개체·페어링·클러치는 **기록**입니다. 이름·성별·날짜·메모라서 종과 무관하게
    그대로 동작합니다. 종에 매인 것은 모프 체크박스와 역산뿐입니다.
 
-   역산은 레오파드·크레스티드·팻테일에서 됩니다. 볼파이썬은 보류입니다 —
+   역산은 레오파드·크레스티드·팻테일에서 됩니다. 볼파이톤은 보류입니다 —
    BEL 복합처럼 대립인자가 여럿 얽힌 자리가 많아 같은 규칙으로 덮이지
    않습니다. 틀린 답을 내놓는 것보다 아직 없다고 말하는 편이 낫습니다.
 
@@ -46,7 +46,7 @@
     gecko:      { ko: '레오파드 게코',        src: '/gecko/gecko-core.js',       goal: true },
     crested:    { ko: '크레스티드 게코',      src: '/crested/crested-core.js',   goal: true  },
     fattail:    { ko: '아프리카 팻테일 게코', src: '/fattail/fattail-core.js',   goal: true  },
-    ballpython: { ko: '볼파이썬',            src: '/ballpython/ball-core.js',   goal: false }
+    ballpython: { ko: '볼파이톤',            src: '/ballpython/ball-core.js',   goal: false }
   };
 
   const S = { species: 'gecko', tab: 'animals', animals: [], pairs: [], clutches: [],
@@ -92,14 +92,11 @@
       : '';
   }
 
-  /* 레오파드는 기존 화면에만 있는 것이 아직 하나 남았습니다 — 라인브리딩
-     색 강도. 감추지 말고 어디로 가면 되는지 알려줍니다. */
-  function legacyNote() {
-    if (S.species !== 'gecko') return '';
-    return '<div class="hint">' + icon('bi-info-circle')
-      + ' 라인브리딩 색 강도는 아직 '
-      + '<a href="/gecko/breeding.html">레오파드 전용 화면</a>에 있습니다.</div>';
-  }
+  /* 예전에는 색 강도가 레오파드 전용 화면에만 있어서 여기서 그쪽으로
+     보내는 안내를 띄웠습니다. 이제 색 강도가 이 화면에 있고 레오파드 전용
+     화면은 여기로 넘어오게 바꿨습니다 — 안내를 남겨두면 두 화면이 서로를
+     가리키며 도는 꼴이 됩니다. 그래서 없앴습니다. */
+  function legacyNote() { return ''; }
 
   /* ── 개체 ──────────────────────────────────────────────────────────── */
   function tabAnimals() {
@@ -128,6 +125,12 @@
       + '<div class="ms">' + (vis.length ? esc(vis.join(' · ')) : '모프 미입력')
       + (het.length ? '<br><span style="color:var(--eggplant)">het ' + esc(het.join(' · ')) + '</span>' : '')
       + ((a.parent_a || a.parent_b) ? '<br>부모 ' + esc(nameById(a.parent_a)) + ' × ' + esc(nameById(a.parent_b)) : '')
+      /* 색 강도 — 점으로 보여줍니다. 숫자만 있으면 5점 만점인지 알기 어렵습니다. */
+      + (a.color_grade
+          ? '<br><span class="gdrow" title="라인브리딩 색 강도 ' + a.color_grade + '/5">'
+            + '<span class="gd on"></span>'.repeat(a.color_grade)
+            + '<span class="gd"></span>'.repeat(5 - a.color_grade)
+            + ' 색 강도 ' + a.color_grade + '/5</span>' : '')
       + '</div></div>'
       + '<div class="acts">'
       + '<a class="mini" href="animal.html?id=' + encodeURIComponent(a.id) + '">' + icon('bi-graph-up') + '관리</a>'
@@ -191,6 +194,22 @@
       + '<select class="in" id="f_pa" aria-label="부">' + popt(a.parent_a) + '</select>'
       + '<select class="in" id="f_pb" aria-label="모">' + popt(a.parent_b) + '</select></div>'
 
+      /* 색 강도 — 레오파드 전용 화면에만 있던 것을 옮겨왔습니다.
+         라인브리딩은 확률이 안 나오니 '얼마나 진하게 올라왔는지' 는 결국
+         눈으로 보고 적어두는 수밖에 없습니다. 그 기록입니다.
+         라인브리딩 형질이 있는 종에서만 띄웁니다 — 형질이 없으면
+         적을 대상 자체가 없습니다. */
+      + (traits.length
+          ? '<div class="lbl2"><label for="f_grade">라인브리딩 색 강도 (선택)</label></div>'
+            + '<select class="in" id="f_grade">'
+            + '<option value="">기록 안 함</option>'
+            + [1, 2, 3, 4, 5].map(n =>
+                '<option value="' + n + '"' + (a.color_grade === n ? ' selected' : '') + '>'
+                + n + ' / 5</option>').join('')
+            + '</select>'
+            + '<div class="hint">내 눈으로 매기는 값입니다. 확률 계산에는 쓰이지 않습니다.</div>'
+          : '')
+
       + '<div class="lbl2">사진 (선택)</div>'
       + '<div class="photorow">'
       + '<div class="photoprev" id="f_prev">'
@@ -249,6 +268,9 @@
       parent_a: $('f_pa').value || null, parent_b: $('f_pb').value || null,
       note: $('f_note').value.trim() || null
     });
+    /* 색 강도는 라인브리딩 형질이 있는 종에서만 칸이 뜹니다. 칸이 없을 때
+       null 을 밀어 넣으면 이미 적어둔 값을 지우게 되므로 손대지 않습니다. */
+    if ($('f_grade')) row.color_grade = parseInt($('f_grade').value, 10) || null;
     /* undefined 면 손대지 않습니다 — v19 이후 save_row 가 합치므로 안 보내면
        기존 사진이 그대로 남습니다. null 을 보내야 지워집니다. */
     if (pendingPhoto !== undefined) row.photo_url = pendingPhoto;

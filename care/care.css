@@ -218,7 +218,21 @@ header .sub{
 }
 .in:focus{outline:none;border-color:var(--teal);background:var(--card)}
 textarea.in{min-height:76px;resize:vertical;line-height:1.6}
-.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+/* 두 칸 나란히. 단, 한 칸이라도 제 내용을 못 담을 만큼 좁아지면 세로로
+   내려놓습니다.
+
+   1fr 1fr 로만 두면 격자가 칸을 정해진 폭으로 눌러버립니다. 글자는 안
+   줄어드니 날짜 입력처럼 최소 폭이 있는 칸은 내용이 밖으로 삐져나와
+   옆 칸을 덮습니다. 폰에서 날짜 칸이 겹쳐 보이던 이유입니다.
+   실제로 375px 에서 여유가 2px 밖에 없었습니다 — 폰트가 조금만 커지거나
+   날짜 형식이 길어지면 바로 넘칩니다.
+
+   minmax(0,1fr) 는 칸이 넘칠 때 격자가 알아서 늘어나게 두는 것이고,
+   좁은 화면에서는 아예 한 줄에 하나씩 놓아 여유를 확보합니다. */
+.row2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
+@media (max-width:420px){
+  .row2{grid-template-columns:1fr}
+}
 .row3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 
 /* ── 버튼 : 계산기의 .act / .btn-calc / .btn-reset ────────────────────── */
@@ -313,6 +327,13 @@ textarea.in{min-height:76px;resize:vertical;line-height:1.6}
 .info{flex:1;min-width:0}
 .nm{font-weight:780;font-size:15px;letter-spacing:-.025em;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .ms{font-size:11.5px;color:var(--ink2);margin-top:2px;word-break:keep-all;line-height:1.6}
+/* 라인브리딩 색 강도 — 5점 만점을 점으로 보여줍니다.
+   빈 점까지 그려야 '3' 이 3/5 인지 3/10 인지 헷갈리지 않습니다. */
+.gdrow{display:inline-flex;align-items:center;gap:1px;white-space:nowrap}
+.gd{display:inline-block;width:7px;height:7px;border-radius:50%;
+    background:var(--line);flex:0 0 auto}
+.gd.on{background:var(--teal)}
+.gdrow .gd:last-of-type{margin-right:4px}
 .acts{display:flex;gap:6px;flex:0 0 auto}
 
 /* 배지 (theme .fambadge / .selchip) */
@@ -402,7 +423,7 @@ textarea.in{min-height:76px;resize:vertical;line-height:1.6}
 /* =============================================================================
    브리딩 관리 (breeding.html)
    -----------------------------------------------------------------------------
-   모프 체크박스가 종에 따라 9개(팻테일)에서 52개(볼파이썬)까지 갑니다.
+   모프 체크박스가 종에 따라 9개(팻테일)에서 52개(볼파이톤)까지 갑니다.
    개수가 크게 달라지므로 고정 칸 수 대신 폭에 맞춰 흐르게 둡니다.
    ============================================================================= */
 .tokgrid{

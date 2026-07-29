@@ -168,6 +168,10 @@ const BP_L_BEL = {
   pairs:{
     'phantom|mystic':{ ko:'미스틱 포션', en:'Mystic Potion', ja:'ミスティックポーション', zh:'Mystic Potion',
                        token:'bel_white', proof:'partial' },
+    /* 흰 계열 × 팬텀·미스틱 조합 중 이름이 굳어진 것. 나머지는 규칙대로
+       '모하비 미스틱' 처럼 두 이름을 잇습니다. */
+    'mojave|phantom':{ ko:'퍼플 패션', en:'Purple Passion', ja:'パープルパッション', zh:'Purple Passion',
+                       token:'purplepassion', proof:'established' },
   },
   note:{ ko:'모하비·레서·버터·루소·스페셜·팬텀·미스틱은 <b>같은 자리</b>의 대립유전자로 계산합니다. 흰 계열(모하비·레서·버터·루소·스페셜) 중 <b>아무 두 개</b>가 모이면 — 같은 것 두 개든 서로 다른 것 하나씩이든 — <b>블루아이 루시스틱(BEL)</b> 이 됩니다. 팬텀·미스틱은 같은 자리이지만 두 개가 모여도 흰색이 되지 않고 슈퍼 팬텀·슈퍼 미스틱이 되며, 둘이 만나면 미스틱 포션입니다. 흰 계열 × 팬텀·미스틱 조합은 흰색으로 치우치되 계통에 따라 편차가 커서 <b>부분 검증</b>으로 표시합니다. 뱀부·대디 등 이 자리에 속한다고 보는 다른 대립유전자는 아직 넣지 않았습니다.',
          en:'Mojave, Lesser, Butter, Russo, Special, Phantom and Mystic are calculated as alleles of <b>one locus</b>. <b>Any two</b> of the white group (Mojave, Lesser, Butter, Russo, Special) — homozygous or as a compound — give a <b>Blue Eyed Leucistic (BEL)</b>. Phantom and Mystic sit at the same locus but two copies do not produce white: they give Super Phantom / Super Mystic, and together they give Mystic Potion. White × Phantom/Mystic compounds trend toward white but vary a lot by line, so they are marked <b>partly proven</b>. Other alleles said to belong here (Bamboo, Daddy…) are not included yet.',
@@ -455,21 +459,81 @@ const BP_TRAITS = [
 
 /* ============================================================================
    3. 콤보(디자이너) 명칭
-   기본 유전형 이름(슈퍼 파스텔·아이보리 등)은 유전자 정의가 직접 처리하고,
+   ----------------------------------------------------------------------------
+   기본 유전형 이름(슈퍼 파스텔·아이보리·BEL 등)은 유전자 정의가 직접 처리하고,
    여기에는 '여러 유전자가 만나야 생기는' 이름만 둡니다.
-   볼파이톤의 조합 이름은 수천 가지라 널리 쓰이는 것만 담았습니다.
+
+   ▸ 다른 계산기(레오파드·펫테일)는 토큰이 <b>정확히 일치</b>할 때만 콤보명을
+     붙입니다. 볼파이톤에서 그렇게 하면 이름이 거의 안 붙습니다 — 유전자를
+     서너 개씩 얹는 종이라 '파스텔 + 스파이더' 만 있는 새끼가 드뭅니다.
+     그리고 브리더들도 그렇게 부르지 않습니다. 엔치가 하나 더 붙으면
+     'Enchi Bumblebee' 라고 부르지, 이름이 사라지지 않습니다.
+     그래서 여기서는 <b>부분 일치</b>를 씁니다 — 콤보에 들어간 유전자를 빼고
+     남은 것을 앞에 붙여 '엔치 범블비' 처럼 만듭니다. (bpComboName)
+
+   ▸ 볼파이톤의 조합 이름은 수천 가지입니다. 여기에는 이름이 굳어져 여러
+     브리더가 같은 뜻으로 쓰는 것만 담았습니다. 확실하지 않은 이름을 넣으면
+     계산기가 없는 사실을 알려주게 됩니다. 아는 이름이 빠져 있으면 문의로
+     알려주시면 확인하고 넣겠습니다.
    ============================================================================ */
 const BP_COMBOS = [
+  /* --- 파스텔 · 스파이더 · 핀스트라이프 계열 --- */
   { tokens:['pastel','spider'],              ko:'범블비', en:'Bumblebee', ja:'バンブルビー', zh:'Bumblebee', proof:'established' },
   { tokens:['super_pastel','spider'],        ko:'킬러비', en:'Killer Bee', ja:'キラービー', zh:'Killer Bee', proof:'established' },
   { tokens:['pastel','pinstripe'],           ko:'레몬 블라스트', en:'Lemon Blast', ja:'レモンブラスト', zh:'Lemon Blast', proof:'established' },
+  { tokens:['super_pastel','pinstripe'],     ko:'슈퍼 블라스트', en:'Super Blast', ja:'スーパーブラスト', zh:'Super Blast', proof:'established' },
   { tokens:['spider','pinstripe'],           ko:'스피너', en:'Spinner', ja:'スピナー', zh:'Spinner', proof:'established' },
+  /* 스피너블라스트는 범블비(2개)·스피너(2개)보다 토큰이 많아 우선 잡힙니다 */
   { tokens:['pastel','spider','pinstripe'],  ko:'스피너블라스트', en:'Spinnerblast', ja:'スピナーブラスト', zh:'Spinnerblast', proof:'established' },
+
+  /* --- 파스텔 조합 --- */
+  { tokens:['pastel','fire'],                ko:'파이어플라이', en:'Firefly', ja:'ファイアフライ', zh:'Firefly', proof:'established' },
+  { tokens:['pastel','mojave'],              ko:'파스타브', en:'Pastave', ja:'パスタブ', zh:'Pastave', proof:'partial' },
+  /* 시나몬과 블랙파스텔은 같은 자리의 대립유전자라 둘 다 퓨터로 부릅니다 */
+  { tokens:['pastel','cinnamon'],            ko:'퓨터', en:'Pewter', ja:'ピューター', zh:'Pewter', proof:'established' },
+  { tokens:['pastel','blackpastel'],         ko:'퓨터', en:'Pewter', ja:'ピューター', zh:'Pewter', proof:'established' },
+
+  /* --- 파이볼드 조합 --- */
+  { tokens:['cinnamon','piebald'],           ko:'판다 파이드', en:'Panda Pied', ja:'パンダパイド', zh:'Panda Pied', proof:'established' },
+  { tokens:['blackpastel','piebald'],        ko:'판다 파이드', en:'Panda Pied', ja:'パンダパイド', zh:'Panda Pied', proof:'established' },
+  { tokens:['lavender','piebald'],           ko:'드림시클', en:'Dreamsicle', ja:'ドリームシクル', zh:'Dreamsicle', proof:'established' },
+
+  /* --- 열성끼리 만나 이름이 생기는 것 --- */
   { tokens:['albino','axvpi'],               ko:'스노우 (VPI)', en:'Snow (VPI)', ja:'スノー（VPI）', zh:'Snow（VPI）', proof:'established' },
   { tokens:['albino','axmj'],                ko:'스노우 (MJ)', en:'Snow (MJ)', ja:'スノー（MJ）', zh:'Snow（MJ）', proof:'established' },
-  { tokens:['lavender','piebald'],           ko:'드림시클', en:'Dreamsicle', ja:'ドリームシクル', zh:'Dreamsicle', proof:'established' },
-  { tokens:['ghost','piebald'],              ko:'고스트 파이드', en:'Ghost Pied', ja:'ゴーストパイド', zh:'Ghost Pied', proof:'established' },
+  { tokens:['albino','candy'],               ko:'캔디노', en:'Candino', ja:'キャンディノ', zh:'Candino', proof:'established' },
+  { tokens:['albino','toffee'],              ko:'토피노', en:'Toffino', ja:'トフィーノ', zh:'Toffino', proof:'established' },
 ];
+
+/* 토큰 집합을 덮는 콤보 중 가장 많이 덮는 것을 고릅니다.
+   같은 개수면 위 표에서 먼저 나오는 것이 이깁니다 — 그래서 표의 순서가
+   그대로 우선순위입니다. */
+function bpComboFor(tokenSet){
+  let best=null;
+  for(let i=0;i<BP_COMBOS.length;i++){
+    const c=BP_COMBOS[i];
+    if(c.tokens.length>tokenSet.size) continue;
+    let ok=true;
+    for(let j=0;j<c.tokens.length;j++){ if(!tokenSet.has(c.tokens[j])){ ok=false; break; } }
+    if(!ok) continue;
+    if(!best || c.tokens.length>best.tokens.length) best=c;
+  }
+  return best;
+}
+/* 콤보명 만들기 — 콤보에 안 들어간 유전자는 이름 앞에 붙입니다.
+   tnames 는 '토큰 → 그 토큰이 화면에 쓰는 이름' 입니다 (bpCross 가 채웁니다).
+   반환 { name, exact }  ·  exact=true 면 남은 유전자 없이 딱 그 콤보입니다. */
+function bpComboName(tokenSet, tnames){
+  const c=bpComboFor(tokenSet);
+  if(!c) return null;
+  const used={};
+  c.tokens.forEach(function(t){ used[t]=1; });
+  const extras=[];
+  tokenSet.forEach(function(t){
+    if(!used[t] && tnames && tnames[t]) extras.push(tnames[t]);
+  });
+  return { combo:c, name:extras.concat([tr(c)]).join(' '), exact:extras.length===0 };
+}
 
 /* ============================================================================
    3-1. 조합 단위 건강 경고
@@ -826,15 +890,10 @@ function bpGenoBuckets(g, sA, sB){
   return out;
 }
 
-/* --- 콤보 매칭 (토큰 집합이 정확히 같을 때) --- */
-function bpMatchCombo(tokenSet){
-  for(let i=0;i<BP_COMBOS.length;i++){
-    const c=BP_COMBOS[i];
-    if(c.tokens.length!==tokenSet.size) continue;
-    if(c.tokens.every(function(t){return tokenSet.has(t);})) return c;
-  }
-  return null;
-}
+/* 콤보 이름 붙이기는 위쪽 bpComboFor / bpComboName 이 합니다 (3장).
+   다른 계산기에 있는 '정확히 일치할 때만' 매칭은 여기 두지 않습니다 —
+   볼파이톤에서는 그 방식이면 이름이 거의 안 붙습니다. 3장 머리말 참고. */
+
 /* --- 조합 건강 경고 (토큰 집합이 포함하기만 하면) --- */
 function bpComboRisks(tokenSet){
   const out=[];
@@ -843,23 +902,30 @@ function bpComboRisks(tokenSet){
   });
   return out;
 }
-/* --- 부모의 현재 선택 → 비주얼 토큰 집합 --- */
-function bpParentTokens(side){
-  const s=new Set();
+/* --- 부모의 현재 선택 → 비주얼 토큰 집합 + 토큰별 이름 ---
+   이름까지 모으는 이유는 결과 행과 같습니다 — 부모 카드에도 '엔치 범블비'
+   처럼 콤보명을 붙이려면 콤보에 안 들어간 유전자의 이름이 필요합니다. */
+function bpParentInfo(side){
+  const s=new Set(), names={};
+  const put=function(tok, nm){ if(!tok) return; s.add(tok); names[tok]=nm; };
   BP_ALL_GENES().forEach(function(g){
     const v=BP_STATE[side][g.id];
     if(!v || v===bpDefaultState(g)) return;
     if(g.kind==='multi'){
       const i=bpGenoInfo(g, v);
-      if(i.token) s.add(i.token);
+      put(i.token, i.name);
       return;
     }
-    if(g.type==='rec'){ if(v==='mm') s.add(g.id); }
-    else if(g.type==='incdom'){ if(v==='het') s.add(g.id); else if(v==='mm') s.add(g.supToken||('super_'+g.id)); }
-    else { s.add(g.id); }
+    if(g.type==='rec'){ if(v==='mm') put(g.id, gName(g)); }
+    else if(g.type==='incdom'){
+      if(v==='het') put(g.id, gName(g));
+      else if(v==='mm') put(g.supToken||('super_'+g.id), gSuper(g));
+    }
+    else { put(g.id, gName(g)); }
   });
-  return s;
+  return { tokens:s, tnames:names };
 }
+function bpParentTokens(side){ return bpParentInfo(side).tokens; }
 
 /* --- 모프 이름 조립 --- */
 function bpJoin(parts){
@@ -872,7 +938,8 @@ function bpJoin(parts){
    mode  : 'visual' 표현형 기준 / 'geno' 유전형 기준
    반환  : { prob, parts, tokens, hets, warns, nonViable, health }[]         */
 function bpCross(genes, mode){
-  let rows=[{ prob:1, parts:[], tokens:new Set(), hets:[], warns:new Set(), nonViable:false, health:false }];
+  let rows=[{ prob:1, parts:[], tokens:new Set(), tnames:{}, hets:[], warns:new Set(),
+              nonViable:false, health:false }];
   genes.forEach(function(g){
     const list = (mode==='geno')
       ? bpGenoBuckets(g, BP_STATE.A[g.id], BP_STATE.B[g.id])
@@ -882,10 +949,14 @@ function bpCross(genes, mode){
       if(b.prob<=0) return;
       const tokens=new Set(r.tokens); if(b.token) tokens.add(b.token);
       const warns=new Set(r.warns);   if(b.warn) warns.add(b.warn);
+      /* 콤보명을 만들 때 '남은 유전자' 를 이름으로 적어야 해서, 토큰마다
+         화면에 쓰는 이름을 같이 들고 다닙니다. */
+      let tnames=r.tnames;
+      if(b.token){ tnames={}; for(var k in r.tnames) tnames[k]=r.tnames[k]; tnames[b.token]=b.name; }
       next.push({
         prob:r.prob*b.prob,
         parts: b.name ? r.parts.concat([b.name]) : r.parts,
-        tokens:tokens, warns:warns,
+        tokens:tokens, tnames:tnames, warns:warns,
         hets: r.hets.concat(b.hets||[]),
         nonViable: r.nonViable || !!b.nonViable,
         health: r.health || !!b.health,

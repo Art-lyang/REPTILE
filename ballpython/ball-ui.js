@@ -77,7 +77,8 @@ const I18N = {
       'V1.0 테스트버전 출시',
       '부모 카드별 모프 검색 추가 (한·영·일·중 이름과 별칭 지원)',
       'BEL·옐로우벨리·시나몬·알비노·캔디를 대립유전자 자리로 계산',
-      '스파이더 워블, 데저트 암컷 불임 등 유전 건강 이슈 경고 추가'
+      '스파이더 워블, 데저트 암컷 불임 등 유전 건강 이슈 경고 추가',
+      '콤보 명칭 추가 — 범블비·파이어플라이·퓨터·판다 파이드·캔디노 등. 다른 유전자가 더 얹혀도 ‘엔치 범블비’처럼 이름이 이어집니다'
     ],
     updSoonList:[
       '모프별 사진·설명 추가 예정',
@@ -150,7 +151,8 @@ const I18N = {
       'V1.0 test release',
       'Per-parent morph search (Korean, English, Japanese, Chinese names and aliases)',
       'BEL, Yellow Belly, Cinnamon, Albino and Candy calculated as allelic loci',
-      'Health warnings for Spider wobble, Desert female infertility and more'
+      'Health warnings for Spider wobble, Desert female infertility and more',
+      'Combo names added — Bumblebee, Firefly, Pewter, Panda Pied, Candino and more. Extra genes keep the name, as in “Enchi Bumblebee”'
     ],
     updSoonList:[
       'Photos and descriptions per morph',
@@ -223,7 +225,8 @@ const I18N = {
       'V1.0 テスト版リリース',
       '親カードごとのモルフ検索を追加（韓・英・日・中の名称と別名に対応）',
       'BEL・イエローベリー・シナモン・アルビノ・キャンディを対立遺伝子座として計算',
-      'スパイダーのウォブル、デザート雌の不妊など健康に関する警告を追加'
+      'スパイダーのウォブル、デザート雌の不妊など健康に関する警告を追加',
+      'コンボ名を追加 — バンブルビー・ファイアフライ・ピューター・パンダパイド・キャンディノなど。他の遺伝子が乗っても「エンチ バンブルビー」のように名前が続きます'
     ],
     updSoonList:[
       'モルフごとの写真・解説を追加予定',
@@ -296,7 +299,8 @@ const I18N = {
       'V1.0 测试版发布',
       '新增亲本卡片内的形态搜索（支持韩英日中名称与别名）',
       'BEL、Yellow Belly、Cinnamon、白化、Candy 按等位基因座计算',
-      '新增 Spider 摇头症、Desert 雌性不育等健康警告'
+      '新增 Spider 摇头症、Desert 雌性不育等健康警告',
+      '新增组合名称 — Bumblebee、Firefly、Pewter、Panda Pied、Candino 等。即使叠加其他基因，名称也会保留，如「Enchi Bumblebee」'
     ],
     updSoonList:[
       '计划补充各形态的照片与说明',
@@ -470,10 +474,11 @@ function famBlock(host, fam, genes, side){
 function buildParent(side){
   const host=document.getElementById(side==='A'?'parentA':'parentB');
   host.innerHTML='';
-  const matched=bpMatchCombo(bpParentTokens(side));
+  const pi=bpParentInfo(side);
+  const matched=bpComboName(pi.tokens, pi.tnames);
   if(matched){
     const badge=document.createElement('div'); badge.className='parentcombo'+(side==='B'?' b':'');
-    badge.textContent='= '+tr(matched); host.appendChild(badge);
+    badge.textContent='= '+matched.name; host.appendChild(badge);
   }
   host.appendChild(secHeader(L().secGene));
   const genes=cardGenes(side);
@@ -541,10 +546,12 @@ function calculate(){
     const traits=selectedTraits();
     raw=bpCross(genes, MODE);
     rows=raw.map(function(r){
-      const cb=bpMatchCombo(r.tokens);
+      /* 콤보에 안 들어간 유전자는 이름 앞에 붙습니다 — '엔치 범블비'.
+         남은 것이 없으면(exact) 예전처럼 콤보명만 나옵니다. */
+      const cb=bpComboName(r.tokens, r.tnames);
       return {
         prob:r.prob,
-        combo: cb ? tr(cb) : null,
+        combo: cb ? cb.name : null,
         label: bpJoin(r.parts) || L().normal,
         isNormal: r.parts.length===0,
         tokens:[].concat(Array.from(r.tokens)), traits:traits,

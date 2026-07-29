@@ -5,5 +5,7 @@ Disallow: /admin/
 Disallow: /gecko/login.html
 Disallow: /gecko/breeding.html
 Disallow: /care/
+# 비밀번호로 가려 둔 테스트 화면. 정식 공개할 때 이 줄을 지우세요.
+Disallow: /ballpython/
 
 Sitemap: https://ryangstudio.com/sitemap.xml

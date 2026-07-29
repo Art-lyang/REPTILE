@@ -75,7 +75,11 @@ img{display:block;max-width:100%}
 .release-card{min-height:470px;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;position:relative;background:var(--cream);color:var(--dark);transition:transform .2s,border-color .2s}
 .release-card:hover{transform:translateY(-4px);border-color:rgba(200,144,58,.55)}
 .release-copy{position:relative;padding:24px;z-index:3}
-.state.live{background:#426f61;color:white}.release-copy small{display:block;margin:14px 0 9px;font-size:9px;letter-spacing:.15em;color:#6a6a60;font-weight:850}
+.state.live{background:#426f61;color:white}
+/* 비밀번호로 가려 둔 테스트 공개. 초록(운영 중)과 같은 색을 쓰면 눌러 보고서야
+   잠긴 걸 알게 됩니다. 갈색으로 따로 둡니다. */
+.state.test{background:#8a6a45;color:white}
+.release-copy small{display:block;margin:14px 0 9px;font-size:9px;letter-spacing:.15em;color:#6a6a60;font-weight:850}
 .release-copy h3{font-size:27px;line-height:1.15;letter-spacing:-.04em;margin:0 0 15px}.release-copy p{font-size:13px;line-height:1.7;color:#69685f;max-width:300px}.card-link{position:absolute;top:390px;font-size:12px;font-weight:800}
 .animal-stage{position:absolute;bottom:0;right:0;left:0;height:230px;background:#ded9ce;overflow:hidden}
 .animal-stage img{width:115%;height:115%;object-fit:contain;object-position:right bottom;transform:translate(12%,8%)}

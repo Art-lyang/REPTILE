@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<!-- ⚠️ 테스트 공개 중 — 비밀번호 잠금.
+     케어 화면과 같은 잠금(assets/gate.js)을 씁니다. 다른 스크립트보다 먼저
+     놓아야 화면이 한 번 번쩍 보였다가 가려지는 일이 없습니다.
+     ※ 이건 보안이 아니라 '가려두는 것' 입니다. 자세한 내용은 gate.js 머리말.
+
+     정식 공개할 때 지울 것 — 이 <script> 한 줄, 아래 robots 의 noindex,
+     그리고 tools/build_langs.py 의 GATED 목록에서 'ballpython'. 셋을 함께
+     되돌려야 검색엔진이 이 주소를 다시 보게 됩니다. -->
+<script src="/assets/gate.js?v=1"></script>
+<title>볼파이톤 모프 계산기 · Ball Python Morph Calculator</title>
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/logo-mark-32.png">
+<link rel="icon" type="image/png" sizes="512x512" href="/assets/logo-mark.png">
+<link rel="apple-touch-icon" href="/assets/logo-mark-180.png">
+<meta name="description" content="볼파이톤(볼 파이썬) 부모의 형질을 골라 새끼 모프 확률을 계산합니다. 60가지가 넘는 유전자를 검색으로 찾고, 스파이더 워블·데저트 암컷 불임·슈퍼 시나몬 기형 같은 유전 건강 이슈를 함께 알려줍니다.">
+<meta name="keywords" content="볼파이톤, 볼파이썬, 볼파이톤 모프, 모프 계산기, 파스텔, 모하비, 파이볼드, 클라운, 알비노, 스파이더 워블, 데저트 불임, BEL, 아이보리, ball python morph calculator">
+<meta name="author" content="RYANG STUDIO">
+<!-- 테스트 공개 중이라 색인을 막아 둡니다. 잠긴 화면이 검색에 걸리면
+     들어와도 비밀번호 창만 보게 되고, 그 인상이 그대로 색인에 남습니다.
+     정식 공개할 때 아래 한 줄을 원래대로 되돌리세요.
+     <meta name="robots" content="index, follow, max-image-preview:large"> -->
+<meta name="robots" content="noindex, nofollow">
+<link rel="canonical" href="https://ryangstudio.com/ballpython/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="RYANG STUDIO">
+<meta property="og:title" content="볼파이톤 모프 계산기 · RYANG STUDIO">
+<meta property="og:description" content="볼파이톤 부모의 형질을 골라 새끼 모프 확률을 계산합니다. 모프 검색과 유전 건강 이슈 안내를 함께 제공합니다.">
+<meta property="og:url" content="https://ryangstudio.com/ballpython/">
+<meta property="og:image" content="https://ryangstudio.com/assets/og-studio.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="볼파이톤 모프 계산기 · RYANG STUDIO">
+<meta name="twitter:description" content="볼파이톤 부모의 형질을 골라 새끼 모프 확률을 계산합니다.">
+<meta name="twitter:image" content="https://ryangstudio.com/assets/og-studio.jpg">
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<script type="application/ld+json">
+{
+  "@context":"https://schema.org",
+  "@type":"WebApplication",
+  "name":"볼파이톤 모프 계산기",
+  "url":"https://ryangstudio.com/ballpython/",
+  "applicationCategory":"UtilitiesApplication",
+  "operatingSystem":"Web",
+  "inLanguage":["ko","en","zh","ja"],
+  "offers":{"@type":"Offer","price":"0","priceCurrency":"KRW"},
+  "description":"볼파이톤 부모 조합으로 새끼 모프와 확률을 계산하고 유전 건강 이슈를 함께 알려주는 무료 도구",
+  "publisher":{"@type":"Organization","name":"RYANG STUDIO","url":"https://ryangstudio.com/"}
+}
+</script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<!-- ?v=… 는 캐시 무효화용입니다. js/css 를 고쳐 올릴 때마다 숫자를 바꿔주세요.
+     (안 바꾸면 이미 방문했던 사람의 브라우저가 예전 파일을 계속 씁니다) -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../assets/studio-config.js?v=113119"></script>
+<script src="ball-core.js?v=072901"></script>
+<script src="../assets/analytics.js?v=113119"></script>
+<script src="../assets/uitext.js?v=160549"></script>
+<script src="ball-boot.js?v=072901"></script>
+<link rel="stylesheet" href="../assets/base.css?v=013848">
+<link rel="stylesheet" href="ball.css?v=072901">
+<link rel="stylesheet" href="../assets/theme.css?v=025334">
+</head>
+<body class="bp">
+<header>
+  <img class="hd-deco leaf" src="../assets/leaf.svg" alt="" aria-hidden="true">
+  <!-- 다른 계산기는 여기에 전신 컷아웃 사진(.hd-deco.hero)이 들어갑니다.
+       볼파이톤 사진이 준비되면 아래 주석을 풀고 assets 에 파일을 올려주세요.
+       ball.css 의 body.bp .hd-txt 규칙(제목 폭)도 같이 지워야 합니다.
+  <img class="hd-deco hero" src="../assets/ballpython-hero-v1.png" alt="" aria-hidden="true" loading="eager"> -->
+  <div class="hd">
+    <div class="hd-txt">
+      <h1 id="h-title">볼파이톤 모프 계산기</h1>
+      <div class="sub" id="h-sub">부모의 유전 형질을 선택해 새끼 모프 확률을 계산하세요</div>
+    </div>
+    <div class="hd-btns">
+      <a class="blink home" href="/" title="량 스튜디오"><i class="bi bi-house" aria-hidden="true"></i><span>스튜디오</span></a>
+      <button class="blink" id="btn-upd" onclick="openUpd()"><i class="bi bi-file-earmark-text" aria-hidden="true"></i></button>
+      <button class="langbtn" id="langBtn" aria-label="Language" title="Language">
+        <i class="bi bi-globe2" aria-hidden="true"></i>
+        <span class="lgtxt">Language</span>
+        <i class="bi bi-chevron-down lang-chevron" aria-hidden="true"></i>
+      </button>
+    </div>
+  </div>
+  <div class="langmenu" id="langMenu">
+    <div class="mtitle" id="lbl-langtitle">Language</div>
+    <button data-lang="ko">한국어</button>
+    <button data-lang="en">English</button>
+    <button data-lang="ja">日本語</button>
+    <button data-lang="zh">中文</button>
+  </div>
+</header>
+
+<div class="wrap">
+  <!-- 표시 기준 · 옵션을 한 줄 세그먼트로 통합 -->
+  <div class="filterbar" id="modeSeg" role="group">
+    <button type="button" class="fseg on" data-mode="visual"><i class="bi bi-eye fico" aria-hidden="true"></i><span id="lbl-mode-visual"></span></button>
+    <button type="button" class="fseg" data-mode="geno"><i class="bi bi-diagram-3 fico" aria-hidden="true"></i><span id="lbl-mode-geno"></span></button>
+    <!-- 볼파이톤도 50%·66% 헷 표기를 분양에 그대로 써서 기본 켜짐입니다 (ball-ui.js 참고) -->
+    <button type="button" class="fseg" id="partialchk" aria-pressed="true"><i class="bi bi-percent fico" aria-hidden="true"></i><span id="lbl-partial"></span></button>
+    <button type="button" class="fseg" id="extrachk" aria-pressed="false"><i class="bi bi-bezier2 fico" aria-hidden="true"></i><span id="lbl-extra"></span></button>
+    <button type="button" class="fseg" id="polychk" aria-pressed="false"><i class="bi bi-share fico" aria-hidden="true"></i><span id="lbl-poly"></span></button>
+    <button type="button" class="optinfo" id="optInfoBtn" aria-expanded="false"><i class="bi bi-info-circle" aria-hidden="true"></i><span class="oitxt" id="lbl-optinfo"></span></button>
+    <div class="optnote" id="optNote"></div>
+  </div>
+
+  <div class="parents">
+    <div class="card a">
+      <div class="card-top">
+        <!-- 사진 대신 계산기가 결과 표에서 쓰는 것과 같은 그림입니다.
+             (ball-core.js 의 ballSVG 와 같은 형태 — 노멀 / 파스텔 계열) -->
+        <div class="avatar">
+          <svg viewBox="0 0 140 76" aria-hidden="true">
+            <circle cx="70" cy="39" r="27" fill="none" stroke="#8A6A45" stroke-width="13"/>
+            <circle cx="70" cy="39" r="14" fill="none" stroke="#8A6A45" stroke-width="11"/>
+            <g fill="#33281C" opacity=".72">
+              <ellipse cx="95.9" cy="46.4" rx="4.2" ry="5.4" transform="rotate(106 95.9 46.4)"/>
+              <ellipse cx="83.1" cy="62.6" rx="4.2" ry="5.4" transform="rotate(151 83.1 62.6)"/>
+              <ellipse cx="62.6" cy="64.9" rx="4.2" ry="5.4" transform="rotate(196 62.6 64.9)"/>
+              <ellipse cx="46.4" cy="52.1" rx="4.2" ry="5.4" transform="rotate(241 46.4 52.1)"/>
+              <ellipse cx="44.1" cy="31.6" rx="4.2" ry="5.4" transform="rotate(286 44.1 31.6)"/>
+              <ellipse cx="56.9" cy="15.4" rx="4.2" ry="5.4" transform="rotate(331 56.9 15.4)"/>
+              <ellipse cx="77.5" cy="13.1" rx="4.2" ry="5.4" transform="rotate(16 77.5 13.1)"/>
+              <ellipse cx="93.6" cy="25.9" rx="4.2" ry="5.4" transform="rotate(61 93.6 25.9)"/>
+              <ellipse cx="82.1" cy="46.0" rx="4.2" ry="4.6" transform="rotate(120 82.1 46)"/>
+              <ellipse cx="67.1" cy="52.7" rx="4.2" ry="4.6" transform="rotate(192 67.1 52.7)"/>
+              <ellipse cx="56.1" cy="40.5" rx="4.2" ry="4.6" transform="rotate(264 56.1 40.5)"/>
+              <ellipse cx="64.3" cy="26.2" rx="4.2" ry="4.6" transform="rotate(336 64.3 26.2)"/>
+              <ellipse cx="80.4" cy="29.6" rx="4.2" ry="4.6" transform="rotate(48 80.4 29.6)"/>
+            </g>
+            <ellipse cx="70" cy="40" rx="13" ry="9.4" fill="#8A6A45"/>
+            <path d="M57,40 Q60,35.6 65,36" stroke="#8A6A45" stroke-width="3" fill="none" stroke-linecap="round"/>
+            <circle cx="64.4" cy="35.8" r="2.5" fill="#241D16"/><circle cx="64.4" cy="44.2" r="2.5" fill="#241D16"/>
+          </svg>
+        </div>
+        <div class="card-name">
+          <h2><span class="dot a"></span> <span id="lbl-pa"></span></h2>
+          <div class="card-role" id="lbl-pa-role"></div>
+        </div>
+        <button type="button" class="helpbtn" onclick="toggleOptNote()"><i class="bi bi-info-circle" aria-hidden="true"></i><span id="lbl-help"></span></button>
+      </div>
+      <!-- 검색창은 #parentA 바깥에 둡니다. 안에 두면 칩을 누를 때마다 카드가
+           다시 그려지면서 입력 중이던 글자와 커서가 사라집니다. -->
+      <div class="searchbar">
+        <i class="bi bi-search sicon" aria-hidden="true"></i>
+        <input type="search" id="qA" autocomplete="off" spellcheck="false" enterkeyhint="search">
+        <button type="button" class="sclr" id="qclrA"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
+      </div>
+      <div class="searchcnt" id="cntA"></div>
+      <div id="parentA"></div>
+    </div>
+    <div class="card b">
+      <div class="card-top">
+        <div class="avatar">
+          <svg viewBox="0 0 140 76" aria-hidden="true">
+            <circle cx="70" cy="39" r="27" fill="none" stroke="#E9C877" stroke-width="13"/>
+            <circle cx="70" cy="39" r="14" fill="none" stroke="#E9C877" stroke-width="11"/>
+            <g fill="#A9793C" opacity=".62">
+              <ellipse cx="95.9" cy="46.4" rx="4.2" ry="5.4" transform="rotate(106 95.9 46.4)"/>
+              <ellipse cx="83.1" cy="62.6" rx="4.2" ry="5.4" transform="rotate(151 83.1 62.6)"/>
+              <ellipse cx="62.6" cy="64.9" rx="4.2" ry="5.4" transform="rotate(196 62.6 64.9)"/>
+              <ellipse cx="46.4" cy="52.1" rx="4.2" ry="5.4" transform="rotate(241 46.4 52.1)"/>
+              <ellipse cx="44.1" cy="31.6" rx="4.2" ry="5.4" transform="rotate(286 44.1 31.6)"/>
+              <ellipse cx="56.9" cy="15.4" rx="4.2" ry="5.4" transform="rotate(331 56.9 15.4)"/>
+              <ellipse cx="77.5" cy="13.1" rx="4.2" ry="5.4" transform="rotate(16 77.5 13.1)"/>
+              <ellipse cx="93.6" cy="25.9" rx="4.2" ry="5.4" transform="rotate(61 93.6 25.9)"/>
+              <ellipse cx="82.1" cy="46.0" rx="4.2" ry="4.6" transform="rotate(120 82.1 46)"/>
+              <ellipse cx="67.1" cy="52.7" rx="4.2" ry="4.6" transform="rotate(192 67.1 52.7)"/>
+              <ellipse cx="56.1" cy="40.5" rx="4.2" ry="4.6" transform="rotate(264 56.1 40.5)"/>
+              <ellipse cx="64.3" cy="26.2" rx="4.2" ry="4.6" transform="rotate(336 64.3 26.2)"/>
+              <ellipse cx="80.4" cy="29.6" rx="4.2" ry="4.6" transform="rotate(48 80.4 29.6)"/>
+            </g>
+            <ellipse cx="70" cy="40" rx="13" ry="9.4" fill="#E9C877"/>
+            <path d="M57,40 Q60,35.6 65,36" stroke="#E9C877" stroke-width="3" fill="none" stroke-linecap="round"/>
+            <circle cx="64.4" cy="35.8" r="2.5" fill="#3A2A18"/><circle cx="64.4" cy="44.2" r="2.5" fill="#3A2A18"/>
+          </svg>
+        </div>
+        <div class="card-name">
+          <h2><span class="dot b"></span> <span id="lbl-pb"></span></h2>
+          <div class="card-role" id="lbl-pb-role"></div>
+        </div>
+        <button type="button" class="helpbtn" onclick="toggleOptNote()"><i class="bi bi-info-circle" aria-hidden="true"></i><span id="lbl-help2"></span></button>
+      </div>
+      <div class="searchbar">
+        <i class="bi bi-search sicon" aria-hidden="true"></i>
+        <input type="search" id="qB" autocomplete="off" spellcheck="false" enterkeyhint="search">
+        <button type="button" class="sclr" id="qclrB"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
+      </div>
+      <div class="searchcnt" id="cntB"></div>
+      <div id="parentB"></div>
+    </div>
+  </div>
+
+  <!-- 선택된 형질 요약 + 실행 -->
+  <div class="selbar">
+    <div class="sel-left">
+      <div class="sel-label" id="lbl-selected"></div>
+      <div class="sel-lines">
+        <div class="sel-line"><span class="sel-who a"><i class="bi bi-person" aria-hidden="true"></i><span id="lbl-sel-a"></span></span><span id="selA"></span></div>
+        <div class="sel-line"><span class="sel-who b"><i class="bi bi-person" aria-hidden="true"></i><span id="lbl-sel-b"></span></span><span id="selB"></span></div>
+      </div>
+    </div>
+    <div class="sel-right actions">
+      <button class="act btn-reset" id="btn-reset" onclick="resetAll()"></button>
+      <button class="act btn-calc" id="btn-calc" onclick="calculate()"></button>
+    </div>
+  </div>
+
+  <div class="results" id="results"></div>
+
+  <div class="bottom-links">
+    <a class="blink" href="/care/gallery.html"><i class="bi bi-binoculars" aria-hidden="true"></i><span>다른 집사들의 개체 구경하기</span></a>
+    <a class="blink" id="mailLink" href="#"><i class="bi bi-envelope" aria-hidden="true"></i><span id="lbl-contact"></span></a>
+  </div>
+  <div class="mailnote" id="mailNote">정보 수정 요청 · 업데이트 건의는 <b>문의하기</b>로 보내주세요</div>
+
+  <div class="note" id="note"><b>이 계산기가 다루는 것</b> — 파스텔·엔치·파이어 같은 불완전우성, 알비노·파이볼드·클라운 같은 열성, 핀스트라이프·스파이더 같은 우성을 멘델 유전으로 계산하고, 스파이더 워블·데저트 암컷 불임 같은 유전 건강 이슈를 함께 표시합니다.</div>
+  <div class="legal">
+    <a href="../terms.html#terms" id="lbl-terms">이용약관</a> · <a href="../terms.html#privacy" id="lbl-privacy">개인정보처리방침</a>
+  </div>
+  <!-- 검색 노출용 소개. 화면에는 보이지 않지만 크롤러가 읽습니다.
+       JS 로 그리는 부분과 달리 첫 요청에서 바로 색인됩니다. -->
+  <section class="seo-intro">
+    <h2>볼파이톤 모프 계산기</h2>
+    <p>볼파이톤(볼 파이썬) 부모의 형질을 고르면 새끼 모프와 확률을 계산합니다. 파스텔·모하비·파이볼드·클라운·알비노 등 60가지가 넘는 유전자를 검색으로 찾아 고를 수 있고, 스파이더 워블·데저트 암컷 불임·슈퍼 시나몬 기형 같은 유전 건강 이슈를 함께 알려줍니다. 한국어·영어·중국어·일본어를 지원하며 회원가입 없이 무료로 쓸 수 있습니다.</p>
+  </section>
+
+  <footer id="footer">확률은 멘델 유전 법칙에 따른 이론값입니다 · 라인브리딩(폴리제닉) 형질은 확률 계산 대상이 아닙니다</footer>
+</div>
+
+<div class="modal-overlay" id="updModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="lbl-updh"><i class="bi bi-megaphone" aria-hidden="true"></i></h3>
+      <button class="modal-x" onclick="closeUpd()" aria-label="close"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="upd-section">
+        <div class="upd-title done" id="lbl-upddone"></div>
+        <ul id="updDone"></ul>
+      </div>
+      <div class="upd-section">
+        <div class="upd-title soon" id="lbl-updsoon"></div>
+        <ul id="updSoon"></ul>
+      </div>
+      <div class="modal-mail" id="updMail"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-today" onclick="dismissToday()" id="lbl-today"></button>
+      <button class="btn-close" onclick="closeUpd()" id="lbl-mclose"></button>
+    </div>
+  </div>
+</div>
+
+<script src="ball-ui.js?v=072901"></script>
+<script src="ball-app.js?v=072901"></script>
+</body>
+</html>

@@ -19,6 +19,7 @@ var STUDIO_SERVICES = {
   gecko:   '레오파드 게코',
   crested: '크레스티드 게코',
   fattail: '펫테일 게코',
+  ballpython: '볼파이톤',
   care:    '케어 관리'
 };
 

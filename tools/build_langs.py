@@ -25,7 +25,15 @@ LANGS = ['ko', 'en', 'ja', 'zh']
 HTML_LANG = {'ko': 'ko', 'en': 'en', 'ja': 'ja', 'zh': 'zh-Hans'}
 CALCS = [('gecko', 'gecko/gecko-ui.js'),
          ('crested', 'crested/crested-ui.js'),
-         ('fattail', 'fattail/fattail-ui.js')]
+         ('fattail', 'fattail/fattail-ui.js'),
+         ('ballpython', 'ballpython/ball-ui.js')]
+
+# 비밀번호로 가려 둔(assets/gate.js) 테스트 중인 계산기.
+# 언어 사본은 그대로 만들되 sitemap 에서만 뺍니다. 잠긴 화면을 구글에 알려주면
+# 들어와도 비밀번호 창만 보게 되고, 그 인상이 색인에 남습니다.
+# 정식 공개할 때 여기서 이름을 빼고, 그 계산기 index.html 의 gate.js 한 줄과
+# robots 의 noindex 도 함께 되돌리세요.
+GATED = {'ballpython'}
 
 
 def read_i18n(path):
@@ -228,6 +236,8 @@ def write_sitemap(dist, today):
     rows = ['  <url><loc>%s/</loc><lastmod>%s</lastmod><changefreq>weekly</changefreq><priority>1.0</priority></url>'
             % (SITE, today)]
     for calc, _ in CALCS:
+        if calc in GATED:
+            continue
         for lang in LANGS:
             rows.append('  <url><loc>%s</loc><lastmod>%s</lastmod><changefreq>weekly</changefreq><priority>%s</priority></url>'
                         % (url_of(calc, lang), today, '0.9' if lang == 'ko' else '0.7'))

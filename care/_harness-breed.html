@@ -7,7 +7,7 @@
 <meta name="robots" content="noindex, nofollow">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-<link rel="stylesheet" href="care.css?v=8">
+<link rel="stylesheet" href="care.css?v=12">
 </head>
 <body>
 <header><div class="hd"><div class="hd-txt">
@@ -27,15 +27,17 @@
 </div>
 <div id="toast"></div>
 
-<script src="care-core.js?v=8"></script>
+<script src="care-core.js?v=11"></script>
 <script>
 /* 가짜 백엔드 */
 (function () {
   const C = window.CareCore, T = C.today();
   const sp = new URLSearchParams(location.search).get('species') || 'gecko';
+  /* 역산확인용 — 종마다 실제 토큰이 다르므로 주소로 받습니다 */
+  const seed=(new URLSearchParams(location.search).get('morphs')||'').split(',').filter(Boolean);
   let animals = [
-    { id:'a1', species:sp, name:'첫째', sex:'male',   morphs:[], hets:[], note:'비공개 메모' },
-    { id:'a2', species:sp, name:'둘째', sex:'female', morphs:[], hets:[], parent_a:'a1' },
+    { id:'a1', species:sp, name:'첫째', sex:'male',   morphs:seed.slice(0,1), hets:[], note:'비공개 메모' },
+    { id:'a2', species:sp, name:'둘째', sex:'female', morphs:seed.slice(1,2), hets:[], parent_a:'a1' },
     { id:'a9', species:'pygmy', name:'다른종', sex:'male', morphs:[], hets:[] }
   ];
   let pairs = [{ id:'p1', name:'2026 A라인', male:'a1', female:'a2', note:'첫 시도' }];
@@ -54,6 +56,6 @@
   };
 })();
 </script>
-<script src="breeding-ui.js?v=8"></script>
+<script src="breeding-ui.js?v=12"></script>
 </body>
 </html>

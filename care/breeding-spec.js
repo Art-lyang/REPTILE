@@ -122,26 +122,55 @@
 
      슈퍼폼이 치사인 것(superNonViable)은 성체가 없으므로 목록에서 뺍니다 —
      보유 개체를 등록하는 자리이기 때문입니다. */
+  /* 유전형 이름을 그 언어로. genos 항목은 gName 이 다루지 못하므로 직접 봅니다. */
+  function genoName(v) {
+    const L = has('LANG') ? get('LANG') : 'ko';
+    return (v && (v[L] || v.ko || v.en)) || '';
+  }
+
   function buildVisualOptions(spec) {
     if (spec.visualOptions) {
       const own = spec.visualOptions();
       if (own && own.length) return own;
     }
-    const out = [];
+    const out = [], seen = {};
+    const push = (tok, name) => {
+      if (!tok || !name || !String(name).trim() || seen[tok]) return;
+      seen[tok] = 1;
+      out.push([tok, name]);
+    };
+
     spec.genes().forEach(function (g) {
-      if (!g || !g.type) return;                    // 다중 대립인자 복합은 제외
-      const base = nameOf(g);
-      if (base && String(base).trim()) out.push([g.id, base]);
+      if (!g) return;
 
-      /* kind:'multi' 는 같은 자리에 오는 대립인자입니다(카푸치노·세이블,
-         패턴리스·스팅어). 동형 접합의 이름이 조합마다 따로 있어서
-         (CC · SS · CS → 루왁 등, docs/STUDIO.md 참고) 'super_id' 토큰 하나로
-         묶으면 어느 조합인지 알 수 없는 이름 없는 항목이 생깁니다.
-         그런 개체는 콤보 이름이나 메모로 적는 편이 정확합니다. */
-      if (g.type !== 'incdom' || g.kind === 'multi' || g.superNonViable) return;
+      /* ── 같은 자리에 여러 대립인자가 오는 유전자 ──────────────────────
+         크레스티드의 카푸치노·세이블, 팻테일의 패턴리스·스팅어가 그렇습니다.
+         유전자 id('cs')는 자리 이름일 뿐 개체가 가질 수 있는 모프가 아닙니다.
+         실제 토큰은 genos 안에 유전형별로 들어 있습니다.
 
-      const sup = superNameOf(g);
-      if (sup && String(sup).trim()) out.push(['super_' + g.id, sup]);
+             Cn → cappuccino    CC → super_cappuccino
+             Sn → sable         SS → super_sable
+             CS → luwak
+
+         전에는 'cs' 를 그대로 내보냈는데, 그건 계산기가 모르는 값이라
+         저장해도 콤보·역산 어디에도 걸리지 않았습니다.
+
+         token 이 없는 유전형은 건너뜁니다 — nn(야생형)과 팻테일의 pn(헷
+         패턴리스)이 그렇습니다. 헷은 눈에 보이지 않아 '발현 모프' 칸에
+         들어갈 것이 아닙니다. */
+      if (g.genos) {
+        Object.keys(g.genos).forEach(function (key) {
+          const v = g.genos[key];
+          if (!v || !v.token) return;
+          push(v.token, genoName(v));
+        });
+        return;
+      }
+
+      if (!g.type) return;                          // type 도 genos 도 없으면 다룰 수 없습니다
+      push(g.id, nameOf(g));
+      if (g.type !== 'incdom' || g.superNonViable) return;
+      push('super_' + g.id, superNameOf(g));
     });
     return out;
   }
@@ -157,6 +186,84 @@
   /* 라인브리딩 형질 — 확률 대상이 아니고 그룹으로 묶어 보여주기만 합니다 */
   function buildTraitOptions(spec) {
     return spec.traits().map(t => [t.id, traitName(t), spec.traitGroup(t) || '']);
+  }
+
+  /* =============================================================================
+     역산 — 목표 모프가 나오려면 부모가 무엇을 가져야 하는가
+     -----------------------------------------------------------------------------
+     확률을 계산하지 않습니다. 계산기가 이미 그걸 하고, 여기서 다시 구현하면
+     두 곳의 답이 갈립니다. 여기서 답하는 것은 하나입니다 —
+     **내가 가진 개체로 이 모프에 닿을 수 있는가, 없다면 무엇이 없는가.**
+
+     대립인자 단위로 봅니다. 유전자 단위로 보면 세이블을 가진 개체가
+     카푸치노를 만드는 데 도움이 되는 것처럼 나옵니다. 같은 자리에 있을 뿐
+     다른 돌연변이인데도요.
+
+       단순 유전자        대립인자 = 유전자 id
+         rec 발현           양쪽 부모가 보유(het 이상)
+         incdom 슈퍼        양쪽 부모가 보유
+         incdom·dom 발현    한쪽만 보유해도 나옴
+       유전형이 있는 자리   대립인자 = 유전형 키의 글자 (n 은 야생형)
+         CC                 C 를 양쪽에서
+         Cn                 C 를 한쪽에서
+         CS                 C 를 한쪽, S 를 다른 쪽에서
+
+     한 토큰이 여러 유전형에서 나올 수 있습니다 — 팻테일의 슈퍼 스팅어는
+     ss 로도 ps 로도 나옵니다. 그럴 때는 경로를 모두 돌려주고, 그 중 하나라도
+     닿으면 가능한 것으로 봅니다. 하나만 골라 보여주면 '안 된다' 는 잘못된
+     답이 나올 수 있습니다.
+     ============================================================================= */
+
+  /* 토큰 → 그 토큰이 나오는 유전형들. 한 번 만들어 재사용합니다. */
+  function buildTokenIndex(spec) {
+    const idx = {};
+    const add = (token, entry) => {
+      if (!token) return;
+      (idx[token] = idx[token] || []).push(entry);
+    };
+    spec.genes().forEach(function (g) {
+      if (!g) return;
+      if (g.genos) {
+        Object.keys(g.genos).forEach(function (key) {
+          const v = g.genos[key];
+          if (!v || !v.token) return;
+          /* 유전형 키의 글자가 곧 대립인자입니다. n 은 야생형이라 뺍니다. */
+          const need = {};
+          String(key).split('').forEach(function (ch) {
+            if (ch === 'n') return;
+            need[ch] = (need[ch] || 0) + 1;
+          });
+          add(v.token, { locus: g.id, gene: g, key: key, need: need });
+        });
+        return;
+      }
+      if (!g.type) return;
+      const both = { [g.id]: 2 }, one = { [g.id]: 1 };
+      add(g.id, { locus: g.id, gene: g, key: g.type === 'rec' ? 'homo' : 'het',
+                  need: g.type === 'rec' ? both : one });
+      if (g.type === 'incdom' && !g.superNonViable) {
+        add('super_' + g.id, { locus: g.id, gene: g, key: 'homo', need: both });
+      }
+    });
+    return idx;
+  }
+
+  /* 이 개체가 그 자리에서 그 대립인자를 넘겨줄 수 있는가.
+     발현이든 het 이든 갖고만 있으면 넘길 수 있습니다. */
+  function carriesAllele(idx, animal, locus, allele) {
+    const toks = (animal.morphs || []).concat(animal.hets || []);
+    for (let i = 0; i < toks.length; i++) {
+      const t = toks[i];
+      /* 단순 유전자는 토큰이 곧 대립인자 이름입니다 (het 목록도 유전자 id) */
+      if (t === allele || t === 'super_' + allele) return true;
+      const entries = idx[t];
+      if (!entries) continue;
+      for (let j = 0; j < entries.length; j++) {
+        const e = entries[j];
+        if (e.locus === locus && e.need[allele]) return true;
+      }
+    }
+    return false;
   }
 
   const id = detect();
@@ -185,6 +292,42 @@
         return c[L] || c.ko || c.en || null;
       } catch (e) { return null; }
     },
+    /* 역산 — 목표 토큰들에 대해 '무엇이 필요하고 내게 있는가' 를 돌려줍니다.
+       확률은 계산하지 않습니다 (위 머리말 참고). */
+    goalCheck: function (tokens, animals) {
+      const idx = this._idx || (this._idx = buildTokenIndex(spec));
+      const mine = animals || [];
+      const self = this;
+
+      return (tokens || []).map(function (token) {
+        const paths = idx[token] || [];
+        const name = self.morphName(token);
+        if (!paths.length) {
+          return { token: token, name: name, known: false, ok: false, paths: [] };
+        }
+        const out = paths.map(function (p) {
+          const needs = Object.keys(p.need).map(function (allele) {
+            const holders = mine.filter(a => carriesAllele(idx, a, p.locus, allele));
+            const count = p.need[allele];
+            return {
+              allele: allele,
+              /* 같은 대립인자를 양쪽에서 받아야 하면 개체도 둘 이상 필요합니다.
+                 한 마리를 자기 자신과 붙일 수는 없으니까요. */
+              need: count,
+              holders: holders,
+              ok: holders.length >= count
+            };
+          });
+          return { key: p.key, needs: needs, ok: needs.every(n => n.ok) };
+        });
+        return {
+          token: token, name: name, known: true,
+          ok: out.some(p => p.ok),
+          paths: out
+        };
+      });
+    },
+
     /* 진단용 — 어댑터가 무엇을 찾았는지 한눈에 */
     summary: function () {
       return { species: id, genes: spec.genes().length,

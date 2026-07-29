@@ -385,11 +385,19 @@ textarea.in{min-height:76px;resize:vertical;line-height:1.6}
 }
 .tokchk:hover{background:var(--card2)}
 .tokchk input{accent-color:var(--teal);flex:0 0 auto;width:16px;height:16px}
-/* 보유 개체 수 배지 — 역산에서 '이건 이미 있다' 를 한눈에 */
+/* 역산 목록의 배지 — '이 모프를 지금 개체로 만들 수 있나' 를 한눈에.
+   개체 수를 적었더니 '슈퍼카푸치노 보유 1' 이 슈퍼카푸치노를 갖고 있는
+   것처럼 읽혀서 여부로 바꿨습니다. */
 .ownb{
   margin-left:auto; flex:0 0 auto;
   background:var(--teal); color:#fff; font-size:9.5px; font-weight:800;
   padding:1px 7px; border-radius:999px; white-space:nowrap;
+}
+/* 일부만 있는 것은 가능한 것과 구분되어야 합니다. 색만으로는 색을 구별하기
+   어려운 사람에게 같아 보여서 테두리만 있는 형태로 다르게 둡니다. */
+.ownb.part{
+  background:transparent; color:var(--ink2);
+  border:1px solid var(--chipbd); font-weight:700;
 }
 .pathbox{
   background:var(--card2); border:1px solid var(--hair); border-radius:14px;

@@ -19,9 +19,13 @@
    개체·페어링·클러치는 **기록**입니다. 이름·성별·날짜·메모라서 종과 무관하게
    그대로 동작합니다. 종에 매인 것은 모프 체크박스와 역산뿐입니다.
 
-   역산은 지금 레오파드만 엽니다. 확률을 거꾸로 푸는 계산이 종마다 달라서,
-   크레스티드처럼 같은 자리에 대립인자가 오는 구조는 로직을 새로 짜야 합니다.
-   틀린 답을 내놓는 것보다 아직 없다고 말하는 편이 낫습니다.
+   역산은 레오파드·크레스티드·팻테일에서 됩니다. 볼파이썬은 보류입니다 —
+   BEL 복합처럼 대립인자가 여럿 얽힌 자리가 많아 같은 규칙으로 덮이지
+   않습니다. 틀린 답을 내놓는 것보다 아직 없다고 말하는 편이 낫습니다.
+
+   역산이 하는 일은 하나입니다: **내 개체로 이 모프에 닿는가, 아니면 뭐가
+   없는가.** 확률은 계산기가 이미 계산하고, 여기서 다시 구현하면 두 곳의
+   답이 갈립니다. 판정은 breeding-spec.js 의 goalCheck 가 합니다.
    ============================================================================= */
 (function () {
   'use strict';
@@ -40,8 +44,8 @@
   /* 종별 코어 파일. breeding-spec.js 의 표와 짝입니다. */
   const CORES = {
     gecko:      { ko: '레오파드 게코',        src: '/gecko/gecko-core.js',       goal: true },
-    crested:    { ko: '크레스티드 게코',      src: '/crested/crested-core.js',   goal: false },
-    fattail:    { ko: '아프리카 팻테일 게코', src: '/fattail/fattail-core.js',   goal: false },
+    crested:    { ko: '크레스티드 게코',      src: '/crested/crested-core.js',   goal: true  },
+    fattail:    { ko: '아프리카 팻테일 게코', src: '/fattail/fattail-core.js',   goal: true  },
     ballpython: { ko: '볼파이썬',            src: '/ballpython/ball-core.js',   goal: false }
   };
 
@@ -88,14 +92,14 @@
       : '';
   }
 
-  /* 레오파드는 기존 화면이 더 많은 것을 합니다 — 사진 업로드, 라인브리딩 색
-     강도, 역산의 상세 경로. 이 화면은 그것들을 아직 안 갖고 있으므로, 감추지
-     말고 어디로 가면 되는지 알려줍니다. 옮겨오기 전까지는 두 화면이 함께
-     있는 편이 낫습니다 — 여기서 사진을 못 넣는 줄 모르고 헤매는 것보다요. */
+  /* 레오파드는 기존 화면에만 있는 것이 아직 있습니다 — 사진 업로드와
+     라인브리딩 색 강도. 감추지 말고 어디로 가면 되는지 알려줍니다.
+     옮겨오기 전까지는 두 화면이 함께 있는 편이 낫습니다 — 여기서 사진을
+     못 넣는 줄 모르고 헤매는 것보다요. */
   function legacyNote() {
     if (S.species !== 'gecko') return '';
     return '<div class="hint">' + icon('bi-info-circle')
-      + ' 사진 등록 · 라인브리딩 색 강도 · 역산 상세 경로는 아직 '
+      + ' 사진 등록과 라인브리딩 색 강도는 아직 '
       + '<a href="/gecko/breeding.html">레오파드 전용 화면</a>에 있습니다.</div>';
   }
 
@@ -331,40 +335,50 @@
       + '</div></div>';
   }
 
-  /* ── 역산 ──────────────────────────────────────────────────────────── */
+  /* ── 역산 ──────────────────────────────────────────────────────────────
+     "이 모프를 만들 수 있나, 없다면 뭐가 없나" 만 답합니다. 확률은 계산기가
+     이미 하고, 여기서 다시 구현하면 두 곳의 답이 갈립니다.
+
+     판정은 breeding-spec.js 의 goalCheck 가 대립인자 단위로 합니다. 유전자
+     단위로 보면 세이블 가진 개체가 카푸치노에 도움이 되는 것처럼 나옵니다. */
   function tabGoal() {
     if (!CORES[S.species].goal) {
       return '<div class="pad"><div class="lbl">목표 모프 역산</div>'
         + '<div class="empty" style="margin-top:12px">' + icon('bi-hourglass-split')
         + esc(CORES[S.species].ko) + ' 역산은 아직 준비 중입니다.</div>'
-        + '<div class="hint">역산은 확률을 거꾸로 푸는 계산이라 종마다 규칙이 다릅니다. '
-        + '같은 자리에 여러 대립인자가 오는 구조는 로직을 새로 짜야 해서, '
-        + '틀린 답을 내놓는 대신 아직 없다고 적어둡니다.</div>'
         + '<a class="btn ghost wide" style="text-decoration:none;margin-top:12px" href="'
         + esc(CORES[S.species].calc || '/') + '">' + icon('bi-calculator')
         + esc(CORES[S.species].ko) + ' 계산기에서 조합 확인</a></div>';
     }
-    /* 레오파드 역산은 계산기 코어의 함수를 그대로 씁니다. 여기서 다시 구현하면
-       계산기와 답이 갈립니다. */
+
+    /* 목록 옆 배지는 '가능한가' 를 답합니다.
+       처음에는 '보유 N' 으로 개체 수를 보여줬는데, 카푸치노 한 마리만 있어도
+       '슈퍼카푸치노 보유 1' 이 떠서 슈퍼카푸치노를 갖고 있는 것처럼 읽혔습니다.
+       숫자보다 되는지 여부가 알고 싶은 것이고, 숫자는 눌러서 보면 됩니다. */
     const opts = B.visualOptions();
-    const carries = (a, gene) =>
-      (a.morphs || []).indexOf(gene) >= 0 || (a.morphs || []).indexOf('super_' + gene) >= 0
-      || (a.hets || []).indexOf(gene) >= 0;
-    const own = tok => {
-      const gene = String(tok).indexOf('super_') === 0 ? tok.slice(6) : tok;
-      return S.animals.filter(a => carries(a, gene)).length;
-    };
+    const checks = B.goalCheck(opts.map(o => o[0]), S.animals);
+    const badge = {};
+    checks.forEach(function (c) {
+      if (c.ok) { badge[c.token] = ['ok', '가능']; return; }
+      /* 하나라도 보탤 수 있으면 '일부'. 아무것도 없으면 배지를 안 답니다 —
+         목록 전체에 배지가 붙으면 아무것도 구분되지 않습니다. */
+      const some = c.paths.some(p => p.needs.some(n => n.holders.length));
+      if (some) badge[c.token] = ['part', '일부'];
+    });
+
     return '<div class="pad"><div class="lbl">목표 모프 역산</div>'
       + '<div class="hint">만들고 싶은 모프를 고르면 <b>내가 등록한 '
-      + esc(CORES[S.species].ko) + '</b> 기준으로 가진 것과 부족한 것을 보여줍니다.</div>'
+      + esc(CORES[S.species].ko) + '</b> 로 닿을 수 있는지, 없다면 무엇이 없는지 알려줍니다. '
+      + '확률은 계산하지 않습니다 — 그건 계산기가 합니다.</div>'
       + otherNote()
       + '<div class="hint">등록된 개체 <b>' + S.animals.length + '마리</b></div>'
       + '<div class="tokgrid">' + opts.map(t => {
-          const n = own(t[0]);
+          const b = badge[t[0]];
           return '<label class="tokchk"><input type="checkbox" class="g" value="' + esc(t[0]) + '">'
-            + esc(t[1]) + (n ? '<span class="ownb">보유 ' + n + '</span>' : '') + '</label>';
+            + esc(t[1])
+            + (b ? '<span class="ownb ' + b[0] + '">' + b[1] + '</span>' : '') + '</label>';
         }).join('') + '</div>'
-      + '<div class="formbtns"><button class="btn" id="g_run">' + icon('bi-play') + '경로 계산</button></div>'
+      + '<div class="formbtns"><button class="btn" id="g_run">' + icon('bi-play') + '가능한지 보기</button></div>'
       + '<div id="g_out"></div></div>';
   }
 
@@ -372,25 +386,69 @@
     const tk = Array.prototype.slice.call(document.querySelectorAll('.g:checked')).map(x => x.value);
     const out = $('g_out');
     if (!tk.length) { out.innerHTML = '<div class="err">목표 모프를 하나 이상 고르세요.</div>'; return; }
-    const combo = B.comboName(tk);
-    const have = tk.filter(t => {
-      const gene = String(t).indexOf('super_') === 0 ? t.slice(6) : t;
-      return S.animals.some(a => (a.morphs || []).indexOf(gene) >= 0
-        || (a.morphs || []).indexOf('super_' + gene) >= 0 || (a.hets || []).indexOf(gene) >= 0);
-    });
-    const miss = tk.filter(t => have.indexOf(t) < 0);
 
-    out.innerHTML = '<div class="pathbox" style="margin-top:12px">'
+    const res = B.goalCheck(tk, S.animals);
+    const combo = B.comboName(tk);
+    const blocked = res.filter(r => !r.ok);
+
+    let h = '<div class="pathbox" style="margin-top:12px">'
       + '<b>목표</b><br>' + (combo ? '<span class="combotag">콤보</span>' + esc(combo) + '<br>' : '')
-      + esc(tk.map(t => B.morphName(t)).join(' · ')) + '</div>'
-      + '<div class="note ' + (miss.length ? 'warn' : 'good') + '">'
-      + icon(miss.length ? 'bi-exclamation-triangle' : 'bi-check2-circle')
-      + '<span>' + (miss.length
-          ? '부족한 유전자 ' + miss.length + '개 — ' + esc(miss.map(t => B.morphName(t)).join(', '))
-          : '필요한 유전자를 모두 보유하고 있습니다. 조합·확률은 계산기에서 확인하세요.')
-      + '</span></div>'
-      + '<a class="btn ghost wide" style="text-decoration:none;margin-top:10px" href="'
+      + esc(res.map(r => r.name).join(' · ')) + '</div>';
+
+    h += '<div class="note ' + (blocked.length ? 'warn' : 'good') + '">'
+      + icon(blocked.length ? 'bi-exclamation-triangle' : 'bi-check2-circle')
+      + '<span>' + (blocked.length
+          ? '지금 개체로는 ' + blocked.length + '가지가 안 됩니다 — ' + esc(blocked.map(r => r.name).join(', '))
+          : '필요한 유전자를 모두 보유하고 있습니다. 실제 확률은 계산기에서 확인하세요.')
+      + '</span></div>';
+
+    /* 항목별로 무엇이 모자란지. 경로가 여럿인 토큰(팻테일 슈퍼 스팅어 등)은
+       그 중 하나라도 되면 가능이므로, 안 될 때만 모든 경로를 펼쳐 보여줍니다. */
+    h += res.map(function (r) {
+      if (!r.known) {
+        return '<div class="pathbox" style="margin-top:8px"><b>' + esc(r.name) + '</b><br>'
+          + '<span class="hint">이 종의 유전 정보에서 찾지 못한 항목입니다.</span></div>';
+      }
+      if (r.ok) {
+        const path = r.paths.filter(p => p.ok)[0];
+        return '<div class="pathbox" style="margin-top:8px">'
+          + '<b>' + esc(r.name) + '</b> ' + icon('bi-check2-circle') + '<br>'
+          + path.needs.map(function (n) {
+              return '<span class="hint">' + esc(alleleLabel(n.allele)) + ' '
+                + (n.need > 1 ? '양쪽 부모' : '한쪽 부모') + ' — 보유 '
+                + n.holders.length + '마리 ('
+                + esc(n.holders.slice(0, 3).map(a => a.name || '이름 없음').join(', '))
+                + (n.holders.length > 3 ? ' 외' : '') + ')</span>';
+            }).join('<br>') + '</div>';
+      }
+      return '<div class="pathbox" style="margin-top:8px">'
+        + '<b>' + esc(r.name) + '</b> ' + icon('bi-x-circle') + '<br>'
+        + r.paths.map(function (p, i) {
+            return '<span class="hint">'
+              + (r.paths.length > 1 ? '경로 ' + (i + 1) + ' — ' : '')
+              + p.needs.map(function (n) {
+                  /* '없음' 만 쓰면 한 마리는 있는데 두 마리가 필요한 경우가
+                     아무것도 없는 것처럼 읽힙니다. 가진 수와 필요한 수를
+                     같이 적습니다. */
+                  return esc(alleleLabel(n.allele)) + ' '
+                    + (n.need > 1 ? '양쪽 부모' : '한쪽 부모') + ' '
+                    + (n.ok ? '(보유 ' + n.holders.length + ')'
+                            : '<b>보유 ' + n.holders.length + ' / 필요 ' + n.need + '</b>');
+                }).join(' + ')
+              + '</span>';
+          }).join('<br>') + '</div>';
+    }).join('');
+
+    h += '<a class="btn ghost wide" style="text-decoration:none;margin-top:12px" href="'
       + esc(CORES[S.species].calc) + '">' + icon('bi-calculator') + '계산기에서 확률 보기</a>';
+    out.innerHTML = h;
+  }
+
+  /* 대립인자 이름. 단순 유전자는 대립인자가 곧 유전자 id 라 모프 이름이
+     그대로 나오고, 유전형이 있는 자리는 'C'·'S' 같은 한 글자라 그대로 둡니다. */
+  function alleleLabel(allele) {
+    const n = B.morphName(allele);
+    return (n && n !== allele) ? n : allele;
   }
 
   /* ── 그리기 ────────────────────────────────────────────────────────── */
@@ -497,8 +555,8 @@
 
     /* 종 코어 → 어댑터 순서로 넣습니다. 어댑터가 코어를 보고 종을 알아냅니다. */
     try {
-      await loadScript(CORES[S.species].src + '?v=8');
-      await loadScript('breeding-spec.js?v=8');
+      await loadScript(CORES[S.species].src + '?v=12');
+      await loadScript('breeding-spec.js?v=12');
     } catch (e) {
       gate('bi-exclamation-triangle', '계산기 데이터를 불러오지 못했습니다', esc(e.message), '/care/', '케어로');
       return;

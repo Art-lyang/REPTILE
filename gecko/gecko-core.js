@@ -118,12 +118,21 @@ const POLY = [
   {id:'electric',  line:'tangerine', ko:'일렉트릭', en:'Electric', zh:'电光', ja:'エレクトリック'},
   {id:'atomic',    line:'tangerine', ko:'아토믹', en:'Atomic', zh:'原子', ja:'アトミック'},
   {id:'tangerinered',line:'tangerine', ko:'레드', en:'Red', zh:'红', ja:'レッド'},
-  /* 레드데빌 — 붉은 계열 라인.
-     ⚠️ 공개 자료에서 계열을 확인하지 못했습니다. 붉은 발색 라인명이라
-        텐져린 계열로 넣었는데, 다른 계열이면 line 만 바꾸면 됩니다.
-        계열이 틀려도 확률에는 영향이 없습니다 — 라인브리딩은 계산 대상이
-        아니고, line 은 두 형질을 섞었을 때 보여줄 이름만 정합니다. */
-  {id:'reddevil',  line:'tangerine', ko:'레드데빌', en:'Red Devil', zh:'红魔', ja:'レッドデビル'},
+  /* 레드데빌 — 붉은 발색 라인. 텐져린 계열로 묶었습니다.
+
+     ⚠️ implies — 이 라인은 벨 알비노를 깔고 갑니다.
+     붉은 발색 자체는 다인자라 확률 계산 대상이 아니지만, 벨 알비노는
+     열성 유전자라 계산 대상입니다. 그래서 레드데빌을 골랐는데 벨 알비노가
+     꺼져 있으면 확률이 조용히 틀립니다 — 레드데빌끼리 붙이면 새끼는 100%
+     벨 알비노인데 0% 로 나오고, 노멀과 붙이면 100% het 벨인데 그것도
+     안 나옵니다.
+
+     그래서 이 칩을 켜면 벨 알비노도 함께 켭니다. 라인에 따라 아닐 수도
+     있으니 벨 알비노 칩을 따로 끄면 그대로 꺼집니다.
+
+     값 'mm' 은 열성 두 개(=비주얼 발현) 입니다. */
+  {id:'reddevil',  line:'tangerine', implies:{bell:'mm'},
+     ko:'레드데빌', en:'Red Devil', zh:'红魔', ja:'レッドデビル'},
   /* 에머릴드 + 텐져린 계열. 예전에는 따로 보기도 했지만 요즘은
      텐져린 계열로 취급합니다. (현직 브리더 확인) */
   {id:'emerine',   line:'tangerine', ko:'에머린', en:'Emerine', zh:'翡翠橘', ja:'エメリン'},
@@ -354,6 +363,57 @@ function stateOptions(g){
 const STATE={A:{}, B:{}};
 GENES.forEach(g=>{STATE.A[g.id]='nn';STATE.B[g.id]='nn';});
 POLY.forEach(p=>{STATE.A[p.id]='no';STATE.B[p.id]='no';});
+
+
+/* ── 라인브리딩 형질이 깔고 가는 유전자 (implies) ────────────────────────
+   라인브리딩은 원래 확률 계산 대상이 아닙니다. 그런데 라인 자체가 유전자를
+   품고 있는 경우가 있습니다 — 레드데빌은 벨 알비노를 깔고 갑니다. 이때
+   벨 알비노를 안 켜면 확률이 조용히 틀립니다.
+
+   그래서 implies 가 붙은 칩을 켜면 해당 유전자도 같이 켭니다.
+
+   끌 때 되돌리는 게 까다롭습니다. 사용자가 벨 알비노를 먼저 켜 둔 상태에서
+   레드데빌을 켰다 끄면, 벨 알비노까지 꺼지는 건 남의 선택을 지우는 겁니다.
+   그래서 켤 때 이전 값을 적어두고, 끌 때는 우리가 넣은 값이 그대로 남아
+   있을 때만 되돌립니다. 사용자가 중간에 직접 바꿨으면 그 값을 존중합니다. */
+const IMPLIED={A:{}, B:{}};
+
+function applyImplies(side, poly){
+  if(!poly.implies) return;
+  const prev={};
+  Object.keys(poly.implies).forEach(gid=>{
+    prev[gid]=STATE[side][gid];
+    STATE[side][gid]=poly.implies[gid];
+  });
+  IMPLIED[side][poly.id]={prev:prev, set:Object.assign({}, poly.implies)};
+}
+
+function clearImplies(side, poly){
+  const rec=IMPLIED[side][poly.id];
+  delete IMPLIED[side][poly.id];
+  if(!rec) return;
+  Object.keys(rec.set).forEach(gid=>{
+    /* 우리가 넣은 값이 그대로일 때만 되돌립니다 */
+    if(STATE[side][gid]===rec.set[gid] && rec.prev[gid]!==undefined)
+      STATE[side][gid]=rec.prev[gid];
+  });
+}
+
+/* 지금 켜져 있는 라인브리딩 형질 중 implies 가 있는 것들을 훑어서,
+   딸린 유전자가 실제로 맞게 켜져 있는지 봅니다. IMPLIED 기록이 아니라
+   STATE 를 직접 보기 때문에, 사용자가 유전 모프에서 손으로 꺼 버린
+   경우에도 어긋난 것을 잡아냅니다. */
+function impliesReport(side){
+  const on=[], off=[];
+  POLY.forEach(p=>{
+    if(!p.implies || STATE[side][p.id]==='no') return;
+    Object.keys(p.implies).forEach(gid=>{
+      const g=GENES.find(x=>x.id===gid); if(!g) return;
+      (STATE[side][gid]===p.implies[gid] ? on : off).push({poly:p, gene:g, val:p.implies[gid]});
+    });
+  });
+  return {on:on, off:off};
+}
 
 
 /* ================= 계산 엔진 ================= */

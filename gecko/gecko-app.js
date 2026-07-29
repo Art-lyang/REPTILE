@@ -36,9 +36,16 @@
        그냥 덮어쓰면 내장 값이 날아가서 만다린 × 블랙나이트 같은 계열 조합이
        이름을 잎어버립니다. DB 값이 없으면 내장 계열을 그대로 유지합니다. */
     const builtinLine={}; POLY.forEach(p=>{ if(p.line) builtinLine[p.id]=p.line; });
+    /* implies(동반 유전자)도 morphs 표에 컬럼이 없습니다. 계열과 달리 이건
+       확률에 직접 영향을 줍니다 — 레드데빌은 벨 알비노를 깔고 가는 라인이라,
+       이 정보가 날아가면 레드데빌끼리 붙였을 때 100% 벨 알비노가 0% 로
+       나옵니다. 그래서 DB 가 목록을 덮어써도 내장 값을 반드시 살립니다. */
+    const builtinImplies={}; POLY.forEach(p=>{ if(p.implies) builtinImplies[p.id]=p.implies; });
     rows.forEach(r=>{ if(r.color)GCOLOR[r.id]=r.color; if(r.image_url)MORPH_IMG[r.id]=r.image_url;
       if(r.kind==='poly'){ const q={id:r.id,ko:r.ko,en:r.en,zh:r.zh,ja:r.ja};
-        const ln=r.line||builtinLine[r.id]; if(ln) q.line=ln; poly.push(q); }
+        const ln=r.line||builtinLine[r.id]; if(ln) q.line=ln;
+        if(builtinImplies[r.id]) q.implies=builtinImplies[r.id];
+        poly.push(q); }
       else { const g={id:r.id,type:r.kind,family:r.family||'albino',ko:r.ko,en:r.en,zh:r.zh,ja:r.ja,risk:!!r.risk};
         if(r.super_ko){g.superKo=r.super_ko;g.superEn=r.super_en;g.superZh=r.super_zh;g.superJa=r.super_ja;} genes.push(g); } });
     if(genes.length){ GENES.length=0; genes.forEach(g=>GENES.push(g)); }

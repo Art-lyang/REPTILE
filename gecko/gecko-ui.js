@@ -23,6 +23,8 @@ const I18N = {
     vintageToggle:'추억의 모프 보기', vintageHint:'요즘 보기 힘든 과거 모프·콤보까지 표시', optInfo:'표시 옵션 설명',
     comboLoad:'콤보 개체 불러오기…', donate:'개발자 후원하기', adLabel:'광고', adHint:'이 자리에 광고 코드를 넣을 수 있어요',
     secCombo:'콤보 (탭하면 자동 세팅)', secGene:'유전 모프 (확률 계산)',
+    impliesOn:'이 라인은 위 유전자를 깔고 갑니다. 확률에 반영했습니다 — 해당하지 않는 라인이면 유전 모프에서 직접 끄세요.',
+    impliesOff:'위 유전자가 꺼져 있습니다. 이 라인이 실제로 포함한다면 확률이 실제보다 낮게 나옵니다.',
     comboNote:'<b>콤보 이름</b> — 계산 결과가 알려진 콤보와 일치하면 디자이너 명칭(예: 갤럭시, 레이다)을 함께 표시합니다. 다만 탠저린·하이포·TUG 스노우 등 라인브리딩이 필요한 콤보(앱터 등)는 자동 인식되지 않습니다.',
     warnH:'⚠️ 주의가 필요한 유전 조합',
     crossTag:'크로스', crossNote:'라인브리딩 형질이 섞인 교배입니다. 새끼에게 형질이 보이지 않아도 유전자에는 섞여 있으므로, 분양·재교배 시 <b>크로스 개체</b>로 표기하는 것을 권합니다.',
@@ -63,6 +65,8 @@ const I18N = {
     vintageToggle:'Show vintage morphs', vintageHint:'Include older, rarely-seen morphs and combos', optInfo:'About these options',
     comboLoad:'Load a combo animal…', donate:'Support the developer', adLabel:'Advertisement', adHint:'Place your ad code here',
     secCombo:'Combos (tap to auto-set)', secGene:'Genetic morphs (calculated)',
+    impliesOn:'This line carries the gene above, so it has been switched on and counted. If your line doesn’t carry it, turn it off under Genetic morphs.',
+    impliesOff:'The gene above is switched off. If your line does carry it, the odds shown are lower than the real ones.',
     comboNote:'<b>Combo names</b> — when an outcome matches a known combo, its designer name (e.g. Galaxy, Radar) is shown. Combos requiring line-bred traits (Tangerine, Hypo, TUG snow) such as APTOR aren’t auto-detected.',
     warnH:'⚠️ Genetics that need caution',
     crossTag:'cross', crossNote:'This pairing mixes line-bred traits. Even when a hatchling shows none of them, the genes are still in the mix — label such animals as <b>crosses</b> when selling or re-pairing.',
@@ -103,6 +107,8 @@ const I18N = {
     vintageToggle:'显示怀旧形态', vintageHint:'包含现在少见的旧形态与组合', optInfo:'选项说明',
     comboLoad:'载入组合个体…', donate:'支持开发者', adLabel:'广告', adHint:'可在此处放置广告代码',
     secCombo:'组合（点击自动设置）', secGene:'遗传形态（可计算）',
+    impliesOn:'该线育品系自带上述基因，已自动开启并计入概率。若您的品系不含该基因，请在「遗传形态」中手动关闭。',
+    impliesOff:'上述基因处于关闭状态。若该品系实际含有此基因，显示的概率会低于真实值。',
     comboNote:'<b>组合名称</b> — 当结果与已知组合一致时，会显示其商品名（如 Galaxy、Radar）。需要线育性状（橘化、Hypo、TUG 雪花）的组合（如 APTOR）不会自动识别。',
     warnH:'⚠️ 需要注意的基因组合',
     crossTag:'杂交', crossNote:'本次配对混入了线育性状。即使后代未表现出来，基因中仍然含有，因此出售或再次配对时建议标注为<b>杂交个体</b>。',
@@ -143,6 +149,8 @@ const I18N = {
     vintageToggle:'懐かしのモルフを表示', vintageHint:'今では見かけない古いモルフ・コンボも表示', optInfo:'表示オプションの説明',
     comboLoad:'コンボ個体を読み込む…', donate:'開発者を支援', adLabel:'広告', adHint:'ここに広告コードを配置できます',
     secCombo:'コンボ（タップで自動設定）', secGene:'遺伝モルフ（確率計算）',
+    impliesOn:'このラインは上記の遺伝子を持っているため、自動でオンにして確率に反映しました。該当しないラインの場合は「遺伝モルフ」で手動でオフにしてください。',
+    impliesOff:'上記の遺伝子がオフになっています。このラインが実際に持っている場合、表示される確率は実際より低くなります。',
     comboNote:'<b>コンボ名</b> — 結果が既知のコンボと一致すると、そのデザイナー名（例：Galaxy、Radar）を表示します。ラインブリード形質（タンジェリン・ハイポ・TUGスノー）が必要なコンボ（APTOR等）は自動判別されません。',
     warnH:'⚠️ 注意が必要な遺伝の組み合わせ',
     crossTag:'クロス', crossNote:'ラインブリード形質が混ざった交配です。仔に形質が出なくても遺伝子には混ざっているため、分譲・再交配の際は<b>クロス個体</b>と表記することをおすすめします。',
@@ -198,6 +206,30 @@ function comboChip(combo, side, matched){
   };
   return chip;
 }
+/* 라인이 깔고 가는 유전자를 어떻게 부를지.
+   열성은 'mm' 이 곧 그 모프 이름(비주얼)이라 이름만 씁니다 — subsegOptions
+   의 '비주얼' 을 그대로 쓰면 모프 이름이 빠져서 뭔지 알 수 없습니다. */
+function impliedLabel(g, val){
+  if(g.type==='rec') return val==='mm' ? gName(g) : L().optRec.het+' '+gName(g);
+  const opt=subsegOptions(g).find(o=>o[0]===val);
+  return opt? opt[1] : gName(g);
+}
+function impliesNote(side){
+  const rep=impliesReport(side);
+  if(!rep.on.length && !rep.off.length) return null;
+  const t=L();
+  const row=r=>'<b>'+escapeHtml(pName(r.poly))+'</b> → '+escapeHtml(impliedLabel(r.gene, r.val));
+  const box=document.createElement('div');
+  box.className='impliesnote';
+  let html='';
+  /* 어긋난 것부터 — 확률이 틀어져 있는 상태라 먼저 보여야 합니다 */
+  if(rep.off.length) html+='<p class="bad"><i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>'
+    +rep.off.map(row).join('<br>')+'<br><span>'+t.impliesOff+'</span></p>';
+  if(rep.on.length) html+='<p><i class="bi bi-link-45deg" aria-hidden="true"></i>'
+    +rep.on.map(row).join('<br>')+'<br><span>'+t.impliesOn+'</span></p>';
+  box.innerHTML=html;
+  return box;
+}
 function buildParent(side){
   const host=document.getElementById(side==='A'?'parentA':'parentB');
   host.innerHTML='';
@@ -227,6 +259,7 @@ function buildParent(side){
   const pgrid=document.createElement('div'); pgrid.className='chipgrid';
   POLY.forEach(p=>pgrid.appendChild(chipFor(p, side, true)));
   host.appendChild(pgrid);
+  const inote=impliesNote(side); if(inote) host.appendChild(inote);
   renderLeoSelected();
 }
 // 칩을 처음 켤 때 기본값 (rec=비주얼, incdom/dom=첫 비주얼 상태)
@@ -261,6 +294,9 @@ function chipFor(g, side, isPoly){
     +(g.risk?' <i class="bi bi-exclamation-triangle-fill chiprisk" aria-hidden="true"></i>':'');
   chip.onclick=()=>{
     STATE[side][g.id]= on? off : (isPoly? 'yes' : defaultOn(g));
+    /* 라인이 유전자를 깔고 가면(레드데빌 → 벨 알비노) 같이 켜고 끕니다.
+       안 그러면 확률이 조용히 틀립니다. */
+    if(isPoly && g.implies){ if(on) clearImplies(side, g); else applyImplies(side, g); }
     buildParent(side);
     if(hasResult) calculate();
   };

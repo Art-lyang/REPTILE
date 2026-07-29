@@ -9,7 +9,18 @@
    같습니다. 다른 것은 기본값뿐이라 SPECIES 표로 빼두었습니다.
    ============================================================================= */
 
-const SERVICE_ID = 'care';
+/* ⚠️ 최상위에 const SERVICE_ID 를 두지 않습니다.
+   네 계산기 코어가 전부 최상위에서 const SERVICE_ID 를 선언합니다. 이 파일과
+   계산기 코어를 같은 페이지에 올리면 두 번째 것이 통째로 죽습니다
+   ('Identifier already declared' — 스크립트 전체가 파싱 단계에서 실패합니다).
+
+   실제로 브리딩 화면(/care/breeding.html)이 그 조합입니다. 이 파일이 먼저
+   올라가 있어서 gecko-core.js 가 아무것도 정의하지 못했고, 모프 목록이 통째로
+   비어 나왔습니다.
+
+   analytics.js 는 서비스 이름을 인자로 받으므로 전역 상수가 필요 없습니다.
+   값은 아래 CareCore.SERVICE_ID 로만 내보냅니다. */
+const CARE_SERVICE_ID = 'care';
 
 /* ── 케어 종류 ────────────────────────────────────────────────────────────
    supabase_v16.sql 의 kind 제약과 같아야 합니다. 여기에만 추가하면 저장할 때
@@ -825,7 +836,7 @@ function ageText(hatchDate, endDate) {
 /* ── 밖에서 쓰도록 내보내기 ─────────────────────────────────────────────── */
 if (typeof window !== 'undefined') {
   window.CareCore = {
-    SERVICE_ID, CARE_KINDS, RECORD_ONLY_KINDS, QUICK_KINDS, SPECIES, WEEKDAY_KO, SAFETY_NOTE,
+    SERVICE_ID: CARE_SERVICE_ID, CARE_KINDS, RECORD_ONLY_KINDS, QUICK_KINDS, SPECIES, WEEKDAY_KO, SAFETY_NOTE,
     kindInfo, ymd, parseYmd, today, addDays, daysBetween, weekdayOf,
     isDueOn, lastDueBefore, nextDueAfter, planStatus, cycleLabel,
     buildIcs, icsEscape, icsFold, weeklySummary,

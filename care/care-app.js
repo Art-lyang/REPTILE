@@ -114,6 +114,24 @@ const CareApp = (function () {
       return req(SB.rpc('delete_row', { p_device: devId(), p_table: 'animals', p_id: id }));
     },
 
+    /* ── 페어링 · 클러치 ───────────────────────────────────────────────
+       개체와 같은 통로(my_rows/save_row)를 씁니다. 브리딩 화면이 쓰는
+       세 표는 전부 이 RPC 화이트리스트 안에 있습니다 (supabase_v7.sql).
+
+       v19 이후 save_row 는 수정할 때 기존 값과 합칩니다. 그래서 화면이 일부
+       칸만 보내도 나머지가 지워지지 않습니다. */
+    async listRows(table) {
+      return (await req(SB.rpc('my_rows', { p_device: devId(), p_table: table }))) || [];
+    },
+
+    async saveRow(table, row) {
+      return req(SB.rpc('save_row', { p_device: devId(), p_table: table, p_row: row }));
+    },
+
+    async deleteRow(table, id) {
+      return req(SB.rpc('delete_row', { p_device: devId(), p_table: table, p_id: id }));
+    },
+
     /* ── 반복 계획 ─────────────────────────────────────────────────────── */
     async listPlans() {
       return req(SB.from('care_plans').select('*').order('created_at', { ascending: true })) || [];

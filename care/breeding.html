@@ -3,13 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>개체 관리 · 량 스튜디오</title>
+<title>브리딩 관리 · 량 스튜디오</title>
 
 <!-- 개인 사육 기록 화면입니다. 검색에 절대 노출되면 안 됩니다. -->
 <meta name="robots" content="noindex, nofollow">
 
 <link rel="icon" type="image/png" sizes="32x32" href="/assets/logo-mark-32.png">
-<link rel="icon" type="image/png" sizes="512x512" href="/assets/logo-mark.png">
 <link rel="apple-touch-icon" href="/assets/logo-mark-180.png">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#f5f1e8" media="(prefers-color-scheme: light)">
@@ -29,16 +28,32 @@
   <img class="hd-deco leaf" src="/assets/leaf.svg" alt="" aria-hidden="true">
   <div class="hd">
     <div class="hd-txt">
-      <h1 id="aname">개체</h1>
-      <div class="sub" id="asub"></div>
+      <h1 id="btitle">브리딩 관리</h1>
+      <div class="sub" id="bsub">개체 · 페어링 · 클러치를 기록합니다</div>
     </div>
     <div class="hd-btns">
-      <a class="blink" href="/care/" title="케어 목록"><i class="bi bi-arrow-left" aria-hidden="true"></i><span>목록</span></a>
+      <a class="blink" href="/care/" title="케어 관리"><i class="bi bi-clipboard-heart" aria-hidden="true"></i><span>케어</span></a>
     </div>
   </div>
 </header>
 
 <div class="wrap">
+  <!-- 종 고르기. 종을 바꾸면 페이지를 다시 엽니다 — 계산기 코어는 한 페이지에
+       하나만 올라갈 수 있어서(모두 최상위 const SERVICE_ID 선언) 화면 안에서
+       갈아끼울 수 없습니다. -->
+  <div class="focusbar" id="spbar" style="display:none">
+    <span class="fl">종</span>
+    <select id="species" aria-label="종 고르기"></select>
+    <i class="bi bi-chevron-down" aria-hidden="true"></i>
+  </div>
+
+  <div class="tabs" id="tabs" style="display:none">
+    <button class="tab on" data-t="animals"><i class="bi bi-heart" aria-hidden="true"></i>개체</button>
+    <button class="tab" data-t="pair"><i class="bi bi-arrow-left-right" aria-hidden="true"></i>페어링</button>
+    <button class="tab" data-t="clutch"><i class="bi bi-egg" aria-hidden="true"></i>클러치</button>
+    <button class="tab" data-t="goal"><i class="bi bi-bullseye" aria-hidden="true"></i>역산</button>
+  </div>
+
   <div id="body"><div class="empty">불러오는 중…</div></div>
 
   <div class="legal">
@@ -49,11 +64,13 @@
 
 <div id="toast" role="status" aria-live="polite"></div>
 
+<!-- 코어는 breeding-ui.js 가 ?species= 를 보고 골라 넣습니다.
+     여기서 <script> 로 미리 넣으면 종을 바꿀 수 없습니다. -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="/assets/studio-config.js?v=113119"></script>
 <script src="care-core.js?v=8"></script>
 <script src="/assets/analytics.js?v=1"></script>
 <script src="care-app.js?v=8"></script>
-<script src="animal-ui.js?v=8"></script>
+<script src="breeding-ui.js?v=8"></script>
 </body>
 </html>

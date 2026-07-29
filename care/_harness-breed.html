@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>breeding 하네스 (임시)</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<link rel="stylesheet" href="care.css?v=8">
+</head>
+<body>
+<header><div class="hd"><div class="hd-txt">
+  <h1 id="btitle">브리딩 관리</h1><div class="sub" id="bsub"></div>
+</div></div></header>
+<div class="wrap">
+  <div class="focusbar" id="spbar" style="display:none">
+    <span class="fl">종</span><select id="species" aria-label="종"></select>
+  </div>
+  <div class="tabs" id="tabs" style="display:none">
+    <button class="tab on" data-t="animals"><i class="bi bi-heart"></i>개체</button>
+    <button class="tab" data-t="pair"><i class="bi bi-arrow-left-right"></i>페어링</button>
+    <button class="tab" data-t="clutch"><i class="bi bi-egg"></i>클러치</button>
+    <button class="tab" data-t="goal"><i class="bi bi-bullseye"></i>역산</button>
+  </div>
+  <div id="body"></div>
+</div>
+<div id="toast"></div>
+
+<script src="care-core.js?v=8"></script>
+<script>
+/* 가짜 백엔드 */
+(function () {
+  const C = window.CareCore, T = C.today();
+  const sp = new URLSearchParams(location.search).get('species') || 'gecko';
+  let animals = [
+    { id:'a1', species:sp, name:'첫째', sex:'male',   morphs:[], hets:[], note:'비공개 메모' },
+    { id:'a2', species:sp, name:'둘째', sex:'female', morphs:[], hets:[], parent_a:'a1' },
+    { id:'a9', species:'pygmy', name:'다른종', sex:'male', morphs:[], hets:[] }
+  ];
+  let pairs = [{ id:'p1', name:'2026 A라인', male:'a1', female:'a2', note:'첫 시도' }];
+  let clutches = [{ id:'c1', pairing:'p1', laid_date:C.addDays(T,-20), egg_count:2,
+                    temp:28.5, expected_hatch:C.addDays(T,25) }];
+  const noop = async () => {};
+  window.__saved = [];
+  window.CareApp = {
+    ready:true, user:{id:'u1',email:'demo@x'}, premium:{active:true,kind:'sub'},
+    device:()=>'d', friendly:e=>String((e&&e.message)||e), boot:async()=>({}), logVisit:()=>{},
+    listAnimals: async()=>animals,
+    listRows: async t=>(t==='pairings'?pairs:clutches),
+    saveAnimal: async r=>{window.__saved.push(['animal',r]); if(!r.id){r.id='new'+animals.length;animals.push(r);} },
+    saveRow: async (t,r)=>{window.__saved.push([t,r]);},
+    deleteRow: noop, deleteAnimal: noop
+  };
+})();
+</script>
+<script src="breeding-ui.js?v=8"></script>
+</body>
+</html>

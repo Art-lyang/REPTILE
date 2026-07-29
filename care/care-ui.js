@@ -37,6 +37,16 @@
     toast._t = setTimeout(() => t.classList.remove('on'), 2200);
   }
 
+  /* 종류 표시 — 계산기 칩이 색 점을 쓰는 자리에 같은 색의 아이콘을 둡니다. */
+  function kindTag(k) {
+    const i = C.kindInfo(k);
+    return '<span class="kind" style="color:' + i.color + '">'
+         + '<i class="bi ' + i.icon + '" aria-hidden="true"></i>' + esc(i.ko) + '</span>';
+  }
+  function icon(name) {
+    return '<i class="bi ' + name + '" aria-hidden="true"></i>';
+  }
+
   function animalById(id) { return S.animals.filter(a => a.id === id)[0] || null; }
   function animalName(id) { const a = animalById(id); return a ? (a.name || '이름 없음') : null; }
   function speciesOf(a) { return C.SPECIES[a && a.species] || C.SPECIES.other; }
@@ -89,9 +99,11 @@
                          .filter(p => !S.focus || p.animal_id === S.focus || !p.animal_id);
 
     if (!S.plans.length) {
-      return '<div class="pad"><div class="empty">아직 반복 계획이 없습니다.<br>'
+      return '<div class="pad"><div class="empty">'
+        + icon('bi-calendar-plus') + '아직 반복 계획이 없습니다.<br>'
         + '<b>계획</b> 탭에서 종별 기본값을 한 번에 넣을 수 있어요.</div>'
-        + '<button class="btn wide" data-go="plans">계획 만들러 가기</button></div>';
+        + '<button class="btn wide" data-go="plans" style="margin-top:14px">'
+        + icon('bi-arrow-right-circle') + '계획 만들러 가기</button></div>';
     }
 
     const rows = plans.map(p => ({ p: p, st: C.planStatus(p, day, doneDatesFor(p.id)) }));
@@ -114,7 +126,8 @@
       h += now.map(r => taskRow(r, false)).join('');
     }
     if (!late.length && !now.length) {
-      h += '<div class="pad"><div class="empty">오늘 할 일을 모두 끝냈습니다 👏</div></div>';
+      h += '<div class="pad"><div class="empty">'
+        + icon('bi-check2-circle') + '오늘 할 일을 모두 끝냈습니다</div></div>';
     }
     if (did.length) {
       h += '<div class="sect"><h2>완료</h2><span class="n">' + did.length + '</span></div>';
@@ -127,15 +140,14 @@
     const p = r.p, st = r.st, k = C.kindInfo(p.kind);
     const who = p.animal_id ? animalName(p.animal_id) : '전체';
     const cls = 'task' + (st.done ? ' did' : (isLate ? ' late' : ''));
-    let sub = '<span class="chip k" style="background:' + k.color + '">' + esc(k.ko) + '</span>'
-            + esc(who) + ' · ' + esc(C.cycleLabel(p));
+    let sub = kindTag(p.kind) + esc(who) + ' · ' + esc(C.cycleLabel(p));
     if (isLate) sub += ' · <span class="late-t">' + st.overdue + '일 밀림</span>';
     if (p.detail) sub += '<br>' + esc(p.detail);
 
     return '<div class="' + cls + '">'
       + '<button class="tick' + (st.done ? ' on' : '') + '" data-tick="' + p.id + '" '
       + 'aria-label="' + esc((p.title || k.ko) + ' ' + (st.done ? '완료 취소' : '완료')) + '">'
-      + (st.done ? '✓' : '') + '</button>'
+      + (st.done ? '<i class="bi bi-check-lg" aria-hidden="true"></i>' : '') + '</button>'
       + '<div class="tinfo"><div class="tname">' + esc(p.title || k.ko) + '</div>'
       + '<div class="tsub">' + sub + '</div></div></div>';
   }
@@ -146,9 +158,11 @@
   function tabAnimals() {
     if (S.editAnimal) return animalForm(S.editAnimal);
 
-    let h = '<button class="btn wide" data-newanimal="1" style="margin-bottom:12px">＋ 개체 등록</button>';
+    let h = '<button class="btn wide" data-newanimal="1" style="margin-bottom:14px">'
+          + icon('bi-plus-lg') + '개체 등록</button>';
     if (!S.animals.length) {
-      return h + '<div class="pad"><div class="empty">등록한 개체가 없습니다.<br>'
+      return h + '<div class="pad"><div class="empty">'
+        + icon('bi-heart') + '등록한 개체가 없습니다.<br>'
         + '브리딩 관리에 등록한 개체가 있다면 로그인 상태에서 여기에도 함께 보입니다.</div></div>';
     }
 
@@ -177,14 +191,16 @@
     bits.push('계획 ' + nPlans + '개');
     if (a.hatch_date) bits.push('해칭 ' + a.hatch_date);
 
+    const sex = a.sex === 'male' ? '<span class="chip">♂ 수컷</span>'
+              : a.sex === 'female' ? '<span class="chip">♀ 암컷</span>' : '';
+
     return '<div class="card">'
       + '<div class="thumb">' + (a.photo_url ? '<img src="' + esc(a.photo_url) + '" alt="">' : info.icon) + '</div>'
-      + '<div class="info"><div class="nm">' + esc(a.name || '이름 없음')
-      + (a.sex === 'male' ? ' <span class="chip">♂</span>' : a.sex === 'female' ? ' <span class="chip">♀</span>' : '')
-      + '</div><div class="ms">' + esc(bits.join(' · ')) + '</div></div>'
+      + '<div class="info"><div class="nm">' + esc(a.name || '이름 없음') + sex + '</div>'
+      + '<div class="ms">' + esc(bits.join(' · ')) + '</div></div>'
       + '<div class="acts">'
-      + '<button class="mini" data-weigh="' + a.id + '">체중</button>'
-      + '<button class="mini" data-editanimal="' + a.id + '">수정</button>'
+      + '<button class="mini" data-weigh="' + a.id + '">' + icon('bi-speedometer2') + '체중</button>'
+      + '<button class="mini" data-editanimal="' + a.id + '">' + icon('bi-pencil') + '수정</button>'
       + '</div></div>'
       + (S.focus === a.id ? weightPanel(a) : '');
   }
@@ -211,9 +227,10 @@
       + '</div>'
       + '<div class="lbl2">메모</div><textarea class="in" id="f_note">' + esc(a.note || '') + '</textarea>'
       + '<div class="err" id="f_err"></div>'
-      + '<div class="formbtns"><button class="btn" id="f_save">저장</button>'
+      + '<div class="formbtns"><button class="btn" id="f_save">' + icon('bi-check-lg') + '저장</button>'
       + '<button class="btn ghost" data-cancel="animal">취소</button>'
-      + (isNew ? '' : '<button class="btn ghost" data-delanimal="' + a.id + '" style="margin-left:auto;color:var(--warn-fg)">삭제</button>')
+      + (isNew ? '' : '<button class="btn danger" data-delanimal="' + a.id + '" style="margin-left:auto">'
+                    + icon('bi-trash3') + '삭제</button>')
       + '</div></div>';
   }
 
@@ -242,7 +259,8 @@
       + '</div>'
       + '<div class="hint">같은 날 다시 재면 덮어씁니다. 하루에 값이 둘이면 증감이 무엇을 뜻하는지 알 수 없어서입니다.</div>'
       + '<div class="err" id="w_err"></div>'
-      + '<div class="formbtns"><button class="btn" data-savew="' + a.id + '">체중 기록</button>'
+      + '<div class="formbtns"><button class="btn" data-savew="' + a.id + '">'
+      + icon('bi-check-lg') + '체중 기록</button>'
       + '<button class="btn ghost" data-weigh="">닫기</button></div>'
       + '</div>';
   }
@@ -292,16 +310,18 @@
     let h = '<div class="pad"><div class="lbl">캘린더로 내보내기</div>'
       + '<div class="hint">파일을 받아 폰에서 열면 구글·애플·삼성 캘린더에 반복 일정으로 들어갑니다. '
       + '그 뒤로는 캘린더가 알아서 알림을 울려 줍니다 — 이 화면을 열어두지 않아도 됩니다.</div>'
-      + '<button class="btn wide" id="ics" ' + (S.plans.length ? '' : 'disabled') + '>📅 캘린더 파일 받기'
+      + '<button class="btn wide" id="ics" style="margin-top:10px" ' + (S.plans.length ? '' : 'disabled') + '>'
+      + icon('bi-calendar-check') + '캘린더 파일 받기'
       + (S.plans.length ? ' (' + S.plans.filter(p => p.is_active !== false).length + '건)' : '') + '</button></div>';
 
-    h += '<div class="row2" style="margin-bottom:12px">'
-      + '<button class="btn" data-newplan="1">＋ 계획 추가</button>'
-      + '<button class="btn ghost" id="preset">종별 기본값 넣기</button></div>';
+    h += '<div class="row2" style="margin-bottom:14px">'
+      + '<button class="btn" data-newplan="1">' + icon('bi-plus-lg') + '계획 추가</button>'
+      + '<button class="btn ghost" id="preset">' + icon('bi-magic') + '종별 기본값</button></div>';
 
     if (!S.plans.length) {
-      return h + '<div class="pad"><div class="empty">아직 계획이 없습니다.<br>'
-        + '<b>종별 기본값 넣기</b>를 누르면 흔히 쓰는 주기가 한 번에 만들어집니다.</div></div>';
+      return h + '<div class="pad"><div class="empty">'
+        + icon('bi-arrow-repeat') + '아직 계획이 없습니다.<br>'
+        + '<b>종별 기본값</b>을 누르면 흔히 쓰는 주기가 한 번에 만들어집니다.</div></div>';
     }
 
     /* 개체별로 묶습니다. 공통 계획을 맨 위에 둡니다. */
@@ -321,21 +341,24 @@
     const k = C.kindInfo(p.kind);
     const off = p.is_active === false;
     return '<div class="card"' + (off ? ' style="opacity:.5"' : '') + '>'
-      + '<div class="thumb" style="background:' + k.color + '22">' + k.icon + '</div>'
+      + '<div class="thumb" style="background:' + k.color + '1a;border-color:' + k.color + '33;color:' + k.color + '">'
+      + '<i class="bi ' + k.icon + '" aria-hidden="true"></i></div>'
       + '<div class="info"><div class="nm">' + esc(p.title || k.ko)
-      + (off ? ' <span class="chip off">꺼짐</span>' : '') + '</div>'
+      + (off ? '<span class="chip off">꺼짐</span>' : '') + '</div>'
       + '<div class="ms">' + esc(C.cycleLabel(p))
       + (p.time_of_day ? ' · ' + esc(String(p.time_of_day).slice(0, 5)) : ' · 종일')
       + (p.detail ? ' · ' + esc(p.detail) : '') + '</div></div>'
-      + '<div class="acts"><button class="mini" data-editplan="' + p.id + '">수정</button></div></div>';
+      + '<div class="acts"><button class="mini" data-editplan="' + p.id + '">'
+      + icon('bi-pencil') + '수정</button></div></div>';
   }
 
   function planForm(p) {
     const isNew = !p.id;
     const mode = (p.weekdays && p.weekdays.length) ? 'week' : 'days';
+    /* <option> 안에서는 아이콘 폰트가 렌더되지 않습니다. 여기만 emoji 를 씁니다. */
     const kinds = Object.keys(C.CARE_KINDS).map(k =>
       '<option value="' + k + '"' + (p.kind === k ? ' selected' : '') + '>'
-      + C.CARE_KINDS[k].icon + ' ' + esc(C.CARE_KINDS[k].ko) + '</option>').join('');
+      + C.CARE_KINDS[k].emoji + ' ' + esc(C.CARE_KINDS[k].ko) + '</option>').join('');
     const aOpts = '<option value="">🏠 전체 공통</option>' + S.animals.map(a =>
       '<option value="' + a.id + '"' + (p.animal_id === a.id ? ' selected' : '') + '>'
       + speciesOf(a).icon + ' ' + esc(a.name || '이름 없음') + '</option>').join('');
@@ -377,9 +400,10 @@
       + '<option value="0"' + (p.is_active === false ? ' selected' : '') + '>꺼짐 (오늘 할 일·캘린더에서 빠짐)</option>'
       + '</select>'
       + '<div class="err" id="p_err"></div>'
-      + '<div class="formbtns"><button class="btn" id="p_save">저장</button>'
+      + '<div class="formbtns"><button class="btn" id="p_save">' + icon('bi-check-lg') + '저장</button>'
       + '<button class="btn ghost" data-cancel="plan">취소</button>'
-      + (isNew ? '' : '<button class="btn ghost" data-delplan="' + p.id + '" style="margin-left:auto;color:var(--warn-fg)">삭제</button>')
+      + (isNew ? '' : '<button class="btn danger" data-delplan="' + p.id + '" style="margin-left:auto">'
+                    + icon('bi-trash3') + '삭제</button>')
       + '</div></div>';
   }
 
@@ -410,8 +434,10 @@
     }
     h += '</div>';
 
-    h += '<div class="pad"><div class="lbl">눈에 띄는 것</div>';
-    h += r.notes.map(n => '<div class="note ' + n.level + '">' + esc(n.text) + '</div>').join('');
+    const NOTE_ICON = { warn: 'bi-exclamation-triangle', good: 'bi-check2-circle', info: 'bi-info-circle' };
+    h += '<div class="pad"><div class="lbl">눈에 띄는 것</div><div style="margin-top:10px"></div>';
+    h += r.notes.map(n => '<div class="note ' + n.level + '">'
+      + icon(NOTE_ICON[n.level] || 'bi-info-circle') + '<span>' + esc(n.text) + '</span></div>').join('');
     h += '<div class="safety">' + esc(C.SAFETY_NOTE) + '</div></div>';
     return h;
   }
@@ -430,7 +456,7 @@
       sel.innerHTML = '<option value="">전체 개체</option>' + S.animals.map(a =>
         '<option value="' + a.id + '"' + (S.focus === a.id ? ' selected' : '') + '>'
         + speciesOf(a).icon + ' ' + esc(a.name || '이름 없음') + '</option>').join('');
-      sel.style.display = S.animals.length ? '' : 'none';
+      $('focusbar').style.display = S.animals.length ? '' : 'none';
     }
 
     document.querySelectorAll('.tab').forEach(t =>
@@ -611,34 +637,38 @@
 
     if (!A.user) {
       $('body').innerHTML = '<div class="gate"><div class="pad">'
+        + '<div class="gicon">' + icon('bi-person-lock') + '</div>'
         + '<div class="lbl">로그인이 필요합니다</div>'
         + '<div class="hint">케어 기록은 계정에 저장됩니다. 기기에만 두면 폰을 바꿀 때 사라지고, '
         + '여러 기기에서 같이 볼 수도 없습니다.</div>'
         /* login.html 은 로그인 뒤 돌아올 곳을 받지 않습니다. 없는 동작을
            있는 것처럼 ?next= 를 붙이지 않고, 로그인하면 그 화면에 뜨는
            링크로 돌아오게 둡니다. */
-        + '<a class="btn wide" style="display:block;text-decoration:none;margin-top:14px" '
-        + 'href="/gecko/login.html">로그인 · 회원가입</a>'
+        + '<a class="btn wide" style="text-decoration:none;margin-top:16px" '
+        + 'href="/gecko/login.html">' + icon('bi-box-arrow-in-right') + '로그인 · 회원가입</a>'
         + '</div></div>';
       return;
     }
 
     if (!A.premium.active) {
       $('body').innerHTML = '<div class="gate"><div class="pad">'
+        + '<div class="gicon">' + icon('bi-gem') + '</div>'
         + '<div class="lbl">프리미엄 기능입니다</div>'
         + '<div class="hint">개체별 급여·청소·영양제 주기 관리, 체중 추이, 주간 요약, '
         + '캘린더 알림 내보내기를 이용할 수 있습니다.</div>'
         /* 코드 입력 창은 계정 화면에 있습니다. 계산기에는 #premium 앵커가 없어
            그리로 보내면 아무 데도 도착하지 않습니다. */
-        + '<a class="btn wide" style="display:block;text-decoration:none;margin-top:14px" '
-        + 'href="/gecko/login.html">프리미엄 코드 입력</a></div></div>';
+        + '<a class="btn wide" style="text-decoration:none;margin-top:16px" '
+        + 'href="/gecko/login.html">' + icon('bi-gem') + '프리미엄 코드 입력</a></div></div>';
       return;
     }
 
+    /* 헤더 부제를 계정 정보로 바꿉니다. 로그인 전에는 이 도구가 무엇인지
+       설명하는 문구가 들어 있고, 들어온 뒤에는 그 설명이 필요 없습니다. */
     $('who').textContent = (A.user.email || '')
       + (A.premium.kind === 'sub' ? ' · 구독' : A.premium.kind ? ' · 체험판' : '');
+    $('acctBtn').style.display = '';
     $('tabs').style.display = '';
-    $('focus').style.display = '';
     await reload();
   }
 

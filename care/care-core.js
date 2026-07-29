@@ -13,26 +13,33 @@ const SERVICE_ID = 'care';
 
 /* ── 케어 종류 ────────────────────────────────────────────────────────────
    supabase_v16.sql 의 kind 제약과 같아야 합니다. 여기에만 추가하면 저장할 때
-   DB 가 거부하고, DB 에만 추가하면 화면에 안 뜹니다. 둘 다 고치세요. */
+   DB 가 거부하고, DB 에만 추가하면 화면에 안 뜹니다. 둘 다 고치세요.
+
+   아이콘이 둘인 이유
+     icon   화면용 Bootstrap Icons 클래스. 계산기가 쓰는 것과 같은 아이콘
+            묶음이라 글자와 같은 굵기로 붙습니다.
+     emoji  캘린더 파일(.ics)용. 캘린더 앱에는 우리 아이콘 폰트가 없어서
+            클래스 이름을 넣으면 글자 그대로 나옵니다. */
 const CARE_KINDS = {
-  feed:       { ko: '급여',     icon: '🍽', color: '#0E7C7B' },
-  water:      { ko: '물 교체',  icon: '💧', color: '#3B8DA0' },
-  clean:      { ko: '청소',     icon: '🧹', color: '#7FA653' },
-  bedding:    { ko: '바닥재',   icon: '🪵', color: '#C67B4A' },
-  supplement: { ko: '영양제',   icon: '💊', color: '#6B5686' },
-  weigh:      { ko: '체중',     icon: '⚖️', color: '#EAC36A' },
-  health:     { ko: '건강',     icon: '🩺', color: '#B4402A' },
-  custom:     { ko: '기타',     icon: '📌', color: '#8A8375' }
+  feed:       { ko: '급여',     icon: 'bi-egg-fried',    emoji: '🍽', color: '#075a48' },
+  water:      { ko: '물 교체',  icon: 'bi-droplet-half', emoji: '💧', color: '#287e80' },
+  clean:      { ko: '청소',     icon: 'bi-brush',        emoji: '🧹', color: '#5c8a3a' },
+  bedding:    { ko: '바닥재',   icon: 'bi-layers',       emoji: '🪵', color: '#a9682f' },
+  supplement: { ko: '영양제',   icon: 'bi-capsule',      emoji: '💊', color: '#675780' },
+  weigh:      { ko: '체중',     icon: 'bi-speedometer2', emoji: '⚖️', color: '#b07d15' },
+  health:     { ko: '건강',     icon: 'bi-heart-pulse',  emoji: '🩺', color: '#b4402a' },
+  custom:     { ko: '기타',     icon: 'bi-pin-angle',    emoji: '📌', color: '#746f64' }
 };
 
 /* 기록에만 쓰이고 계획으로는 만들지 않는 종류 (v16 의 care_records 제약 참고) */
 const RECORD_ONLY_KINDS = {
-  memo:     { ko: '메모',   icon: '📝', color: '#8A8375' },
-  behavior: { ko: '행동',   icon: '👀', color: '#4E7CA8' }
+  memo:     { ko: '메모', icon: 'bi-sticky',  emoji: '📝', color: '#746f64' },
+  behavior: { ko: '행동', icon: 'bi-eye',     emoji: '👀', color: '#4E7CA8' }
 };
 
 function kindInfo(k) {
-  return CARE_KINDS[k] || RECORD_ONLY_KINDS[k] || { ko: k, icon: '•', color: '#8A8375' };
+  return CARE_KINDS[k] || RECORD_ONLY_KINDS[k]
+      || { ko: k, icon: 'bi-dot', emoji: '•', color: '#746f64' };
 }
 
 /* ── 종별 기본 계획 ───────────────────────────────────────────────────────
@@ -324,7 +331,9 @@ function icsEvent(plan, animalName, host) {
   }
 
   L.push('RRULE:' + icsRrule(plan));
-  L.push('SUMMARY:' + icsEscape(info.icon + ' ' + title));
+  /* 아이콘 폰트가 없는 곳으로 나가는 값이라 emoji 를 씁니다. icon(=bi 클래스)을
+     넣으면 캘린더에 'bi-egg-fried 급여' 라고 뜹니다. */
+  L.push('SUMMARY:' + icsEscape(info.emoji + ' ' + title));
   if (plan.detail) L.push('DESCRIPTION:' + icsEscape(plan.detail));
   L.push('CATEGORIES:' + icsEscape(info.ko));
 

@@ -18,6 +18,7 @@
   'use strict';
 
   const C = window.CareCore;
+  const I = window.CareI18n;
   const $ = id => document.getElementById(id);
   const SB = (typeof SUPABASE_URL !== 'undefined' && window.supabase)
     ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON) : null;
@@ -32,10 +33,10 @@
   function notFound(msg) {
     $('body').innerHTML = '<div class="gate"><div class="pad">'
       + '<div class="gicon">' + icon('bi-link-45deg') + '</div>'
-      + '<div class="lbl">열 수 없는 주소입니다</div>'
+      + '<div class="lbl">' + I.t('invalidShareTitle') + '</div>'
       + '<div class="hint">' + esc(msg) + '</div>'
-      + '<a class="btn ghost wide" style="text-decoration:none;margin-top:16px" href="/">'
-      + icon('bi-house') + '량 스튜디오</a></div></div>';
+      + '<a class="btn ghost wide" style="text-decoration:none;margin-top:16px" href="' + I.url('/') + '">'
+      + icon('bi-house') + I.t('studio') + '</a></div></div>';
   }
 
   /* 모프 토큰은 계산기가 이름을 붙입니다. 이 화면은 계산기 데이터를 읽지
@@ -53,63 +54,62 @@
 
   function parentRow(side, p) {
     if (!p) return '';
-    const label = side === 'a' ? '부' : '모';
-    const body = '<div class="nm">' + esc(p.name || '이름 없음') + '</div>'
-      + '<div class="ms">' + (chips(p.morphs) || '<span class="ms">모프 정보 없음</span>')
+    const label = side === 'a' ? I.t('parentFather') : I.t('parentMother');
+    const body = '<div class="nm">' + esc(p.name || I.t('unnamed')) + '</div>'
+      + '<div class="ms">' + (chips(p.morphs) || '<span class="ms">' + I.t('morphInfoMissing') + '</span>')
       + chips(p.hets, 'het') + '</div>';
     return '<div class="card">'
       + '<div class="pside">' + label + '</div>'
       + '<div class="info">' + body + '</div>'
       + (p.token
-          ? '<div class="acts"><a class="mini" href="p.html?t=' + encodeURIComponent(p.token) + '">'
-            + icon('bi-arrow-right') + '보기</a></div>'
+          ? '<div class="acts"><a class="mini" href="' + I.url('/care/p.html', { t: p.token }) + '">'
+            + icon('bi-arrow-right') + I.t('view') + '</a></div>'
           : '')
       + '</div>';
   }
 
   function render(a) {
     const sp = C.SPECIES[a.species] || C.SPECIES.other;
-    const age = C.ageText(a.hatch_date, C.today());
-    const sex = a.sex === 'male' ? '수컷 ♂' : a.sex === 'female' ? '암컷 ♀' : null;
+    const age = I.ageText(a.hatch_date, C.today());
+    const sex = a.sex === 'male' ? I.t('sexMale') + ' ♂' : a.sex === 'female' ? I.t('sexFemale') + ' ♀' : null;
 
-    document.title = (a.name || '개체') + ' · 개체 프로필';
+    document.title = (a.name || I.t('animal')) + ' · ' + I.t('profile');
 
     const facts = [
-      ['종', sp.icon + ' ' + sp.ko],
-      ['성별', sex],
-      ['해칭일', a.hatch_date],
-      ['나이', age]
+      [I.t('speciesFact'), sp.icon + ' ' + I.speciesName(a.species)],
+      [I.t('sexFact'), sex],
+      [I.t('hatchFact'), a.hatch_date ? I.formatDate(a.hatch_date) : null],
+      [I.t('ageFact'), age]
     ].filter(f => f[1]);
 
     let h = '<div class="phead">' + photoStrip(a) + '</div>';
 
-    h += '<div class="pad"><div class="ptitle">' + esc(a.name || '이름 없음') + '</div>'
+    h += '<div class="pad"><div class="ptitle">' + esc(a.name || I.t('unnamed')) + '</div>'
       + (a.breeder ? '<div class="pbreeder">' + icon('bi-person-badge') + esc(a.breeder) + '</div>' : '')
       + '<div class="pfacts">' + facts.map(f =>
           '<div><span class="pk">' + esc(f[0]) + '</span><span class="pv">' + esc(f[1]) + '</span></div>').join('')
       + '</div>';
 
     if ((a.morphs && a.morphs.length) || (a.hets && a.hets.length)) {
-      h += '<div class="lbl2">모프</div><div class="pchips">'
-        + (chips(a.morphs) || '<span class="ms">등록된 모프 없음</span>')
+      h += '<div class="lbl2">' + I.t('morph') + '</div><div class="pchips">'
+        + (chips(a.morphs) || '<span class="ms">' + I.t('noMorph') + '</span>')
         + chips(a.hets, 'het') + '</div>';
     }
     if (a.note) {
-      h += '<div class="lbl2">소개</div><div class="pnote">' + esc(a.note) + '</div>';
+      h += '<div class="lbl2">' + I.t('introduction') + '</div><div class="pnote">' + esc(a.note) + '</div>';
     }
     h += '</div>';
 
     const pa = a.parents && a.parents.a, pb = a.parents && a.parents.b;
     if (pa || pb) {
-      h += '<div class="pad"><div class="lbl">부모</div>'
+      h += '<div class="pad"><div class="lbl">' + I.t('parents') + '</div>'
         + parentRow('a', pa) + parentRow('b', pb) + '</div>';
     }
 
     h += '<div class="pad" style="text-align:center">'
-      + '<div class="hint">이 페이지는 개체의 주인이 공유한 것입니다. '
-      + '사육 기록·체중 같은 개인 기록은 포함되지 않습니다.</div>'
-      + '<a class="btn ghost wide" style="text-decoration:none;margin-top:12px" href="/care/">'
-      + icon('bi-clipboard-heart') + '나도 크리처 케어로그 시작하기</a></div>';
+      + '<div class="hint">' + I.t('publicOwnerNotice') + '</div>'
+      + '<a class="btn ghost wide" style="text-decoration:none;margin-top:12px" href="' + I.url('/care/') + '">'
+      + icon('bi-clipboard-heart') + I.t('startCare') + '</a></div>';
 
     $('body').innerHTML = h;
     /* 익명 방문자도 서명을 받습니다 — 공개된 개체에 붙은 사진이면
@@ -127,9 +127,9 @@
   });
 
   (async function boot() {
-    if (!SB) { notFound('백엔드가 설정되지 않았습니다.'); return; }
+    if (!SB) { notFound(I.t('shareBackendMissing')); return; }
     const t = new URLSearchParams(location.search).get('t');
-    if (!t) { notFound('주소에 개체 정보가 없습니다.'); return; }
+    if (!t) { notFound(I.t('shareTokenMissing')); return; }
 
     let data = null;
     try {
@@ -137,14 +137,14 @@
       if (r.error) throw r.error;
       data = r.data;
     } catch (e) {
-      notFound('불러오지 못했습니다. 잠시 뒤 다시 시도해 주세요.');
+      notFound(I.t('shareLoadError'));
       return;
     }
 
     /* 없는 주소와 닫힌 주소를 구분해서 알려주지 않습니다. 구분해 주면
        "이 토큰은 존재하지만 비공개" 라는 정보를 흘리게 됩니다. */
     if (!data) {
-      notFound('주소가 잘못됐거나, 주인이 공개를 끝냈습니다.');
+      notFound(I.t('shareClosed'));
       return;
     }
     render(data);

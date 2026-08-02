@@ -4,10 +4,17 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>크리처 케어로그 · 량 스튜디오</title>
-<meta name="description" content="급여·청소·영양제 주기와 체중을 기록하고, 캘린더로 내보내 폰에서 알림을 받습니다.">
+<meta name="description" content="급여·청소·영양제 주기와 체중을 기록하고, 캘린더로 내보내 폰에서 알림을 받습니다." data-care-content="pageDescription">
 
 <!-- 개인 사육 기록 화면입니다. 검색에 절대 노출되면 안 됩니다. -->
 <meta name="robots" content="noindex, nofollow">
+
+<script src="care-i18n-ko.js?v=20260802e"></script>
+<script src="care-i18n-en.js?v=20260802e"></script>
+<script src="care-i18n-zh.js?v=20260802e"></script>
+<script src="care-i18n-ja.js?v=20260802e"></script>
+<script src="care-i18n.js?v=20260802e"></script>
+<script>window.CareI18n.initialize('pageTitle');</script>
 
 <link rel="icon" type="image/png" sizes="32x32" href="/assets/logo-mark-32.png">
 <link rel="icon" type="image/png" sizes="512x512" href="/assets/logo-mark.png">
@@ -25,14 +32,14 @@
 <!-- 테스트 중 임시 잠금. 가려두는 용도일 뿐이고, 실제 데이터는 아래 Supabase
      로그인과 RLS 가 지킵니다. 자세한 내용은 assets/gate.js 머리말 참고.
      다른 스크립트보다 먼저 와야 화면이 번쩍 보였다 가려지지 않습니다. -->
-<script src="/assets/gate.js?v=1"></script>
+<script src="/assets/gate.js?v=2"></script>
 
 <!-- 계산기와 같은 글꼴·아이콘. 못 받아오면 시스템 글꼴과 빈 칸으로 내려가고
      화면은 그대로 동작합니다. -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
-<link rel="stylesheet" href="care.css?v=20260731d">
+<link rel="stylesheet" href="care.css?v=20260802e">
 </head>
 <body>
 
@@ -43,42 +50,45 @@
   <img class="hd-deco hero" src="/assets/leopard-hero-v1.png" alt="" aria-hidden="true" loading="eager">
   <div class="hd">
     <div class="hd-txt">
-      <h1>크리처 케어로그</h1>
-      <div class="sub" id="who">급여·청소·영양제 주기를 정해두고 오늘 할 일로 확인하세요</div>
+      <h1 data-care-text="pageHeader">크리처 케어로그</h1>
+      <div class="sub" id="who" data-care-text="pageSubtitle">급여·청소·영양제 주기를 정해두고 오늘 할 일로 확인하세요</div>
     </div>
     <div class="hd-btns">
-      <a class="blink" href="/" title="량 스튜디오"><i class="bi bi-house" aria-hidden="true"></i><span>스튜디오</span></a>
-      <a class="blink" id="acctBtn" href="/gecko/login.html" style="display:none" title="내 정보"><i class="bi bi-person" aria-hidden="true"></i><span>내 정보</span></a>
+      <label class="blink care-lang" data-care-title="language"><i class="bi bi-globe2" aria-hidden="true"></i><span data-care-text="language">언어</span><select data-care-language data-care-aria="language"><option value="ko">한국어</option><option value="en">English</option><option value="zh">中文</option><option value="ja">日本語</option></select></label>
+      <a class="blink" href="/" title="량 스튜디오" data-care-url data-care-title="studio"><i class="bi bi-house" aria-hidden="true"></i><span data-care-text="studio">스튜디오</span></a>
+      <a class="blink" id="acctBtn" href="/gecko/login.html" data-care-url style="display:none" title="내 정보" data-care-title="account"><i class="bi bi-person" aria-hidden="true"></i><span data-care-text="account">내 정보</span></a>
     </div>
   </div>
 </header>
 
 <div class="wrap">
   <div class="focusbar" id="focusbar" style="display:none">
-    <span class="fl">개체</span>
-    <select id="focus" aria-label="개체 고르기"></select>
+    <span class="fl" data-care-text="animal">개체</span>
+    <select id="focus" aria-label="개체 고르기" data-care-aria="focusAnimal"></select>
     <i class="bi bi-chevron-down" aria-hidden="true"></i>
   </div>
 
   <div class="tabs" id="tabs" style="display:none">
-    <button class="tab on" data-t="today"><i class="bi bi-check2-square" aria-hidden="true"></i>오늘</button>
-    <button class="tab" data-t="animals"><i class="bi bi-heart" aria-hidden="true"></i>개체</button>
-    <button class="tab" data-t="plans"><i class="bi bi-arrow-repeat" aria-hidden="true"></i>계획</button>
-    <button class="tab" data-t="feed"><i class="bi bi-box-seam" aria-hidden="true"></i>먹이</button>
-    <button class="tab" data-t="health"><i class="bi bi-clipboard-pulse" aria-hidden="true"></i>건강</button>
-    <button class="tab" data-t="report"><i class="bi bi-graph-up" aria-hidden="true"></i>요약</button>
+    <button class="tab on" data-t="today"><i class="bi bi-check2-square" aria-hidden="true"></i><span data-care-text="tabToday">오늘</span></button>
+    <button class="tab" data-t="animals"><i class="bi bi-heart" aria-hidden="true"></i><span data-care-text="tabAnimals">개체</span></button>
+    <button class="tab" data-t="plans"><i class="bi bi-arrow-repeat" aria-hidden="true"></i><span data-care-text="tabPlans">계획</span></button>
+    <button class="tab" data-t="feed"><i class="bi bi-box-seam" aria-hidden="true"></i><span data-care-text="tabFeed">먹이</span></button>
+    <button class="tab" data-t="health"><i class="bi bi-clipboard-pulse" aria-hidden="true"></i><span data-care-text="tabHealth">건강</span></button>
+    <button class="tab" data-t="report"><i class="bi bi-graph-up" aria-hidden="true"></i><span data-care-text="tabReport">요약</span></button>
   </div>
 
-  <div id="body"><div class="empty">불러오는 중…</div></div>
+  <div id="body"><div class="empty" data-care-text="loading">불러오는 중…</div></div>
 
   <!-- 개인 사육 기록을 다루는 화면이라 약관·처리방침으로 가는 길이 있어야
        합니다. 계산기는 SHOW_LEGAL_LINKS 로 숨기고 있지만, 여기는 로그인해야
        들어오는 곳이고 수집하는 항목도 더 많아 항상 보여줍니다. -->
   <div class="legal" hidden>
-    <a href="/terms.html#terms">이용약관</a> ·
-    <a href="/terms.html#privacy">개인정보처리방침</a>
+    <a href="/terms.html#terms" data-care-text="terms">이용약관</a> ·
+    <a href="/terms.html#privacy" data-care-text="privacy">개인정보처리방침</a>
   </div>
 </div>
+
+<script>window.CareI18n.apply(document);</script>
 
 <div id="toast" role="status" aria-live="polite"></div>
 
@@ -93,9 +103,9 @@
 <script src="photo-cropper-geometry.js?v=20260731d"></script>
 <script src="photo-cropper.js?v=20260731d"></script>
 <script src="care-photos.js?v=20260731d"></script>
-<script src="care-core.js?v=13"></script>
+<script src="care-core.js?v=14"></script>
 <script src="/assets/analytics.js?v=20260731b"></script>
 <script src="care-app.js?v=20260802c"></script>
-<script src="care-ui.js?v=20260731d"></script>
+<script src="care-ui.js?v=20260802d"></script>
 </body>
 </html>

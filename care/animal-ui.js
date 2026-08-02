@@ -30,6 +30,7 @@
 
   const C = window.CareCore;
   const A = window.CareApp;
+  const I = window.CareI18n;
   const $ = id => document.getElementById(id);
 
   function esc(s) {
@@ -65,7 +66,7 @@
     if (S.busy) return;
     S.busy = true;
     try { await fn(); await loadAll(); render(); if (ok) toast(ok); }
-    catch (e) { toast(A.friendly(e)); }
+    catch (e) { toast(I.friendly(e)); }
     finally { S.busy = false; }
   }
 
@@ -78,16 +79,16 @@
     const rate = C.completionRate(S.plans, S.records, 30, C.today());
     const streak = C.streakDays(S.records, C.today());
     const w = C.weightSummary(S.weights);
-    const age = C.ageText(S.animal.hatch_date, C.today());
+    const age = I.ageText(S.animal.hatch_date, C.today());
 
     const cards = [
-      { v: rate.rate == null ? '–' : rate.rate + '%', k: '30일 수행률',
-        sub: rate.due ? rate.done + '/' + rate.due + '회' : '계획 없음' },
-      { v: streak || '–', k: '연속 기록', sub: streak ? '일째' : '오늘 남겨보세요' },
-      { v: w.count ? w.latest : '–', k: '최근 체중',
-        sub: w.count ? (w.delta30 == null ? w.count + '회 측정'
-             : (w.delta30 > 0 ? '+' : '') + w.delta30 + 'g · 30일') : '기록 없음' },
-      { v: age || '–', k: '나이', sub: S.animal.hatch_date || '해칭일 미입력' }
+      { v: rate.rate == null ? '–' : I.formatNumber(rate.rate) + '%', k: I.t('performance30'),
+        sub: rate.due ? I.formatNumber(rate.done) + '/' + I.t('countTimes', { count: I.formatNumber(rate.due) }) : I.t('noPlan') },
+      { v: streak ? I.formatNumber(streak) : '–', k: I.t('streak'), sub: streak ? I.t('streakDays') : I.t('tryToday') },
+      { v: w.count ? I.formatNumber(w.latest) : '–', k: I.t('latestWeight'),
+        sub: w.count ? (w.delta30 == null ? I.t('measurements', { count: I.formatNumber(w.count) })
+             : (w.delta30 > 0 ? '+' : '') + I.formatNumber(w.delta30) + 'g · ' + I.t('lastThirtyDays')) : I.t('noRecords') },
+      { v: age || '–', k: I.t('age'), sub: S.animal.hatch_date ? I.formatDate(S.animal.hatch_date) : I.t('hatchMissing') }
     ];
     return '<div class="grid4">' + cards.map(c =>
       '<div class="stat"><div class="v">' + esc(c.v) + '</div>'
@@ -99,14 +100,14 @@
   /* 빠른 기록 — 케어 앱들의 원탭 기록 */
   function quickBar() {
     const done = new Set(S.records.filter(r => r.done_date === C.today()).map(r => r.kind));
-    return '<div class="pad"><div class="lbl">빠른 기록</div>'
-      + '<div class="hint">누르면 오늘 날짜로 바로 남습니다. 잘못 눌렀으면 아래 최근 기록에서 지우세요.</div>'
+    return '<div class="pad"><div class="lbl">' + I.t('quickRecord') + '</div>'
+      + '<div class="hint">' + I.t('quickHint') + '</div>'
       + '<div class="quick">' + C.QUICK_KINDS.map(function (k) {
           const i = C.kindInfo(k);
           const on = done.has(k);
           return '<button class="qbtn' + (on ? ' on' : '') + '" data-quick="' + k + '" '
             + 'style="' + (on ? '' : '--qc:' + i.color) + '">'
-            + '<i class="bi ' + i.icon + '" aria-hidden="true"></i><span>' + esc(i.ko) + '</span></button>';
+            + '<i class="bi ' + i.icon + '" aria-hidden="true"></i><span>' + esc(I.kindName(k)) + '</span></button>';
         }).join('') + '</div></div>';
   }
 
@@ -122,12 +123,12 @@
       const old = d.ago >= limit;
       return '<div class="lastrow' + (old ? ' old' : '') + '">'
         + '<span class="kind" style="color:' + i.color + '">'
-        + '<i class="bi ' + i.icon + '" aria-hidden="true"></i>' + esc(i.ko) + '</span>'
-        + '<span class="lago">' + (d.ago === 0 ? '오늘' : d.ago + '일 전') + '</span>'
-        + '<span class="ldate">' + esc(d.date.slice(5)) + '</span></div>';
+        + '<i class="bi ' + i.icon + '" aria-hidden="true"></i>' + esc(I.kindName(k)) + '</span>'
+        + '<span class="lago">' + I.relativeDays(d.ago) + '</span>'
+        + '<span class="ldate">' + esc(I.formatDate(d.date, { month: 'short', day: 'numeric' })) + '</span></div>';
     });
     if (!rows.length) return '';
-    return '<div class="pad"><div class="lbl">마지막으로 한 날</div>'
+    return '<div class="pad"><div class="lbl">' + I.t('lastDone') + '</div>'
       + '<div class="lastgrid">' + rows.join('') + '</div></div>';
   }
 
@@ -137,18 +138,18 @@
   function openSigns() {
     const st = C.signStatus(S.records, C.today()).filter(s => s.open);
     if (!st.length) return '';
-    return '<div class="pad"><div class="lbl">관찰 중인 증세</div>'
+    return '<div class="pad"><div class="lbl">' + I.t('openSymptoms') + '</div>'
       + st.map(function (s) {
-          const g = C.SIGNS[s.code] || { ko: s.code, what: '' };
+          const g = C.SIGNS[s.code] || {};
           return '<div class="signcard' + (g.vet ? ' vet' : '') + '" style="margin-top:10px">'
-            + '<div class="sgtop"><div class="sgname">' + esc(g.ko) + '</div>'
-            + '<div class="sgdays">' + s.days + '일째</div></div>'
-            + '<div class="sgwhat">' + esc(g.what) + '</div>'
-            + (g.vet ? '<div class="sgvet">' + icon('bi-hospital') + '수의사에게 보이시길 권합니다</div>' : '')
+            + '<div class="sgtop"><div class="sgname">' + esc(I.signName(s.code)) + '</div>'
+            + '<div class="sgdays">' + I.t('daysRunning', { count: I.formatNumber(s.days) }) + '</div></div>'
+            + '<div class="sgwhat">' + esc(I.signWhat(s.code)) + '</div>'
+            + (g.vet ? '<div class="sgvet">' + icon('bi-hospital') + I.t('vetRecommended') + '</div>' : '')
             + '</div>';
         }).join('')
-      + '<a class="btn ghost wide" style="text-decoration:none;margin-top:12px" href="/care/#health">'
-      + icon('bi-clipboard-pulse') + '건강 탭에서 기록·해소하기</a></div>';
+      + '<a class="btn ghost wide" style="text-decoration:none;margin-top:12px" href="' + I.url('/care/#health') + '">'
+      + icon('bi-clipboard-pulse') + I.t('healthAction') + '</a></div>';
   }
 
   /* =============================================================================
@@ -173,10 +174,9 @@
 
     const hasAny = p.up.length || p.children.length;
     if (!hasAny) {
-      return '<div class="pad"><div class="lbl">족보</div>'
+      return '<div class="pad"><div class="lbl">' + I.t('pedigree') + '</div>'
         + '<div class="empty">' + icon('bi-diagram-3')
-        + '부모나 자식이 등록되어 있지 않습니다.<br>'
-        + '개체를 수정해 <b>혈통</b>을 지정하면 여기에 이어집니다.</div></div>';
+        + I.t('pedigreeEmpty') + '</div></div>';
     }
 
     /* 세대별 칸 수가 2·4·8 로 늘어납니다. 카드 하나에 최소 폭을 주고
@@ -202,41 +202,39 @@
     rows += '<div class="pedrow" style="grid-template-columns:1fr">'
           + pedCell({ animal: p.root, slot: 0 }, -1, true) + '</div>';
 
-    let h = '<div class="pad"><div class="lbl">족보</div>'
-      + '<div class="hint">등록된 혈통만 그립니다 — '
-      + p.known.filled + '/' + p.known.total + '칸이 채워져 있습니다. '
-      + '빈 자리는 <b>모른다</b>는 뜻이지 없다는 뜻이 아닙니다.</div>'
+    let h = '<div class="pad"><div class="lbl">' + I.t('pedigree') + '</div>'
+      + '<div class="hint">' + I.t('pedigreeKnown', {
+        filled: I.formatNumber(p.known.filled), total: I.formatNumber(p.known.total)
+      }) + '</div>'
       + '<div class="pedgens">' + [2, 3, 4].map(v =>
           '<button class="mode' + (up === v ? ' on' : '') + '" data-upgen="' + v + '">'
-          + v + '대</button>').join('') + '</div>'
+          + I.t('generation', { count: I.formatNumber(v) }) + '</button>').join('') + '</div>'
       + '<div class="pedscroll"><div class="pedtree" style="min-width:' + W + 'px">'
       + rows + '</div></div>';
 
     /* 근친 신호 — 족보를 그리는 가장 큰 이유입니다 */
     if (p.repeats.length) {
       h += '<div class="note warn">' + icon('bi-exclamation-triangle')
-        + '<span>같은 조상이 양쪽 혈통에 나옵니다 — '
-        + p.repeats.map(r => esc(r.name) + ' ' + r.count + '회').join(', ')
-        + '. 근친 정도를 판단할 때 참고하세요.</span></div>';
+        + '<span>' + esc(I.t('repeatedAncestor', { names: p.repeats.map(r =>
+          (r.name || I.t('unnamed')) + ' ' + I.t('countTimes', { count: I.formatNumber(r.count) })).join(', ')
+        })) + '</span></div>';
     }
     if (p.cycles.length) {
       h += '<div class="note warn">' + icon('bi-exclamation-triangle')
-        + '<span>혈통이 자기 자신으로 돌아옵니다 ('
-        + p.cycles.map(c => esc(c.name)).join(', ')
-        + '). 부모 지정을 잘못한 것으로 보입니다 — 개체 수정에서 확인해 주세요.</span></div>';
+        + '<span>' + esc(I.t('pedigreeCycle', { names: p.cycles.map(c => c.name || I.t('unnamed')).join(', ') })) + '</span></div>';
     }
 
     /* 자식 */
     if (p.children.length) {
-      h += '<div class="lbl2">자식 ' + p.children.length + '마리</div>'
+      h += '<div class="lbl2">' + I.t('children', { count: I.formatNumber(p.children.length) }) + '</div>'
         + '<div class="pedkids">' + p.children.map(function (c) {
-            return '<a class="pedkid" href="animal.html?id=' + encodeURIComponent(c.animal.id) + '">'
+            return '<a class="pedkid" href="' + I.url('/care/animal.html', { id: c.animal.id }) + '">'
               + pedFace(c.animal)
-              + '<div class="pedname">' + esc(c.animal.name || '이름 없음') + '</div>'
+              + '<div class="pedname">' + esc(c.animal.name || I.t('unnamed')) + '</div>'
               /* 족보에서 쓰는 표기 그대로 '× 짝이름'. 조사를 붙이면
                  이름 끝 받침에 따라 '와/과' 가 갈려서 틀린 쪽이 나옵니다. */
-              + '<div class="pedmate">' + (c.mate ? '× ' + esc(c.mate.name || '이름 없음')
-                                                  : (c.mateId ? '× 지워진 개체' : '짝 미등록'))
+              + '<div class="pedmate">' + (c.mate ? '× ' + esc(c.mate.name || I.t('unnamed'))
+                                                  : (c.mateId ? '× ' + I.t('deletedAnimal') : I.t('mateMissing')))
               + '</div></a>';
           }).join('') + '</div>';
     }
@@ -253,22 +251,22 @@
     if (!node) return '<div class="pedcell empty"></div>';
     const a = node.animal;
     /* 부모 칸은 짝수=부, 홀수=모 입니다 (buildPedigree 의 자리 규칙) */
-    const role = isRoot ? '' : (node.slot % 2 === 0 ? '부' : '모');
+    const role = isRoot ? '' : (node.slot % 2 === 0 ? I.t('roleFather') : I.t('roleMother'));
 
     if (!a) {
       return '<div class="pedcell"><div class="pedbox missing">'
         + '<div class="pedface none">?</div>'
-        + '<div class="pedname">지워진 개체</div>'
+        + '<div class="pedname">' + I.t('deletedAnimal') + '</div>'
         + (role ? '<div class="pedrole">' + role + '</div>' : '') + '</div></div>';
     }
     const cls = 'pedbox' + (isRoot ? ' root' : '') + (node.repeated ? ' repeated' : '');
     const inner = pedFace(a)
-      + '<div class="pedname">' + esc(a.name || '이름 없음') + '</div>'
+      + '<div class="pedname">' + esc(a.name || I.t('unnamed')) + '</div>'
       + (role ? '<div class="pedrole">' + role + '</div>' : '');
     return '<div class="pedcell">'
       + (isRoot
           ? '<div class="' + cls + '">' + inner + '</div>'
-          : '<a class="' + cls + '" href="animal.html?id=' + encodeURIComponent(a.id) + '">' + inner + '</a>')
+          : '<a class="' + cls + '" href="' + I.url('/care/animal.html', { id: a.id }) + '">' + inner + '</a>')
       + '</div>';
   }
 
@@ -277,30 +275,29 @@
   function weightBlock() {
     const w = S.weights.slice().sort((a, b) => a.measured_on < b.measured_on ? -1 : 1);
     const sum = C.weightSummary(w);
-    let h = '<div class="pad"><div class="lbl">체중</div>';
+    let h = '<div class="pad"><div class="lbl">' + I.t('weight') + '</div>';
 
     if (sum.count >= 2) {
       h += '<div class="wstat">'
-        + '<span><b>' + sum.latest + 'g</b>최근 · ' + esc(sum.latestOn.slice(5)) + '</span>'
-        + '<span>최저 ' + sum.min + ' · 최고 ' + sum.max + 'g</span>'
-        + (sum.delta == null ? '' : '<span>전체 ' + (sum.delta > 0 ? '+' : '') + sum.delta + 'g</span>')
+        + '<span><b>' + I.formatNumber(sum.latest) + 'g</b>' + I.t('latest') + ' · ' + esc(I.formatDate(sum.latestOn, { month: 'short', day: 'numeric' })) + '</span>'
+        + '<span>' + I.t('minMaxWeight', { min: I.formatNumber(sum.min), max: I.formatNumber(sum.max) }) + '</span>'
+        + (sum.delta == null ? '' : '<span>' + I.t('totalWeightChange', { change: (sum.delta > 0 ? '+' : '') + I.formatNumber(sum.delta) }) + '</span>')
         + '</div>' + chart(w);
     } else if (sum.count === 1) {
-      h += '<div class="wstat"><span><b>' + sum.latest + 'g</b>' + esc(sum.latestOn.slice(5)) + '</span></div>'
-        + '<div class="hint">두 번 이상 재면 그래프가 그려집니다.</div>';
+      h += '<div class="wstat"><span><b>' + I.formatNumber(sum.latest) + 'g</b>' + esc(I.formatDate(sum.latestOn, { month: 'short', day: 'numeric' })) + '</span></div>'
+        + '<div class="hint">' + I.t('graphAfterTwo') + '</div>';
     } else {
-      h += '<div class="hint">아직 체중 기록이 없습니다.</div>';
+      h += '<div class="hint">' + I.t('noWeight') + '</div>';
     }
 
     const rng = speciesOf(S.animal).weightRange;
     h += '<div class="row2" style="margin-top:10px">'
-      + '<input class="in" id="w_g" type="number" step="0.1" placeholder="무게 (g)" inputmode="decimal">'
-      + '<input class="in" id="w_d" type="date" value="' + C.today() + '" aria-label="측정일">'
+      + '<input class="in" id="w_g" type="number" step="0.1" placeholder="' + esc(I.t('weightPlaceholder')) + '" inputmode="decimal">'
+      + '<input class="in" id="w_d" type="date" value="' + C.today() + '" aria-label="' + esc(I.t('measuredDate')) + '">'
       + '</div>'
-      + '<div class="hint">' + esc(speciesOf(S.animal).ko) + ' 는 보통 '
-      + rng[0] + '~' + rng[1] + 'g 범위입니다. 같은 날 다시 재면 덮어씁니다.</div>'
+      + '<div class="hint">' + esc(I.t('speciesWeightHint', { species: I.speciesName(S.animal.species), min: rng[0], max: rng[1] })) + '</div>'
       + '<div class="err" id="w_err"></div>'
-      + '<button class="btn wide" id="w_save" style="margin-top:6px">' + icon('bi-check-lg') + '체중 기록</button>'
+      + '<button class="btn wide" id="w_save" style="margin-top:6px">' + icon('bi-check-lg') + I.t('weightRecord') + '</button>'
       + '</div>';
     return h;
   }
@@ -331,7 +328,7 @@
     const gridVals = [lo, lo + span / 2, hi].map(v => Math.round(v * 10) / 10);
 
     return '<svg class="wchart" viewBox="0 0 ' + W + ' ' + H + '" role="img" '
-      + 'aria-label="체중 ' + gridVals[0] + 'g 에서 ' + gridVals[2] + 'g 사이 ' + w.length + '회 측정">'
+      + 'aria-label="' + esc(I.t('weightChartAria', { min: gridVals[0], max: gridVals[2], count: I.formatNumber(w.length) })) + '">'
       /* 종별 범위 띠 */
       + '<rect x="' + PADL + '" y="' + bandTop + '" width="' + (W - PADL - PADR)
       + '" height="' + Math.max(0, bandBot - bandTop) + '" fill="var(--leaf)" opacity=".07"/>'
@@ -357,16 +354,16 @@
     const cells = new Array(pad).fill(null).concat(days);
     const max = Math.max(1, Math.max.apply(null, days.map(d => d.count)));
 
-    return '<div class="pad"><div class="lbl">최근 12주</div>'
-      + '<div class="hint">칸 하나가 하루입니다. 진할수록 그날 남긴 기록이 많습니다.</div>'
+    return '<div class="pad"><div class="lbl">' + I.t('recent12Weeks') + '</div>'
+      + '<div class="hint">' + I.t('heatmapHint') + '</div>'
       + '<div class="heat">' + cells.map(function (d) {
           if (!d) return '<span class="hc pad"></span>';
           const lv = d.count === 0 ? 0 : Math.min(4, Math.ceil(d.count / max * 4));
-          return '<span class="hc l' + lv + '" title="' + d.date + ' · ' + d.count + '건"></span>';
+          return '<span class="hc l' + lv + '" title="' + I.formatDate(d.date) + ' · ' + I.t('countItems', { count: I.formatNumber(d.count) }) + '"></span>';
         }).join('') + '</div>'
-      + '<div class="heatlg"><span>적음</span>'
+      + '<div class="heatlg"><span>' + I.t('less') + '</span>'
       + [0, 1, 2, 3, 4].map(l => '<span class="hc l' + l + '"></span>').join('')
-      + '<span>많음</span></div></div>';
+      + '<span>' + I.t('more') + '</span></div></div>';
   }
 
   /* 최근 기록 — 지울 수 있게 */
@@ -375,23 +372,29 @@
       .sort((a, b) => a.done_date < b.done_date ? 1 : a.done_date > b.done_date ? -1 : (a.created_at < b.created_at ? 1 : -1))
       .slice(0, 40);
     if (!rows.length) {
-      return '<div class="pad"><div class="lbl">최근 기록</div><div class="empty">'
-        + icon('bi-journal') + '아직 기록이 없습니다.<br>위 <b>빠른 기록</b>을 눌러 오늘부터 남겨보세요.</div></div>';
+      return '<div class="pad"><div class="lbl">' + I.t('recentRecords') + '</div><div class="empty">'
+        + icon('bi-journal') + I.t('recentRecordsEmpty') + '</div></div>';
     }
     let last = '';
-    let h = '<div class="pad"><div class="lbl">최근 기록</div><div class="tl">';
+    let h = '<div class="pad"><div class="lbl">' + I.t('recentRecords') + '</div><div class="tl">';
     rows.forEach(function (r) {
       if (r.done_date !== last) {
         last = r.done_date;
-        const wd = C.WEEKDAY_KO[C.weekdayOf(r.done_date)];
-        h += '<div class="tld">' + esc(r.done_date.slice(5).replace('-', '. ')) + ' (' + wd + ')</div>';
+        const wd = I.weekdayShort(C.weekdayOf(r.done_date));
+        h += '<div class="tld">' + esc(I.formatDate(r.done_date, { month: 'short', day: 'numeric' })) + ' (' + wd + ')</div>';
       }
       const i = C.kindInfo(r.kind);
+      let title = r.title || r.detail || r.note || I.kindName(r.kind);
+      if (r.kind === 'symptom') {
+        title = (r.title === 'resolved' || r.title === '해소') ? I.t('resolved') : I.signName(r.detail);
+      } else if (r.title === i.ko) {
+        title = I.kindName(r.kind);
+      }
       h += '<div class="tlr">'
         + '<span class="kind" style="color:' + i.color + '">'
-        + '<i class="bi ' + i.icon + '" aria-hidden="true"></i>' + esc(i.ko) + '</span>'
-        + '<span class="tlt">' + esc(r.title || r.detail || r.note || '') + '</span>'
-        + '<button class="mini del" data-delrec="' + r.id + '" aria-label="이 기록 지우기">'
+        + '<i class="bi ' + i.icon + '" aria-hidden="true"></i>' + esc(I.kindName(r.kind)) + '</span>'
+        + '<span class="tlt">' + esc(title) + '</span>'
+        + '<button class="mini del" data-delrec="' + r.id + '" aria-label="' + esc(I.t('deleteRecordAria')) + '">'
         + icon('bi-x-lg') + '</button></div>';
     });
     return h + '</div></div>';
@@ -414,60 +417,56 @@
     const a = S.animal;
     const on = a.is_public === true;
     const url = a.share_token
-      ? location.origin + '/care/p.html?t=' + encodeURIComponent(a.share_token) : '';
+      ? location.origin + I.url('/care/p.html', { t: a.share_token }) : '';
 
-    let h = '<div class="pad"><div class="lbl">공유 · QR</div>'
-      + '<div class="hint">주소나 QR 을 받은 사람이 이 개체를 볼 수 있습니다. '
-      + '분양·판매 기능이 아니라 <b>보여주기 위한 페이지</b>입니다.</div>'
+    let h = '<div class="pad"><div class="lbl">' + I.t('shareQr') + '</div>'
+      + '<div class="hint">' + I.t('shareHint') + '</div>'
 
       + '<div class="shareon">'
       + '<button class="sw' + (on ? ' on' : '') + '" id="sh_toggle" role="switch" '
-      + 'aria-checked="' + (on ? 'true' : 'false') + '" aria-label="공개"></button>'
-      + '<span class="swl">' + (on ? '공개 중' : '비공개')
-      + '<small>' + (on ? '주소를 아는 사람만 볼 수 있습니다 (검색에는 안 뜹니다)'
-                        : '켜면 공유 주소가 만들어집니다') + '</small></span></div>'
+      + 'aria-checked="' + (on ? 'true' : 'false') + '" aria-label="' + esc(I.t('publicAria')) + '"></button>'
+      + '<span class="swl">' + (on ? I.t('publicOn') : I.t('private'))
+      + '<small>' + (on ? I.t('publicKnownOnly') : I.t('publicCreatesUrl')) + '</small></span></div>'
 
-      + '<div class="lbl2"><label for="sh_note">공개 소개글</label></div>'
-      + '<textarea class="in" id="sh_note" placeholder="이 개체를 소개하는 글 (선택)">'
+      + '<div class="lbl2"><label for="sh_note">' + I.t('publicIntro') + '</label></div>'
+      + '<textarea class="in" id="sh_note" placeholder="' + esc(I.t('publicIntroPlaceholder')) + '">'
       + esc(a.public_note || '') + '</textarea>'
       /* 비공개 메모와 다른 칸이라는 것을 반드시 알려야 합니다. 같은 칸으로
          오해하면 개인 메모를 적어두고 공개하는 사고가 납니다. */
       + '<div class="hint">' + icon('bi-shield-check')
-      + ' 개체 정보의 <b>메모</b>는 공개되지 않습니다. 공개 화면에는 이 칸만 나갑니다.</div>'
+      + esc(I.t('privateMemoNotice')) + '</div>'
 
       + '<label class="tokchk" style="display:flex;align-items:center;gap:8px;margin:10px 0;font-size:13px">'
       + '<input type="checkbox" id="sh_breeder"' + (a.public_breeder ? ' checked' : '') + '>'
-      + '내 닉네임을 브리더로 표시</label>'
-      + '<div class="hint">계정에 닉네임을 적어두었을 때만 나옵니다. 이메일은 어떤 경우에도 나가지 않습니다.</div>'
+      + I.t('showBreeder') + '</label>'
+      + '<div class="hint">' + I.t('breederHint') + '</div>'
 
       /* 링크 공유와 목록 노출은 전혀 다른 결정이라 따로 묻습니다.
          분양 상대 한 사람에게 보여주려고 켠 것이 갤러리에 함께 올라가면
          주인은 그런 선택을 한 줄도 모릅니다. */
       + '<label class="tokchk" style="display:flex;align-items:center;gap:8px;margin:12px 0 0;font-size:13px">'
       + '<input type="checkbox" id="sh_listed"' + (a.is_listed ? ' checked' : '') + '>'
-      + '<b>다른 집사들의 개체</b> 목록에도 올리기</label>'
-      + '<div class="hint">끄면 <b>주소를 아는 사람만</b> 볼 수 있습니다. 켜면 '
-      + '<a href="/care/gallery.html" target="_blank" rel="noopener">공개 목록</a>에서 누구나 찾아볼 수 있습니다.</div>'
+      + I.t('listGallery') + '</label>'
+      + '<div class="hint">' + I.t('galleryListingHint') + ' '
+      + '<a href="' + I.url('/care/gallery.html') + '" target="_blank" rel="noopener">' + I.t('galleryHeader') + '</a></div>'
 
       + '<div class="err" id="sh_err"></div>'
       + '<button class="btn wide" id="sh_save" style="margin-top:10px">'
-      + icon('bi-check-lg') + '공개 설정 저장</button>';
+      + icon('bi-check-lg') + I.t('saveSharing') + '</button>';
 
     if (on && url) {
-      h += '<div class="lbl2">공유 주소</div>'
-        + '<div class="shareurl"><input id="sh_url" value="' + esc(url) + '" readonly aria-label="공유 주소">'
-        + '<button class="btn sm" id="sh_copy">' + icon('bi-clipboard') + '복사</button></div>'
+      h += '<div class="lbl2">' + I.t('shareUrl') + '</div>'
+        + '<div class="shareurl"><input id="sh_url" value="' + esc(url) + '" readonly aria-label="' + esc(I.t('shareUrl')) + '">'
+        + '<button class="btn sm" id="sh_copy">' + icon('bi-clipboard') + I.t('copy') + '</button></div>'
         + '<div class="row2" style="margin-top:8px">'
         + '<a class="btn ghost sm" href="' + esc(url) + '" target="_blank" rel="noopener" style="text-decoration:none">'
-        + icon('bi-box-arrow-up-right') + '열어보기</a>'
-        + '<button class="btn ghost sm" id="sh_rotate">' + icon('bi-arrow-clockwise') + '주소 새로 만들기</button>'
+        + icon('bi-box-arrow-up-right') + I.t('open') + '</a>'
+        + '<button class="btn ghost sm" id="sh_rotate">' + icon('bi-arrow-clockwise') + I.t('rotateUrl') + '</button>'
         + '</div>'
         + '<div id="sh_qr"></div>'
         + '<div class="hint" style="margin-top:12px">' + icon('bi-exclamation-triangle')
-        + ' 사진은 비공개 저장소에서 불러옵니다. 공개를 끄면 새 열람은 막히지만, '
-        + '<b>이미 발급된 임시 사진 주소는 최대 1시간 동안 남을 수 있습니다.</b></div>'
-        + '<div class="hint">주소를 새로 만들면 <b>이전 주소는 즉시 열리지 않습니다.</b> '
-        + '이미 나눠준 QR 도 함께 죽습니다.</div>';
+        + I.t('photoSignedUrlWarning') + '</div>'
+        + '<div class="hint">' + I.t('oldUrlWarning') + '</div>';
     }
     return h + '</div>';
   }
@@ -491,10 +490,10 @@
   async function drawQr() {
     const box = $('sh_qr');
     if (!box || !S.animal.share_token || S.animal.is_public !== true) return;
-    const url = location.origin + '/care/p.html?t=' + encodeURIComponent(S.animal.share_token);
+    const url = location.origin + I.url('/care/p.html', { t: S.animal.share_token });
     const ok = await ensureQr();
     if (!ok) {
-      box.innerHTML = '<div class="hint">QR 을 만들지 못했습니다. 위 주소를 복사해 쓰세요.</div>';
+      box.innerHTML = '<div class="hint">' + I.t('qrFailure') + '</div>';
       return;
     }
     /* typeNumber 0 = 내용 길이에 맞춰 자동. 'M' 은 흔히 쓰는 오류정정 수준입니다. */
@@ -502,7 +501,7 @@
     qr.addData(url);
     qr.make();
     box.innerHTML = '<div class="qrbox">' + qr.createImgTag(5, 8)
-      + '<div class="qcap">이 QR 을 찍으면 위 주소가 열립니다</div></div>';
+      + '<div class="qcap">' + I.t('qrCaption') + '</div></div>';
   }
 
   /* 이 개체의 반복 계획 */
@@ -510,9 +509,9 @@
     const mine = S.plans.filter(p => p.animal_id === S.id);
     const shared = S.plans.filter(p => !p.animal_id);
     if (!mine.length && !shared.length) {
-      return '<div class="pad"><div class="lbl">반복 계획</div><div class="empty">'
-        + icon('bi-arrow-repeat') + '이 개체에 걸린 계획이 없습니다.<br>'
-        + '<a href="/care/#plans">케어 화면</a>에서 종별 기본값을 넣을 수 있어요.</div></div>';
+      return '<div class="pad"><div class="lbl">' + I.t('repeatPlans') + '</div><div class="empty">'
+        + icon('bi-arrow-repeat') + I.t('noAnimalPlans')
+        + '<div style="margin-top:10px"><a href="' + I.url('/care/#plans') + '">' + I.t('care') + '</a></div></div></div>';
     }
     const row = p => {
       const i = C.kindInfo(p.kind), st = C.planStatus(p, C.today(),
@@ -520,14 +519,14 @@
       return '<div class="card">'
         + '<div class="thumb" style="background:' + i.color + '1a;border-color:' + i.color + '33;color:' + i.color + '">'
         + '<i class="bi ' + i.icon + '" aria-hidden="true"></i></div>'
-        + '<div class="info"><div class="nm">' + esc(p.title || i.ko)
-        + (p.animal_id ? '' : '<span class="chip">공통</span>') + '</div>'
-        + '<div class="ms">' + esc(C.cycleLabel(p))
-        + (st.due ? ' · <b style="color:var(--teal)">오늘</b>' : st.next ? ' · 다음 ' + esc(st.next.slice(5)) : '')
-        + (st.overdue ? ' · <b style="color:var(--warn-fg)">' + st.overdue + '일 밀림</b>' : '')
+        + '<div class="info"><div class="nm">' + esc(p.title ? I.presetTitle(p.title) : I.kindName(p.kind))
+        + (p.animal_id ? '' : '<span class="chip">' + I.t('common') + '</span>') + '</div>'
+        + '<div class="ms">' + esc(I.cycleLabel(p))
+        + (st.due ? ' · <b style="color:var(--teal)">' + I.t('today') + '</b>' : st.next ? ' · ' + I.t('nextDate', { date: I.formatDate(st.next, { month: 'short', day: 'numeric' }) }) : '')
+        + (st.overdue ? ' · <b style="color:var(--warn-fg)">' + I.t('daysOverdue', { count: I.formatNumber(st.overdue) }) + '</b>' : '')
         + '</div></div></div>';
     };
-    return '<div class="pad"><div class="lbl">반복 계획</div>'
+    return '<div class="pad"><div class="lbl">' + I.t('repeatPlans') + '</div>'
       + mine.map(row).join('') + shared.map(row).join('') + '</div>';
   }
 
@@ -537,9 +536,9 @@
   function render() {
     const a = S.animal;
     const sp = speciesOf(a);
-    $('aname').textContent = a.name || '이름 없음';
-    $('asub').innerHTML = sp.icon + ' ' + esc(sp.ko)
-      + (a.sex === 'male' ? ' · 수컷 ♂' : a.sex === 'female' ? ' · 암컷 ♀' : '')
+    $('aname').textContent = a.name || I.t('unnamed');
+    $('asub').innerHTML = sp.icon + ' ' + esc(I.speciesName(a.species))
+      + (a.sex === 'male' ? ' · ' + I.t('sexMale') + ' ♂' : a.sex === 'female' ? ' · ' + I.t('sexFemale') + ' ♀' : '')
       + (a.note ? ' · ' + esc(a.note) : '');
 
     $('body').innerHTML =
@@ -555,8 +554,7 @@
       + planList()
       + shareBlock()
       + '<div class="hint" style="text-align:center;margin-top:18px">'
-      + '여기 숫자는 <b>적어 넣은 기록</b>을 센 것입니다. 했는데 안 적으면 안 한 것으로 나옵니다.<br>'
-      + '건강 판단의 근거로 쓰지 마시고, 이상이 의심되면 수의사와 상담하세요.</div>';
+      + I.t('recordDisclaimer') + '</div>';
 
     /* 사진은 비공개 버킷이라 서명 주소를 받아야 보입니다 (assets/photo.js) */
     Photo.hydrate($('body'), A.sb);
@@ -570,10 +568,10 @@
 
     if (d.carePhotoView) return window.CarePhotos.swap(t);
     if (d.quick) {
-      const i = C.kindInfo(d.quick);
-      return act(() => A.addRecord({ animal_id: S.id, kind: d.quick, title: i.ko }), i.ko + ' 기록됨');
+      return act(() => A.addRecord({ animal_id: S.id, kind: d.quick, title: null }),
+        I.t('recorded', { name: I.kindName(d.quick) }));
     }
-    if (d.delrec) return act(() => A.deleteRecord(d.delrec), '지웠습니다');
+    if (d.delrec) return act(() => A.deleteRecord(d.delrec), I.t('removed'));
     if (d.upgen) { S.upGen = parseInt(d.upgen, 10); return render(); }
 
     /* ── 공유 ── */
@@ -584,43 +582,42 @@
       t.setAttribute('aria-checked', t.classList.contains('on') ? 'true' : 'false');
       const l = t.parentNode.querySelector('.swl');
       const on = t.classList.contains('on');
-      l.firstChild.textContent = on ? '공개 중' : '비공개';
+      l.firstChild.textContent = on ? I.t('publicOn') : I.t('private');
       l.querySelector('small').textContent = on
-        ? '아래 저장을 눌러야 실제로 공개됩니다'
-        : '아래 저장을 눌러야 실제로 닫힙니다';
+        ? I.t('publicSaveNeeded') : I.t('privateSaveNeeded');
       return;
     }
     if (t.id === 'sh_save') {
       const want = $('sh_toggle').classList.contains('on');
       return act(() => A.setShare(S.id, want, $('sh_note').value, $('sh_breeder').checked, false, $('sh_listed').checked),
-                 want ? '공개했습니다' : '비공개로 바꿨습니다');
+                 want ? I.t('madePublic') : I.t('madePrivate'));
     }
     if (t.id === 'sh_rotate') {
-      if (!confirm('주소를 새로 만들면 이전 주소와 이미 나눠준 QR 이 즉시 열리지 않습니다.\n계속할까요?')) return;
+      if (!confirm(I.t('rotateConfirm'))) return;
       return act(() => A.setShare(S.id, true, $('sh_note').value, $('sh_breeder').checked, true, $('sh_listed').checked),
-                 '새 주소를 만들었습니다');
+                 I.t('rotated'));
     }
     if (t.id === 'sh_copy') {
       const el = $('sh_url');
       el.select();
-      const done = () => toast('주소를 복사했습니다');
+      const done = () => toast(I.t('copied'));
       if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(el.value).then(done, () => toast('복사하지 못했습니다. 길게 눌러 복사해 주세요.'));
+        navigator.clipboard.writeText(el.value).then(done, () => toast(I.t('copyFailed')));
       } else {
         /* 구형 브라우저와 일부 인앱 브라우저용. 실패해도 값은 선택돼 있어
            사용자가 직접 복사할 수 있습니다. */
         try { document.execCommand('copy'); done(); }
-        catch (e) { toast('복사하지 못했습니다. 길게 눌러 복사해 주세요.'); }
+        catch (e) { toast(I.t('copyFailed')); }
       }
       return;
     }
     if (t.id === 'w_save') {
       const g = parseFloat($('w_g').value);
-      if (!(g > 0)) { $('w_err').textContent = '무게를 적어주세요.'; return; }
+      if (!(g > 0)) { $('w_err').textContent = I.t('weightRequired'); return; }
       const rng = speciesOf(S.animal).weightRange;
       if ((g < rng[0] || g > rng[1]) &&
-          !confirm(g + 'g 은 ' + speciesOf(S.animal).ko + ' 기준(' + rng[0] + '~' + rng[1] + 'g)을 벗어납니다.\n그대로 기록할까요?')) return;
-      return act(() => A.saveWeight(S.id, g, $('w_d').value), '체중을 기록했습니다');
+          !confirm(I.t('weightOutOfRange', { grams: g, species: I.speciesName(S.animal.species), min: rng[0], max: rng[1] }))) return;
+      return act(() => A.saveWeight(S.id, g, $('w_d').value), I.t('weightSaved'));
     }
   });
 
@@ -630,28 +627,28 @@
   function gate(iconName, title, body, href, label) {
     $('body').innerHTML = '<div class="gate"><div class="pad">'
       + '<div class="gicon">' + icon(iconName) + '</div>'
-      + '<div class="lbl">' + title + '</div><div class="hint">' + body + '</div>'
-      + '<a class="btn wide" style="text-decoration:none;margin-top:16px" href="' + href + '">'
-      + icon('bi-arrow-right') + label + '</a></div></div>';
+      + '<div class="lbl">' + esc(title) + '</div><div class="hint">' + esc(body) + '</div>'
+      + '<a class="btn wide" style="text-decoration:none;margin-top:16px" href="' + esc(I.url(href)) + '">'
+      + icon('bi-arrow-right') + esc(label) + '</a></div></div>';
   }
 
   async function boot() {
-    if (!A.ready) { gate('bi-plug', '백엔드가 설정되지 않았습니다', 'assets/studio-config.js 를 확인해 주세요.', '/care/', '돌아가기'); return; }
+    if (!A.ready) { gate('bi-plug', I.t('backendTitle'), I.t('backendBody'), '/care/', I.t('back')); return; }
 
     S.id = new URLSearchParams(location.search).get('id');
-    if (!S.id) { gate('bi-question-circle', '개체를 찾을 수 없습니다', '주소에 개체 번호가 없습니다.', '/care/', '케어 목록으로'); return; }
+    if (!S.id) { gate('bi-question-circle', I.t('animalNotFound'), I.t('animalIdMissing'), '/care/', I.t('careList')); return; }
 
     await A.boot();
     A.logVisit();
-    if (!A.user) { gate('bi-person-lock', '로그인이 필요합니다', '케어 기록은 계정에 저장됩니다.', '/gecko/login.html', '로그인'); return; }
-    if (!A.premium.active) { gate('bi-gem', '프리미엄 기능입니다', '개체별 기록과 통계를 볼 수 있습니다.', '/gecko/login.html', '프리미엄 코드 입력'); return; }
+    if (!A.user) { gate('bi-person-lock', I.t('loginTitle'), I.t('loginBody'), '/gecko/login.html', I.t('loginAction')); return; }
+    if (!A.premium.active) { gate('bi-gem', I.t('premiumTitle'), I.t('premiumBody'), '/gecko/login.html', I.t('premiumAction')); return; }
 
     try {
       await loadAll();
-    } catch (e) { gate('bi-exclamation-triangle', '불러오지 못했습니다', esc(A.friendly(e)), '/care/', '케어 목록으로'); return; }
+    } catch (e) { gate('bi-exclamation-triangle', I.t('loadFailed'), I.friendly(e), '/care/', I.t('careList')); return; }
 
     /* 남의 개체 id 를 주소에 적어도 RLS 가 걸러 목록에 없습니다. */
-    if (!S.animal) { gate('bi-question-circle', '개체를 찾을 수 없습니다', '지워졌거나 내 개체가 아닙니다.', '/care/', '케어 목록으로'); return; }
+    if (!S.animal) { gate('bi-question-circle', I.t('animalNotFound'), I.t('animalUnavailable'), '/care/', I.t('careList')); return; }
     render();
   }
 

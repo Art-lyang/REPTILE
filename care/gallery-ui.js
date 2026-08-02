@@ -14,6 +14,7 @@
   'use strict';
 
   const C = window.CareCore;
+  const I = window.CareI18n;
   const $ = id => document.getElementById(id);
   const SB = (typeof SUPABASE_URL !== 'undefined' && window.supabase)
     ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON) : null;
@@ -32,15 +33,15 @@
     const sp = C.SPECIES[a.species] || C.SPECIES.other;
     const sex = a.sex === 'male' ? '♂' : a.sex === 'female' ? '♀' : '';
     const morphs = (a.morphs || []).slice(0, 3);
-    return '<a class="gcard" href="p.html?t=' + encodeURIComponent(a.token) + '">'
+    return '<a class="gcard" href="' + I.url('/care/p.html', { t: a.token }) + '">'
       + '<div class="gphoto">'
       + (a.photo ? Photo.tag(a.photo, '')
                  : '<span class="gnone">' + sp.icon + '</span>')
       + '</div>'
       + '<div class="ginfo">'
-      + '<div class="gname">' + esc(a.name || '이름 없음')
+      + '<div class="gname">' + esc(a.name || I.t('unnamed'))
       + (sex ? ' <span class="gsex">' + sex + '</span>' : '') + '</div>'
-      + '<div class="gsp">' + sp.icon + ' ' + esc(sp.ko) + '</div>'
+      + '<div class="gsp">' + sp.icon + ' ' + esc(I.speciesName(a.species)) + '</div>'
       + (morphs.length ? '<div class="gmorphs">' + morphs.map(m => '<span>' + esc(m) + '</span>').join('')
           + ((a.morphs || []).length > 3 ? '<span class="gmore">+' + ((a.morphs || []).length - 3) + '</span>' : '')
           + '</div>' : '')
@@ -49,30 +50,29 @@
 
   async function load() {
     if (!SB) {
-      $('body').innerHTML = '<div class="empty">' + icon('bi-plug') + '백엔드가 설정되지 않았습니다.</div>';
+      $('body').innerHTML = '<div class="empty">' + icon('bi-plug') + I.t('backendMissing') + '</div>';
       return;
     }
     if (busy) return;
     busy = true;
-    $('body').innerHTML = '<div class="empty">불러오는 중…</div>';
+    $('body').innerHTML = '<div class="empty">' + I.t('loading') + '</div>';
     try {
       const r = await SB.rpc('public_animals', { p_species: species || null, p_limit: 48, p_offset: 0 });
       if (r.error) throw r.error;
       const list = r.data || [];
       if (!list.length) {
         $('body').innerHTML = '<div class="pad"><div class="empty">' + icon('bi-binoculars')
-          + '아직 공개된 개체가 없습니다.<br>'
-          + '<b>크리처 케어로그</b>에서 개체를 공개하면 여기에 함께 보입니다.</div></div>';
+          + I.t('galleryEmpty') + '</div></div>';
       } else {
         $('body').innerHTML = '<div class="ggrid">' + list.map(card).join('') + '</div>'
           + '<div class="hint" style="text-align:center;margin-top:16px">'
-          + '주인이 공개하기로 한 개체만 보입니다. 사육 기록·체중 같은 개인 기록은 포함되지 않습니다.</div>';
+          + I.t('galleryPrivacy') + '</div>';
         /* 사진은 비공개 버킷이라 서명 주소를 받아야 보입니다 (assets/photo.js) */
         Photo.hydrate($('body'), SB);
       }
     } catch (e) {
       $('body').innerHTML = '<div class="empty">' + icon('bi-exclamation-triangle')
-        + '불러오지 못했습니다. 잠시 뒤 다시 시도해 주세요.</div>';
+        + I.t('galleryLoadError') + '</div>';
     } finally {
       busy = false;
     }

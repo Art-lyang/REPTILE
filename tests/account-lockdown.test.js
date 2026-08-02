@@ -43,7 +43,7 @@ test('Given the public gallery is empty, when its empty state renders, then it d
   );
   assert.match(
     read('care/gallery.html'),
-    /gallery-ui\.js\?v=20260731a/,
+    /gallery-ui\.js\?v=20260802d/,
     'the gallery must request the fixed script with a new cache key',
   );
 });

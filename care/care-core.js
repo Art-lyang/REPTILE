@@ -336,11 +336,15 @@ function icsRrule(plan) {
 
 /* UID 는 계획 id 로 고정합니다. 같은 계획을 두 번 내려받아도 캘린더가 같은
    일정으로 알아보고 덮어씁니다. 매번 새 값을 넣으면 중복 일정이 쌓입니다. */
-function icsEvent(plan, animalName, host) {
+function icsEvent(plan, animalName, host, labels) {
+  labels = labels || {};
   const stamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
   const start = (plan.start_date || today()).replace(/-/g, '');
   const info = kindInfo(plan.kind);
-  const title = (plan.title || info.ko) + (animalName ? ' · ' + animalName : '');
+  const baseTitle = plan.title
+    ? (labels.planTitle ? labels.planTitle(plan.title) : plan.title)
+    : (labels.kindName ? labels.kindName(plan.kind) : info.ko);
+  const title = baseTitle + (animalName ? ' · ' + animalName : '');
 
   const L = [];
   L.push('BEGIN:VEVENT');
@@ -360,8 +364,8 @@ function icsEvent(plan, animalName, host) {
   /* 아이콘 폰트가 없는 곳으로 나가는 값이라 emoji 를 씁니다. icon(=bi 클래스)을
      넣으면 캘린더에 'bi-egg-fried 급여' 라고 뜹니다. */
   L.push('SUMMARY:' + icsEscape(info.emoji + ' ' + title));
-  if (plan.detail) L.push('DESCRIPTION:' + icsEscape(plan.detail));
-  L.push('CATEGORIES:' + icsEscape(info.ko));
+  if (plan.detail) L.push('DESCRIPTION:' + icsEscape(labels.planDetail ? labels.planDetail(plan.detail) : plan.detail));
+  L.push('CATEGORIES:' + icsEscape(labels.kindName ? labels.kindName(plan.kind) : info.ko));
 
   /* 알림. 시각이 정해진 일정은 정각에, 종일 일정은 그날 아침 9시에 울립니다.
      (종일 일정의 DTSTART 는 자정이라 PT9H 가 곧 아침 9시입니다) */
@@ -378,11 +382,13 @@ function icsEvent(plan, animalName, host) {
    UID 를 먹이 id 로 고정합니다. 소진 예상일이 바뀐 뒤 다시 내려받으면 캘린더가
    같은 일정으로 알아보고 날짜를 옮깁니다. 매번 새 UID 를 주면 옛 날짜의 안내가
    그대로 남아, 이미 산 것을 또 사라고 알리게 됩니다. */
-function icsOrderEvent(order, host) {
+function icsOrderEvent(order, host, labels) {
+  labels = labels || {};
   const stamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
   const day = String(order.orderOn).replace(/-/g, '');
-  const title = '🛒 ' + order.name + ' 주문';
-  const desc = (order.emptyOn ? order.emptyOn + ' 쯤 떨어질 것으로 보입니다.' : '')
+  const title = labels.orderTitle ? labels.orderTitle(order.name) : '🛒 ' + order.name + ' 주문';
+  const desc = (order.emptyOn ? (labels.orderDescription
+    ? labels.orderDescription(order.emptyOn) : order.emptyOn + ' 쯤 떨어질 것으로 보입니다.') : '')
              + (order.buyUrl ? '\n' + order.buyUrl : '');
 
   const L = [];
@@ -394,7 +400,7 @@ function icsOrderEvent(order, host) {
   L.push('SUMMARY:' + icsEscape(title));
   if (desc) L.push('DESCRIPTION:' + icsEscape(desc));
   if (order.buyUrl) L.push('URL:' + icsEscape(order.buyUrl));
-  L.push('CATEGORIES:' + icsEscape('주문'));
+  L.push('CATEGORIES:' + icsEscape(labels.orderCategory || '주문'));
   L.push('BEGIN:VALARM');
   L.push('ACTION:DISPLAY');
   L.push('DESCRIPTION:' + icsEscape(title));
@@ -406,23 +412,23 @@ function icsOrderEvent(order, host) {
 
 /* 계획 여러 개를 캘린더 파일 하나로. animalNames 는 { 개체id: 이름 }
    orders 는 주문 안내 목록 (선택) — [{id, name, orderOn, emptyOn, buyUrl}] */
-function buildIcs(plans, animalNames, host, orders) {
+function buildIcs(plans, animalNames, host, orders, labels) {
   const names = animalNames || {};
   let L = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//ryangstudio//care//KO',
+    'PRODID:-//ryangstudio//care//' + ((labels && labels.language) || 'KO'),
     'CALSCALE:GREGORIAN',
     'METHOD:PUBLISH',
-    'X-WR-CALNAME:' + icsEscape('사육 케어')
+    'X-WR-CALNAME:' + icsEscape((labels && labels.calendarName) || '사육 케어')
   ];
   (plans || []).forEach(function (p) {
     if (p.is_active === false) return;
-    L = L.concat(icsEvent(p, p.animal_id ? names[p.animal_id] : null, host));
+    L = L.concat(icsEvent(p, p.animal_id ? names[p.animal_id] : null, host, labels));
   });
   (orders || []).forEach(function (o) {
     if (!o || !o.orderOn) return;
-    L = L.concat(icsOrderEvent(o, host));
+    L = L.concat(icsOrderEvent(o, host, labels));
   });
   L.push('END:VCALENDAR');
   /* 규격이 CRLF 를 요구합니다. LF 만 쓰면 읽는 앱에 따라 통째로 실패합니다. */
@@ -487,27 +493,27 @@ function weeklySummary(records, weights, endDate) {
   const total = rs.length;
 
   if (total === 0 && ws.length === 0) {
-    notes.push({ level: 'info', text: '이번 주에는 기록이 없습니다. 오늘 상태를 한 줄만 남겨두면 다음 주에 비교할 수 있습니다.' });
+    notes.push({ level: 'info', code: 'empty', values: {}, text: '이번 주에는 기록이 없습니다. 오늘 상태를 한 줄만 남겨두면 다음 주에 비교할 수 있습니다.' });
   } else {
     if (weightAware && delta != null && delta < -1) {
-      notes.push({ level: 'warn', text: '체중이 ' + Math.abs(delta) + 'g 줄었습니다. 급여량과 활동 상태를 함께 확인해 보세요.' });
+      notes.push({ level: 'warn', code: 'weightDown', values: { grams: Math.abs(delta) }, text: '체중이 ' + Math.abs(delta) + 'g 줄었습니다. 급여량과 활동 상태를 함께 확인해 보세요.' });
     }
     if (weightAware && (!lastWeigh || daysBetween(lastWeigh, end) >= 10)) {
-      notes.push({ level: 'info', text: '체중 기록이 뜸합니다. 주 1회 정도 재두면 변화를 알아보기 쉽습니다.' });
+      notes.push({ level: 'info', code: 'weightSparse', values: {}, text: '체중 기록이 뜸합니다. 주 1회 정도 재두면 변화를 알아보기 쉽습니다.' });
     }
     if (feed === 0) {
-      notes.push({ level: 'warn', text: '이번 주 급여 기록이 없습니다. 실제로 걸렀는지, 적는 것만 걸렀는지 확인해 보세요.' });
+      notes.push({ level: 'warn', code: 'noFeed', values: {}, text: '이번 주 급여 기록이 없습니다. 실제로 걸렀는지, 적는 것만 걸렀는지 확인해 보세요.' });
     }
     const lastWater = lastOf('water');
     if (!lastWater || daysBetween(lastWater, end) >= 2) {
-      notes.push({ level: 'info', text: '물 교체 기록이 이틀 넘게 없습니다. 신선한 물이 있는지 확인해 보세요.' });
+      notes.push({ level: 'info', code: 'waterSparse', values: {}, text: '물 교체 기록이 이틀 넘게 없습니다. 신선한 물이 있는지 확인해 보세요.' });
     }
     const lastClean = lastOf('clean');
     if (!lastClean || daysBetween(lastClean, end) >= 10) {
-      notes.push({ level: 'info', text: '청소 기록이 열흘 넘게 없습니다. 청소 주기를 점검해 보세요.' });
+      notes.push({ level: 'info', code: 'cleanSparse', values: {}, text: '청소 기록이 열흘 넘게 없습니다. 청소 주기를 점검해 보세요.' });
     }
     if (notes.length === 0) {
-      notes.push({ level: 'good', text: '이번 주 기록이 고르게 남아 있습니다.' });
+      notes.push({ level: 'good', code: 'balanced', values: {}, text: '이번 주 기록이 고르게 남아 있습니다.' });
     }
   }
 
@@ -699,8 +705,9 @@ function signsFor(species) {
   });
 }
 
-/* 증세 기록은 kind='symptom', detail=코드, title='관찰' 또는 '해소' 입니다.
-   코드별로 가장 최근 기록이 '관찰' 이면 아직 보고 있는 것으로 봅니다.
+/* 증세 기록은 kind='symptom', detail=코드, title='observing' 또는 'resolved' 입니다.
+   예전 행의 '관찰'·'해소'도 함께 읽습니다. 코드별로 가장 최근 기록이 해소가
+   아니면 아직 보고 있는 것으로 봅니다.
 
    상태 칼럼을 따로 두지 않은 이유 — 상태는 기록에서 나옵니다. 칼럼으로 두면
    기록과 상태가 어긋날 수 있고, 그때 어느 쪽이 맞는지 알 수 없습니다. */
@@ -715,7 +722,7 @@ function signStatus(records, endDate) {
   });
   return Object.keys(by).map(function (code) {
     const g = by[code];
-    g.open = g.latestTitle !== '해소';
+    g.open = g.latestTitle !== 'resolved' && g.latestTitle !== '해소';
     g.days = daysBetween(g.first, end) + 1;
     g.ago = daysBetween(g.last, end);
     return g;

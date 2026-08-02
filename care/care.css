@@ -107,6 +107,12 @@ header .sub{
 }
 .blink:hover{background:var(--card2)}
 .blink i{font-size:15px}
+.care-lang{position:relative}
+.care-lang select{
+  position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;
+  border:0;font-family:inherit
+}
+.pubtools{display:flex;justify-content:flex-end;margin-bottom:10px}
 @media (max-width:520px){
   .blink span{display:none}          /* 좁으면 아이콘만 */
   .blink{padding:0 12px}

@@ -297,6 +297,15 @@ declared* 로 페이지 전체가 죽습니다. 그래서 `admin-crested.js` 는
 | `care/care.css` | 스타일 (계산기와 색만 맞추고 규칙은 따로) |
 | `care/manifest.webmanifest` | 홈 화면에 추가하면 앱처럼 뜨게 |
 | `supabase_v16.sql` | `species` 칼럼 + 케어 표 3개 |
+| `supabase_v31.sql` | 형질별 평가, 브리딩 목표, 페어링 단계와 소유권 검증 |
+
+### 브리딩 목표 저장 경계 `[구현]`
+
+`breeding_projects`는 로그인한 사용자가 자기 행만 직접 읽고 쓰는 표입니다.
+목표 JSON은 version 1, `line_fix`/`cross` 모드, 형질 수·중복·점수·크기를
+DB에서 검증합니다. `pairings.project_id`를 연결할 때도 프로젝트와 페어링의
+소유자와 종이 모두 같아야 하며, 프로젝트를 지우면 페어링 기록은 남고 링크만
+해제됩니다. `animals.line_trait_scores`는 형질별 1~5점만 저장합니다.
 
 ### 왜 종을 가리지 않게 만들었나 `[구현]`
 
@@ -387,3 +396,4 @@ weekdays={1,4}   →  FREQ=WEEKLY;BYDAY=MO,TH
 | 날짜 | 내용 |
 |---|---|
 | 2026-07-29 | 케어 관리 `/care/` 추가. `supabase_v16.sql`, 종 무관 구조, `.ics` 내보내기 |
+| 2026-07-31 | `supabase_v31.sql` 추가. 형질별 평가와 인증 사용자 전용 브리딩 목표·페어링 연결 |

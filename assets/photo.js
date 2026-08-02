@@ -58,7 +58,9 @@
     /* 이미 서명된 주소가 다시 들어오는 경우 — 물음표 뒤를 떼어냅니다 */
     var q = p.indexOf('?');
     if (q >= 0) p = p.slice(0, q);
-    return p ? decodeURIComponent(p) : null;
+    if (!p) return null;
+    try { return decodeURIComponent(p); }
+    catch (e) { return null; }
   }
 
   /* 화면에 그릴 <img> 태그. 아직 주소를 모르므로 data-ph 에 넣어두고
@@ -150,5 +152,38 @@
     el.style.display = 'none';
   }
 
-  w.Photo = { BUCKET: BUCKET, TTL: TTL, pathOf: pathOf, tag: tag, sign: sign, hydrate: hydrate };
+  async function removeMany(sb, urls) {
+    var seen = {}, pairs = [], ignored = [];
+    (urls || []).forEach(function (url) {
+      var path = pathOf(url);
+      if (!path) { ignored.push(url); return; }
+      if (seen[path]) return;
+      seen[path] = true;
+      pairs.push([url, path]);
+    });
+    if (!pairs.length) return { removed: [], ignored: ignored, failed: [] };
+    if (!sb || !sb.storage) {
+      return { removed: [], ignored: ignored, failed: pairs.map(function (pair) { return pair[0]; }) };
+    }
+    try {
+      var result = await sb.storage.from(BUCKET).remove(pairs.map(function (pair) { return pair[1]; }));
+      if (result.error) {
+        return { removed: [], ignored: ignored, failed: pairs.map(function (pair) { return pair[0]; }) };
+      }
+      pairs.forEach(function (pair) { delete cache[pair[1]]; });
+      return { removed: pairs.map(function (pair) { return pair[0]; }), ignored: ignored, failed: [] };
+    } catch (e) {
+      return { removed: [], ignored: ignored, failed: pairs.map(function (pair) { return pair[0]; }) };
+    }
+  }
+
+  w.Photo = {
+    BUCKET: BUCKET,
+    TTL: TTL,
+    pathOf: pathOf,
+    tag: tag,
+    sign: sign,
+    hydrate: hydrate,
+    removeMany: removeMany
+  };
 })(window);

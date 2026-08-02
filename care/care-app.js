@@ -121,10 +121,8 @@ const CareApp = (function () {
        올리기 전에 줄입니다. 폰 사진은 4~12MB 라 그대로 두면 무료 저장소가
        금방 차고, 목록에서 20장을 받느라 한참 걸립니다.
 
-       ⚠️ 이 버킷은 공개입니다. 주소를 아는 사람은 로그인 없이 사진을 볼 수
-          있습니다. 공개 프로필이 사진을 보여주려면 그래야 하고, 대신
-          '공개를 꺼도 사진 주소를 이미 받은 사람은 계속 본다' 는 것을
-          공유 설정 화면에 적어두었습니다. */
+       버킷은 비공개입니다. 본인 사진과 공개 프로필에 연결된 사진만
+       Storage 정책으로 읽을 수 있고, 화면에는 만료되는 서명 주소를 씁니다. */
     async uploadPhoto(file, onStep) {
       if (!USER) throw new Error('로그인이 필요합니다.');
       if (!window.ImgTool || !window.ImgTool.resize) {
@@ -172,6 +170,43 @@ const CareApp = (function () {
 
     async deleteRow(table, id) {
       return req(SB.rpc('delete_row', { p_device: devId(), p_table: table, p_id: id }));
+    },
+
+    async listBreedingProjects(species) {
+      if (!USER) return [];
+      let query = SB.from('breeding_projects').select('*')
+        .order('updated_at', { ascending: false }).limit(100);
+      if (species) query = query.eq('species', species);
+      return (await req(query)) || [];
+    },
+
+    async createBreedingProject(project) {
+      if (!USER) throw new Error('로그인이 필요합니다.');
+      return req(SB.from('breeding_projects').insert({
+        user_id: USER.id,
+        species: project.species,
+        name: project.name,
+        target: project.target,
+        status: project.status || 'draft'
+      }).select().single());
+    },
+
+    async updateBreedingProject(project, changes) {
+      if (!USER || !project || !project.id) throw new Error('로그인이 필요합니다.');
+      const allowed = {};
+      ['name', 'target', 'status'].forEach(function (key) {
+        if (Object.prototype.hasOwnProperty.call(changes || {}, key)) allowed[key] = changes[key];
+      });
+      let query = SB.from('breeding_projects').update(allowed).eq('id', project.id);
+      if (project.updated_at) query = query.eq('updated_at', project.updated_at);
+      const rows = (await req(query.select())) || [];
+      if (project.updated_at && !rows.length) throw new Error('BREEDING_PROJECT_CONFLICT');
+      return rows[0] || null;
+    },
+
+    async deleteBreedingProject(project) {
+      if (!USER || !project || !project.id) throw new Error('로그인이 필요합니다.');
+      return req(SB.from('breeding_projects').delete().eq('id', project.id));
     },
 
     /* ── 반복 계획 ─────────────────────────────────────────────────────── */

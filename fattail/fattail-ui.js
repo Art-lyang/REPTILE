@@ -575,9 +575,29 @@ function setLang(lang){ if(lang===LANG) return; LANG=lang; applyLang(); }
 
 /* ================= 초기화 ================= */
 const langMenuEl=document.getElementById('langMenu'), langBtnEl=document.getElementById('langBtn');
-langBtnEl.addEventListener('click',e=>{ e.stopPropagation(); langMenuEl.classList.toggle('open'); });
+document.body.appendChild(langMenuEl);
+function placeLangMenu(){
+  const button=langBtnEl.getBoundingClientRect();
+  const width=langMenuEl.offsetWidth, height=langMenuEl.offsetHeight;
+  const margin=12, gap=8;
+  const maxLeft=Math.max(margin, window.innerWidth-width-margin);
+  const left=Math.min(Math.max(margin, button.right-width), maxLeft);
+  const below=button.bottom+gap;
+  const top=below+height<=window.innerHeight-margin
+    ? below
+    : Math.max(margin, button.top-height-gap);
+  langMenuEl.style.position='fixed';
+  langMenuEl.style.inset=top+'px auto auto '+left+'px';
+}
+langBtnEl.addEventListener('click',e=>{
+  e.stopPropagation();
+  const open=langMenuEl.classList.toggle('open');
+  if(open) placeLangMenu();
+});
 document.querySelectorAll('#langMenu button').forEach(b=>b.addEventListener('click',()=>{ setLang(b.dataset.lang); langMenuEl.classList.remove('open'); }));
 document.addEventListener('click',e=>{ if(langMenuEl.classList.contains('open') && !langMenuEl.contains(e.target) && !langBtnEl.contains(e.target)) langMenuEl.classList.remove('open'); });
+window.addEventListener('resize',()=>{ if(langMenuEl.classList.contains('open')) placeLangMenu(); });
+window.addEventListener('scroll',()=>langMenuEl.classList.remove('open'), true);
 
 (function(){
   // ⚠️ [data-mode] 로 범위를 좁힙니다. 세그먼트 바에 옵션 버튼도 함께 들어 있어서

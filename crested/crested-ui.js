@@ -17,7 +17,7 @@ const I18N = {
     optNote:'<b>표현형 기준</b> — 눈으로 보이는 모프만 행으로 묶고, 헷(보인자)은 오른쪽 칸에 따로 표기합니다.'
       +'<br><b>유전형 기준</b> — 헷도 하나의 결과로 세어 펼칩니다.'
       +'<br><b>가능성 헷</b> — 66%·33% 처럼 확률적인 보인자까지 표에 표시합니다.'
-      +'<br><b>추가 유전자</b> — 화이트아웃·엠티백·달마시안·파이드·파이어처럼 브리더 자료로 확인된 형질을 계산에 넣습니다.'
+      +'<br><b>추가 유전자</b> — 엠티백·달마시안·파이드·하이포처럼 브리더 자료로 확인된 형질을 계산에 넣습니다.'
       +'<br><b>라인브리딩 형질</b> — 할리퀸·핀스트라이프·레드 같은 다인자 형질을 부모 카드에 표시합니다(확률 계산 대상 아님).',
     updBtn:'업데이트 노트', contact:'문의하기',
     mailNote:'정보 수정 요청 · 업데이트 건의는 <b>문의하기</b>로 보내주세요',
@@ -41,7 +41,7 @@ const I18N = {
     polyBoth:'양쪽',
     proof:{ established:'', partial:'부분검증', contested:'미확정' },
     fakeSuperNote:'이름에 ‘슈퍼’가 붙지만 동형접합이 아니라 <b>표현 강도</b>를 뜻합니다 — 슈퍼끼리 교배해도 100% 슈퍼가 나오지 않습니다.',
-    piedNote:'<b>파이드는 유전 방식이 아직 확정되지 않았습니다.</b> 공우성인지 불완전우성인지, 또는 다른 방식인지 브리더들 사이에서도 견해가 갈립니다. 이 계산기는 열성으로 두고 계산하지만 그것이 정답이라는 뜻은 아닙니다. 파이드가 들어간 결과는 <b>참고용으로만</b> 보시고, 실제 교배 계획은 계통 기록을 가진 브리더와 상의하십시오.',
+    piedNote:'<b>파이드는 불완전우성으로 계산합니다.</b> 유전자 한 개는 파이드, 두 개는 슈퍼 파이드로 표시합니다. 계통에 따라 발현 차이가 있을 수 있으므로 실제 교배 계획에서는 혈통과 번식 기록도 함께 확인해 주세요.',
     note:'<b>이 계산기가 다루는 것</b> — 릴리화이트, 카푸치노·세이블(같은 자리), 팬텀, 초초, 아잔틱을 멘델 유전으로 계산합니다. '
       +'<b>카푸치노와 세이블은 같은 자리의 서로 다른 돌연변이</b>라서, 한 개체가 둘 다 슈퍼일 수 없고 카푸치노 1개 + 세이블 1개는 <b>루왁</b>이 됩니다. '
       +'첨부해 주신 엑셀은 이 둘을 독립으로 두어 실제로는 존재할 수 없는 조합이 일부 포함되어 있어, 이 계산기에서는 바로잡았습니다. '
@@ -49,11 +49,11 @@ const I18N = {
       +'<br><br><b>꼭 알아두실 점</b> — 크레스티드 게코의 유전학은 레오파드 게코만큼 정리되어 있지 않습니다. 단일 유전자로 확실히 증명된 형질은 소수이며, '
       +'대부분의 모프 이름은 학술 논문이 아니라 브리더들의 사육 기록과 합의에 기반합니다. 이 계산기의 확률은 참고용이며, 실제 부화 개체의 외형은 여러 형질의 상호작용과 '
       +'성장에 따른 색 변화로 달라질 수 있습니다. 중요한 교배 결정은 계통 정보를 가진 브리더와 상의하십시오.'
-      +'<br><br><b>‘슈퍼’라는 말의 두 가지 뜻</b> — 슈퍼카푸치노·슈퍼세이블·슈퍼릴리화이트는 실제 동형접합(유전자 2개)입니다. 반면 '
-      +'슈퍼달마시안·슈퍼스트라이프·슈퍼하이포는 <b>표현이 강하다</b>는 뜻일 뿐 동형접합이 아닙니다.',
+      +'<br><br><b>‘슈퍼’라는 말의 두 가지 뜻</b> — 슈퍼카푸치노·슈퍼세이블·슈퍼릴리화이트와 <b>유전 모프의 슈퍼하이포</b>는 실제 동형접합(유전자 2개)입니다. 반면 '
+      +'라인브리딩 형질의 슈퍼달마시안·슈퍼스트라이프·슈퍼하이포는 <b>표현이 강하다</b>는 뜻일 뿐 동형접합이 아닙니다.',
     terms:'이용약관', privacy:'개인정보처리방침',
     seoIntroH:'크레스티드 게코 모프 계산기',
-    seoIntro:'부모 개체의 형질을 고르면 새끼 모프와 확률을 계산합니다. 릴리화이트, 카푸치노·세이블(같은 자리의 3중 대립인자), 팬텀, 초초, 아잔틱, 화이트아웃, 엠티백, 달마시안, 파이드, 파이어를 다루며 루왁·프라푸치노·소락 같은 조합 명칭과 슈퍼릴리화이트 같은 치사 조합 경고를 함께 보여줍니다. 라인브리딩 형질도 참고용으로 표시합니다. 한국어·영어·중국어·일본어를 지원하며 회원가입 없이 무료로 쓸 수 있습니다.',
+    seoIntro:'부모 개체의 형질을 고르면 새끼 모프와 확률을 계산합니다. 릴리화이트, 카푸치노·세이블(같은 자리의 3중 대립인자), 팬텀, 초초, 아잔틱, 엠티백, 달마시안, 파이드, 하이포를 다루며 루왁·프라푸치노·소락 같은 조합 명칭과 슈퍼릴리화이트 같은 치사 조합 경고를 함께 보여줍니다. 화이트 월을 포함한 구조형질과 라인브리딩 형질도 참고용으로 표시합니다. 한국어·영어·중국어·일본어를 지원하며 회원가입 없이 무료로 쓸 수 있습니다.',
     footer:'확률은 멘델 유전 법칙에 따른 이론값입니다 · 라인브리딩(폴리제닉) 형질은 확률 계산 대상이 아닙니다',
     updH:'업데이트 노트', updDone:'업데이트 됨', updSoon:'업데이트 예정',
     updDoneList:[
@@ -79,7 +79,7 @@ const I18N = {
     optNote:'<b>By phenotype</b> — groups rows by what you can actually see; het carriers are listed separately on the right.'
       +'<br><b>By genotype</b> — counts hets as outcomes of their own.'
       +'<br><b>Possible hets</b> — includes probabilistic carriers such as 66% and 33% in the table.'
-      +'<br><b>Extra genes</b> — adds Whiteout, Empty Back, Dalmatian, Pied and Fire: traits documented by breeders.'
+      +'<br><b>Extra genes</b> — adds Empty Back, Dalmatian, Pied and Fire: traits documented by breeders.'
       +'<br><b>Line-bred traits</b> — shows polygenic traits (Harlequin, Pinstripe, Red…) on the parent cards for reference only.',
     updBtn:'Update notes', contact:'Contact',
     mailNote:'Corrections and feature requests are welcome via <b>Contact</b>',
@@ -103,7 +103,7 @@ const I18N = {
     polyBoth:'both',
     proof:{ established:'', partial:'partly proven', contested:'unconfirmed' },
     fakeSuperNote:'Despite the name, “super” here means <b>strength of expression</b>, not homozygosity — super × super does not give 100% super.',
-    piedNote:'<b>How Pied is inherited has not been settled.</b> Breeders disagree over whether it is co-dominant, incomplete dominant, or something else. This calculator treats it as recessive, which is a working assumption rather than an answer. Read any result involving Pied <b>as a reference only</b>, and plan real pairings with a breeder who holds line records.',
+    piedNote:'<b>Pied is calculated as incomplete dominant.</b> One copy is shown as Pied and two copies as Super Pied. Expression may vary by line, so review lineage and breeding records when planning real pairings.',
     note:'<b>What this calculator covers</b> — Lilly White, Cappuccino/Sable (one shared locus), Phantom, ChoCho and Axanthic, calculated by Mendelian inheritance. '
       +'<b>Cappuccino and Sable are different mutations at the same locus</b>, so no animal can be super for both, and one Cappuccino allele plus one Sable allele makes a <b>Luwak</b>. '
       +'The supplied spreadsheet treats them as independent and therefore contains some combinations that cannot exist; this calculator corrects that. '
@@ -115,7 +115,7 @@ const I18N = {
       +'<b>strongly expressed</b> and are not homozygous.',
     terms:'Terms', privacy:'Privacy',
     seoIntroH:'Crested Gecko Morph Calculator',
-    seoIntro:'Pick each parent’s traits to see the offspring morphs and their odds. It covers Lilly White, Cappuccino and Sable — three alleles at one locus — along with Phantom, ChoCho, Axanthic, Whiteout, Empty Back, Dalmatian, Pied and Fire, naming combos such as Luwak, Frappuccino and Sorak and flagging lethal pairings like Super Lilly White. Line-bred traits are listed for reference. Free, no sign-up, in Korean, English, Chinese and Japanese.',
+    seoIntro:'Pick each parent’s traits to see the offspring morphs and their odds. It covers Lilly White, Cappuccino and Sable — three alleles at one locus — along with Phantom, ChoCho, Axanthic, Empty Back, Dalmatian, Pied and Fire, naming combos such as Luwak, Frappuccino and Sorak and flagging lethal pairings like Super Lilly White. Structural traits such as White Wall and line-bred traits are listed for reference. Free, no sign-up, in Korean, English, Chinese and Japanese.',
     footer:'Probabilities are theoretical values from Mendelian inheritance · line-bred (polygenic) traits are not probability-based',
     updH:'Update notes', updDone:'Shipped', updSoon:'Coming next',
     updDoneList:[
@@ -141,7 +141,7 @@ const I18N = {
     optNote:'<b>表現型で表示</b> — 見た目で分かるモルフだけを行にまとめ、ヘテロ（保因）は右の列に別記します。'
       +'<br><b>遺伝型で表示</b> — ヘテロも1つの結果として数えて展開します。'
       +'<br><b>可能性 het</b> — 66%・33% などの確率的な保因も表に表示します。'
-      +'<br><b>追加遺伝子</b> — ホワイトアウト・エンプティバック・ダルメシアン・パイド・ファイアなど、ブリーダー資料で確認されている形質を計算に加えます。'
+      +'<br><b>追加遺伝子</b> — エンプティバック・ダルメシアン・パイド・ファイアなど、ブリーダー資料で確認されている形質を計算に加えます。'
       +'<br><b>ラインブリード形質</b> — ハーレクイン・ピンストライプ・レッドなどの多因子形質を親カードに表示します（確率計算の対象外）。',
     updBtn:'アップデート情報', contact:'お問い合わせ',
     mailNote:'情報の修正・ご要望は<b>お問い合わせ</b>からお送りください',
@@ -165,7 +165,7 @@ const I18N = {
     polyBoth:'両方',
     proof:{ established:'', partial:'一部検証', contested:'未確定' },
     fakeSuperNote:'名前に「スーパー」が付きますが、ホモではなく<b>発現の強さ</b>を意味します — スーパー同士を交配しても100%スーパーにはなりません。',
-    piedNote:'<b>パイドの遺伝様式はまだ確定していません。</b> 共優性なのか不完全優性なのか、あるいは別の様式なのか、ブリーダーの間でも見解が分かれています。この計算機は劣性として計算しますが、それが正解という意味ではありません。パイドを含む結果は<b>参考としてのみ</b>ご覧いただき、実際の交配計画は系統記録を持つブリーダーにご相談ください。',
+    piedNote:'<b>パイドは不完全優性として計算します。</b> 遺伝子1つはパイド、2つはスーパーパイドと表示します。系統によって発現に差が出る場合があるため、実際の交配計画では血統と繁殖記録も確認してください。',
     note:'<b>この計算機が扱う形質</b> — リリーホワイト、カプチーノ／セーブル（同一座）、ファントム、チョチョ、アザンティックをメンデル遺伝で計算します。'
       +'<b>カプチーノとセーブルは同じ座の別の変異</b>であるため、1個体が両方のスーパーになることはなく、カプチーノ1つ＋セーブル1つで<b>ルアク</b>になります。'
       +'ご提供いただいた参照表は両者を独立として扱っており、実在し得ない組み合わせが一部含まれるため、この計算機では修正しています。'
@@ -177,7 +177,7 @@ const I18N = {
       +'スーパーダルメシアン・スーパーストライプ・スーパーハイポは<b>発現が強い</b>という意味に過ぎず、ホモではありません。',
     terms:'利用規約', privacy:'プライバシーポリシー',
     seoIntroH:'クレステッドゲッコー モルフ計算機',
-    seoIntro:'両親の形質を選ぶと、仔のモルフと確率を計算します。リリーホワイト、カプチーノ・セーブル（同じ座の3対立遺伝子）、ファントム、チョチョ、アザンティック、ホワイトアウト、エンプティバック、ダルメシアン、パイド、ファイアに対応し、ルアク・フラペチーノ・ソラクなどのコンボ名や、スーパーリリーホワイトのような致死組み合わせの警告も表示します。ラインブリード形質は参考として表示。会員登録なしで無料、4言語対応です。',
+    seoIntro:'両親の形質を選ぶと、仔のモルフと確率を計算します。リリーホワイト、カプチーノ・セーブル（同じ座の3対立遺伝子）、ファントム、チョチョ、アザンティック、エンプティバック、ダルメシアン、パイド、ファイアに対応し、ルアク・フラペチーノ・ソラクなどのコンボ名や、スーパーリリーホワイトのような致死組み合わせの警告も表示します。ホワイトウォールなどの構造形質とラインブリード形質は参考として表示。会員登録なしで無料、4言語対応です。',
     footer:'確率はメンデル遺伝に基づく理論値です · ラインブリード（ポリジェニック）形質は確率計算の対象外です',
     updH:'アップデート情報', updDone:'更新済み', updSoon:'更新予定',
     updDoneList:[
@@ -203,7 +203,7 @@ const I18N = {
     optNote:'<b>按表现型</b> — 仅按肉眼可见的形态归行，het（携带）在右侧单独标注。'
       +'<br><b>按基因型</b> — 将 het 也计为独立结果并展开。'
       +'<br><b>可能 het</b> — 在表格中包含 66%、33% 等概率性携带。'
-      +'<br><b>附加基因</b> — 加入 Whiteout、空背、大麦町、花斑、Fire 等有繁育者资料佐证的性状。'
+      +'<br><b>附加基因</b> — 加入空背、大麦町、花斑、Fire 等有繁育者资料佐证的性状。'
       +'<br><b>线育性状</b> — 在亲本卡片上显示小丑、直纹、红色等多基因性状，仅供参考（不参与概率计算）。',
     updBtn:'更新说明', contact:'联系我们',
     mailNote:'信息更正与功能建议请通过<b>联系我们</b>发送',
@@ -227,7 +227,7 @@ const I18N = {
     polyBoth:'双方',
     proof:{ established:'', partial:'部分验证', contested:'待确认' },
     fakeSuperNote:'名称中虽有"超级"，但指的是<b>表现强度</b>而非纯合 — 超级 × 超级并不会得到 100% 超级。',
-    piedNote:'<b>花斑（Pied）的遗传方式尚未确定。</b> 究竟是共显性、不完全显性还是其他方式，繁育者之间也存在分歧。本计算器按隐性处理，但这只是一种工作假设，并非定论。涉及花斑的结果请<b>仅作参考</b>，实际配对计划请与掌握血统记录的繁育者商议。',
+    piedNote:'<b>花斑（Pied）按不完全显性计算。</b> 一个基因拷贝显示为花斑，两个拷贝显示为超级花斑。不同血系的表现可能有所差异，实际配对时请同时核对血统与繁殖记录。',
     note:'<b>本计算器涵盖的性状</b> — 莉莉白、卡布奇诺／黑貂（同一基因座）、幻影、ChoCho、无黄化，按孟德尔遗传计算。'
       +'<b>卡布奇诺与黑貂是同一基因座上的不同突变</b>，因此没有个体能同时是两者的超级形态；一个卡布奇诺等位基因加一个黑貂等位基因即为 <b>Luwak</b>。'
       +'您提供的参考表格把两者当作独立基因座，因而包含了一些现实中不存在的组合，本计算器已作修正。'
@@ -238,7 +238,7 @@ const I18N = {
       +'<br><br><b>"超级"的两种含义</b> — 超级卡布奇诺、超级黑貂、超级莉莉白是真正的纯合个体。而超级大麦町、超级直纹、超级低黑只表示<b>表现强烈</b>，并非纯合。',
     terms:'使用条款', privacy:'隐私政策',
     seoIntroH:'睫角守宫基因计算器',
-    seoIntro:'选择父母双方的性状即可计算后代形态与概率。支持莉莉白、卡布奇诺与黑貂（同一基因座的三个等位基因）、幻影、ChoCho、无黄化、Whiteout、空背、大麦町、花斑与 Fire，并显示 Luwak、法布奇诺、Sorak 等组合名称，同时对超级莉莉白等致死组合发出警告。线育性状仅作参考显示。免注册免费使用，支持韩英中日四种语言。',
+    seoIntro:'选择父母双方的性状即可计算后代形态与概率。支持莉莉白、卡布奇诺与黑貂（同一基因座的三个等位基因）、幻影、ChoCho、无黄化、空背、大麦町、花斑与 Fire，并显示 Luwak、法布奇诺、Sorak 等组合名称，同时对超级莉莉白等致死组合发出警告。白墙等结构性状与线育性状仅作参考显示。免注册免费使用，支持韩英中日四种语言。',
     footer:'概率为基于孟德尔遗传的理论值 · 线育（多基因）性状不在概率计算范围内',
     updH:'更新说明', updDone:'已更新', updSoon:'计划中',
     updDoneList:[
@@ -251,6 +251,18 @@ const I18N = {
     mailSubject:'睫角守宫基因计算器 - 信息更正 / 功能建议',
   },
 };
+
+const CR_LOCKED_UI_TEXT = {
+  ko:{ note:I18N.ko.note },
+};
+
+function crApplyLockedUiText(){
+  Object.keys(CR_LOCKED_UI_TEXT).forEach(lang=>{
+    Object.keys(CR_LOCKED_UI_TEXT[lang]).forEach(key=>{
+      I18N[lang][key]=CR_LOCKED_UI_TEXT[lang][key];
+    });
+  });
+}
 
 /* 언어별 주소(/en/gecko/ 등)는 이 파일보다 먼저 var LANG 을 정해둡니다.
    여기서 무조건 'ko' 로 덮어쓰면 그 주소가 항상 한국어로 뜼게 됩니다. */
@@ -512,6 +524,7 @@ function resetAll(){
 
 /* ================= 언어 적용 ================= */
 function applyLang(){
+  crApplyLockedUiText();
   const t=L();
   document.documentElement.lang=t.htmlLang;
   const set=(id,v)=>{ const e=document.getElementById(id); if(e) e.textContent=v; };
@@ -552,9 +565,29 @@ function setLang(lang){ if(lang===LANG) return; LANG=lang; applyLang(); }
 
 /* ================= 초기화 ================= */
 const langMenuEl=document.getElementById('langMenu'), langBtnEl=document.getElementById('langBtn');
-langBtnEl.addEventListener('click',e=>{ e.stopPropagation(); langMenuEl.classList.toggle('open'); });
+document.body.appendChild(langMenuEl);
+function placeLangMenu(){
+  const button=langBtnEl.getBoundingClientRect();
+  const width=langMenuEl.offsetWidth, height=langMenuEl.offsetHeight;
+  const margin=12, gap=8;
+  const maxLeft=Math.max(margin, window.innerWidth-width-margin);
+  const left=Math.min(Math.max(margin, button.right-width), maxLeft);
+  const below=button.bottom+gap;
+  const top=below+height<=window.innerHeight-margin
+    ? below
+    : Math.max(margin, button.top-height-gap);
+  langMenuEl.style.position='fixed';
+  langMenuEl.style.inset=top+'px auto auto '+left+'px';
+}
+langBtnEl.addEventListener('click',e=>{
+  e.stopPropagation();
+  const open=langMenuEl.classList.toggle('open');
+  if(open) placeLangMenu();
+});
 document.querySelectorAll('#langMenu button').forEach(b=>b.addEventListener('click',()=>{ setLang(b.dataset.lang); langMenuEl.classList.remove('open'); }));
 document.addEventListener('click',e=>{ if(langMenuEl.classList.contains('open') && !langMenuEl.contains(e.target) && !langBtnEl.contains(e.target)) langMenuEl.classList.remove('open'); });
+window.addEventListener('resize',()=>{ if(langMenuEl.classList.contains('open')) placeLangMenu(); });
+window.addEventListener('scroll',()=>langMenuEl.classList.remove('open'), true);
 
 (function(){
   // ⚠️ [data-mode] 로 범위를 좁힙니다. 세그먼트 바를 하나로 합치면서

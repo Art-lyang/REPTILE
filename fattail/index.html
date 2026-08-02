@@ -17,14 +17,19 @@
 <meta property="og:title" content="펫테일 게코 모프 계산기 · RYANG STUDIO">
 <meta property="og:description" content="펫테일(아프리카 팻테일) 게코 부모의 형질을 골라 새끼 모프 확률을 계산합니다. 66%·33% 가능성 헷 표기를 기본으로 보여줍니다.">
 <meta property="og:url" content="https://ryangstudio.com/fattail/">
-<meta property="og:image" content="https://ryangstudio.com/assets/fattail-profile-normal-v1.jpg">
-  <meta property="og:image:width" content="800">
-  <meta property="og:image:height" content="800">
+<!-- 공유 카드는 tools/make_og.py 가 만든 불투명 1200x630 을 씁니다.
+     예전에는 부모A 얼굴 사진(800x800)을 그대로 썼는데, 정사각형이라
+     summary_large_image 카드에서 양옆이 잘렸습니다. hero 를 바꿨다면
+     make_og.py 를 다시 돌리세요. -->
+<meta property="og:image" content="https://ryangstudio.com/assets/og-fattail-v1.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="아프리카 펫테일 게코">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="펫테일 게코 모프 계산기 · RYANG STUDIO">
 <meta name="twitter:description" content="펫테일(아프리카 팻테일) 게코 부모의 형질을 골라 새끼 모프 확률을 계산합니다.">
-<meta name="twitter:image" content="https://ryangstudio.com/assets/fattail-profile-normal-v1.jpg">
+<meta name="twitter:image" content="https://ryangstudio.com/assets/og-fattail-v1.jpg">
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <script type="application/ld+json">
 {
@@ -44,24 +49,25 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 <!-- ?v=… 는 캐시 무효화용입니다. js/css 를 고쳐 올릴 때마다 숫자를 바꿔주세요.
      (안 바꾸면 이미 방문했던 사람의 브라우저가 예전 파일을 계속 씁니다) -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="../assets/studio-config.js?v=113119"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.8/dist/umd/supabase.js"></script>
+<script src="../assets/studio-config.js?v=20260731b"></script>
 <script src="fattail-core.js?v=072920"></script>
-<script src="../assets/analytics.js?v=113119"></script>
+<script src="../assets/analytics.js?v=20260731b"></script>
 <script src="../assets/uitext.js?v=160549"></script>
 <script src="fattail-boot.js?v=072801"></script>
-<link rel="stylesheet" href="../assets/base.css?v=013848">
-<link rel="stylesheet" href="fattail.css?v=072801">
+<link rel="stylesheet" href="../assets/base.css?v=20260731a">
+<link rel="stylesheet" href="fattail.css?v=07302330">
 <link rel="stylesheet" href="../assets/theme.css?v=025334">
 </head>
 <body class="aft">
 <header>
   <img class="hd-deco leaf" src="../assets/leaf.svg" alt="" aria-hidden="true">
   <!-- 헤더 = 가로로 긴 전신 컷아웃(fattail-hero-v1.png), 부모A = 노멀 얼굴 사진,
-       부모B = 오레오 얼굴 사진. 사진을 바꿀 때는 이 파일의 <img> 세 곳과 위쪽
-       og:image·twitter:image, assets/theme.css 의 body.aft 아바타 규칙(자르는 기준점
-       object-position)을 함께 봐주세요. 헤더 사진은 크레·레오와 같은 규칙
-       (.hd-deco.hero — 오른쪽 아래 정렬, 높이 208px)을 그대로 씁니다. -->
+       부모B = 오레오 얼굴 사진. 사진을 바꿀 때는 이 파일의 <img> 세 곳과
+       assets/theme.css 의 body.aft 아바타 규칙(자르는 기준점 object-position)을
+       함께 봐주세요. 헤더 사진은 크레·레오와 같은 규칙
+       (.hd-deco.hero — 오른쪽 아래 정렬, 높이 208px)을 그대로 씁니다.
+       헤더 사진을 바꿨다면 python3 tools/make_og.py 로 공유 카드도 다시 만드세요. -->
   <img class="hd-deco hero" src="../assets/fattail-hero-v1.png" alt="" aria-hidden="true" loading="eager">
   <div class="hd">
     <div class="hd-txt">
@@ -143,13 +149,13 @@
   <div class="results" id="results"></div>
 
   <div class="bottom-links">
-    <a class="blink" href="/care/gallery.html"><i class="bi bi-binoculars" aria-hidden="true"></i><span>다른 집사들의 개체 구경하기</span></a>
+    <a class="blink" href="/care/gallery.html" hidden><i class="bi bi-binoculars" aria-hidden="true"></i><span>다른 집사들의 개체 구경하기</span></a>
     <a class="blink" id="mailLink" href="#"><i class="bi bi-envelope" aria-hidden="true"></i><span id="lbl-contact"></span></a>
   </div>
   <div class="mailnote" id="mailNote">정보 수정 요청 · 업데이트 건의는 <b>문의하기</b>로 보내주세요</div>
 
   <div class="note" id="note"><b>이 계산기가 다루는 것</b> — 화이트아웃, 패턴리스·스팅어(같은 자리), 아멜라니스틱, 오레오, 캬라멜 알비노, 고스트, 줄루, 스트라이프를 멘델 유전으로 계산합니다. </div>
-  <div class="legal">
+  <div class="legal" hidden>
     <a href="../terms.html#terms" id="lbl-terms">이용약관</a> · <a href="../terms.html#privacy" id="lbl-privacy">개인정보처리방침</a>
   </div>
   <!-- 검색 노출용 소개. 화면에는 보이지 않지만 크롤러가 읽습니다.
@@ -186,7 +192,7 @@
   </div>
 </div>
 
-<script src="fattail-ui.js?v=072920"></script>
+<script src="fattail-ui.js?v=07302330"></script>
 <script src="fattail-app.js?v=024811"></script>
 </body>
 </html>

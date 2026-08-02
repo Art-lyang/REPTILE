@@ -464,8 +464,8 @@
         + '</div>'
         + '<div id="sh_qr"></div>'
         + '<div class="hint" style="margin-top:12px">' + icon('bi-exclamation-triangle')
-        + ' 사진은 공개를 꺼도 <b>이미 사진 주소를 받은 사람은 계속 볼 수 있습니다.</b> '
-        + '완전히 막으려면 개체에서 사진을 바꾸거나 지우세요.</div>'
+        + ' 사진은 비공개 저장소에서 불러옵니다. 공개를 끄면 새 열람은 막히지만, '
+        + '<b>이미 발급된 임시 사진 주소는 최대 1시간 동안 남을 수 있습니다.</b></div>'
         + '<div class="hint">주소를 새로 만들면 <b>이전 주소는 즉시 열리지 않습니다.</b> '
         + '이미 나눠준 QR 도 함께 죽습니다.</div>';
     }
@@ -543,7 +543,8 @@
       + (a.note ? ' · ' + esc(a.note) : '');
 
     $('body').innerHTML =
-        statCards()
+        window.CarePhotos.galleryHtml(a, sp.icon)
+      + statCards()
       + openSigns()
       + quickBar()
       + lastBar()
@@ -567,6 +568,7 @@
     if (!t) return;
     const d = t.dataset;
 
+    if (d.carePhotoView) return window.CarePhotos.swap(t);
     if (d.quick) {
       const i = C.kindInfo(d.quick);
       return act(() => A.addRecord({ animal_id: S.id, kind: d.quick, title: i.ko }), i.ko + ' 기록됨');

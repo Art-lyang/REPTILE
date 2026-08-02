@@ -7,9 +7,10 @@
 <meta name="robots" content="noindex, nofollow">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-<link rel="stylesheet" href="care.css?v=13">
+<link rel="stylesheet" href="care.css?v=20260731d">
+<link rel="stylesheet" href="breeding-workspace.css?v=20260731h">
 </head>
-<body>
+<body class="breeding">
 <header><div class="hd"><div class="hd-txt">
   <h1 id="btitle">브리딩 관리</h1><div class="sub" id="bsub"></div>
 </div></div></header>
@@ -22,13 +23,28 @@
     <button class="tab" data-t="pair"><i class="bi bi-arrow-left-right"></i>페어링</button>
     <button class="tab" data-t="clutch"><i class="bi bi-egg"></i>클러치</button>
     <button class="tab" data-t="goal"><i class="bi bi-bullseye"></i>역산</button>
+    <button class="tab" data-t="analysis"><i class="bi bi-bar-chart-line"></i>분석</button>
   </div>
   <div id="body"></div>
 </div>
 <div id="toast"></div>
 
 <script src="/assets/imgtool.js?v=1"></script>
-<script src="/assets/photo.js?v=1"></script>
+<script src="/assets/photo.js?v=20260731c"></script>
+<script src="photo-cropper-i18n.js?v=20260731d"></script>
+<script src="photo-cropper-geometry.js?v=20260731d"></script>
+<script src="photo-cropper.js?v=20260731d"></script>
+<script src="care-photos.js?v=20260731d"></script>
+<script src="/assets/breeding-draft.js?v=20260731a"></script>
+<script src="/assets/pairing-compare-metrics.js?v=20260731h"></script>
+<script src="/assets/calculation-history-store.js?v=20260731h"></script>
+<script src="/assets/line-trait-scores.js?v=20260731a"></script>
+<script src="/assets/breeding-project-contract.js?v=20260731a"></script>
+<script src="/assets/breeding-goal-i18n.js?v=20260731a"></script>
+<script src="/assets/breeding-project-flow.js?v=20260731a"></script>
+<script src="breeding-goal-ui.js?v=20260731a"></script>
+<script src="/assets/breeding-workspace-i18n.js?v=20260731h"></script>
+<script src="/assets/breeding-workspace.js?v=20260731h"></script>
 <script src="care-core.js?v=13"></script>
 <script>
 /* 가짜 백엔드 */
@@ -45,19 +61,47 @@
   let pairs = [{ id:'p1', name:'2026 A라인', male:'a1', female:'a2', note:'첫 시도' }];
   let clutches = [{ id:'c1', pairing:'p1', laid_date:C.addDays(T,-20), egg_count:2,
                     temp:28.5, expected_hatch:C.addDays(T,25) }];
+  let projects = [];
   const noop = async () => {};
   window.__saved = [];
   window.CareApp = {
     ready:true, user:{id:'u1',email:'demo@x'}, premium:{active:true,kind:'sub'},
+    sb:null,
     device:()=>'d', friendly:e=>String((e&&e.message)||e), boot:async()=>({}), logVisit:()=>{},
+    uploadPhoto:async file=>URL.createObjectURL(file),
     listAnimals: async()=>animals,
     listRows: async t=>(t==='pairings'?pairs:clutches),
-    saveAnimal: async r=>{window.__saved.push(['animal',r]); if(!r.id){r.id='new'+animals.length;animals.push(r);} },
+    saveAnimal: async r=>{window.__saved.push(['animal',r]); const found=animals.find(a=>a.id===r.id);
+      if(found) Object.assign(found,r); else {r.id='new'+animals.length;animals.push(r);} },
     saveRow: async (t,r)=>{window.__saved.push([t,r]);},
+    listBreedingProjects: async()=>projects,
+    createBreedingProject: async r=>{const now=new Date().toISOString();const saved=Object.assign({},r,
+      {id:'bp'+(projects.length+1),user_id:'u1',created_at:now,updated_at:now});projects.unshift(saved);return saved;},
+    updateBreedingProject: async (p,c)=>{Object.assign(p,c,{updated_at:new Date().toISOString()});return p;},
+    deleteBreedingProject: async p=>{projects=projects.filter(item=>item.id!==p.id);},
     deleteRow: noop, deleteAnimal: noop
   };
+  [
+    {
+      version:1,species:sp,calculatedAt:new Date().toISOString(),
+      parents:{A:{label:'블랙나이트',traits:[]},B:{label:'이클립스',traits:[]}},
+      results:[
+        {label:'블랙나이트 크로스',probability:.5,guaranteedHets:[],partialHets:[]},
+        {label:'100% het 이클립스',probability:.5,guaranteedHets:[],partialHets:[]}
+      ],warnings:[],lineTraits:[{id:'blacknight',label:'블랙나이트',both:false}]
+    },
+    {
+      version:1,species:sp,calculatedAt:new Date(Date.now()-86400000).toISOString(),
+      parents:{A:{label:'맥스노우',traits:[]},B:{label:'맥스노우',traits:[]}},
+      results:[
+        {label:'슈퍼 스노우',probability:.25,guaranteedHets:[],partialHets:[]},
+        {label:'맥스노우',probability:.5,guaranteedHets:[],partialHets:[]},
+        {label:'노멀',probability:.25,guaranteedHets:[],partialHets:[]}
+      ],warnings:[],lineTraits:[]
+    }
+  ].forEach(function (item) { window.CalculationHistoryStore.record(item, 'ko'); });
 })();
 </script>
-<script src="breeding-ui.js?v=13"></script>
+<script src="breeding-ui.js?v=20260731d"></script>
 </body>
 </html>

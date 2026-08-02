@@ -90,11 +90,7 @@ end $drop_pol$;
 alter table public.visits        enable row level security;
 alter table public.combo_queries enable row level security;
 
--- 누구나 '넣기'만 가능 (통계 수집)
-create policy visits_insert_anyone on public.visits
-  for insert to anon, authenticated with check (true);
-create policy combo_insert_anyone on public.combo_queries
-  for insert to anon, authenticated with check (true);
+-- 원본 표 직접 입력은 허용하지 않습니다. v28의 검증 함수로만 기록합니다.
 
 -- 읽기는 관리자만. is_admin() 은 supabase_v2.sql 에서 만든 함수입니다.
 create policy visits_select_admin on public.visits

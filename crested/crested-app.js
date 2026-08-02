@@ -4,11 +4,13 @@
    접속·조합 기록이 한 줄도 쌓이지 않았습니다. 레오파드와 같은 방식으로 남깁니다.
 
    계산 로직은 건드리지 않습니다. 여기서는 기록만 합니다. */
+var CR_SB = (typeof SUPABASE_URL !== 'undefined' && SUPABASE_URL && window.supabase)
+  ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON) : null;
+
 (function () {
   'use strict';
 
-  var SB = (typeof SUPABASE_URL !== 'undefined' && SUPABASE_URL && window.supabase)
-    ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON) : null;
+  var SB = CR_SB;
 
   if (!SB || !window.StudioAnalytics) return;
 
@@ -90,8 +92,7 @@
 (function () {
   'use strict';
 
-  var SB = (typeof SUPABASE_URL !== 'undefined' && SUPABASE_URL && window.supabase)
-    ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON) : null;
+  var SB = CR_SB;
   if (!SB || typeof CR_ALL_GENES !== 'function') return;
 
   /* null/빈 문자열은 '안 고침' 으로 봅니다. 그래야 일부 칸만 채워도 됩니다. */
@@ -120,6 +121,7 @@
         put(g, 'super' + L.charAt(0).toUpperCase() + L.slice(1), r['super_' + L]);
         put(g, 'het' + L.charAt(0).toUpperCase() + L.slice(1), r['het_' + L]);
       });
+      crApplyLockedGeneLabels(g);
       put(g, 'proof', r.proof);
       put(g, 'order', r.ord);
       put(g, 'note', r.note);
@@ -129,6 +131,7 @@
       /* active=false 는 목록에서 빼는 것이 아니라 '추가 유전자' 로 내립니다.
          이미 그 유전자를 고른 사용자의 선택이 조용히 사라지면 안 됩니다. */
       if (r.active === false) g.core = false;
+      crApplyLockedGeneStructure(g);
     });
     return true;
   }

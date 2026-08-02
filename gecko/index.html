@@ -17,12 +17,18 @@
 <meta property="og:title" content="레오파드 게코 모프 계산기 · RYANG STUDIO">
 <meta property="og:description" content="부모 개체의 모프를 고르면 새끼에게 나올 모프와 확률을 계산합니다. 알비노 계통, 헷 표기, 위험 조합 경고까지 한국어·영어·중국어·일본어로 제공합니다.">
 <meta property="og:url" content="https://ryangstudio.com/gecko/">
-<meta property="og:image" content="https://ryangstudio.com/assets/leopard-hero-v1.png">
+<!-- 공유 카드는 tools/make_og.py 가 만든 불투명 1200x630 을 씁니다.
+     헤더용 hero PNG 를 그대로 쓰면 배경이 투명해서 카카오톡·X 가 검정으로
+     메웁니다. hero 를 바꿨다면 make_og.py 를 다시 돌리세요. -->
+<meta property="og:image" content="https://ryangstudio.com/assets/og-gecko-v1.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="바위 위에 있는 레오파드 게코">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="레오파드 게코 모프 계산기 · RYANG STUDIO">
 <meta name="twitter:description" content="부모 개체의 모프를 고르면 새끼에게 나올 모프와 확률을 계산합니다. 알비노 계통, 헷 표기, 위험 조합 경고까지 한국어·영어·중국어·일본어로 제공합니다.">
-<meta name="twitter:image" content="https://ryangstudio.com/assets/leopard-hero-v1.png">
+<meta name="twitter:image" content="https://ryangstudio.com/assets/og-gecko-v1.jpg">
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <script type="application/ld+json">
 {
@@ -40,15 +46,17 @@
 </script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="../assets/studio-config.js?v=113119"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.8/dist/umd/supabase.js"></script>
+<script src="../assets/studio-config.js?v=20260731b"></script>
+<script src="../assets/breeding-draft.js?v=20260731a"></script>
 <script src="/assets/imgtool.js?v=1"></script>
-<script src="gecko-core.js?v=222435"></script>
-<script src="../assets/analytics.js?v=113119"></script>
+<script src="gecko-core.js?v=20260801b"></script>
+<script src="../assets/analytics.js?v=20260731b"></script>
 <script src="../assets/uitext.js?v=160549"></script>
 <script src="gecko-boot.js?v=014345"></script>
-<link rel="stylesheet" href="../assets/base.css?v=013848">
-<link rel="stylesheet" href="gecko.css?v=031715">
+<link rel="stylesheet" href="../assets/base.css?v=20260731a">
+<link rel="stylesheet" href="gecko.css?v=20260731f">
+<link rel="stylesheet" href="gecko-explain.css?v=20260731e">
 <link rel="stylesheet" href="../assets/theme.css?v=025334">
 </head>
 <body class="leo">
@@ -102,6 +110,12 @@
         <div class="card-name"><h2><span id="lbl-pa"></span></h2><div class="card-role" id="lbl-pa-role-leo">유전 형질 선택</div></div>
         <button type="button" class="helpbtn" onclick="toggleLeoOptNote()"><i class="bi bi-info-circle" aria-hidden="true"></i><span id="lbl-help-leo">선택 도움말</span></button>
       </div>
+      <div class="searchbar">
+        <i class="bi bi-search sicon" aria-hidden="true"></i>
+        <input type="search" id="qA" autocomplete="off" spellcheck="false" enterkeyhint="search">
+        <button type="button" class="sclr" id="qclrA"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
+      </div>
+      <div class="searchcnt" id="cntA"></div>
       <div id="parentA"></div>
     </div>
     <div class="card b">
@@ -110,6 +124,12 @@
         <div class="card-name"><h2><span id="lbl-pb"></span></h2><div class="card-role" id="lbl-pb-role-leo">유전 형질 선택</div></div>
         <button type="button" class="helpbtn" onclick="toggleLeoOptNote()"><i class="bi bi-info-circle" aria-hidden="true"></i><span id="lbl-help2-leo">선택 도움말</span></button>
       </div>
+      <div class="searchbar">
+        <i class="bi bi-search sicon" aria-hidden="true"></i>
+        <input type="search" id="qB" autocomplete="off" spellcheck="false" enterkeyhint="search">
+        <button type="button" class="sclr" id="qclrB"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
+      </div>
+      <div class="searchcnt" id="cntB"></div>
       <div id="parentB"></div>
     </div>
   </div>
@@ -130,11 +150,11 @@
 
   <div class="results" id="results"></div>
 
-  <div class="adslot" id="adSlot"></div>
+  <div class="adslot" id="adSlot" hidden></div>
   <div class="donate-wrap"><button class="donate" id="donateBtn" type="button" onclick="openPrem()"></button></div>
 
   <div class="bottom-links">
-    <a class="blink" href="/care/gallery.html"><i class="bi bi-binoculars" aria-hidden="true"></i><span>다른 집사들의 개체 구경하기</span></a>
+    <a class="blink" href="/care/gallery.html" hidden><i class="bi bi-binoculars" aria-hidden="true"></i><span>다른 집사들의 개체 구경하기</span></a>
     <a class="blink" id="mailLink" href="mailto:kmc612000@gmail.com"><i class="bi bi-envelope" aria-hidden="true"></i><span>문의하기</span></a>
   </div>
   <div class="mailnote" id="mailNote">정보수정, 버그 및 업데이트 건의는 <b>문의하기</b>로 보내주세요</div>
@@ -142,20 +162,20 @@
   <div class="mailnote credit" id="creditNote">해당 레오파드 모프 계산기는 <b>Stylish Gecko</b> 의 자문 및 도움을 받아 제작되었습니다.</div>
 
   <div class="note" id="note"><b>참고</b> — 트램퍼·벨·레인워터 알비노는 서로 <b>다른 유전자</b>라서, 한쪽 알비노 het와 다른 알비노 het를 교배하면 알비노가 나오지 않습니다(더블 het). 맥스노우는 불완전우성(슈퍼폼 = 슈퍼 스노우, 건강함)이고, 에니그마·W&Y는 우성입니다. <b>일부 모프는 슈퍼폼이나 특정 조합에서 심각한 건강 문제·치사성이 나타납니다</b>(예: 슈퍼 레몬 프로스트의 종양, 에니그마의 신경 증상). 위험 조합은 결과 상단에 경고로 표시됩니다. <br><br><b>스노우</b> — 국내에 유통되는 스노우는 대부분 맥스노우라서, 보통 ‘스노우’라고 하면 맥스노우를 줄여 부르는 말입니다. <b>슈퍼폼(슈퍼 스노우)은 맥스노우가 있어야 나옵니다.</b> TUG·젬 스노우는 서로 붙이거나 같은 것끼리 붙여도 슈퍼폼이 나오지 않습니다. 이 계산기는 맥스노우만 다룹니다.</div>
-  <div class="legal" id="legalLinks">
+  <div class="legal" id="legalLinks" hidden>
     <a href="../terms.html#terms">이용약관</a> · <a href="../terms.html#privacy">개인정보처리방침</a>
   </div>
   <!-- 검색 노출용 소개. 화면에는 보이지 않지만 크롤러가 읽습니다.
        JS 로 그리는 부분과 달리 첫 요청에서 바로 색인됩니다. -->
   <section class="seo-intro">
     <h2>레오파드 게코 모프 계산기</h2>
-    <p>부모 개체의 유전 형질을 고르면 새끼에게 나올 모프와 확률을 멘델 유전 법칙으로 계산합니다. 트램퍼·벨·레인워터 알비노, 이클립스, 블리자드, 머피 패턴리스, 맥스노우, 레몬 프로스트, 에니그마, 화이트 앤 옐로우, 슈퍼자이언트를 지원하며 랩터·갤럭시·디아블로 블랑코·레이다·타이푼 등 콤보 명칭도 함께 표시합니다. 탠저린·만다린·멜라니스틱 같은 라인브리딩 형질은 계열을 따져 멜라텐져린처럼 이름을 붙여줍니다. 한국어·영어·중국어·일본어를 지원하며 회원가입 없이 무료로 쓸 수 있습니다.</p>
+    <p>부모 개체의 유전 형질을 고르면 새끼에게 나올 모프와 확률을 멘델 유전 법칙으로 계산합니다. 트램퍼·벨·레인워터 알비노, 이클립스, 블리자드, 머피 패턴리스, 맥스노우, 레몬 프로스트, 에니그마, 화이트앤옐로우(WY), 슈퍼자이언트를 지원하며 랩터·갤럭시·디아블로 블랑코·레이다·타이푼 등 콤보 명칭도 함께 표시합니다. 탠저린·만다린·멜라니스틱 같은 라인브리딩 형질은 계열을 따져 멜라텐져린처럼 이름을 붙여줍니다. 한국어·영어·중국어·일본어를 지원하며 회원가입 없이 무료로 쓸 수 있습니다.</p>
   </section>
 
   <footer id="footer">확률은 멘델 유전 법칙에 따른 이론값입니다 · 라인브리딩(폴리제닉) 형질은 확률 계산 대상이 아닙니다</footer>
 </div>
 
-<div class="cookiebar" id="cookieBar">
+<div class="cookiebar" id="cookieBar" hidden>
   <div class="cb-txt">이 사이트는 로그인 유지와 이용 통계를 위해 쿠키 및 브라우저 저장소를 사용합니다.
     <a href="../terms.html#privacy">자세히</a></div>
   <button class="cb-ok" onclick="okCookie()">확인</button>
@@ -227,8 +247,10 @@
 <!-- 관리자 페이지 (#admin) -->
 <div id="adminRoot" class="admin-root"></div>
 
-<script src="gecko-ui.js?v=020520"></script>
+<script src="gecko-explain.js?v=20260731e"></script>
+<script src="/assets/calculation-history-store.js?v=20260731h"></script>
+<script src="gecko-ui.js?v=20260801b"></script>
 
-<script src="gecko-app.js?v=024811"></script>
+<script src="gecko-app.js?v=20260801b"></script>
 </body>
 </html>

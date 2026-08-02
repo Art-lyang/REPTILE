@@ -32,6 +32,9 @@
 
   const C = window.CareCore;
   const A = window.CareApp;
+  const D = window.BreedingDraft;
+  const CarePhotos = window.CarePhotos;
+  const LineTraitScores = window.LineTraitScores;
   const $ = id => document.getElementById(id);
 
   function esc(s) {
@@ -40,17 +43,18 @@
     });
   }
   function icon(n) { return '<i class="bi ' + n + '" aria-hidden="true"></i>'; }
+  function speciesKey(value) { return !value || value === 'leopard' ? 'gecko' : value; }
 
   /* 종별 코어 파일. breeding-spec.js 의 표와 짝입니다. */
   const CORES = {
-    gecko:      { ko: '레오파드 게코',        src: '/gecko/gecko-core.js',       goal: true },
-    crested:    { ko: '크레스티드 게코',      src: '/crested/crested-core.js',   goal: true  },
-    fattail:    { ko: '아프리카 팻테일 게코', src: '/fattail/fattail-core.js',   goal: true  },
-    ballpython: { ko: '볼파이톤',            src: '/ballpython/ball-core.js',   goal: false }
+    gecko:      { ko: '레오파드 게코',        src: '/gecko/gecko-core.js',       calc: '/gecko/', goal: true },
+    crested:    { ko: '크레스티드 게코',      src: '/crested/crested-core.js',   calc: '/crested/', goal: true  },
+    fattail:    { ko: '아프리카 팻테일 게코', src: '/fattail/fattail-core.js',   calc: '/fattail/', goal: true  },
+    ballpython: { ko: '볼파이톤',            src: '/ballpython/ball-core.js',   calc: '/ballpython/', goal: false }
   };
 
-  const S = { species: 'gecko', tab: 'animals', animals: [], pairs: [], clutches: [],
-              edit: null, busy: false };
+  const S = { species: 'gecko', tab: 'animals', goalMode: 'genetic', animals: [], pairs: [],
+              clutches: [], projects: [], edit: null, busy: false };
   let B = null;   // BreedSpec
 
   function toast(m) {
@@ -60,23 +64,36 @@
 
   /* ── 불러오기 ──────────────────────────────────────────────────────── */
   async function loadAll() {
-    const [animals, pairs, clutches] = await Promise.all([
-      A.listAnimals(), A.listRows('pairings'), A.listRows('clutches')
+    const [animals, pairs, clutches, projects] = await Promise.all([
+      A.listAnimals(), A.listRows('pairings'), A.listRows('clutches'),
+      A.listBreedingProjects(S.species)
     ]);
     /* 이 종의 개체만 다룹니다. 모프 체크박스가 이 종의 유전자로 그려지므로
        다른 종을 섞으면 엉뚱한 모프를 들고 있는 것처럼 보입니다. */
-    S.animals = animals.filter(a => (a.species || 'leopard') === S.species);
+    S.animals = animals.filter(a => speciesKey(a.species) === S.species);
     S.others = animals.length - S.animals.length;
     const ids = new Set(S.animals.map(a => a.id));
-    S.pairs = pairs.filter(p => !p.male && !p.female || ids.has(p.male) || ids.has(p.female));
+    const animalsById = new Map(animals.map(a => [a.id, a]));
+    S.pairs = pairs.filter(p => {
+      if (p.species) return speciesKey(p.species) === S.species;
+      const linked = animalsById.get(p.male) || animalsById.get(p.female);
+      return linked ? speciesKey(linked.species) === S.species : S.species === 'gecko';
+    });
     const pids = new Set(S.pairs.map(p => p.id));
     S.clutches = clutches.filter(c => !c.pairing || pids.has(c.pairing));
+    S.projects = projects;
   }
 
   async function act(fn, ok) {
     if (S.busy) return;
     S.busy = true;
-    try { await fn(); await loadAll(); render(); if (ok) toast(ok); }
+    try {
+      const result = await fn();
+      await loadAll();
+      render();
+      if (ok) toast(typeof ok === 'function' ? ok(result) : ok);
+      return result;
+    }
     catch (e) { toast(A.friendly(e)); }
     finally { S.busy = false; }
   }
@@ -84,6 +101,10 @@
   function nameById(id) {
     const a = S.animals.filter(x => x.id === id)[0];
     return a ? (a.name || '이름 없음') : '-';
+  }
+  function projectById(id) { return S.projects.filter(project => project.id === id)[0] || null; }
+  function goalText(key) {
+    return window.BreedingGoalUI && BreedingGoalUI.t ? BreedingGoalUI.t(key) : key;
   }
   function otherNote() {
     return S.others
@@ -115,6 +136,10 @@
     const vis = (a.morphs || []).map(t => B.morphName(t));
     const het = (a.hets || []).map(t => B.morphName(t));
     const combo = B.comboName(a.morphs || []);
+    const selectedLineTraits = B.traitOptions().filter(t => (a.morphs || []).includes(t[0]));
+    const lineScores = LineTraitScores.forAnimal(a, selectedLineTraits.map(t => t[0]));
+    const scoreText = selectedLineTraits.filter(t => lineScores[t[0]])
+      .map(t => esc(t[1]) + ' ' + lineScores[t[0]] + '/5').join(' · ');
     const sex = a.sex === 'male' ? '<span class="chip">♂ 수컷</span>'
               : a.sex === 'female' ? '<span class="chip">♀ 암컷</span>' : '';
     return '<div class="card">'
@@ -125,12 +150,7 @@
       + '<div class="ms">' + (vis.length ? esc(vis.join(' · ')) : '모프 미입력')
       + (het.length ? '<br><span style="color:var(--eggplant)">het ' + esc(het.join(' · ')) + '</span>' : '')
       + ((a.parent_a || a.parent_b) ? '<br>부모 ' + esc(nameById(a.parent_a)) + ' × ' + esc(nameById(a.parent_b)) : '')
-      /* 색 강도 — 점으로 보여줍니다. 숫자만 있으면 5점 만점인지 알기 어렵습니다. */
-      + (a.color_grade
-          ? '<br><span class="gdrow" title="라인브리딩 색 강도 ' + a.color_grade + '/5">'
-            + '<span class="gd on"></span>'.repeat(a.color_grade)
-            + '<span class="gd"></span>'.repeat(5 - a.color_grade)
-            + ' 색 강도 ' + a.color_grade + '/5</span>' : '')
+      + (scoreText ? '<br><span class="gdrow">' + scoreText + '</span>' : '')
       + '</div></div>'
       + '<div class="acts">'
       + '<a class="mini" href="animal.html?id=' + encodeURIComponent(a.id) + '">' + icon('bi-graph-up') + '관리</a>'
@@ -149,6 +169,8 @@
 
     /* 형질은 그룹으로 묶어 보여줍니다. 34개가 한 덩어리로 늘어서면 못 찾습니다. */
     const traits = B.traitOptions();
+    const traitIds = traits.map(t => t[0]);
+    const traitScores = LineTraitScores.forAnimal(a, traitIds.filter(id => sv.has(id)));
     const groups = {};
     traits.forEach(t => { (groups[t[2] || '기타'] = groups[t[2] || '기타'] || []).push(t); });
 
@@ -185,41 +207,28 @@
           ? '<div class="lbl2">라인브리딩 형질</div>'
             + Object.keys(groups).map(g =>
                 '<div class="hint" style="margin:8px 0 3px;font-weight:800;color:var(--ink)">' + esc(g) + '</div>'
-                + '<div class="tokgrid">' + groups[g].map(t =>
-                    '<label class="tokchk"><input type="checkbox" class="v" value="' + esc(t[0]) + '"'
-                    + (sv.has(t[0]) ? ' checked' : '') + '>' + esc(t[1]) + '</label>').join('') + '</div>').join('')
+                + '<div class="tokgrid line-score-grid">' + groups[g].map(t => {
+                    const checked = sv.has(t[0]);
+                    return '<label class="tokchk line-score-row"><input type="checkbox" class="v line-trait" value="'
+                      + esc(t[0]) + '"' + (checked ? ' checked' : '') + '><span>' + esc(t[1]) + '</span>'
+                      + '<select class="in line-score" data-line-trait-score="' + esc(t[0]) + '" aria-label="'
+                      + esc(t[1]) + ' 강도"' + (checked ? '' : ' disabled') + (checked ? '' : ' hidden') + '>'
+                      + '<option value="">강도 미기록</option>'
+                      + [1, 2, 3, 4, 5].map(n => '<option value="' + n + '"'
+                          + (traitScores[t[0]] === n ? ' selected' : '') + '>' + n + ' / 5</option>').join('')
+                      + '</select></label>';
+                  }).join('') + '</div>').join('')
           : '')
 
       + '<div class="lbl2">혈통 (선택)</div><div class="row2">'
       + '<select class="in" id="f_pa" aria-label="부">' + popt(a.parent_a) + '</select>'
       + '<select class="in" id="f_pb" aria-label="모">' + popt(a.parent_b) + '</select></div>'
 
-      /* 색 강도 — 레오파드 전용 화면에만 있던 것을 옮겨왔습니다.
-         라인브리딩은 확률이 안 나오니 '얼마나 진하게 올라왔는지' 는 결국
-         눈으로 보고 적어두는 수밖에 없습니다. 그 기록입니다.
-         라인브리딩 형질이 있는 종에서만 띄웁니다 — 형질이 없으면
-         적을 대상 자체가 없습니다. */
       + (traits.length
-          ? '<div class="lbl2"><label for="f_grade">라인브리딩 색 강도 (선택)</label></div>'
-            + '<select class="in" id="f_grade">'
-            + '<option value="">기록 안 함</option>'
-            + [1, 2, 3, 4, 5].map(n =>
-                '<option value="' + n + '"' + (a.color_grade === n ? ' selected' : '') + '>'
-                + n + ' / 5</option>').join('')
-            + '</select>'
-            + '<div class="hint">내 눈으로 매기는 값입니다. 확률 계산에는 쓰이지 않습니다.</div>'
+          ? '<div class="hint">선택한 형질마다 강도를 1~5로 따로 기록합니다. 유전 확률이 아닌 관찰값입니다.</div>'
           : '')
 
-      + '<div class="lbl2">사진 (선택)</div>'
-      + '<div class="photorow">'
-      + '<div class="photoprev" id="f_prev">'
-      + (a.photo_url ? Photo.tag(a.photo_url, '') : '<span>없음</span>') + '</div>'
-      + '<div class="photoside">'
-      + '<label class="btn ghost sm" for="f_img">' + icon('bi-image') + '사진 고르기</label>'
-      + '<input type="file" id="f_img" accept="image/*" hidden>'
-      + (a.photo_url ? '<button class="mini del" id="f_imgdel">' + icon('bi-x-lg') + '사진 지우기</button>' : '')
-      + '<div class="hint" id="f_imgmsg">올리기 전에 자동으로 줄입니다.</div>'
-      + '</div></div>'
+      + CarePhotos.editorHtml(a, A)
 
       + '<div class="lbl2"><label for="f_note">메모 (선택)</label></div>'
       + '<input class="in" id="f_note" value="' + esc(a.note || '') + '">'
@@ -234,25 +243,6 @@
       + '</div></div>';
   }
 
-  /* 고른 사진은 저장을 누르기 전에 미리 올려 둡니다. 저장할 때 한꺼번에
-     올리면 사진이 큰 경우 몇 초 동안 아무 반응이 없어서 두 번 누르게 됩니다.
-     여기 담아뒀다가 저장할 때 주소만 실어 보냅니다. */
-  let pendingPhoto;   // undefined = 안 건드림 · null = 지움 · string = 새 주소
-
-  async function pickPhoto(file) {
-    const msg = $('f_imgmsg'), prev = $('f_prev');
-    if (!file) return;
-    try {
-      const url = await A.uploadPhoto(file, m => { if (msg) msg.textContent = m; });
-      pendingPhoto = url;
-      /* 방금 올렸어도 비공개 버킷이라 그냥은 안 보입니다. 서명을 받아 겁니다. */
-      if (prev) { prev.innerHTML = Photo.tag(url, ''); Photo.hydrate(prev, A.sb); }
-      if (msg) msg.textContent = '올렸습니다. 저장을 눌러야 반영됩니다.';
-    } catch (e) {
-      if (msg) msg.textContent = A.friendly(e);
-    }
-  }
-
   function saveAnimal() {
     const name = $('f_name').value.trim();
     if (!name) { $('f_err').textContent = '이름을 적어주세요.'; return; }
@@ -260,22 +250,37 @@
     /* ⚠️ species 를 반드시 실어 보냅니다. animals.species 는 not null 인데
        save_row 안의 jsonb_populate_record 는 칼럼 기본값을 적용하지 않습니다.
        (supabase_v17.sql / v19.sql 머리말) */
-    const row = Object.assign({}, S.edit.row || {}, {
+    const selectedMorphs = pick('v');
+    const lineTraitIds = new Set(B.traitOptions().map(t => t[0]));
+    const selectedLineTraits = selectedMorphs.filter(id => lineTraitIds.has(id));
+    const scoreValues = {};
+    document.querySelectorAll('[data-line-trait-score]').forEach(function (control) {
+      scoreValues[control.dataset.lineTraitScore] = control.value;
+    });
+    const fields = {
       species: (S.edit.row && S.edit.row.species) || S.species,
       name: name,
       sex: $('f_sex').value || null,
       hatch_date: $('f_hatch').value || null,
-      morphs: pick('v'), hets: pick('h'),
+      morphs: selectedMorphs, hets: pick('h'),
+      line_trait_scores: LineTraitScores.fromForm(selectedLineTraits, scoreValues),
       parent_a: $('f_pa').value || null, parent_b: $('f_pb').value || null,
       note: $('f_note').value.trim() || null
-    });
-    /* 색 강도는 라인브리딩 형질이 있는 종에서만 칸이 뜹니다. 칸이 없을 때
-       null 을 밀어 넣으면 이미 적어둔 값을 지우게 되므로 손대지 않습니다. */
-    if ($('f_grade')) row.color_grade = parseInt($('f_grade').value, 10) || null;
-    /* undefined 면 손대지 않습니다 — v19 이후 save_row 가 합치므로 안 보내면
-       기존 사진이 그대로 남습니다. null 을 보내야 지워집니다. */
-    if (pendingPhoto !== undefined) row.photo_url = pendingPhoto;
-    act(async () => { await A.saveAnimal(row); S.edit = null; }, '저장했습니다');
+    };
+    return act(async () => {
+      const photos = await CarePhotos.prepare();
+      const row = Object.assign({}, S.edit.row || {}, fields, photos);
+      try {
+        await A.saveAnimal(row);
+      } catch (error) {
+        const rollback = await CarePhotos.rollback();
+        if (!rollback.ok) throw new Error(CarePhotos.t('rollbackWarning'));
+        throw error;
+      }
+      const cleanup = await CarePhotos.commit(photos);
+      S.edit = null;
+      return cleanup;
+    }, cleanup => cleanup && cleanup.ok ? '저장했습니다' : CarePhotos.t('cleanupWarning'));
   }
 
   /* ── 페어링 ────────────────────────────────────────────────────────── */
@@ -290,6 +295,9 @@
     return h + S.pairs.map(p =>
       '<div class="card"><div class="info"><div class="nm">' + esc(p.name || '이름 없는 페어링') + '</div>'
       + '<div class="ms">' + esc(nameById(p.male)) + ' ♂ × ' + esc(nameById(p.female)) + ' ♀'
+      + (p.target_morph ? '<br>목표: ' + esc(p.target_morph) : '')
+      + (p.project_id ? '<br>🎯 ' + esc((projectById(p.project_id) || {}).name || '-') + ' · '
+          + esc(goalText('projectStep')) + ' ' + esc(p.project_step || '-') : '')
       + (p.note ? '<br>' + esc(p.note) : '') + '</div></div>'
       + '<div class="acts"><button class="mini" data-edit="pair:' + p.id + '">'
       + icon('bi-pencil') + '수정</button></div></div>').join('');
@@ -297,10 +305,15 @@
 
   function pairForm(p) {
     p = p || {};
+    const calculation = normalizedCalculation(p.calculation || S.importDraft);
     const opt = (sel, filter) => '<option value="">선택 안 함</option>'
       + S.animals.filter(filter).map(a => '<option value="' + a.id + '"'
         + (sel === a.id ? ' selected' : '') + '>' + esc(a.name || '이름 없음') + '</option>').join('');
     return '<div class="pad"><div class="lbl">' + (p.id ? '페어링 수정' : '페어링 등록') + '</div>'
+      + calculationCard(calculation)
+      + (p.project_id ? '<div class="note info"><i class="bi bi-bullseye" aria-hidden="true"></i><span><b>'
+          + esc(goalText('pairingProject')) + '</b><br>' + esc((projectById(p.project_id) || {}).name || p.target_morph || '-')
+          + ' · ' + esc(goalText('projectStep')) + ' ' + esc(p.project_step || 1) + '</span></div>' : '')
       + '<div class="lbl2"><label for="p_name">이름</label></div>'
       + '<input class="in" id="p_name" value="' + esc(p.name || '') + '" placeholder="예) 2026 A라인">'
       + '<div class="row2">'
@@ -309,14 +322,70 @@
       + '<div><div class="lbl2">암컷</div><select class="in" id="p_f" aria-label="암컷">'
       + opt(p.female, a => a.sex !== 'male') + '</select></div></div>'
       + '<div class="hint">성별을 적어둔 개체만 각 칸에 나옵니다. 미상은 양쪽 모두에 나옵니다.</div>'
+      + '<div class="lbl2"><label for="p_target">목표 모프 (선택)</label></div>'
+      + '<input class="in" id="p_target" value="' + esc(p.target_morph || '') + '" maxlength="120" placeholder="예) 블랙나이트 크로스">'
       + '<div class="lbl2"><label for="p_note">메모</label></div>'
-      + '<input class="in" id="p_note" value="' + esc(p.note || '') + '">'
+      + '<textarea class="in" id="p_note" maxlength="1000">' + esc(p.note || '') + '</textarea>'
       + '<div class="err" id="p_err"></div>'
       + '<div class="formbtns"><button class="btn" id="p_save">' + icon('bi-check-lg') + '저장</button>'
       + '<button class="btn ghost" data-cancel="1">취소</button>'
       + (p.id ? '<button class="btn danger" data-del="pair:' + p.id + '" style="margin-left:auto">'
                 + icon('bi-trash3') + '삭제</button>' : '')
       + '</div></div>';
+  }
+
+  function normalizedCalculation(value) {
+    if (!value || !D) return null;
+    try { return D.sanitize(value); } catch (e) { return null; }
+  }
+
+  function calculationCard(calculation) {
+    if (!calculation) return '';
+    const rows = calculation.results.slice(0, 5).map(r => {
+      const pct = r.probability * 100;
+      return '<div><b>' + (pct >= 9.95 ? pct.toFixed(0) : pct.toFixed(1)) + '%</b> '
+        + esc(r.label) + '</div>';
+    }).join('');
+    const extra = calculation.results.length > 5
+      ? '<div>외 ' + (calculation.results.length - 5) + '개 결과</div>'
+      : '';
+    return '<div class="note info">' + icon('bi-calculator')
+      + '<div><b>계산기에서 가져온 결과</b>'
+      + '<div class="hint">부모 A: ' + esc(calculation.parents.A.label)
+      + '<br>부모 B: ' + esc(calculation.parents.B.label) + '</div>'
+      + rows + extra
+      + '<div class="hint">실제 등록된 개체가 있다면 아래에서 연결해 주세요. 저장 전까지 서버에는 기록되지 않습니다.</div>'
+      + '</div></div>';
+  }
+
+  function openCalculationAsPair(value) {
+    const incoming = normalizedCalculation(value);
+    if (!incoming || incoming.species !== S.species) return;
+    S.importDraft = incoming;
+    S.tab = 'pair';
+    S.edit = {
+      what: 'pair',
+      row: {
+        name: (incoming.parents.A.label + ' × ' + incoming.parents.B.label).slice(0, 120),
+        species: incoming.species,
+        calculation: incoming,
+        calculated_at: incoming.calculatedAt
+      }
+    };
+    try { history.replaceState(null, '', '?species=' + S.species + '&from=analysis#pair'); } catch (e) {}
+    render();
+  }
+
+  function tabAnalysis() {
+    if (!window.BreedingWorkspace) {
+      return '<div class="pad"><div class="empty">브리딩 분석 도구를 불러오지 못했습니다.</div></div>';
+    }
+    return BreedingWorkspace.html({
+      species: S.species,
+      language: document.documentElement.lang || 'ko',
+      pairs: S.pairs,
+      calculatorUrl: CORES[S.species].calc
+    });
   }
 
   /* ── 클러치 ────────────────────────────────────────────────────────── */
@@ -395,6 +464,18 @@
      판정은 breeding-spec.js 의 goalCheck 가 대립인자 단위로 합니다. 유전자
      단위로 보면 세이블 가진 개체가 카푸치노에 도움이 되는 것처럼 나옵니다. */
   function tabGoal() {
+    return BreedingGoalUI.html({
+      mode: S.goalMode,
+      species: S.species,
+      animals: S.animals,
+      projects: S.projects,
+      pairings: S.pairs,
+      traits: B.traitOptions(),
+      geneticHtml: geneticGoalPanel()
+    });
+  }
+
+  function geneticGoalPanel() {
     if (!CORES[S.species].goal) {
       return '<div class="pad"><div class="lbl">목표 모프 역산</div>'
         + '<div class="empty" style="margin-top:12px">' + icon('bi-hourglass-split')
@@ -509,11 +590,30 @@
     document.querySelectorAll('.tab').forEach(t =>
       t.classList.toggle('on', t.getAttribute('data-t') === S.tab));
     $('body').innerHTML =
-      ({ animals: tabAnimals, pair: tabPair, clutch: tabClutch, goal: tabGoal }[S.tab])();
+      ({ animals: tabAnimals, pair: tabPair, clutch: tabClutch, goal: tabGoal,
+         analysis: tabAnalysis }[S.tab])();
     /* 사진은 비공개 버킷이라 서명 주소를 받아야 보입니다.
        다 그린 뒤 한 번에 채웁니다 (assets/photo.js). */
     Photo.hydrate($('body'), A.sb);
-
+    if (S.tab === 'analysis' && window.BreedingWorkspace) {
+      BreedingWorkspace.bind($('body'), { onImport: openCalculationAsPair });
+    }
+    if (S.tab === 'goal' && window.BreedingGoalUI) {
+      BreedingGoalUI.bind($('body'), {
+        onModeChange: mode => { S.goalMode = mode; },
+        createProject: async project => { await A.createBreedingProject(project); await loadAll(); render(); },
+        updateProject: async (project, changes) => {
+          await A.updateBreedingProject(project, changes); await loadAll(); render();
+        },
+        deleteProject: async project => { await A.deleteBreedingProject(project); await loadAll(); render(); },
+        pairCandidate: async (project, candidate) => {
+          S.edit = { what: 'pair', row: BreedingProjectFlow.pairingDraft(project, candidate) };
+          S.tab = 'pair';
+          try { history.replaceState(null, '', '?species=' + S.species + '#pair'); } catch (error) {}
+          render();
+        }
+      });
+    }
   }
 
   document.addEventListener('click', function (ev) {
@@ -522,17 +622,34 @@
     const d = t.dataset;
 
     if (t.classList.contains('tab')) {
-      S.tab = t.getAttribute('data-t'); S.edit = null;
-      try { history.replaceState(null, '', '?species=' + S.species + '#' + S.tab); } catch (e) {}
+      const nextTab = t.getAttribute('data-t');
+      const leave = S.edit && S.edit.what === 'animal' ? CarePhotos.cancel() : Promise.resolve();
+      return leave.then(function () {
+        S.tab = nextTab;
+        S.edit = null;
+        try { history.replaceState(null, '', '?species=' + S.species + '#' + S.tab); } catch (e) {}
+        render();
+      });
+    }
+    if (d.carePhotoRemove) {
+      CarePhotos.remove(d.carePhotoRemove);
+      CarePhotos.refresh(document, A.sb);
+      return;
+    }
+    if (d.cancel) {
+      const leave = S.edit && S.edit.what === 'animal' ? CarePhotos.cancel() : Promise.resolve();
+      return leave.then(function () { S.edit = null; render(); });
+    }
+    if (d.new) {
+      S.edit = { what: d.new, row: null };
+      if (d.new === 'animal') CarePhotos.begin({}, A);
       return render();
     }
-    if (d.cancel) { S.edit = null; return render(); }
-    if (d.new) { S.edit = { what: d.new, row: null }; pendingPhoto = undefined; return render(); }
     if (d.edit) {
       const [what, id] = d.edit.split(':');
       const src = { animal: S.animals, pair: S.pairs, clutch: S.clutches }[what];
       S.edit = { what: what, row: src.filter(x => x.id === id)[0] };
-      pendingPhoto = undefined;
+      if (what === 'animal') CarePhotos.begin(S.edit.row, A);
       return render();
     }
     if (d.del) {
@@ -540,24 +657,40 @@
       const label = { animal: '개체', pair: '페어링', clutch: '클러치' }[what];
       if (!confirm('이 ' + label + '을(를) 지울까요? 되돌릴 수 없습니다.')) return;
       const table = { animal: 'animals', pair: 'pairings', clutch: 'clutches' }[what];
-      return act(async () => { await A.deleteRow(table, id); S.edit = null; }, '삭제했습니다');
-    }
-    if (t.id === 'f_imgdel') {
-      pendingPhoto = null;
-      const p = $('f_prev'), m = $('f_imgmsg');
-      if (p) p.innerHTML = '<span>없음</span>';
-      if (m) m.textContent = '저장을 눌러야 지워집니다.';
-      t.remove();
-      return;
+      const animal = what === 'animal' ? S.animals.filter(x => x.id === id)[0] : null;
+      return act(async () => {
+        await A.deleteRow(table, id);
+        if (animal) {
+          await CarePhotos.cancel();
+          const cleanup = await CarePhotos.deleteAnimalPhotos(animal, A);
+          S.edit = null;
+          return cleanup;
+        }
+        S.edit = null;
+        return { ok: true };
+      }, cleanup => cleanup && cleanup.ok ? '삭제했습니다' : CarePhotos.t('cleanupWarning'));
     }
     if (t.id === 'f_save') return saveAnimal();
     if (t.id === 'p_save') {
+      const current = S.edit.row || {};
+      const calculation = normalizedCalculation(current.calculation || S.importDraft);
       const row = Object.assign({}, S.edit.row || {}, {
         name: $('p_name').value.trim() || null,
         male: $('p_m').value || null, female: $('p_f').value || null,
-        note: $('p_note').value.trim() || null
+        note: $('p_note').value.trim() || null,
+        species: S.species,
+        target_morph: $('p_target').value.trim() || null,
+        project_id: current.project_id || null,
+        project_step: current.project_id ? (current.project_step || 1) : null,
+        calculation: calculation,
+        calculated_at: calculation ? calculation.calculatedAt : (current.calculated_at || null)
       });
-      return act(async () => { await A.saveRow('pairings', row); S.edit = null; }, '저장했습니다');
+      return act(async () => {
+        await A.saveRow('pairings', row);
+        if (S.importDraft && D) D.clear();
+        S.importDraft = null;
+        S.edit = null;
+      }, '브리딩 프로젝트에 저장했어요');
     }
     if (t.id === 'c_save') {
       const temp = $('c_t').value ? Number($('c_t').value) : null;
@@ -580,8 +713,26 @@
     if (t.id === 'g_run') return runGoal();
   });
 
-  document.addEventListener('change', function (ev) {
-    if (ev.target.id === 'f_img') { pickPhoto(ev.target.files && ev.target.files[0]); return; }
+  document.addEventListener('change', async function (ev) {
+    const slot = ev.target.dataset && ev.target.dataset.carePhotoPick;
+    if (slot) {
+      try {
+        const selected = await CarePhotos.select(slot, ev.target.files && ev.target.files[0]);
+        if (selected) CarePhotos.refresh(document, A.sb);
+      } catch (e) {
+        toast(A.friendly(e));
+      } finally {
+        ev.target.value = '';
+      }
+      return;
+    }
+    if (ev.target.classList && ev.target.classList.contains('line-trait')) {
+      const score = ev.target.closest('.line-score-row').querySelector('[data-line-trait-score]');
+      score.disabled = !ev.target.checked;
+      score.hidden = !ev.target.checked;
+      if (!ev.target.checked) score.value = '';
+      return;
+    }
     if (ev.target.id !== 'species') return;
     /* 코어를 갈아끼울 수 없으므로 페이지를 다시 엽니다 (머리말 참고) */
     location.href = 'breeding.html?species=' + encodeURIComponent(ev.target.value) + '#' + S.tab;
@@ -613,7 +764,7 @@
     const q = new URLSearchParams(location.search).get('species');
     S.species = CORES[q] ? q : 'gecko';
     const hash = (location.hash || '').replace('#', '');
-    if (['animals', 'pair', 'clutch', 'goal'].indexOf(hash) >= 0) S.tab = hash;
+    if (['animals', 'pair', 'clutch', 'goal', 'analysis'].indexOf(hash) >= 0) S.tab = hash;
 
     await A.boot();
     A.logVisit();
@@ -624,6 +775,7 @@
     try {
       await loadScript(CORES[S.species].src + '?v=13');
       await loadScript('breeding-spec.js?v=13');
+      await loadScript('/assets/linebreeding-planner.js?v=20260731a');
     } catch (e) {
       gate('bi-exclamation-triangle', '계산기 데이터를 불러오지 못했습니다', esc(e.message), '/care/', '케어로');
       return;
@@ -636,7 +788,7 @@
     }
 
     $('btitle').textContent = CORES[S.species].ko + ' 브리딩';
-    $('bsub').textContent = '개체 · 페어링 · 클러치를 기록합니다';
+    $('bsub').textContent = '개체 · 페어링 · 클러치 · 계산 분석을 관리합니다';
     $('species').innerHTML = Object.keys(CORES).map(k =>
       '<option value="' + k + '"' + (k === S.species ? ' selected' : '') + '>'
       + esc(CORES[k].ko) + '</option>').join('');
@@ -645,6 +797,11 @@
 
     try { await loadAll(); } catch (e) {
       gate('bi-exclamation-triangle', '불러오지 못했습니다', esc(A.friendly(e)), '/care/', '케어로');
+      return;
+    }
+    const incoming = D ? BreedingDraft.load(S.species) : null;
+    if (incoming) {
+      openCalculationAsPair(incoming);
       return;
     }
     render();

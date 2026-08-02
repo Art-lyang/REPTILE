@@ -5,6 +5,25 @@ function escapeHtml(s){return String(s).replace(/[&<>"]/g,function(x){return {'&
 function gName(g){ return g[LANG]||g.en; }
 function gSuper(g){ return g['super'+LANG.charAt(0).toUpperCase()+LANG.slice(1)]||g.superEn; }
 function pName(p){ return p[LANG]||p.en; }
+function leoNorm(value){
+  return String(value||'').toLowerCase().replace(/[\s·・.()（）\-_/&]/g,'');
+}
+function leoHaystack(item){
+  if(!item) return '';
+  const names=[
+    item.id,
+    item.ko, item.en, item.zh, item.ja,
+    item.superKo, item.superEn, item.superZh, item.superJa
+  ].concat(item.alias||[]);
+  return names.filter(Boolean).map(leoNorm).join('|');
+}
+function leoMatches(item, query){
+  if(!query) return true;
+  return leoHaystack(item).indexOf(leoNorm(query))>=0;
+}
+function leoSearchKeeps(item, selected, query){
+  return selected || !query || leoMatches(item, query);
+}
 var CORE_T = { ko:{normal:'노멀',visualTag:'비주얼',hetShort:'헷',superShort:'슈퍼폼'},
                en:{normal:'Normal',visualTag:'Visual',hetShort:'het',superShort:'Super form'},
                zh:{normal:'普通',visualTag:'表现',hetShort:'het',superShort:'超级形态'},
@@ -57,7 +76,7 @@ const DONATE_ACCT = '3333-17-6613203';
       (terms.html 에 관련 문단이 준비되어 있으니 사업자명만 채우면 됩니다)
    2. 만 14세 미만 이용자에게는 맞춤형 광고를 노출하지 않도록 설정해야 합니다.
    3. 애드센스 등 대부분의 네트워크는 자체 도메인·충분한 콘텐츠를 요구합니다.  */
-const AD_ENABLED  = true;
+const AD_ENABLED  = false;
 const AD_HTML     = '';
 const AD_PROVIDER = '';    // 예: 'Google AdSense' — 채우면 개인정보처리방침 안내에 표시됨
 /* --- 백엔드(Supabase) 접속 정보는 assets/studio-config.js 로 옮겼습니다.
@@ -78,6 +97,7 @@ const GENES = [
   {id:'marble',   type:'rec', family:'eye', ko:'마블 아이', en:'Marble Eye', zh:'大理石眼', ja:'マーブルアイ'},
   {id:'blizzard', type:'rec', family:'patternless', ko:'블리자드', en:'Blizzard', zh:'暴雪', ja:'ブリザード'},
   {id:'murphy',   type:'rec', family:'patternless', ko:'머피 패턴리스', en:'Murphy Patternless', zh:'墨菲无纹', ja:'マーフィーパターンレス'},
+  {id:'noir',     type:'rec', family:'melanisticgene', risk:true, ko:'느와르', en:'Noir', zh:'Noir（黑化）', ja:'ノワール'},
   /* 라인브리딩에 '자이언트' 로 있던 것을 열성 유전 형질로 옮기고 이름을
      '슈퍼자이언트' 로 바꿨습니다. 이제 확률 계산 대상이고, 한 개만 있으면
      헷 보인자로 표시됩니다. */
@@ -87,8 +107,28 @@ const GENES = [
   {id:'lemonfrost',type:'incdom', family:'snowcolor', risk:true, ko:'레몬 프로스트', en:'Lemon Frost', zh:'柠檬霜', ja:'レモンフロスト',
      superKo:'슈퍼 레몬 프로스트', superEn:'Super Lemon Frost', superZh:'超级柠檬霜', superJa:'スーパーレモンフロスト'},
   {id:'enigma',   type:'dom', family:'dominant', risk:true, ko:'에니그마', en:'Enigma', zh:'谜 (Enigma)', ja:'エニグマ'},
-  {id:'wy',       type:'dom', family:'dominant', ko:'화이트 앤 옐로우', en:'White & Yellow', zh:'白与黄 (W&Y)', ja:'ホワイト&イエロー'},
+  {id:'wy',       type:'dom', family:'dominant', ko:'화이트앤옐로우(WY)', en:'White & Yellow', zh:'白与黄 (W&Y)', ja:'ホワイト&イエロー'},
 ];
+
+const LEO_LOCKED_GENE_LABELS = {wy:{ko:'화이트앤옐로우(WY)'}};
+const LEO_LOCKED_GENE_STRUCTURE = {noir:{type:'rec',family:'melanisticgene',risk:true}};
+const LEO_REQUIRED_GENE_IDS = new Set(['noir']);
+function leoApplyLockedGeneLabels(gene){
+  const labels=LEO_LOCKED_GENE_LABELS[gene.id];
+  if(!labels)return gene;
+  Object.keys(labels).forEach(key=>{gene[key]=labels[key];});
+  return gene;
+}
+function leoApplyLockedGeneStructure(gene){
+  const fields=LEO_LOCKED_GENE_STRUCTURE[gene.id];
+  if(!fields)return gene;
+  Object.keys(fields).forEach(key=>{gene[key]=fields[key];});
+  return gene;
+}
+function leoMergeRequiredGenes(loadedGenes,builtinGenes){
+  const loadedIds=new Set(loadedGenes.map(gene=>gene.id));
+  return loadedGenes.concat(builtinGenes.filter(gene=>LEO_REQUIRED_GENE_IDS.has(gene.id)&&!loadedIds.has(gene.id)));
+}
 
 /* ================= 형질 계열 (families) — 표시 순서 & 유전방식 배지 ================= */
 const FAMILIES = [
@@ -98,6 +138,8 @@ const FAMILIES = [
      desc:{ko:'눈 색·구조 변이', en:'Eye color / structure', zh:'眼睛颜色 / 结构', ja:'眼の色・構造'}},
   {id:'patternless', type:'rec', ko:'패턴리스·화이트', en:'Patternless & White', zh:'无纹·白', ja:'パターンレス・白',
      desc:{ko:'패턴·색소 감소', en:'Reduced pattern / pigment', zh:'斑纹 / 色素减少', ja:'模様・色素の減少'}},
+  {id:'melanisticgene', type:'rec', ko:'멜라니스틱 유전 형질', en:'Melanistic gene', zh:'黑化基因', ja:'黒化遺伝形質',
+     desc:{ko:'열성 멜라닌 형질', en:'Recessive melanistic trait', zh:'隐性黑化性状', ja:'劣性の黒化形質'}},
   {id:'size', type:'rec', ko:'크기', en:'Size', zh:'体型', ja:'サイズ',
      desc:{ko:'몸 크기 · 두 개가 모두 모여야 발현', en:'Body size · needs two copies', zh:'体型 · 需两个拷贝', ja:'体の大きさ · 2つ揃って発現'}},
   {id:'snowcolor', type:'incdom', ko:'스노우·색', en:'Snow & Color', zh:'雪花·颜色', ja:'スノー・カラー',
@@ -114,7 +156,7 @@ const POLY = [
   {id:'mandarin',  line:'tangerine', ko:'만다린', en:'Mandarin', zh:'曼达林', ja:'マンダリン'},
   {id:'blood',     line:'tangerine', ko:'블러드', en:'Blood', zh:'血红', ja:'ブラッド'},
   {id:'inferno',   line:'tangerine', ko:'인페르노', en:'Inferno', zh:'地狱火', ja:'インフェルノ'},
-  {id:'sunglow',   line:'tangerine', ko:'썬글로우', en:'Sunglow', zh:'阳光', ja:'サングロー'},
+  {id:'sunglow',   line:'tangerine', implies:{tremper:'mm'}, ko:'썬글로우', en:'Sunglow', zh:'阳光', ja:'サングロー'},
   {id:'electric',  line:'tangerine', ko:'일렉트릭', en:'Electric', zh:'电光', ja:'エレクトリック'},
   {id:'atomic',    line:'tangerine', ko:'아토믹', en:'Atomic', zh:'原子', ja:'アトミック'},
   {id:'tangerinered',line:'tangerine', ko:'레드', en:'Red', zh:'红', ja:'レッド'},
@@ -197,16 +239,15 @@ const POLY = [
   /* ── 알비노를 물고 있는 라인 ──────────────────────────────────────
      레드데빌과 같은 구조입니다. implies 설명은 위 reddevil 항목 참고.
 
-     스모그는 트램퍼를, 오렌지 스모그는 벨을 물고 있습니다. 둘 다 열성이라
-     '최소 보인자(het)' 로 잡습니다. 스모그가 연기처럼 어둡게 나오는 라인인
-     만큼 알비노가 발현된 개체는 아닐 가능성이 큰데, 발현 개체를 가지고
-     계시면 계산기에서 해당 알비노를 '비주얼' 로 올리시면 됩니다.
+     스모그는 트램퍼 알비노, 오렌지 스모그는 벨 알비노가 발현된 라인으로
+     계산합니다. 따라서 다른 모프와 교배하면 해당 알비노의 보인자가
+     자손에게 100% 전달됩니다.
 
-     ⚠️ 트램퍼와 벨은 서로 다른 유전자입니다. 스모그(het 트램퍼) 와
-        오렌지 스모그(het 벨) 를 붙여도 알비노는 안 나옵니다 — 더블 het
+     ⚠️ 트램퍼와 벨은 서로 다른 유전자입니다. 스모그(비주얼 트램퍼) 와
+        오렌지 스모그(비주얼 벨) 를 붙여도 알비노는 안 나옵니다 — 더블 het
         가 될 뿐입니다. 계산기가 이 부분을 이미 안내합니다. */
-  {id:'smog',       implies:{tremper:'het'}, ko:'스모그', en:'Smog', zh:'烟灰', ja:'スモッグ'},
-  {id:'orangesmog', implies:{bell:'het'},    ko:'오렌지 스모그', en:'Orange Smog', zh:'橙烟灰', ja:'オレンジスモッグ'},
+  {id:'smog',       implies:{tremper:'mm'}, ko:'스모그', en:'Smog', zh:'烟灰', ja:'スモッグ'},
+  {id:'orangesmog', implies:{bell:'mm'},    ko:'오렌지 스모그', en:'Orange Smog', zh:'橙烟灰', ja:'オレンジスモッグ'},
 ];
 
 /* ================= 위험 조합 메시지 ================= */
@@ -234,6 +275,13 @@ const DANGER = {
       en:'🛑 This is an <b>Enigma × Enigma</b> pairing. It can produce more severely affected individuals and is generally discouraged.',
       zh:'🛑 这是<b>谜 × 谜 (Enigma × Enigma)</b> 配对，可能产生症状更严重的个体，通常不推荐。',
       ja:'🛑 <b>エニグマ × エニグマ</b>の交配です。より症状の重い個体が出ることがあり、一般的に推奨されません。'},
+  },
+  noir:{
+    any:{level:'med',
+      ko:'⚠️ <b>느와르</b> 비주얼 개체는 난임 또는 번식력 저하 이슈가 있을 수 있습니다. 개체차가 있으므로 교배 전 계통과 번식 이력을 함께 확인해 주세요.',
+      en:'⚠️ Visual <b>Noir</b> animals may have reduced fertility or infertility. This varies by animal, so review lineage and breeding history before pairing.',
+      zh:'⚠️ <b>Noir</b> 表现型个体可能存在生育力下降或不育问题。个体差异较大，配对前请同时确认血统与繁殖记录。',
+      ja:'⚠️ <b>ノワール</b>のビジュアル個体には、繁殖力の低下や不妊の問題が見られる場合があります。個体差があるため、交配前に系統と繁殖履歴も確認してください。'},
   },
 };
 
@@ -333,6 +381,7 @@ const GCOLOR={
   tremper:'#F0E0BE',bell:'#F0E0BE',rainwater:'#F0E0BE',
   eclipse:'#2B2724',marble:'#8A7C64',
   blizzard:'#EDEBE4',murphy:'#CFC7A0',
+  noir:'#24211F',
   macksnow:'#D8D4C8',super_macksnow:'#F1F0EC',lemonfrost:'#EEE7A8',super_lemonfrost:'#F5EEB0',
   enigma:'#DCC78C',wy:'#F1EBD2',
   tangerine:'#E8944A',mandarin:'#E07A2E',blood:'#C7502A',
@@ -353,6 +402,7 @@ function geckoProfile(tokens){
   if(has('blizzard')) base='#EAE7E0';
   if(has('tremper')||has('bell')||has('rainwater')) base='#F2E6CA';  // 알비노 파스텔
   if(has('super_macksnow')) base='#F1F0EC';                          // 슈퍼스노우 화이트
+  if(has('noir')) base='#24211F';
   const albino = has('tremper')||has('bell')||has('rainwater');
   const solidEye = has('eclipse')||has('super_macksnow');            // 이클립스/슈퍼스노우 = 솔리드 블랙아이
   const eye = albino? '#C0392B' : '#2A2622';                         // 알비노 = 레드아이
@@ -534,12 +584,16 @@ function computeWarnings(dists){
   const w=[];
   const distFor=id=>{const d=dists.find(x=>x.g.id===id);return d?d.dist:{NN:0,Nm:0,mm:0};};
   const lf=distFor('lemonfrost');
-  if(lf.mm>0){const d=DANGER.lemonfrost.super; w.push({level:d.level,text:d[LANG]});}
-  else if(lf.Nm>0){const d=DANGER.lemonfrost.het; w.push({level:d.level,text:d[LANG]});}
+  if(lf.mm>0){const d=DANGER.lemonfrost.super; w.push({geneId:'lemonfrost',level:d.level,text:d[LANG]});}
+  else if(lf.Nm>0){const d=DANGER.lemonfrost.het; w.push({geneId:'lemonfrost',level:d.level,text:d[LANG]});}
   const en=distFor('enigma');
   if(en.Nm>0||en.mm>0){
-    const d=DANGER.enigma.any; w.push({level:d.level,text:d[LANG]});
-    if(STATE.A.enigma!=='nn'&&STATE.B.enigma!=='nn'){const d2=DANGER.enigma.double; w.push({level:d2.level,text:d2[LANG]});}
+    const d=DANGER.enigma.any; w.push({geneId:'enigma',level:d.level,text:d[LANG]});
+    if(STATE.A.enigma!=='nn'&&STATE.B.enigma!=='nn'){const d2=DANGER.enigma.double; w.push({geneId:'enigma',level:d2.level,text:d2[LANG]});}
+  }
+  const noir=distFor('noir');
+  if(noir.mm>0||STATE.A.noir==='mm'||STATE.B.noir==='mm'){
+    const d=DANGER.noir.any; w.push({geneId:'noir',level:d.level,text:d[LANG]});
   }
   return w;
 }
@@ -595,7 +649,13 @@ function buildPie(rows){
 function gatherPoly(){
   if(!showPoly) return [];
   return POLY.filter(p=>STATE.A[p.id]==='yes'||STATE.B[p.id]==='yes')
-    .map(p=>({id:p.id, name:pName(p), both:STATE.A[p.id]==='yes'&&STATE.B[p.id]==='yes'}));
+    .map(p=>({
+      id:p.id,
+      name:pName(p),
+      a:STATE.A[p.id]==='yes',
+      b:STATE.B[p.id]==='yes',
+      both:STATE.A[p.id]==='yes'&&STATE.B[p.id]==='yes'
+    }));
 }
 /* 새끼 이름에 붙을 라인브리딩 부분.
    양쪽을 합친 형질 집합이 POLY_COMBOS 에 있으면 그 이름을, 없으면
@@ -618,7 +678,7 @@ function polyLabel(poly){
      원점으로 돌아갑니다. 만다린 × 텐져린 이 만다린이 아니라
      텐져린이 되는 이유입니다. (현직 브리더 확인)
      한 가지 형질만 쓰였다면 고정이 유지되므로 그 라인명을 그대로 둡니다. */
-  if(ids.length===1) return poly[0].name;
+  if(ids.length===1) return poly[0].both ? poly[0].name : '';
   const base=POLY.filter(p=>p.id===[...lines][0])[0];
   return base ? pName(base) : poly.map(p=>p.name).join(' ');
 }

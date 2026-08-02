@@ -10,7 +10,7 @@ const I18N = {
     langLabel:'언어',
     parentA:'부모 A', parentB:'부모 B',
     parentRole:'유전 형질 선택', helpBtn:'선택 도움말', selectedLabel:'선택된 형질',
-    reset:'초기화', calc:'모프 계산하기',
+    reset:'초기화', calc:'모프 계산하기', saveBreeding:'브리딩 관리에 저장',
     polyToggle:'라인브리딩(폴리제닉) 형질 포함', polyToggleHint:'탠저린·볼드 등 — 확률 계산 불가, 참고용으로만 표시',
     polyPresent:'있음', polyAbsent:'없음',
     emptyStart:'부모의 형질을 선택하고 <b>모프 계산하기</b>를 눌러주세요.',
@@ -23,7 +23,11 @@ const I18N = {
     vintageToggle:'추억의 모프 보기', vintageHint:'요즘 보기 힘든 과거 모프·콤보까지 표시', optInfo:'표시 옵션 설명',
     comboLoad:'콤보 개체 불러오기…', donate:'개발자 후원하기', adLabel:'광고', adHint:'이 자리에 광고 코드를 넣을 수 있어요',
     secCombo:'콤보 (탭하면 자동 세팅)', secGene:'유전 모프 (확률 계산)',
+    searchPh:'모프 검색 (예: 블랙나이트, eclipse, 스노우)', searchClear:'검색 지우기',
+    searchNone:'검색 결과가 없습니다. 다른 이름이나 영문 철자로 찾아보세요.',
+    searchCount:function(n){return n+'개 표시 중';},
     impliesOn:'이 라인이 물고 있는 유전자입니다. 열성이라 보인자일 수도, 발현일 수도 있어 <b>최소치</b>로 잡아 확률에 반영했습니다. 눈으로 봐서 발현된 개체면 유전 모프에서 비주얼로 올리세요.',
+    impliesVisual:'이 라인은 위 열성 유전자가 <b>비주얼로 발현된 모프</b>입니다. 계산기에 비주얼 유전자형으로 반영했습니다.',
     impliesOff:'위 유전자가 꺼져 있습니다. 이 라인이 실제로 물고 있다면 확률이 실제보다 낮게 나옵니다.',
     comboNote:'<b>콤보 이름</b> — 계산 결과가 알려진 콤보와 일치하면 디자이너 명칭(예: 갤럭시, 레이다)을 함께 표시합니다. 다만 탠저린·하이포·TUG 스노우 등 라인브리딩이 필요한 콤보(앱터 등)는 자동 인식되지 않습니다.',
     warnH:'⚠️ 주의가 필요한 유전 조합',
@@ -42,7 +46,7 @@ const I18N = {
     mailNote:'정보수정, 버그 및 업데이트 건의는 <b>문의하기</b>로 보내주세요',
     credit:'해당 레오파드 모프 계산기는 <b>Stylish Gecko</b> 의 자문 및 도움을 받아 제작되었습니다.',
     seoIntroH:'레오파드 게코 모프 계산기',
-    seoIntro:'부모 개체의 유전 형질을 고르면 새끼에게 나올 모프와 확률을 멘델 유전 법칙으로 계산합니다. 트램퍼·벨·레인워터 알비노, 이클립스, 블리자드, 머피 패턴리스, 맥스노우, 레몬 프로스트, 에니그마, 화이트 앤 옐로우, 슈퍼자이언트를 지원하며 랩터·갤럭시·디아블로 블랑코·레이다·타이푼 등 콤보 명칭도 함께 표시합니다. 탠저린·만다린·멜라니스틱 같은 라인브리딩 형질은 계열을 따져 멜라텐져린처럼 이름을 붙여줍니다. 한국어·영어·중국어·일본어를 지원하며 회원가입 없이 무료로 쓸 수 있습니다.',
+    seoIntro:'부모 개체의 유전 형질을 고르면 새끼에게 나올 모프와 확률을 멘델 유전 법칙으로 계산합니다. 트램퍼·벨·레인워터 알비노, 이클립스, 블리자드, 머피 패턴리스, 맥스노우, 레몬 프로스트, 에니그마, 화이트앤옐로우(WY), 슈퍼자이언트를 지원하며 랩터·갤럭시·디아블로 블랑코·레이다·타이푼 등 콤보 명칭도 함께 표시합니다. 탠저린·만다린·멜라니스틱 같은 라인브리딩 형질은 계열을 따져 멜라텐져린처럼 이름을 붙여줍니다. 한국어·영어·중국어·일본어를 지원하며 회원가입 없이 무료로 쓸 수 있습니다.',
     footer:'확률은 멘델 유전 법칙에 따른 이론값입니다 · 라인브리딩(폴리제닉) 형질은 확률 계산 대상이 아닙니다',
   },
   en:{
@@ -52,7 +56,7 @@ const I18N = {
     langLabel:'Language',
     parentA:'Parent A', parentB:'Parent B',
     parentRole:'Select genetic traits', helpBtn:'Selection help', selectedLabel:'Selected traits',
-    reset:'Reset', calc:'Calculate Morphs',
+    reset:'Reset', calc:'Calculate Morphs', saveBreeding:'Save to Breeding',
     polyToggle:'Include line-bred (polygenic) traits', polyToggleHint:'Tangerine, Bold, etc. — not probability-based, shown for reference only',
     polyPresent:'Present', polyAbsent:'None',
     emptyStart:'Set the parents’ traits and tap <b>Calculate Morphs</b>.',
@@ -65,7 +69,11 @@ const I18N = {
     vintageToggle:'Show vintage morphs', vintageHint:'Include older, rarely-seen morphs and combos', optInfo:'About these options',
     comboLoad:'Load a combo animal…', donate:'Support the developer', adLabel:'Advertisement', adHint:'Place your ad code here',
     secCombo:'Combos (tap to auto-set)', secGene:'Genetic morphs (calculated)',
+    searchPh:'Search morphs (e.g. Black Night, eclipse, snow)', searchClear:'Clear search',
+    searchNone:'No matches. Try another spelling or a translated name.',
+    searchCount:function(n){return n+' shown';},
     impliesOn:'This line carries the gene above. It is recessive, so an animal may be a carrier or visual — counted here at the <b>minimum</b>. If yours is visually albino, raise it to Visual under Genetic morphs.',
+    impliesVisual:'This line is a morph in which the recessive gene above is <b>visually expressed</b>. It is included in the calculation as a visual genotype.',
     impliesOff:'The gene above is switched off. If your line does carry it, the odds shown are lower than the real ones.',
     comboNote:'<b>Combo names</b> — when an outcome matches a known combo, its designer name (e.g. Galaxy, Radar) is shown. Combos requiring line-bred traits (Tangerine, Hypo, TUG snow) such as APTOR aren’t auto-detected.',
     warnH:'⚠️ Genetics that need caution',
@@ -94,7 +102,7 @@ const I18N = {
     langLabel:'语言',
     parentA:'亲本 A', parentB:'亲本 B',
     parentRole:'选择遗传性状', helpBtn:'选择帮助', selectedLabel:'已选性状',
-    reset:'重置', calc:'计算形态',
+    reset:'重置', calc:'计算形态', saveBreeding:'保存到繁育管理',
     polyToggle:'包含线育（多基因）性状', polyToggleHint:'橘化、粗条纹等 — 无法计算概率，仅供参考',
     polyPresent:'有', polyAbsent:'无',
     emptyStart:'设置父母的性状后，点击<b>计算形态</b>。',
@@ -107,7 +115,11 @@ const I18N = {
     vintageToggle:'显示怀旧形态', vintageHint:'包含现在少见的旧形态与组合', optInfo:'选项说明',
     comboLoad:'载入组合个体…', donate:'支持开发者', adLabel:'广告', adHint:'可在此处放置广告代码',
     secCombo:'组合（点击自动设置）', secGene:'遗传形态（可计算）',
+    searchPh:'搜索形态（例如 Black Night、eclipse、snow）', searchClear:'清除搜索',
+    searchNone:'没有匹配的形态，请换个写法或语言名称试试。',
+    searchCount:function(n){return '显示 '+n+' 项';},
     impliesOn:'该线育品系携带上述基因。因其为隐性，个体可能是携带者也可能已表现，此处按<b>最低值</b>计入概率。若您的个体肉眼可见为白化，请在「遗传形态」中调整为表现型。',
+    impliesVisual:'该品系是上述隐性基因已<b>表现</b>的形态。计算器会按表现型基因型计入概率。',
     impliesOff:'上述基因处于关闭状态。若该品系实际携带此基因，显示的概率会低于真实值。',
     comboNote:'<b>组合名称</b> — 当结果与已知组合一致时，会显示其商品名（如 Galaxy、Radar）。需要线育性状（橘化、Hypo、TUG 雪花）的组合（如 APTOR）不会自动识别。',
     warnH:'⚠️ 需要注意的基因组合',
@@ -136,7 +148,7 @@ const I18N = {
     langLabel:'言語',
     parentA:'親 A', parentB:'親 B',
     parentRole:'遺伝形質を選択', helpBtn:'選択ヘルプ', selectedLabel:'選択した形質',
-    reset:'リセット', calc:'モルフを計算',
+    reset:'リセット', calc:'モルフを計算', saveBreeding:'ブリーディング管理に保存',
     polyToggle:'ラインブリード（ポリジェニック）形質を含める', polyToggleHint:'タンジェリン・ボールド等 — 確率計算は不可、参考表示のみ',
     polyPresent:'あり', polyAbsent:'なし',
     emptyStart:'両親の形質を選んで<b>モルフを計算</b>を押してください。',
@@ -149,7 +161,11 @@ const I18N = {
     vintageToggle:'懐かしのモルフを表示', vintageHint:'今では見かけない古いモルフ・コンボも表示', optInfo:'表示オプションの説明',
     comboLoad:'コンボ個体を読み込む…', donate:'開発者を支援', adLabel:'広告', adHint:'ここに広告コードを配置できます',
     secCombo:'コンボ（タップで自動設定）', secGene:'遺伝モルフ（確率計算）',
+    searchPh:'モルフ検索（例: Black Night、eclipse、snow）', searchClear:'検索を消去',
+    searchNone:'該当するモルフがありません。別の表記や言語名でお試しください。',
+    searchCount:function(n){return n+'件表示中';},
     impliesOn:'このラインが持っている遺伝子です。劣性のため保因か発現かは個体によるので、<b>最小値</b>として確率に反映しました。見た目でアルビノなら「遺伝モルフ」でビジュアルに上げてください。',
+    impliesVisual:'このラインは上記の劣性遺伝子が<b>ビジュアルとして発現したモルフ</b>です。計算にはビジュアル遺伝子型として反映されます。',
     impliesOff:'上記の遺伝子がオフになっています。このラインが実際に持っている場合、表示される確率は実際より低くなります。',
     comboNote:'<b>コンボ名</b> — 結果が既知のコンボと一致すると、そのデザイナー名（例：Galaxy、Radar）を表示します。ラインブリード形質（タンジェリン・ハイポ・TUGスノー）が必要なコンボ（APTOR等）は自動判別されません。',
     warnH:'⚠️ 注意が必要な遺伝の組み合わせ',
@@ -176,7 +192,8 @@ const I18N = {
 /* 언어별 주소(/en/gecko/ 등)는 이 파일보다 먼저 var LANG 을 정해둡니다.
    여기서 무조건 'ko' 로 덮어쓰면 그 주소가 항상 한국어로 뜼게 됩니다. */
 if(!I18N[LANG]) LANG='ko';
-let showPoly=true, showPartialHet=false, showVintage=false, hasResult=false;
+let showPoly=true, showPartialHet=false, showVintage=false, hasResult=false, lastBreedingDraft=null;
+const LEO_QUERY={A:'',B:''};
 function L(){ return I18N[LANG]; }
 function gName(g){ return g[LANG]; }
 function gSuper(g){ return g['super'+LANG.charAt(0).toUpperCase()+LANG.slice(1)]; }
@@ -229,42 +246,128 @@ function impliesNote(side){
   /* 어긋난 것부터 — 확률이 틀어져 있는 상태라 먼저 보여야 합니다 */
   if(rep.off.length) html+='<p class="bad"><i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>'
     +rep.off.map(row).join('<br>')+'<br><span>'+t.impliesOff+'</span></p>';
-  if(rep.on.length) html+='<p><i class="bi bi-link-45deg" aria-hidden="true"></i>'
-    +rep.on.map(row).join('<br>')+'<br><span>'+t.impliesOn+'</span></p>';
+  const carrierRows=rep.on.filter(r=>r.val!=='mm');
+  const visualRows=rep.on.filter(r=>r.val==='mm');
+  if(carrierRows.length) html+='<p><i class="bi bi-link-45deg" aria-hidden="true"></i>'
+    +carrierRows.map(row).join('<br>')+'<br><span>'+t.impliesOn+'</span></p>';
+  if(visualRows.length) html+='<p><i class="bi bi-link-45deg" aria-hidden="true"></i>'
+    +visualRows.map(row).join('<br>')+'<br><span>'+t.impliesVisual+'</span></p>';
   box.innerHTML=html;
   return box;
 }
 function buildParent(side){
   const host=document.getElementById(side==='A'?'parentA':'parentB');
+  const query=LEO_QUERY[side];
   host.innerHTML='';
   const matched=matchCombo(parentTokens(side));
-  // 명칭 있는 콤보면 부모 카드에 명칭 표시 (예: = 갤럭시)
-  if(matched){ const badge=document.createElement('div'); badge.className='parentcombo'+(side==='B'?' b':''); badge.textContent='= '+(matched[LANG]||matched.en); host.appendChild(badge); }
-  // 콤보 칩 (탭하면 구성 유전자 자동 세팅)
-  host.appendChild(secHeader(L().secCombo));
-  const cgrid=document.createElement('div'); cgrid.className='chipgrid';
-  COMBOS.filter(c=>!c.vintage||showVintage||c===matched).forEach(c=>cgrid.appendChild(comboChip(c, side, matched)));
-  host.appendChild(cgrid);
-  // 유전 모프 (열성/우성 구분 없이 하나의 칩셋)
-  host.appendChild(secHeader(L().secGene));
-  const grid=document.createElement('div'); grid.className='chipgrid';
-  GENES.forEach(g=>{
-    if(g.type==='incdom'){          // 불완전우성: 비주얼/슈퍼를 각각 별도 칩으로
-      grid.appendChild(incdomChip(g, side, 'het', gName(g)));
-      grid.appendChild(incdomChip(g, side, 'mm', gSuper(g)));
-    } else {
-      grid.appendChild(chipFor(g, side, false));
-    }
-  });
-  host.appendChild(grid);
-  // 라인브리딩(폴리제닉) — 확률 계산 불가, 참고용
-  const pf=FAMILIES.find(f=>f.id==='poly');
-  host.appendChild(famHeader(pf));
-  const pgrid=document.createElement('div'); pgrid.className='chipgrid';
-  POLY.forEach(p=>pgrid.appendChild(chipFor(p, side, true)));
-  host.appendChild(pgrid);
-  const inote=impliesNote(side); if(inote) host.appendChild(inote);
+  if(matched){
+    const badge=document.createElement('div');
+    badge.className='parentcombo'+(side==='B'?' b':'');
+    badge.textContent='= '+(matched[LANG]||matched.en);
+    host.appendChild(badge);
+  }
+
+  let shown=0;
+  const combos=COMBOS.filter(combo=>
+    (!combo.vintage||showVintage||combo===matched)
+    && leoSearchKeeps(combo, combo===matched, query)
+  );
+  if(combos.length){
+    host.appendChild(secHeader(L().secCombo));
+    const comboGrid=document.createElement('div');
+    comboGrid.className='chipgrid';
+    combos.forEach(combo=>comboGrid.appendChild(comboChip(combo, side, matched)));
+    host.appendChild(comboGrid);
+    shown+=combos.length;
+  }
+
+  const genes=GENES.filter(gene=>
+    leoSearchKeeps(gene, STATE[side][gene.id]!=='nn', query)
+  );
+  if(genes.length){
+    host.appendChild(secHeader(L().secGene));
+    const geneGrid=document.createElement('div');
+    geneGrid.className='chipgrid';
+    genes.forEach(gene=>{
+      if(gene.type==='incdom'){
+        geneGrid.appendChild(incdomChip(gene, side, 'het', gName(gene)));
+        geneGrid.appendChild(incdomChip(gene, side, 'mm', gSuper(gene)));
+        shown+=2;
+      } else {
+        geneGrid.appendChild(chipFor(gene, side, false));
+        shown+=1;
+      }
+    });
+    host.appendChild(geneGrid);
+  }
+
+  const traits=POLY.filter(trait=>
+    leoSearchKeeps(trait, STATE[side][trait.id]==='yes', query)
+  );
+  if(traits.length){
+    const family=FAMILIES.find(item=>item.id==='poly');
+    host.appendChild(famHeader(family));
+    const traitGrid=document.createElement('div');
+    traitGrid.className='chipgrid';
+    traits.forEach(trait=>traitGrid.appendChild(chipFor(trait, side, true)));
+    host.appendChild(traitGrid);
+    shown+=traits.length;
+  }
+
+  const implication=impliesNote(side);
+  if(implication) host.appendChild(implication);
+  if(query && !shown){
+    const empty=document.createElement('div');
+    empty.className='searchnone';
+    empty.textContent=L().searchNone;
+    host.appendChild(empty);
+  }
+  const count=document.getElementById('cnt'+side);
+  if(count) count.textContent=query ? L().searchCount(shown) : '';
   renderLeoSelected();
+}
+function syncLeoSearchLabels(){
+  ['A','B'].forEach(side=>{
+    const input=document.getElementById('q'+side);
+    const clear=document.getElementById('qclr'+side);
+    if(input){
+      input.placeholder=L().searchPh;
+      input.setAttribute('aria-label',L().searchPh);
+    }
+    if(clear) clear.setAttribute('aria-label',L().searchClear);
+  });
+}
+function resetLeoMorphSearch(){
+  LEO_QUERY.A='';
+  LEO_QUERY.B='';
+  ['A','B'].forEach(side=>{
+    const input=document.getElementById('q'+side);
+    const clear=document.getElementById('qclr'+side);
+    if(input) input.value='';
+    if(clear) clear.classList.remove('show');
+  });
+}
+function initLeoMorphSearch(){
+  ['A','B'].forEach(side=>{
+    const input=document.getElementById('q'+side);
+    const clear=document.getElementById('qclr'+side);
+    if(!input) return;
+    input.addEventListener('input',()=>{
+      LEO_QUERY[side]=input.value;
+      if(clear) clear.classList.toggle('show',!!input.value);
+      buildParent(side);
+    });
+    input.addEventListener('keydown',event=>{
+      if(event.key==='Enter') event.preventDefault();
+    });
+    if(clear) clear.addEventListener('click',()=>{
+      input.value='';
+      LEO_QUERY[side]='';
+      clear.classList.remove('show');
+      buildParent(side);
+      input.focus();
+    });
+  });
 }
 // 칩을 처음 켤 때 기본값 (rec=비주얼, incdom/dom=첫 비주얼 상태)
 function defaultOn(g){ return g.type==='rec'? 'mm' : 'het'; }
@@ -371,6 +474,7 @@ function applyLang(){
   const ad=document.getElementById('adSlot');
   if(AD_ENABLED && !window.__isPrem){ ad.style.display='flex'; ad.innerHTML = AD_HTML || ('<div class="adlbl">'+escapeHtml(t.adLabel)+'</div><div class="adhint">'+escapeHtml(t.adHint)+'</div>'); }
   else ad.style.display='none';
+  syncLeoSearchLabels();
   buildParent('A'); buildParent('B');
   if(hasResult) calculate();
   else document.getElementById('results').innerHTML='<div class="empty">'+t.emptyStart+'</div>';
@@ -412,7 +516,9 @@ function resetAll(){
   /* STATE 를 통째로 갈아엎었으니 implies 기억도 비웁니다.
      안 비우면 '우리가 넣은 값' 이 안 맞아 다음에 라인을 켜도 안 올라갑니다. */
   resetImplies();
+  resetLeoMorphSearch();
   hasResult=false;
+  lastBreedingDraft=null;
   buildParent('A'); buildParent('B');
   document.getElementById('results').innerHTML='<div class="empty">'+L().emptyStart+'</div>';
 }
@@ -461,7 +567,7 @@ function calculate(){
   }
   const anything = (rows&&rows.length) || warnings.length || poly.length;
   hasResult=!!anything;
-  render({rows, warnings, poly, anything});
+  render({rows, warnings, poly, dists, anything});
 }
 
 /* ================= 결과 렌더 ================= */
@@ -478,6 +584,7 @@ function fracStr(prob){
 function render(payload){
   const host=document.getElementById('results'), t=L();
   if(!payload || !payload.anything){
+    lastBreedingDraft=null;
     host.innerHTML='<div class="empty">'+t.emptyNone+'</div>';
     return;
   }
@@ -496,9 +603,10 @@ function render(payload){
      그러면 '(만다린 크로스)' 태그까지 붙이면 같은 말을 두 번 쓰게 돼서,
      서로 다른 라인이 섞였을 때만 태그를 남깁니다. 안내문은 그대로 둘니다. */
   const polyName = (typeof polyLabel==='function') ? polyLabel(payload.poly||[]) : '';
-  const crossTag = (crossPoly.length && crossPoly.length===(payload.poly||[]).length && !polyName)
-    ? '(' + crossPoly.map(p=>p.name).join('·') + ' ' + t.crossTag + ')'
+  const crossName = (crossPoly.length && crossPoly.length===(payload.poly||[]).length && !polyName)
+    ? crossPoly.map(p=>p.name).join('·') + ' ' + t.crossTag
     : '';
+  lastBreedingDraft=makeBreedingDraft(payload,polyName,crossName);
   let html='';
   if(payload.warnings && payload.warnings.length){
     html+='<div class="warnhead">'+t.warnH+'</div>';
@@ -509,25 +617,26 @@ function render(payload){
     html+='<h2>'+t.resultsH+'</h2><div class="summary">'+t.summary(rows.length)+'</div>';
     html+=buildPie(rows);
     html+='<table class="rtable"><thead><tr><th>'+t.colProb+'</th><th>'+t.colVisual+'</th><th>'+t.colHet+'</th></tr></thead><tbody>';
-    rows.forEach(r=>{
+    rows.forEach((r,rowIndex)=>{
       const pctNum=r.prob*100, pct= pctNum>=9.95? pctNum.toFixed(0):pctNum.toFixed(1);
       let vtext;
       /* 라인브리딩은 확률 대상이 아니라 모든 새끼에 똑같이 붙습니다.
          유전 모프가 없으면 '노멀' 대신 라인 이름만 남습니다. */
       const baseLabel = polyName
         ? (r.isNormal ? polyName : (r.visualLabel+' '+polyName))
-        : r.visualLabel;
+        : (r.isNormal && crossName ? crossName : r.visualLabel);
       if(r.combo) vtext='<span class="combotag">'+t.comboTag+'</span>'+escapeHtml(r.combo)
         +(polyName? ' '+escapeHtml(polyName):'')
         +'<div class="submorph">'+escapeHtml(r.visualLabel)+'</div>';
       else vtext=escapeHtml(baseLabel);
       // 다인자(라인브리딩) 크로스 표기 — 발현 여부와 무관하게 유전자에 섞였음을 남깁니다.
-      if(crossTag) vtext+='<span class="crosstag">'+escapeHtml(crossTag)+'</span>';
+      if(crossName && !r.isNormal) vtext+='<span class="crosstag">('+escapeHtml(crossName)+')</span>';
       /* TODO(모프 설명): 여기에 r.tokens 기준 간략 설명을 넣을 자리입니다.
          gecko-core.js 의 GENES/POLY 에 desc 필드를 추가한 뒤 아래 주석을 풀어주세요.
          vtext += '<div class="morphdesc">'+escapeHtml(morphDescFor(r.tokens))+'</div>'; */
+      const explainButton=window.GeckoExplain?GeckoExplain.button(LANG,rowIndex):'';
       const vcell='<div class="visrow"><span class="geckothumb">'+geckoSVG(geckoProfile(r.tokens),46)+'</span>'
-        +'<span class="vtext'+(r.isNormal?' isnorm':'')+'">'+vtext+'</span></div>';
+        +'<span class="vtext'+(r.isNormal?' isnorm':'')+'">'+vtext+explainButton+'</span></div>';
       const hetParts=[];
       r.guaranteed.forEach(n=>hetParts.push('<span class="het100">100HET '+escapeHtml(n)+'</span>'));
       if(showPartialHet) r.partial.forEach(p=>hetParts.push('<span class="hetp">'+p.pct+'HET '+escapeHtml(p.name)+'</span>'));
@@ -535,10 +644,22 @@ function render(payload){
       html+='<tr><td class="c-prob"><span class="cdot" style="background:'+r._color+'"></span>'+pct+'%</td>'
         +'<td class="c-vis">'+vcell+'</td>'
         +'<td class="c-het">'+hcell+'</td></tr>';
+      if(window.GeckoExplain) html+=GeckoExplain.panel({
+        language:LANG,
+        row:r,
+        dists:payload.dists||[],
+        states:STATE,
+        poly:payload.poly||[],
+        warnings:payload.warnings||[]
+      },rowIndex);
     });
     html+='</tbody></table>';
-    if(crossTag) html+='<div class="crossnote">'+t.crossNote+'</div>';
-    if(window.__isPrem) html+='<div class="abar" style="margin-top:10px"><button class="abtn sm ghost" onclick="exportImage()">🖼️ 이미지 저장</button></div>';
+    if(window.GeckoExplain && payload.poly && payload.poly.length){
+      html+='<div class="gx-banner"><i class="bi bi-info-circle" aria-hidden="true"></i>'
+        +escapeHtml(GeckoExplain.lineBanner(LANG))+'</div>';
+    }
+    if(crossName) html+='<div class="crossnote">'+t.crossNote+'</div>';
+    if(window.CalculationHistoryStore) CalculationHistoryStore.record(lastBreedingDraft,LANG);
   }
   if(payload.poly && payload.poly.length){
     html+='<div class="polyblock"><h3>'+t.polyH+'</h3><div class="pdesc">'+t.polyDesc+'</div>';
@@ -546,14 +667,68 @@ function render(payload){
     html+='</div>';
   }
   host.innerHTML=html;
+  if(window.GeckoExplain) GeckoExplain.bind(host);
+}
+function makeBreedingDraft(payload,polyName,crossName){
+  const parent=side=>{
+    const traits=[];
+    GENES.forEach(g=>{
+      const state=STATE[side][g.id];
+      if(!state||state==='nn')return;
+      const label=(g.type==='incdom'&&state==='mm')?gSuper(g):gName(g);
+      traits.push({id:g.id,state,label:(state==='het'&&g.type==='rec'?'het ':'')+label});
+    });
+    POLY.forEach(p=>{if(STATE[side][p.id]==='yes')traits.push({id:p.id,state:'line',label:pName(p)});});
+    return {label:traits.map(x=>x.label).join(' ')||L().normal,traits};
+  };
+  const plain=html=>{
+    const el=document.createElement('div');
+    el.innerHTML=String(html||'');
+    return (el.textContent||'').trim();
+  };
+  return {
+    version:1,
+    species:'gecko',
+    calculatedAt:new Date().toISOString(),
+    parents:{A:parent('A'),B:parent('B')},
+    results:(payload.rows||[]).map(r=>{
+      const base=polyName?(r.isNormal?polyName:r.visualLabel+' '+polyName)
+        :(r.isNormal&&crossName?crossName:r.visualLabel);
+      const label=(r.combo?r.combo+(polyName?' '+polyName:''):base)
+        +(crossName&&!r.isNormal?' ('+crossName+')':'');
+      return {label,probability:r.prob,guaranteedHets:r.guaranteed.slice(),partialHets:r.partial.slice()};
+    }),
+    warnings:(payload.warnings||[]).map(w=>plain(w.text)),
+    lineTraits:(payload.poly||[]).map(p=>({id:p.id,label:p.name,both:!!p.both}))
+  };
 }
 function escapeHtml(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
 
 /* ================= 초기화 ================= */
 const langMenuEl=document.getElementById('langMenu'), langBtnEl=document.getElementById('langBtn');
-langBtnEl.addEventListener('click',e=>{ e.stopPropagation(); langMenuEl.classList.toggle('open'); });
+document.body.appendChild(langMenuEl);
+function placeLangMenu(){
+  const button=langBtnEl.getBoundingClientRect();
+  const width=langMenuEl.offsetWidth, height=langMenuEl.offsetHeight;
+  const margin=12, gap=8;
+  const maxLeft=Math.max(margin, window.innerWidth-width-margin);
+  const left=Math.min(Math.max(margin, button.right-width), maxLeft);
+  const below=button.bottom+gap;
+  const top=below+height<=window.innerHeight-margin
+    ? below
+    : Math.max(margin, button.top-height-gap);
+  langMenuEl.style.position='fixed';
+  langMenuEl.style.inset=top+'px auto auto '+left+'px';
+}
+langBtnEl.addEventListener('click',e=>{
+  e.stopPropagation();
+  const open=langMenuEl.classList.toggle('open');
+  if(open) placeLangMenu();
+});
 document.querySelectorAll('#langMenu button').forEach(b=>b.addEventListener('click',()=>{ setLang(b.dataset.lang); langMenuEl.classList.remove('open'); }));
 document.addEventListener('click',e=>{ if(langMenuEl.classList.contains('open') && !langMenuEl.contains(e.target) && !langBtnEl.contains(e.target)) langMenuEl.classList.remove('open'); });
+window.addEventListener('resize',()=>{ if(langMenuEl.classList.contains('open')) placeLangMenu(); });
+window.addEventListener('scroll',()=>langMenuEl.classList.remove('open'), true);
 (function(){
   const pc=document.getElementById('partialchk'), vc=document.getElementById('vintagechk');
   const set=(el,on)=>el.setAttribute('aria-pressed', on?'true':'false');
@@ -587,6 +762,7 @@ document.getElementById('updModal').addEventListener('click',e=>{ if(e.target.id
 // 문의 이메일 (제목 포함)
 document.getElementById('mailLink').href='mailto:kmc612000@gmail.com?subject='+encodeURIComponent('레오파드 모프 계산기 - 정보수정/업데이트 건의');
 
+initLeoMorphSearch();
 applyLang();
 
 // 오늘 하루 안 보기 처리 후 첫 방문 시 자동 노출

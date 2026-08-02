@@ -47,19 +47,8 @@
   }
 
   function photoStrip(a) {
-    const all = [].concat(a.photo_url ? [a.photo_url] : [], a.photos || [])
-      .filter((v, i, arr) => v && arr.indexOf(v) === i);
-    if (!all.length) {
-      const sp = C.SPECIES[a.species] || C.SPECIES.other;
-      return '<div class="pnophoto">' + sp.icon + '</div>';
-    }
-    if (all.length === 1) {
-      return '<div class="pphoto">' + Photo.tag(all[0], a.name || '개체') + '</div>';
-    }
-    return '<div class="pphoto">' + Photo.tag(all[0], a.name || '개체') + '</div>'
-      + '<div class="pthumbs">' + all.slice(1).map((u, i) =>
-          '<button class="pth" aria-label="사진 ' + (i + 2) + '">'
-          + Photo.tag(u, '') + '</button>').join('') + '</div>';
+    const sp = C.SPECIES[a.species] || C.SPECIES.other;
+    return window.CarePhotos.stripHtml(a, sp.icon);
   }
 
   function parentRow(side, p) {
@@ -134,12 +123,7 @@
   document.addEventListener('click', function (ev) {
     const b = ev.target.closest('.pth');
     if (!b) return;
-    const main = document.querySelector('.pphoto img');
-    const thumb = b.querySelector('img');
-    if (!main || !thumb) return;
-    const cur = main.getAttribute('src');
-    main.setAttribute('src', thumb.getAttribute('src'));
-    thumb.setAttribute('src', cur);
+    window.CarePhotos.swap(b);
   });
 
   (async function boot() {

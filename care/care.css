@@ -92,6 +92,8 @@ header .sub{
   .hd-deco.leaf{width:120px;top:-34px}
 }
 
+[hidden]{display:none!important;}
+
 /* 헤더 우측 버튼 — 계산기의 .blink 와 같은 치수 */
 .hd-btns{display:flex;gap:8px;align-items:center;flex:0 0 auto;position:relative;z-index:4}
 .blink{
@@ -218,6 +220,8 @@ header .sub{
 }
 .in:focus{outline:none;border-color:var(--teal);background:var(--card)}
 textarea.in{min-height:76px;resize:vertical;line-height:1.6}
+.row2>*{min-width:0}
+input.in[type="date"]{min-width:0;max-width:100%}
 /* 두 칸 나란히. 단, 한 칸이라도 제 내용을 못 담을 만큼 좁아지면 세로로
    내려놓습니다.
 
@@ -230,7 +234,7 @@ textarea.in{min-height:76px;resize:vertical;line-height:1.6}
    minmax(0,1fr) 는 칸이 넘칠 때 격자가 알아서 늘어나게 두는 것이고,
    좁은 화면에서는 아예 한 줄에 하나씩 놓아 여유를 확보합니다. */
 .row2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
-@media (max-width:420px){
+@media (max-width:520px){
   .row2{grid-template-columns:1fr}
 }
 .row3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
@@ -391,6 +395,128 @@ textarea.in{min-height:76px;resize:vertical;line-height:1.6}
 /* label 을 버튼처럼 씁니다 — 파일 입력을 숨기고 이걸 누르게 하면
    브라우저 기본 '파일 선택' 버튼의 제각각인 모양을 안 봐도 됩니다. */
 .photoside label.btn{cursor:pointer}
+.cphoto-editor{margin-top:8px}
+.cphoto-slot{min-width:0}
+.cphoto-slot.cover{
+  display:grid;grid-template-columns:112px minmax(0,1fr);grid-template-rows:auto 1fr;
+  gap:8px 14px;align-items:start;padding:12px;
+  border:1px solid var(--hair);border-radius:16px;background:var(--card2);
+}
+.cphoto-slot.cover .cphoto-preview{grid-column:1;grid-row:1/3}
+.cphoto-slot.cover .cphoto-label{grid-column:2;align-self:end}
+.cphoto-slot.cover .cphoto-actions{grid-column:2;align-self:start}
+.cphoto-label,.cphoto-group-title{font-size:12.5px;font-weight:800;color:var(--ink)}
+.cphoto-preview{
+  width:100%;aspect-ratio:1;border:1px solid var(--hair);border-radius:13px;
+  overflow:hidden;background:var(--gtile);display:flex;align-items:center;justify-content:center;
+}
+.cphoto-image{width:100%;height:100%;object-fit:cover;display:block}
+.cphoto-empty{
+  display:flex;flex-direction:column;align-items:center;gap:5px;
+  color:var(--ink2);font-size:10.5px;text-align:center;
+}
+.cphoto-empty i{font-size:20px;opacity:.55}
+.cphoto-actions{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.cphoto-actions label{cursor:pointer}
+.cphoto-actions .mini{font-size:11.5px;padding:7px 10px;min-height:34px}
+.cphoto-extras{margin-top:14px}
+.cphoto-group-title{margin-bottom:8px}
+.cphoto-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+.cphoto-grid .cphoto-slot{
+  padding:9px;border:1px solid var(--hair);border-radius:14px;background:var(--card2);
+}
+.cphoto-grid .cphoto-label{font-size:11px;margin-bottom:6px}
+.cphoto-grid .cphoto-actions{margin-top:7px}
+.cphoto-grid .cphoto-actions .mini{width:100%;padding:6px 5px;white-space:normal;line-height:1.3}
+.cphoto-hint{margin-top:10px}
+@media (max-width:380px){
+  .cphoto-slot.cover{grid-template-columns:96px minmax(0,1fr)}
+  .cphoto-grid{gap:6px}
+  .cphoto-grid .cphoto-slot{padding:6px}
+}
+
+body.cropper-open{overflow:hidden;touch-action:none}
+.pcrop-modal{
+  position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;
+  background:rgba(12,18,16,.72);color:#162b25;
+}
+.pcrop-shell{
+  width:min(100%,600px);height:100dvh;max-height:940px;display:flex;flex-direction:column;
+  background:#f9f7f2;box-shadow:0 28px 80px rgba(0,0,0,.34);overflow:hidden;
+}
+.pcrop-head{
+  min-height:72px;padding:calc(10px + env(safe-area-inset-top)) 18px 10px;
+  display:grid;grid-template-columns:48px 1fr 48px;align-items:center;gap:10px;
+  background:#fff;border-bottom:1px solid rgba(17,30,26,.08);
+}
+.pcrop-head h2{margin:0;text-align:center;font-size:18px;line-height:1.25;letter-spacing:-.025em}
+.pcrop-icon{
+  width:46px;height:46px;padding:0;border:0;border-radius:50%;display:grid;place-items:center;
+  background:#f5f3ee;color:#172d26;font:inherit;font-size:23px;cursor:pointer;
+  box-shadow:0 4px 14px rgba(31,45,39,.08);
+}
+.pcrop-icon.apply{background:var(--teal);color:#fff}
+.pcrop-icon:disabled{opacity:.55;cursor:wait}
+.pcrop-work{
+  min-height:0;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;
+  background:#17201d;overflow:hidden;
+}
+.pcrop-stage{
+  position:relative;width:min(100%,calc((100dvh - 250px)*4/3));aspect-ratio:4/3;
+  overflow:hidden;background:#0c1311;touch-action:none;user-select:none;
+}
+.pcrop-image{
+  position:absolute;left:50%;top:50%;max-width:none;max-height:none;display:block;
+  pointer-events:none;will-change:width,height,transform;opacity:0;transition:opacity .15s;
+  image-orientation:from-image;
+}
+.pcrop-stage.ready .pcrop-image{opacity:1}
+.pcrop-grid,.pcrop-safe{position:absolute;inset:0;pointer-events:none}
+.pcrop-grid{border:1px solid rgba(255,255,255,.7)}
+.pcrop-grid span{position:absolute;background:rgba(255,255,255,.34)}
+.pcrop-grid span:nth-child(1),.pcrop-grid span:nth-child(2){top:0;bottom:0;width:1px}
+.pcrop-grid span:nth-child(1){left:33.333%}
+.pcrop-grid span:nth-child(2){left:66.666%}
+.pcrop-grid span:nth-child(3),.pcrop-grid span:nth-child(4){left:0;right:0;height:1px}
+.pcrop-grid span:nth-child(3){top:33.333%}
+.pcrop-grid span:nth-child(4){top:66.666%}
+.pcrop-safe{
+  width:calc(75% - 12px);height:calc(100% - 12px);inset:6px auto auto 50%;
+  transform:translateX(-50%);border:2px solid rgba(255,255,255,.9);border-radius:50%;
+  box-shadow:0 0 0 999px rgba(8,14,12,.26);
+}
+.pcrop-copy{
+  width:100%;min-height:62px;flex:1;padding:10px 18px 11px;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:2px;text-align:center;color:#f4f7f5;
+  background:#17201d;font-size:12px;
+}
+.pcrop-copy strong{font-size:13px}
+.pcrop-copy span{color:rgba(244,247,245,.72)}
+.pcrop-controls{
+  padding:14px 22px calc(16px + env(safe-area-inset-bottom));background:#fff;
+}
+.pcrop-controls>label{display:block;margin-bottom:7px;font-size:12px;font-weight:800}
+.pcrop-zoom{display:grid;grid-template-columns:22px 1fr 22px;align-items:center;gap:10px}
+.pcrop-zoom i{font-size:15px;text-align:center;color:#46635a}
+.pcrop-zoom input{width:100%;accent-color:var(--teal)}
+.pcrop-reset{
+  min-height:38px;margin:10px auto 0;padding:7px 14px;display:flex;align-items:center;gap:6px;
+  border:1px solid rgba(31,48,41,.14);border-radius:999px;background:#f8f5ee;color:#314a42;
+  font:700 12px inherit;cursor:pointer;
+}
+.pcrop-status{height:18px;margin-top:4px;text-align:center;font-size:11px;color:#61716b}
+@media (min-width:601px) and (min-height:680px){
+  .pcrop-shell{height:min(900px,calc(100dvh - 36px));border-radius:24px}
+}
+@media (max-height:620px){
+  .pcrop-head{min-height:58px;padding-top:calc(6px + env(safe-area-inset-top));padding-bottom:6px}
+  .pcrop-icon{width:40px;height:40px}
+  .pcrop-copy{min-height:48px;padding:6px 14px}
+  .pcrop-controls{padding-top:8px;padding-bottom:calc(8px + env(safe-area-inset-bottom))}
+  .pcrop-reset{margin-top:5px}
+  .pcrop-status{display:none}
+}
+@media (prefers-reduced-motion:reduce){.pcrop-image{transition:none}}
 
 /* ── 체중 ─────────────────────────────────────────────────────────────── */
 .wchart{width:100%;height:auto;display:block;margin:6px 0 10px}
@@ -436,6 +562,10 @@ textarea.in{min-height:76px;resize:vertical;line-height:1.6}
 }
 .tokchk:hover{background:var(--card2)}
 .tokchk input{accent-color:var(--teal);flex:0 0 auto;width:16px;height:16px}
+.tokgrid.line-score-grid{grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:6px 10px}
+.line-score-row{display:grid;grid-template-columns:auto minmax(0,1fr) 108px;align-items:center}
+.line-score-row .line-score{width:100%;min-height:34px;padding:5px 7px;font-size:12px}
+.line-score-row .line-score:disabled{opacity:.45;cursor:not-allowed}
 /* 역산 목록의 배지 — '이 모프를 지금 개체로 만들 수 있나' 를 한눈에.
    개체 수를 적었더니 '슈퍼카푸치노 보유 1' 이 슈퍼카푸치노를 갖고 있는
    것처럼 읽혀서 여부로 바꿨습니다. */
@@ -460,6 +590,7 @@ textarea.in{min-height:76px;resize:vertical;line-height:1.6}
 }
 @media (max-width:420px){
   .tokgrid{grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:0 8px}
+  .tokgrid.line-score-grid{grid-template-columns:1fr;gap:5px}
   .tokchk{font-size:12.5px}
 }
 

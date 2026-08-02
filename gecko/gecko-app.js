@@ -32,6 +32,7 @@
   /* ---------- 모프/콤보 오버라이드 로드 ---------- */
   function applyMorphRows(rows){
     const genes=[], poly=[];
+    const builtinGenes=GENES.slice();
     /* 라인브리딩 계열(line)은 아직 morphs 표에 컬럼이 없습니다.
        그냥 덮어쓰면 내장 값이 날아가서 만다린 × 블랙나이트 같은 계열 조합이
        이름을 잎어버립니다. DB 값이 없으면 내장 계열을 그대로 유지합니다. */
@@ -46,9 +47,9 @@
         const ln=r.line||builtinLine[r.id]; if(ln) q.line=ln;
         if(builtinImplies[r.id]) q.implies=builtinImplies[r.id];
         poly.push(q); }
-      else { const g={id:r.id,type:r.kind,family:r.family||'albino',ko:r.ko,en:r.en,zh:r.zh,ja:r.ja,risk:!!r.risk};
+      else { const g=leoApplyLockedGeneStructure(leoApplyLockedGeneLabels({id:r.id,type:r.kind,family:r.family||'albino',ko:r.ko,en:r.en,zh:r.zh,ja:r.ja,risk:!!r.risk}));
         if(r.super_ko){g.superKo=r.super_ko;g.superEn=r.super_en;g.superZh=r.super_zh;g.superJa=r.super_ja;} genes.push(g); } });
-    if(genes.length){ GENES.length=0; genes.forEach(g=>GENES.push(g)); }
+    if(genes.length){ const mergedGenes=leoMergeRequiredGenes(genes,builtinGenes); GENES.length=0; mergedGenes.forEach(g=>GENES.push(g)); }
     if(poly.length){ POLY.length=0; poly.forEach(p=>POLY.push(p)); }
     GENES.forEach(g=>{ if(STATE.A[g.id]===undefined)STATE.A[g.id]='nn'; if(STATE.B[g.id]===undefined)STATE.B[g.id]='nn'; });
     POLY.forEach(p=>{ if(STATE.A[p.id]===undefined)STATE.A[p.id]='no'; if(STATE.B[p.id]===undefined)STATE.B[p.id]='no'; });
@@ -72,6 +73,17 @@
   async function refreshPrem(){
     const btn=document.getElementById('premBtn'), pro=document.getElementById('proBtn');
     if(!SB){ if(btn)btn.style.display='none'; if(pro)pro.style.display='none'; return; }
+    if(!USER){
+      isPrem=false; premKind=null; premExp=null; window.__isPrem=false;
+      if(btn) btn.style.display='none';
+      if(pro) pro.style.display='none';
+      const ab=document.getElementById('acctBtn');
+      if(ab){
+        ab.style.display=SHOW_ACCOUNT_UI?'':'none';
+        ab.innerHTML='<i class="bi bi-person" aria-hidden="true"></i><span>로그인</span>';
+      }
+      return;
+    }
     if(btn)btn.style.display='';
     try{ const r=await SB.rpc('premium_status',{p_device:uid()}); const d=r.data||{};
          isPrem=!!d.active; premKind=d.kind||null; premExp=d.expires_at||null; }
@@ -81,6 +93,7 @@
     // 노출 스위치 — 준비 중이면 버튼 자체를 숨김 (gecko-core.js 참고)
     if(btn && !SHOW_PREMIUM_UI) btn.style.display='none';
     window.__isPrem = isPrem;
+    if(hasResult) calculate();
     const ab=document.getElementById('acctBtn');
     if(ab){
       // 노출 스위치 — 테스트 기간에는 로그인 진입 자체를 감춤 (gecko-core.js)
@@ -133,33 +146,6 @@
     if(!USER){ location.href='login.html'; return; }
     const code=document.getElementById('premInput').value.trim(); const msg=document.getElementById('premMsg'); if(!code){msg.style.color='var(--warn-hi-fg)';msg.textContent='코드를 입력하세요.';return;} msg.style.color='var(--ink2)';msg.textContent='확인 중…'; try{ const r=await SB.rpc('redeem_code',{p_code:code,p_device:uid()}); const v=r.data; if(v==='ok'){ msg.style.color='var(--teal)';msg.textContent='활성화되었습니다! 🎉'; isPrem=true; refreshPrem(); setTimeout(closePrem,900);} else { msg.style.color='var(--warn-hi-fg)'; msg.textContent = v==='login_required'?'로그인 후 사용할 수 있어요.':v==='not_found'?'존재하지 않는 코드예요.':v==='revoked'?'사용이 중지된 코드예요.':v==='used'?'이미 다른 회원이 사용한 코드예요.':'사용할 수 없는 코드예요.'; } }catch(e){ msg.style.color='var(--warn-hi-fg)'; msg.textContent='오류가 발생했어요.'; } };
   document.getElementById('premModal').addEventListener('click',e=>{ if(e.target.id==='premModal') closePrem(); });
-
-
-  /* ---- 결과 내보내기 (프리미엄) ---- */
-  window.exportImage=function(){
-    const el=document.querySelector('.results');
-    if(!el){ alert('먼저 계산해 주세요.'); return; }
-    const w=760, rows=[...document.querySelectorAll('.rtable tbody tr')];
-    const h=190+rows.length*46;
-    const c=document.createElement('canvas'); c.width=w*2; c.height=h*2; const x=c.getContext('2d'); x.scale(2,2);
-    x.fillStyle='#EDEAE1'; x.fillRect(0,0,w,h);
-    x.fillStyle='#26221D'; x.font='700 24px sans-serif'; x.fillText('🦎 레오파드 게코 브리딩 예상',28,44);
-    const pa=[...document.querySelectorAll('#parentA .chip.on')].map(v=>v.textContent.trim()).join(' ')||'노멀';
-    const pb=[...document.querySelectorAll('#parentB .chip.on')].map(v=>v.textContent.trim()).join(' ')||'노멀';
-    x.font='14px sans-serif'; x.fillStyle='#6C6452';
-    x.fillText('♂ '+pa.slice(0,52),28,76); x.fillText('♀ '+pb.slice(0,52),28,98);
-    x.fillStyle='#FDFCF9'; x.fillRect(20,118,w-40,h-140);
-    let y=148;
-    rows.forEach(tr=>{ const cells=tr.children;
-      x.fillStyle='#0E7C7B'; x.font='700 15px sans-serif'; x.fillText(cells[0].innerText.trim().replace(/\s+/g,' '),36,y);
-      x.fillStyle='#26221D'; x.font='14px sans-serif';
-      x.fillText(cells[1].innerText.trim().replace(/\s+/g,' ').slice(0,40),110,y);
-      const het=cells[2].innerText.trim().replace(/\s+/g,' ');
-      if(het&&het!=='–'){ x.fillStyle='#6B5686'; x.font='12px sans-serif'; x.fillText(het.slice(0,44),110,y+16); }
-      y+=46; });
-    x.fillStyle='#8A8375'; x.font='11px sans-serif'; x.fillText('ryangstudio.com/gecko',28,h-14);
-    c.toBlob(bl=>{ const a=document.createElement('a'); a.href=URL.createObjectURL(bl); a.download='breeding-result.png'; a.click(); });
-  };
 
   /* ---------- 라우팅 ---------- */
   function isAdminRoute(){ return location.hash==='#admin' || /\/admin\/?$/.test(location.pathname); }

@@ -9,6 +9,7 @@
 
   const C = window.CareCore;
   const A = window.CareApp;
+  const CarePhotos = window.CarePhotos;
   const $ = id => document.getElementById(id);
 
   function esc(s) {
@@ -84,10 +85,11 @@
     if (S.busy) return;
     S.busy = true;
     try {
-      await fn();
+      const result = await fn();
       await loadAll();
       render();
-      if (okMsg) toast(okMsg);
+      if (okMsg) toast(typeof okMsg === 'function' ? okMsg(result) : okMsg);
+      return result;
     } catch (e) {
       toast(A.friendly(e));
       render();
@@ -240,6 +242,7 @@
       + '<div><div class="lbl2"><label for="f_hatch">해칭·입양일 (선택)</label></div>'
       + '<input class="in" id="f_hatch" type="date" value="' + esc(a.hatch_date || '') + '"></div>'
       + '</div>'
+      + CarePhotos.editorHtml(a, A)
       + '<div class="lbl2">메모</div><textarea class="in" id="f_note">' + esc(a.note || '') + '</textarea>'
       + '<div class="err" id="f_err"></div>'
       + '<div class="formbtns"><button class="btn" id="f_save">' + icon('bi-check-lg') + '저장</button>'
@@ -762,7 +765,8 @@
 
   }
 
-  function go(tab) {
+  async function go(tab) {
+    if (S.editAnimal) await CarePhotos.cancel();
     S.tab = tab; S.editAnimal = null; S.editPlan = null; S.editFeed = null;
     /* 주소에 남겨 둡니다. 개체 관리 화면에서 /care/#health 로 보내는 링크가
        실제로 그 탭을 열게 하려면 이게 있어야 합니다. 뒤로 가기도 자연스러워집니다. */
@@ -785,6 +789,11 @@
 
     if (t.classList.contains('tab')) return go(t.getAttribute('data-t'));
     if (d.go) return go(d.go);
+    if (d.carePhotoRemove) {
+      CarePhotos.remove(d.carePhotoRemove);
+      CarePhotos.refresh(document, A.sb);
+      return;
+    }
 
     /* ── 오늘 ── */
     if (d.tick) {
@@ -795,9 +804,22 @@
     }
 
     /* ── 개체 ── */
-    if (d.newanimal) { S.editAnimal = { species: 'leopard', sex: 'unknown' }; return render(); }
-    if (d.editanimal) { S.editAnimal = animalById(d.editanimal); return render(); }
-    if (d.cancel === 'animal') { S.editAnimal = null; return render(); }
+    if (d.newanimal) {
+      S.editAnimal = { species: 'leopard', sex: 'unknown' };
+      CarePhotos.begin(S.editAnimal, A);
+      return render();
+    }
+    if (d.editanimal) {
+      S.editAnimal = animalById(d.editanimal);
+      CarePhotos.begin(S.editAnimal, A);
+      return render();
+    }
+    if (d.cancel === 'animal') {
+      return CarePhotos.cancel().then(function () {
+        S.editAnimal = null;
+        render();
+      });
+    }
     if (d.cancel === 'plan') { S.editPlan = null; return render(); }
     if (d.cancel === 'feed') { S.editFeed = null; return render(); }
 
@@ -824,7 +846,15 @@
 
     if (d.delanimal) {
       if (!confirm('이 개체와 그에 딸린 케어·체중 기록이 모두 지워집니다. 되돌릴 수 없습니다.\n계속할까요?')) return;
-      return act(async () => { await A.deleteAnimal(d.delanimal); S.editAnimal = null; S.focus = ''; }, '삭제했습니다');
+      const animal = animalById(d.delanimal);
+      return act(async () => {
+        await A.deleteAnimal(d.delanimal);
+        await CarePhotos.cancel();
+        const cleanup = await CarePhotos.deleteAnimalPhotos(animal, A);
+        S.editAnimal = null;
+        S.focus = '';
+        return cleanup;
+      }, cleanup => cleanup && cleanup.ok ? '삭제했습니다' : CarePhotos.t('cleanupWarning'));
     }
 
     /* 체중 패널 열기·닫기 — 개체 필터와 같은 값을 씁니다 */
@@ -881,22 +911,46 @@
     }
   });
 
-  document.addEventListener('change', function (ev) {
+  document.addEventListener('change', async function (ev) {
     if (ev.target.id === 'focus') { S.focus = ev.target.value; render(); }
+    const slot = ev.target.dataset && ev.target.dataset.carePhotoPick;
+    if (slot) {
+      try {
+        const selected = await CarePhotos.select(slot, ev.target.files && ev.target.files[0]);
+        if (selected) CarePhotos.refresh(document, A.sb);
+      } catch (e) {
+        toast(A.friendly(e));
+      } finally {
+        ev.target.value = '';
+      }
+    }
   });
 
   /* ── 저장 동작 ────────────────────────────────────────────────────── */
   function saveAnimal() {
     const name = $('f_name').value.trim();
     if (!name) { $('f_err').textContent = '이름을 적어주세요.'; return; }
-    const row = Object.assign({}, S.editAnimal, {
+    const fields = {
       name: name,
       species: $('f_species').value,
       sex: $('f_sex').value,
       hatch_date: $('f_hatch').value || null,
       note: $('f_note').value.trim() || null
-    });
-    act(async () => { await A.saveAnimal(row); S.editAnimal = null; }, '저장했습니다');
+    };
+    return act(async () => {
+      const photos = await CarePhotos.prepare();
+      const row = Object.assign({}, S.editAnimal, fields, photos);
+      try {
+        await A.saveAnimal(row);
+      } catch (error) {
+        const rollback = await CarePhotos.rollback();
+        if (!rollback.ok) throw new Error(CarePhotos.t('rollbackWarning'));
+        throw error;
+      }
+      const cleanup = await CarePhotos.commit(photos);
+      S.editAnimal = null;
+      return cleanup;
+    }, cleanup => cleanup && cleanup.ok ? '저장했습니다' : CarePhotos.t('cleanupWarning'));
   }
 
   function saveWeight(animalId) {

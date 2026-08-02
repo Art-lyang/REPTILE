@@ -17,6 +17,7 @@
   <meta name="naver-site-verification" content="8ba5b1381c80a656d9e2f209d2a4f7448e6050ac">
   <link rel="canonical" href="https://ryangstudio.com/">
   <meta property="og:type" content="website">
+  <meta property="og:site_name" content="RYANG STUDIO">
   <meta property="og:title" content="RYANG STUDIO">
   <meta property="og:description" content="실제로 쓸모 있는 도구와 오래 남는 세계를 만듭니다.">
   <meta property="og:url" content="https://ryangstudio.com/">
@@ -43,7 +44,8 @@
     "alternateName":"량 스튜디오",
     "url":"https://ryangstudio.com/",
     "description":"반려동물 웹 도구와 게임, 독창적인 세계를 만드는 1인 스튜디오",
-    "email":"kmc612000@gmail.com"
+    "email":"kmc612000@gmail.com",
+    "logo":{"@type":"ImageObject","url":"https://ryangstudio.com/assets/logo-mark.png","width":512,"height":512}
   }
   </script>
 </head>
@@ -174,16 +176,12 @@
         </a>
 
         <!-- 볼파이톤은 다루는 유전자가 60개가 넘어서 카드에도 '검색'을 적어 둡니다.
-             들어가자마자 칩 목록에 압도되지 않도록 미리 알려주는 편이 낫습니다.
-             ⚠️ 지금은 비밀번호로 가려 둔 테스트 공개입니다. 눌렀다가 잠금 화면만
-             보고 고장으로 오해하지 않도록 카드에 그렇게 적어 둡니다.
-             정식 공개할 때 state 를 'live 운영 중' 으로, 설명의 마지막 문장을
-             지워주세요. -->
+             들어가자마자 칩 목록에 압도되지 않도록 미리 알려주는 편이 낫습니다. -->
         <a class="release-card release-leopard" href="./ballpython/index.html">
           <div class="release-copy">
-            <span class="state test">테스트 중</span><small>ANIMAL CARE</small>
+            <span class="state live">운영 중</span><small>ANIMAL CARE</small>
             <h3>볼파이톤<br>모프 계산기</h3>
-            <p>60가지가 넘는 유전자를 검색으로 찾아 고르고, 스파이더 워블·데저트 암컷 불임 같은 유전 건강 이슈까지 함께 확인합니다. 테스트 중이라 비밀번호를 아는 분만 들어올 수 있습니다.</p>
+            <p>60가지가 넘는 유전자를 검색으로 찾아 고르고, 스파이더 워블·데저트 암컷 불임 같은 유전 건강 이슈까지 함께 확인합니다.</p>
             <span class="card-link">도구 열기 <i class="bi bi-arrow-right"></i></span>
           </div>
           <div class="animal-stage"><img src="./assets/ballpython-hero-v1.png" alt="볼파이톤"></div>
@@ -203,7 +201,7 @@
         <!-- 크리처 케어로그는 로그인·프리미엄이 있어야 안이 보입니다. 카드에 그렇게
              적어 두어야, 눌러 들어갔다가 잠긴 화면을 보고 고장으로 오해하는
              일이 없습니다. -->
-        <a class="release-card release-leopard" href="./care/">
+        <a class="release-card release-leopard" href="./care/" hidden>
           <div class="release-copy">
             <span class="state live">운영 중</span><small>ANIMAL CARE</small>
             <h3>크리처 케어로그<br>급여 · 청소 · 체중</h3>

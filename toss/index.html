@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<!-- 앱인토스는 라이트 모드만 허용합니다(비게임 출시 체크리스트 '서비스 이용 동작').
+     계산기 CSS 에는 prefers-color-scheme 다크 블록이 남아 있어서, 기기가 다크면
+     허브만 밝고 계산기는 어두워집니다. 아래 두 줄로 웹뷰 전체를 라이트로 고정합니다. -->
+<meta name="color-scheme" content="light">
+<title>파충류 모프 계산기</title>
+<link rel="icon" type="image/png" sizes="32x32" href="./assets/logo-mark-32.png">
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<link rel="stylesheet" href="./hub.css?v=1">
+</head>
+<body>
+
+<header class="hub-head">
+  <p class="kicker">RYANG STUDIO</p>
+  <h1>파충류 모프 계산기</h1>
+  <p class="lead">부모 개체의 유전 형질을 고르면<br>새끼에게 나올 모프와 확률을 계산합니다.</p>
+</header>
+
+<main class="hub-wrap">
+  <!-- 종을 고르면 그 종의 계산기 화면으로 이동합니다.
+       한 화면에 네 종을 다 올리지 못하는 이유는 toss/README.md 의
+       '왜 SPA 가 아니라 종별 페이지인가' 를 보세요. -->
+  <nav class="species-grid" aria-label="종 선택">
+
+    <a class="species-card leo" href="./gecko/">
+      <div class="sc-art"><img src="./assets/leopard-hero-v1.png" alt="" aria-hidden="true" loading="eager"></div>
+      <div class="sc-txt">
+        <h2>레오파드 게코</h2>
+        <p>트램퍼·벨·레인워터 알비노, 맥스노우, 에니그마와 랩터·갤럭시 같은 콤보 명칭까지</p>
+        <span class="sc-go">계산하기 <i class="bi bi-arrow-right" aria-hidden="true"></i></span>
+      </div>
+    </a>
+
+    <a class="species-card cres" href="./crested/">
+      <div class="sc-art"><img src="./assets/crested-hero-v2.png" alt="" aria-hidden="true" loading="lazy"></div>
+      <div class="sc-txt">
+        <h2>크레스티드 게코</h2>
+        <p>릴리화이트·카푸치노 같은 우성 형질과 액산틱 계열, 표현형·유전자형을 나눠서</p>
+        <span class="sc-go">계산하기 <i class="bi bi-arrow-right" aria-hidden="true"></i></span>
+      </div>
+    </a>
+
+    <a class="species-card aft" href="./fattail/">
+      <div class="sc-art"><img src="./assets/fattail-hero-v1.png" alt="" aria-hidden="true" loading="lazy"></div>
+      <div class="sc-txt">
+        <h2>펫테일 게코</h2>
+        <p>화이트아웃 치사 조합과 오레오·제로 계열, 66%·33% 헷 표기까지</p>
+        <span class="sc-go">계산하기 <i class="bi bi-arrow-right" aria-hidden="true"></i></span>
+      </div>
+    </a>
+
+    <a class="species-card bp" href="./ballpython/">
+      <div class="sc-art"><img src="./assets/ballpython-hero-v1.png" alt="" aria-hidden="true" loading="lazy"></div>
+      <div class="sc-txt">
+        <h2>볼파이톤</h2>
+        <p>60가지가 넘는 유전자를 검색으로 찾고, 스파이더 워블·데저트 암컷 불임도 함께</p>
+        <span class="sc-go">계산하기 <i class="bi bi-arrow-right" aria-hidden="true"></i></span>
+      </div>
+    </a>
+
+  </nav>
+
+  <section class="hub-note">
+    <h3><i class="bi bi-info-circle" aria-hidden="true"></i> 계산 결과를 읽기 전에</h3>
+    <p>확률은 멘델 유전 법칙에 따른 <b>이론값</b>입니다. 실제 한 배에서 나온 새끼의 비율은 이 값과 다를 수 있고, 마릿수가 적을수록 더 크게 벌어집니다.</p>
+    <p>탠저린·만다린처럼 여러 유전자가 함께 작용하는 <b>라인브리딩(폴리제닉) 형질은 확률 계산 대상이 아닙니다.</b> 계열 이름만 표시합니다.</p>
+    <p>슈퍼폼이나 특정 조합에서 건강 문제가 알려진 모프는 결과 위쪽에 경고로 표시됩니다. 브리딩 전에 꼭 확인하세요.</p>
+  </section>
+
+  <footer class="hub-foot">
+    <a href="./terms.html#terms">이용약관</a>
+    <span aria-hidden="true">·</span>
+    <a href="./terms.html#privacy">개인정보처리방침</a>
+    <p>© RYANG STUDIO</p>
+  </footer>
+</main>
+
+</body>
+</html>

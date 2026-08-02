@@ -71,6 +71,11 @@
   .langmenu button.on{color:var(--teal);font-weight:700}
   .langmenu button.on::after{content:"✓";margin-left:12px;font-weight:800}
   .langmenu .mtitle{font-size:11px;color:var(--ink2);font-weight:600;padding:4px 13px 6px;letter-spacing:.3px}
+  @media (max-width:620px) and (max-height:440px){
+    .langmenu{padding:4px}
+    .langmenu button{padding:4px 12px}
+    .langmenu .mtitle{padding:3px 12px 4px}
+  }
   .wrap{max-width:880px;margin:0 auto;padding:8px 16px}
 
   /* iOS 행 + 스위치 */
@@ -101,6 +106,26 @@
   .card h2{margin:2px 2px 12px;font-size:16px;font-weight:700;display:flex;align-items:center;gap:8px}
   .dot{width:10px;height:10px;border-radius:50%}
   .dot.a{background:var(--teal)} .dot.b{background:var(--patina)}
+  .searchbar{position:relative;display:flex;align-items:center;gap:8px;margin:0 0 4px}
+  .searchbar .sicon{position:absolute;left:13px;font-size:14px;color:var(--ink2);pointer-events:none}
+  .searchbar input{
+    flex:1;min-width:0;height:44px;padding:0 40px 0 36px;
+    border:1px solid var(--chipbd);border-radius:13px;background:var(--card2);
+    color:var(--ink);font-family:inherit;font-size:13.5px;font-weight:600;
+    -webkit-appearance:none;appearance:none;
+  }
+  .searchbar input::placeholder{color:var(--ink2);font-weight:500}
+  .searchbar input:focus{outline:none;border-color:var(--teal);background:var(--card);box-shadow:0 0 0 3px rgba(7,90,72,.12)}
+  .card.b .searchbar input:focus{border-color:var(--patina);box-shadow:0 0 0 3px rgba(40,126,128,.14)}
+  .searchbar .sclr{
+    position:absolute;right:8px;display:none;align-items:center;justify-content:center;
+    width:28px;height:28px;border:none;border-radius:50%;background:transparent;
+    color:var(--ink2);font-size:14px;cursor:pointer;font-family:inherit;
+  }
+  .searchbar .sclr.show{display:flex}
+  .searchbar .sclr:hover{background:var(--gtile);color:var(--ink)}
+  .searchcnt{font-size:11px;font-weight:700;color:var(--ink2);margin:0 2px 2px;min-height:14px}
+  .searchnone{background:var(--gtile);border-radius:11px;padding:16px 14px;margin-top:10px;font-size:12.5px;line-height:1.6;color:var(--ink2);text-align:center}
   /* 콤보 개체 불러오기 */
   .comboload{margin:0 0 6px}
   .comboSel{width:100%;background:var(--card);border:1px dashed var(--b-inc-bd);color:var(--teal);
@@ -677,5 +702,43 @@ header {
 
   .gecko-filterbar .optinfo {
     grid-column: 1;
+  }
+
+  .rtable {
+    table-layout: fixed;
+    width: 100%;
+  }
+
+  .rtable th,
+  .rtable td {
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+
+  .rtable th:first-child,
+  .c-prob {
+    width: 60px;
+  }
+
+  .c-vis,
+  .c-het {
+    min-width: 0;
+  }
+
+  .het100,
+  .hetp,
+  .crosstag {
+    box-sizing: border-box;
+    max-width: 100%;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: keep-all;
+    line-height: 1.35;
+  }
+
+  .crosstag {
+    display: block;
+    width: fit-content;
+    margin: 4px 0 0;
   }
 }

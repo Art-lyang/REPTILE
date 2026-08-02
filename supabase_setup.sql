@@ -93,14 +93,33 @@ create table if not exists public.animals (
   hets   text[] default '{}',                -- het 보유 유전자 id
   color_grade int,                           -- 라인브리딩 색 강도 1~5
   parent_a uuid, parent_b uuid,              -- 혈통
-  photo_url text, note text,
+  photo_url text, photos text[] not null default '{}', note text,
   created_at timestamptz default now()
 );
 create table if not exists public.pairings (
   id uuid primary key default gen_random_uuid(),
   device text not null,
   name text, male uuid, female uuid, note text,
-  created_at timestamptz default now()
+  species text not null default 'gecko'
+    check (species in ('gecko', 'crested', 'fattail', 'ballpython')),
+  target_morph text
+    check (target_morph is null or char_length(target_morph) between 1 and 120),
+  calculation jsonb,
+  calculated_at timestamptz,
+  created_at timestamptz default now(),
+  constraint pairings_calculation_ck check (
+    calculation is null
+    or case
+      when jsonb_typeof(calculation) = 'object'
+       and jsonb_typeof(calculation->'parents') = 'object'
+       and jsonb_typeof(calculation->'results') = 'array'
+      then (calculation->>'version') = '1'
+       and calculation->>'species' = species
+       and jsonb_array_length(calculation->'results') between 1 and 128
+       and octet_length(calculation::text) <= 65536
+      else false
+    end
+  )
 );
 create table if not exists public.clutches (
   id uuid primary key default gen_random_uuid(),
@@ -109,6 +128,261 @@ create table if not exists public.clutches (
   expected_hatch date, egg_count int, note text,
   created_at timestamptz default now()
 );
+
+alter table public.animals
+  add column if not exists user_id uuid,
+  add column if not exists species text not null default 'leopard',
+  add column if not exists line_trait_scores jsonb not null default '{}'::jsonb;
+alter table public.pairings add column if not exists user_id uuid;
+alter table public.clutches add column if not exists user_id uuid;
+
+create or replace function public.valid_line_trait_scores(p_scores jsonb)
+returns boolean
+language plpgsql
+immutable
+set search_path = ''
+as $$
+declare
+  score_count integer;
+  score_entry record;
+begin
+  if p_scores is null or jsonb_typeof(p_scores) <> 'object' then
+    return false;
+  end if;
+  if octet_length(p_scores::text) > 4096 then
+    return false;
+  end if;
+  select count(*) into score_count from jsonb_object_keys(p_scores);
+  if score_count > 32 then
+    return false;
+  end if;
+  for score_entry in select key, value from jsonb_each(p_scores)
+  loop
+    if score_entry.key !~ '^[a-z0-9_-]{1,64}$'
+       or jsonb_typeof(score_entry.value) <> 'number'
+       or score_entry.value::text !~ '^[1-5]$' then
+      return false;
+    end if;
+  end loop;
+  return true;
+end;
+$$;
+
+revoke all on function public.valid_line_trait_scores(jsonb)
+  from public, anon, authenticated;
+
+update public.animals
+   set line_trait_scores = '{}'::jsonb
+ where line_trait_scores is null;
+alter table public.animals
+  alter column line_trait_scores set default '{}'::jsonb,
+  alter column line_trait_scores set not null;
+alter table public.animals drop constraint if exists animals_line_trait_scores_ck;
+alter table public.animals
+  add constraint animals_line_trait_scores_ck
+  check (public.valid_line_trait_scores(line_trait_scores));
+
+create or replace function public.valid_breeding_project_target_v1(p_target jsonb)
+returns boolean
+language plpgsql
+immutable
+set search_path = ''
+as $$
+declare
+  target_mode text;
+  trait_count integer;
+  distinct_trait_count integer;
+  target_trait jsonb;
+begin
+  if p_target is null or jsonb_typeof(p_target) <> 'object' then
+    return false;
+  end if;
+  if octet_length(p_target::text) > 4096 then
+    return false;
+  end if;
+  if p_target->>'version' <> '1' then
+    return false;
+  end if;
+  if jsonb_typeof(p_target->'version') <> 'number'
+     or jsonb_typeof(p_target->'mode') <> 'string'
+     or jsonb_typeof(p_target->'traits') <> 'array' then
+    return false;
+  end if;
+  if exists (
+    select 1 from jsonb_object_keys(p_target) as target_key
+     where target_key not in ('version', 'mode', 'traits')
+  ) or (select count(*) from jsonb_object_keys(p_target)) <> 3 then
+    return false;
+  end if;
+  target_mode := p_target->>'mode';
+  if target_mode not in ('line_fix', 'cross') then
+    return false;
+  end if;
+  if target_mode = 'line_fix'
+     and jsonb_array_length(p_target->'traits') <> 1 then
+    return false;
+  end if;
+  if target_mode = 'cross'
+     and jsonb_array_length(p_target->'traits') <> 2 then
+    return false;
+  end if;
+  select count(*), count(distinct trait->>'id')
+    into trait_count, distinct_trait_count
+    from jsonb_array_elements(p_target->'traits') as trait;
+  if trait_count <> distinct_trait_count then
+    return false;
+  end if;
+  for target_trait in select value from jsonb_array_elements(p_target->'traits')
+  loop
+    if jsonb_typeof(target_trait) <> 'object'
+       or not (target_trait ? 'id')
+       or not (target_trait ? 'targetScore')
+       or (select count(*) from jsonb_object_keys(target_trait)) <> 2 then
+      return false;
+    end if;
+    if jsonb_typeof(target_trait->'id') <> 'string'
+       or (target_trait->>'id') !~ '^[a-z0-9_-]{1,64}$' then
+      return false;
+    end if;
+    if jsonb_typeof(target_trait->'targetScore') <> 'number'
+       or (target_trait->>'targetScore') !~ '^[1-5]$' then
+      return false;
+    end if;
+  end loop;
+  return true;
+end;
+$$;
+
+revoke all on function public.valid_breeding_project_target_v1(jsonb)
+  from public, anon;
+grant execute on function public.valid_breeding_project_target_v1(jsonb)
+  to authenticated;
+
+create table if not exists public.breeding_projects (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  species text not null
+    constraint breeding_projects_species_ck
+    check (species in ('gecko', 'crested', 'fattail', 'ballpython')),
+  name text not null
+    constraint breeding_projects_name_ck
+    check (char_length(btrim(name)) between 1 and 120),
+  target jsonb not null
+    constraint breeding_projects_target_ck
+    check (public.valid_breeding_project_target_v1(target)),
+  status text not null default 'draft'
+    constraint breeding_projects_status_ck
+    check (status in ('draft', 'active', 'complete', 'archived')),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create index if not exists breeding_projects_user_id_idx
+  on public.breeding_projects(user_id);
+
+alter table public.breeding_projects enable row level security;
+drop policy if exists breeding_projects_select on public.breeding_projects;
+create policy breeding_projects_select on public.breeding_projects
+  for select to authenticated
+  using (user_id = (select auth.uid()));
+drop policy if exists breeding_projects_insert on public.breeding_projects;
+create policy breeding_projects_insert on public.breeding_projects
+  for insert to authenticated
+  with check (user_id = (select auth.uid()));
+drop policy if exists breeding_projects_update on public.breeding_projects;
+create policy breeding_projects_update on public.breeding_projects
+  for update to authenticated
+  using (user_id = (select auth.uid()))
+  with check (user_id = (select auth.uid()));
+drop policy if exists breeding_projects_delete on public.breeding_projects;
+create policy breeding_projects_delete on public.breeding_projects
+  for delete to authenticated
+  using (user_id = (select auth.uid()));
+
+revoke all on table public.breeding_projects from public;
+revoke all on table public.breeding_projects from anon;
+revoke all on table public.breeding_projects from authenticated;
+grant select, insert, update, delete on table public.breeding_projects
+  to authenticated;
+
+create or replace function public.breeding_projects_touch_updated_at()
+returns trigger
+language plpgsql
+set search_path = ''
+as $$
+begin
+  new.updated_at := now();
+  return new;
+end;
+$$;
+revoke all on function public.breeding_projects_touch_updated_at()
+  from public, anon, authenticated;
+drop trigger if exists breeding_projects_touch_updated_at on public.breeding_projects;
+create trigger breeding_projects_touch_updated_at
+  before update of user_id, species, name, target, status
+  on public.breeding_projects
+  for each row execute function public.breeding_projects_touch_updated_at();
+
+alter table public.pairings
+  add column if not exists project_id uuid,
+  add column if not exists project_step smallint;
+alter table public.pairings drop constraint if exists pairings_project_id_fkey;
+alter table public.pairings
+  add constraint pairings_project_id_fkey
+  foreign key (project_id)
+  references public.breeding_projects(id)
+  on delete set null;
+alter table public.pairings drop constraint if exists pairings_project_step_ck;
+alter table public.pairings
+  add constraint pairings_project_step_ck
+  check (
+    (project_id is null and project_step is null)
+    or (project_id is not null and project_step between 1 and 3)
+  );
+create index if not exists pairings_project_id_idx on public.pairings(project_id);
+
+create or replace function public.pairings_breeding_project_guard()
+returns trigger
+language plpgsql
+set search_path = ''
+as $$
+declare
+  linked_project record;
+begin
+  if new.project_id is null then
+    new.project_step := null;
+    return new;
+  end if;
+  if new.project_step is null then
+    raise exception 'project_step is required for a project-linked pairing';
+  end if;
+  select project.user_id, project.species
+    into linked_project
+    from public.breeding_projects as project
+   where project.id = new.project_id;
+  if not found then
+    raise exception 'breeding project not found';
+  end if;
+  if linked_project.user_id is distinct from new.user_id then
+    raise exception 'pairing and breeding project owners must match';
+  end if;
+  if linked_project.species is distinct from new.species then
+    raise exception 'pairing and breeding project species must match';
+  end if;
+  if (select auth.uid()) is null
+     or linked_project.user_id is distinct from (select auth.uid()) then
+    raise exception 'breeding project does not belong to the authenticated user';
+  end if;
+  return new;
+end;
+$$;
+revoke all on function public.pairings_breeding_project_guard()
+  from public, anon, authenticated;
+drop trigger if exists pairings_breeding_project_guard on public.pairings;
+create trigger pairings_breeding_project_guard
+  before insert or update of project_id, project_step, user_id, species
+  on public.pairings
+  for each row execute function public.pairings_breeding_project_guard();
 
 -- ---------- Row Level Security ----------
 alter table public.morphs        enable row level security;
@@ -119,6 +393,7 @@ alter table public.access_codes  enable row level security;
 alter table public.animals       enable row level security;
 alter table public.pairings      enable row level security;
 alter table public.clutches      enable row level security;
+alter table public.breeding_projects enable row level security;
 
 -- 모프/콤보: 읽기는 누구나, 쓰기는 로그인한 관리자만
 drop policy if exists morphs_read  on public.morphs;
@@ -131,15 +406,13 @@ drop policy if exists combos_admin on public.combos;
 create policy combos_read  on public.combos for select using (true);
 create policy combos_admin on public.combos for all to authenticated using (true) with check (true);
 
--- 로그: 익명 INSERT 허용, 조회는 관리자만
+-- 로그: 원본 표 직접 입력은 금지. v28의 검증 함수로만 기록
 drop policy if exists visits_insert on public.visits;
 drop policy if exists visits_read   on public.visits;
-create policy visits_insert on public.visits for insert to anon, authenticated with check (true);
 create policy visits_read   on public.visits for select to authenticated using (true);
 
 drop policy if exists cq_insert on public.combo_queries;
 drop policy if exists cq_read   on public.combo_queries;
-create policy cq_insert on public.combo_queries for insert to anon, authenticated with check (true);
 create policy cq_read   on public.combo_queries for select to authenticated using (true);
 
 -- 발급 코드: 관리자만 (익명은 아래 RPC 로만 접근)
@@ -197,67 +470,123 @@ returns jsonb language sql security definer set search_path = public as $$
     jsonb_build_object('active', false, 'kind', null, 'expires_at', null));
 $$;
 
-grant execute on function public.redeem_code(text, text)  to anon, authenticated;
-grant execute on function public.is_premium(text)         to anon, authenticated;
-grant execute on function public.premium_status(text)     to anon, authenticated;
+revoke all on function public.redeem_code(text, text) from public, anon;
+revoke all on function public.is_premium(text) from public, anon;
+revoke all on function public.premium_status(text) from public, anon;
+grant execute on function public.redeem_code(text, text)  to authenticated;
+grant execute on function public.is_premium(text)         to authenticated;
+grant execute on function public.premium_status(text)     to authenticated;
 
 -- ---------- 사용자 데이터 RPC (본인 device 것만) ----------
 create or replace function public.my_rows(p_device text, p_table text)
 returns jsonb language plpgsql security definer set search_path = public as $$
-declare j jsonb;
+declare j jsonb; u uuid := auth.uid();
 begin
-  if p_table not in ('animals','pairings','clutches') then raise exception 'bad table'; end if;
-  if coalesce(p_device,'') = '' then return '[]'::jsonb; end if;
-  execute format('select coalesce(jsonb_agg(to_jsonb(t) order by t.created_at desc), ''[]''::jsonb) from public.%I t where t.device = $1', p_table)
-    into j using p_device;
+  if p_table not in ('animals','pairings','clutches') then
+    raise exception 'bad table';
+  end if;
+  if u is not null then
+    execute format('select coalesce(jsonb_agg(to_jsonb(t) order by t.created_at desc), ''[]''::jsonb)
+                      from public.%I t where t.user_id = $1', p_table)
+      into j using u;
+  else
+    if coalesce(p_device,'') = '' or p_device like 'u\_%' then return '[]'::jsonb; end if;
+    execute format('select coalesce(jsonb_agg(to_jsonb(t) order by t.created_at desc), ''[]''::jsonb)
+                      from public.%I t where t.user_id is null and t.device = $1', p_table)
+      into j using p_device;
+  end if;
   return j;
 end $$;
 
 create or replace function public.save_row(p_device text, p_table text, p_row jsonb)
 returns uuid language plpgsql security definer set search_path = public as $$
-declare newid uuid;
+declare newid uuid; u uuid := auth.uid(); okey text; cur jsonb;
 begin
-  if p_table not in ('animals','pairings','clutches') then raise exception 'bad table'; end if;
-  if coalesce(p_device,'') = '' then raise exception 'no device'; end if;
-  p_row := p_row - 'device' || jsonb_build_object('device', p_device);
+  if p_table not in ('animals','pairings','clutches') then
+    raise exception 'bad table';
+  end if;
+  p_row := p_row - 'device' - 'user_id';
+  if coalesce(p_row->>'id','') <> '' then
+    if u is not null then
+      execute format('select to_jsonb(t) from public.%I t where t.id = $1 and t.user_id = $2', p_table)
+        into cur using (p_row->>'id')::uuid, u;
+    else
+      execute format('select to_jsonb(t) from public.%I t where t.id = $1 and t.device = $2 and t.user_id is null', p_table)
+        into cur using (p_row->>'id')::uuid, p_device;
+    end if;
+    if cur is not null then p_row := cur || p_row; end if;
+  end if;
+  if u is not null then
+    okey := 'u_' || u::text;
+    p_row := p_row || jsonb_build_object('user_id', u::text, 'device', okey);
+  else
+    if coalesce(p_device,'') = '' or p_device like 'u\_%' then raise exception '로그인이 필요합니다'; end if;
+    p_row := p_row || jsonb_build_object('device', p_device);
+  end if;
   if coalesce(p_row->>'id','') = '' then
     p_row := p_row || jsonb_build_object('id', gen_random_uuid()::text);
   else
-    execute format('delete from public.%I where id = $1 and device = $2', p_table)
-      using (p_row->>'id')::uuid, p_device;
+    if u is not null then
+      execute format('delete from public.%I where id = $1 and user_id = $2', p_table)
+        using (p_row->>'id')::uuid, u;
+    else
+      execute format('delete from public.%I where id = $1 and device = $2 and user_id is null', p_table)
+        using (p_row->>'id')::uuid, p_device;
+    end if;
   end if;
   if coalesce(p_row->>'created_at','') = '' then
     p_row := p_row || jsonb_build_object('created_at', now());
   end if;
-  execute format('insert into public.%I select * from jsonb_populate_record(null::public.%I, $1) returning id', p_table, p_table)
-    into newid using p_row;
+  begin
+    execute format('insert into public.%I select * from jsonb_populate_record(null::public.%I, $1) returning id', p_table, p_table)
+      into newid using p_row;
+  exception when unique_violation then
+    raise exception '내 기록이 아닙니다';
+  end;
   return newid;
 end $$;
 
 create or replace function public.delete_row(p_device text, p_table text, p_id uuid)
 returns boolean language plpgsql security definer set search_path = public as $$
+declare u uuid := auth.uid(); n int;
 begin
-  if p_table not in ('animals','pairings','clutches') then raise exception 'bad table'; end if;
-  execute format('delete from public.%I where id = $1 and device = $2', p_table) using p_id, p_device;
-  return true;
+  if p_table not in ('animals','pairings','clutches') then
+    raise exception 'bad table';
+  end if;
+  if u is not null then
+    execute format('delete from public.%I where id = $1 and user_id = $2', p_table) using p_id, u;
+  else
+    if coalesce(p_device,'') = '' or p_device like 'u\_%' then return false; end if;
+    execute format('delete from public.%I where id = $1 and device = $2 and user_id is null', p_table)
+      using p_id, p_device;
+  end if;
+  get diagnostics n = row_count;
+  return n > 0;
 end $$;
 
 -- 로그인 시 기기에 있던 코드/데이터를 계정으로 이관
 create or replace function public.claim_device(p_device text, p_user text)
 returns boolean language plpgsql security definer set search_path = public as $$
+declare u uuid := auth.uid(); okey text; t text;
 begin
-  if coalesce(p_device,'')='' or coalesce(p_user,'')='' then return false; end if;
-  update public.access_codes set redeemed_by = p_user where redeemed_by = p_device;
-  update public.animals  set device = p_user where device = p_device;
-  update public.pairings set device = p_user where device = p_device;
-  update public.clutches set device = p_user where device = p_device;
+  if u is null then return false; end if;
+  if coalesce(p_device,'') = '' or p_device like 'u\_%' then return false; end if;
+  okey := 'u_' || u::text;
+  update public.access_codes set redeemed_by = okey where redeemed_by = p_device;
+  foreach t in array array['animals','pairings','clutches'] loop
+    execute format('update public.%I set user_id = $1, device = $2 where device = $3 and user_id is null', t)
+      using u, okey, p_device;
+  end loop;
   return true;
 end $$;
-grant execute on function public.claim_device(text,text)    to anon, authenticated;
-
-grant execute on function public.my_rows(text,text)          to anon, authenticated;
-grant execute on function public.save_row(text,text,jsonb)   to anon, authenticated;
-grant execute on function public.delete_row(text,text,uuid)  to anon, authenticated;
+revoke all on function public.claim_device(text,text) from public, anon;
+revoke all on function public.my_rows(text,text) from public, anon;
+revoke all on function public.save_row(text,text,jsonb) from public, anon;
+revoke all on function public.delete_row(text,text,uuid) from public, anon;
+grant execute on function public.claim_device(text,text)    to authenticated;
+grant execute on function public.my_rows(text,text)          to authenticated;
+grant execute on function public.save_row(text,text,jsonb)   to authenticated;
+grant execute on function public.delete_row(text,text,uuid)  to authenticated;
 
 -- ---------- 통계 뷰 (관리자) ----------
 -- security_invoker = 조회하는 사람의 권한으로 실행 (관리자만 볼 수 있게)
@@ -515,9 +844,15 @@ do $storage$
 begin
   -- 버킷 생성 (없을 때만)
   begin
-    insert into storage.buckets (id, name, public)
-      values ('morph-images','morph-images', true)
-      on conflict (id) do update set public = true;
+    insert into storage.buckets
+      (id, name, public, file_size_limit, allowed_mime_types)
+      values
+      ('morph-images','morph-images', true, 5242880,
+       array['image/jpeg','image/png','image/webp'])
+      on conflict (id) do update
+        set public = true,
+            file_size_limit = 5242880,
+            allowed_mime_types = array['image/jpeg','image/png','image/webp'];
   exception when others then
     raise notice '[건너뜀] 버킷 생성 실패: % — Storage 화면에서 직접 만들어 주세요.', sqlerrm;
   end;
@@ -529,21 +864,26 @@ begin
     drop policy if exists mi_update on storage.objects;
     drop policy if exists mi_delete on storage.objects;
 
-    -- 누구나 읽기 (이미지가 사이트에 표시되어야 하므로)
-    create policy mi_read on storage.objects for select
-      using (bucket_id = 'morph-images');
+    -- 공개 URL 읽기는 public 버킷 자체가 처리합니다. 목록·upsert 조회는 관리자만.
+    create policy mi_read on storage.objects for select to authenticated
+      using (bucket_id = 'morph-images' and public.is_admin());
 
-    -- 업로드: 관리자는 모프 이미지(m/), 그 외에는 개체 사진(a/) 만
-    create policy mi_insert on storage.objects for insert to anon, authenticated
+    -- 업로드: 관리자만 모프 이미지 폴더(m/)에 올립니다.
+    create policy mi_insert on storage.objects for insert to authenticated
       with check (
         bucket_id = 'morph-images'
-        and ( public.is_admin() or name like 'a/%' )
+        and public.is_admin()
+        and (storage.foldername(name))[1] = 'm'
       );
 
     -- 수정/삭제: 관리자만 (실수로 남의 사진을 지우지 못하게)
     create policy mi_update on storage.objects for update to authenticated
-      using      (bucket_id = 'morph-images' and public.is_admin())
-      with check (bucket_id = 'morph-images' and public.is_admin());
+      using (bucket_id = 'morph-images' and public.is_admin())
+      with check (
+        bucket_id = 'morph-images'
+        and public.is_admin()
+        and (storage.foldername(name))[1] = 'm'
+      );
 
     create policy mi_delete on storage.objects for delete to authenticated
       using (bucket_id = 'morph-images' and public.is_admin());
@@ -559,9 +899,11 @@ $storage$;
 --  1. Supabase 좌측 메뉴 → Storage → New bucket
 --       Name: morph-images   /   Public bucket: 켜기   → Save
 --  2. Storage → morph-images → Policies → New policy → For full customization
---       ① 이름 mi_read    / SELECT / Target roles 비움  / USING:  bucket_id = 'morph-images'
---       ② 이름 mi_insert  / INSERT / anon, authenticated
---          WITH CHECK:  bucket_id = 'morph-images' and ( public.is_admin() or name like 'a/%' )
+--       ① 이름 mi_read / SELECT / authenticated
+--          USING: bucket_id = 'morph-images' and public.is_admin()
+--       ② 이름 mi_insert / INSERT / authenticated
+--          WITH CHECK: bucket_id = 'morph-images' and public.is_admin()
+--                      and (storage.foldername(name))[1] = 'm'
 --  3. 저장 후 브리딩 관리에서 개체 사진 업로드가 되는지 확인하세요.
 -- ──────────────────────────────────────────────────────────────
 
@@ -588,44 +930,77 @@ drop policy if exists ca_admin on public.consent_archive;
 create policy ca_admin on public.consent_archive for select to authenticated using (public.is_admin());
 
 create or replace function public.delete_my_account()
-returns jsonb language plpgsql security definer set search_path = public as $$
-declare uid uuid := auth.uid();
-        dev text;
-        p   public.profiles;
+returns jsonb
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  uid uuid := auth.uid();
+  dev text;
+  profile_row public.profiles;
+  n_photo integer := 0;
+  n_legacy_photo integer := 0;
+  n_feed integer := 0;
+  n_project integer := 0;
 begin
-  if uid is null then raise exception 'not signed in'; end if;
+  if uid is null then
+    raise exception 'not signed in';
+  end if;
   dev := 'u_' || uid::text;
 
-  -- 1) 동의 기록을 익명화해 보존 (법정 5년)
-  select * into p from public.profiles where user_id = uid;
+  select * into profile_row
+    from public.profiles
+   where user_id = uid;
   if found then
     insert into public.consent_archive
       (user_ref, agree_terms, agree_privacy, agree_age14, agree_third,
        agree_mkt_email, agree_mkt_sms, consent_at, purge_after)
     values
-      (md5(uid::text || '|reptile-withdrawn'),       -- 되돌릴 수 없는 해시 (내장 md5)
-       p.agree_terms, p.agree_privacy, p.agree_age14, p.agree_third,
-       p.agree_mkt_email, p.agree_mkt_sms, p.consent_at,
-       (now() + interval '5 years')::date);
+      (md5(uid::text || '|reptile-withdrawn'),
+       profile_row.agree_terms, profile_row.agree_privacy,
+       profile_row.agree_age14, profile_row.agree_third,
+       profile_row.agree_mkt_email, profile_row.agree_mkt_sms,
+       profile_row.consent_at, (now() + interval '5 years')::date);
   end if;
 
-  -- 2) 사용자 데이터 삭제
-  delete from public.clutches where device = dev;
-  delete from public.pairings where device = dev;
-  delete from public.animals  where device = dev;
+  delete from storage.objects
+   where bucket_id = 'animal-photos'
+     and name like 'a/u\_' || uid::text || '\_%';
+  get diagnostics n_photo = row_count;
 
-  -- 3) 프리미엄 코드 연결 해제 (코드 자체는 재사용 불가로 남김)
+  delete from storage.objects
+   where bucket_id = 'morph-images'
+     and name like 'a/u\_' || uid::text || '\_%';
+  get diagnostics n_legacy_photo = row_count;
+  n_photo := n_photo + n_legacy_photo;
+
+  delete from public.clutches where user_id = uid or device = dev;
+  delete from public.pairings where user_id = uid or device = dev;
+  delete from public.animals where user_id = uid or device = dev;
+
+  delete from public.feed_items where user_id = uid;
+  get diagnostics n_feed = row_count;
+
+  delete from public.breeding_projects where user_id = uid;
+  get diagnostics n_project = row_count;
+
   update public.access_codes set revoked = true where redeemed_by = dev;
-
-  -- 4) 프로필(신원정보) 삭제
   delete from public.profiles where user_id = uid;
-
-  -- 5) 인증 계정 삭제
   delete from auth.users where id = uid;
 
-  return jsonb_build_object('ok', true);
-end $$;
-grant execute on function public.delete_my_account() to authenticated;
+  return jsonb_build_object(
+    'ok', true,
+    'photos_deleted', n_photo,
+    'feed_items_deleted', n_feed,
+    'breeding_projects_deleted', n_project
+  );
+end;
+$$;
+revoke all on function public.delete_my_account()
+  from public, anon, authenticated;
+grant execute on function public.delete_my_account()
+  to authenticated;
 
 -- H) 로그인 수단(identity) 조회 ---------------------------------
 --    docs/AUTH.md 참고. auth.identities 는 클라이언트가 직접 못 읽으므로
@@ -664,6 +1039,156 @@ create table if not exists public.unlink_pending (
 alter table public.unlink_pending enable row level security;
 drop policy if exists ul_admin on public.unlink_pending;
 create policy ul_admin on public.unlink_pending for select to authenticated using (public.is_admin());
+
+alter table public.animals
+  add column if not exists photos text[];
+update public.animals
+   set photos = '{}'
+ where photos is null;
+alter table public.animals
+  alter column photos set default '{}',
+  alter column photos set not null;
+
+alter table public.animals
+  drop constraint if exists animals_photos_shape_ck;
+alter table public.animals
+  add constraint animals_photos_shape_ck
+  check (
+    cardinality(photos) <= 3
+    and array_position(photos, null) is null
+  );
+
+create or replace function public.care_animal_photos_guard()
+returns trigger
+language plpgsql
+set search_path = ''
+as $$
+declare
+  photo_ref text;
+  object_path text;
+  total_count int;
+  unique_count int;
+begin
+  new.photo_url := nullif(btrim(coalesce(new.photo_url, '')), '');
+  new.photos := coalesce(new.photos, '{}');
+
+  if cardinality(new.photos) > 3 then
+    raise exception 'additional photos are limited to three';
+  end if;
+
+  select count(*), count(distinct value)
+    into total_count, unique_count
+    from unnest(new.photos) as value;
+
+  if total_count <> unique_count
+     or exists (select 1 from unnest(new.photos) value where btrim(value) = '') then
+    raise exception 'photo references must be non-empty and unique';
+  end if;
+
+  if new.photo_url is not null and new.photo_url = any(new.photos) then
+    raise exception 'profile photo cannot be duplicated in additional photos';
+  end if;
+
+  foreach photo_ref in array array_cat(
+    case when new.photo_url is null then '{}'::text[] else array[new.photo_url] end,
+    new.photos
+  )
+  loop
+    if position('/animal-photos/' in photo_ref) > 0 then
+      object_path := split_part(split_part(photo_ref, '/animal-photos/', 2), '?', 1);
+      if new.user_id is null
+         or not starts_with(object_path, 'a/u_' || new.user_id::text || '_') then
+        raise exception 'animal photo does not belong to this account';
+      end if;
+    elsif photo_ref !~ '^https?://' and not starts_with(photo_ref, '/') then
+      raise exception 'unsupported animal photo reference';
+    end if;
+  end loop;
+
+  return new;
+end;
+$$;
+
+revoke all on function public.care_animal_photos_guard() from public, anon, authenticated;
+drop trigger if exists care_animal_photos_guard on public.animals;
+create trigger care_animal_photos_guard
+  before insert or update
+  on public.animals
+  for each row execute function public.care_animal_photos_guard();
+
+do $animal_photo_bucket$
+begin
+  insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+  values (
+    'animal-photos',
+    'animal-photos',
+    false,
+    5242880,
+    array['image/jpeg', 'image/png', 'image/webp']
+  )
+  on conflict (id) do update
+    set public = false,
+        file_size_limit = excluded.file_size_limit,
+        allowed_mime_types = excluded.allowed_mime_types;
+end $animal_photo_bucket$;
+
+do $animal_photo_policies$
+begin
+  drop policy if exists ap_read on storage.objects;
+  create policy ap_read on storage.objects
+    for select to anon, authenticated
+    using (
+      bucket_id = 'animal-photos'
+      and (
+        owner_id = (select auth.uid()::text)
+        or exists (
+          select 1
+            from public.animals a
+           where a.is_public = true
+             and a.user_id::text = storage.objects.owner_id
+             and (
+               split_part(split_part(a.photo_url, '/animal-photos/', 2), '?', 1)
+                 = storage.objects.name
+               or exists (
+                 select 1
+                   from unnest(coalesce(a.photos, '{}')) as photo_ref
+                  where split_part(split_part(photo_ref, '/animal-photos/', 2), '?', 1)
+                        = storage.objects.name
+               )
+             )
+        )
+      )
+    );
+
+  drop policy if exists ap_insert on storage.objects;
+  create policy ap_insert on storage.objects
+    for insert to authenticated
+    with check (
+      bucket_id = 'animal-photos'
+      and starts_with(name, 'a/u_' || (select auth.uid())::text || '_')
+    );
+
+  drop policy if exists ap_update on storage.objects;
+  create policy ap_update on storage.objects
+    for update to authenticated
+    using (
+      bucket_id = 'animal-photos'
+      and owner_id = (select auth.uid()::text)
+    )
+    with check (
+      bucket_id = 'animal-photos'
+      and owner_id = (select auth.uid()::text)
+      and starts_with(name, 'a/u_' || (select auth.uid())::text || '_')
+    );
+
+  drop policy if exists ap_delete on storage.objects;
+  create policy ap_delete on storage.objects
+    for delete to authenticated
+    using (
+      bucket_id = 'animal-photos'
+      and owner_id = (select auth.uid()::text)
+    );
+end $animal_photo_policies$;
 
 -- ============================================================
 --  적용 확인 — 이 파일을 Run 하면 마지막에 아래 표가 나옵니다.

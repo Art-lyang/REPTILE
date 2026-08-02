@@ -17,12 +17,18 @@
 <meta property="og:title" content="크레스티드 게코 모프 계산기 · RYANG STUDIO">
 <meta property="og:description" content="크레스티드 게코 부모의 형질을 골라 새끼 모프 확률을 계산합니다. 릴리화이트, 카푸치노/세이블, 팬텀, 아잔틱과 치사 조합 경고, 다인자 크로스 표기를 지원합니다.">
 <meta property="og:url" content="https://ryangstudio.com/crested/">
-<meta property="og:image" content="https://ryangstudio.com/assets/crested-hero-v2.png">
+<!-- 공유 카드는 tools/make_og.py 가 만든 불투명 1200x630 을 씁니다.
+     헤더용 hero PNG 를 그대로 쓰면 배경이 투명해서 카카오톡·X 가 검정으로
+     메웁니다. hero 를 바꿨다면 make_og.py 를 다시 돌리세요. -->
+<meta property="og:image" content="https://ryangstudio.com/assets/og-crested-v1.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="크레스티드 게코">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="크레스티드 게코 모프 계산기 · RYANG STUDIO">
 <meta name="twitter:description" content="크레스티드 게코 부모의 형질을 골라 새끼 모프 확률을 계산합니다. 릴리화이트, 카푸치노/세이블, 팬텀, 아잔틱과 치사 조합 경고, 다인자 크로스 표기를 지원합니다.">
-<meta name="twitter:image" content="https://ryangstudio.com/assets/crested-hero-v2.png">
+<meta name="twitter:image" content="https://ryangstudio.com/assets/og-crested-v1.jpg">
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <script type="application/ld+json">
 {
@@ -42,14 +48,14 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 <!-- ?v=014345 는 캐시 무효화용입니다. crested-core.js 를 고쳐 올릴 때마다 숫자를 바꿔주세요.
      (안 바꾸면 이미 방문했던 사람의 브라우저가 예전 파일을 계속 씁니다) -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="../assets/studio-config.js?v=113119"></script>
-<script src="crested-core.js?v=113119"></script>
-<script src="../assets/analytics.js?v=113119"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.8/dist/umd/supabase.js"></script>
+<script src="../assets/studio-config.js?v=20260731b"></script>
+<script src="crested-core.js?v=20260801a"></script>
+<script src="../assets/analytics.js?v=20260731b"></script>
 <script src="../assets/uitext.js?v=160549"></script>
 <script src="crested-boot.js?v=014345"></script>
-<link rel="stylesheet" href="../assets/base.css?v=013848">
-<link rel="stylesheet" href="crested.css?v=024503">
+<link rel="stylesheet" href="../assets/base.css?v=20260731a">
+<link rel="stylesheet" href="crested.css?v=07302330">
 <link rel="stylesheet" href="../assets/theme.css?v=025334">
 </head>
 <body class="cres">
@@ -135,23 +141,21 @@
   <div class="results" id="results"></div>
 
   <div class="bottom-links">
-    <a class="blink" href="/care/gallery.html"><i class="bi bi-binoculars" aria-hidden="true"></i><span>다른 집사들의 개체 구경하기</span></a>
+    <a class="blink" href="/care/gallery.html" hidden><i class="bi bi-binoculars" aria-hidden="true"></i><span>다른 집사들의 개체 구경하기</span></a>
     <a class="blink" id="mailLink" href="#"><i class="bi bi-envelope" aria-hidden="true"></i><span id="lbl-contact"></span></a>
   </div>
   <div class="mailnote" id="mailNote">정보 수정 요청 · 업데이트 건의는 <b>문의하기</b>로 보내주세요</div>
 
   <div class="note" id="note"><b>이 계산기가 다루는 것</b> — 릴리화이트, 카푸치노·세이블(같은 자리), 팬텀, 초초, 아잔틱을 멘델 유전으로 계산합니다. </div>
-  <!-- 파이드는 유전 방식이 확정되지 않아 계산 결과를 그대로 믿으면 안 됩니다.
-       선택했을 때만 뜨는 W6 경고와 별개로, 항상 보이게 따로 둡니다. -->
-  <div class="note" id="piedNote"><b>파이드는 유전 방식이 아직 확정되지 않았습니다.</b> 공우성인지 불완전우성인지, 또는 다른 방식인지 브리더들 사이에서도 견해가 갈립니다.</div>
-  <div class="legal">
+  <div class="note" id="piedNote"><b>파이드는 불완전우성으로 계산합니다.</b> 유전자 한 개는 파이드, 두 개는 슈퍼 파이드로 표시합니다. 계통에 따라 발현 차이가 있을 수 있으므로 실제 교배 계획에서는 혈통과 번식 기록도 함께 확인해 주세요.</div>
+  <div class="legal" hidden>
     <a href="../terms.html#terms" id="lbl-terms">이용약관</a> · <a href="../terms.html#privacy" id="lbl-privacy">개인정보처리방침</a>
   </div>
   <!-- 검색 노출용 소개. 화면에는 보이지 않지만 크롤러가 읽습니다.
        JS 로 그리는 부분과 달리 첫 요청에서 바로 색인됩니다. -->
   <section class="seo-intro">
     <h2>크레스티드 게코 모프 계산기</h2>
-    <p>부모 개체의 형질을 고르면 새끼 모프와 확률을 계산합니다. 릴리화이트, 카푸치노·세이블(같은 자리의 3중 대립인자), 팬텀, 초초, 아잔틱, 화이트아웃, 엠티백, 달마시안, 파이드, 파이어를 다루며 루왁·프라푸치노·소락 같은 조합 명칭과 슈퍼릴리화이트 같은 치사 조합 경고를 함께 보여줍니다. 라인브리딩 형질도 참고용으로 표시합니다. 한국어·영어·중국어·일본어를 지원하며 회원가입 없이 무료로 쓸 수 있습니다.</p>
+    <p>부모 개체의 형질을 고르면 새끼 모프와 확률을 계산합니다. 릴리화이트, 카푸치노·세이블(같은 자리의 3중 대립인자), 팬텀, 초초, 아잔틱, 엠티백, 달마시안, 파이드, 하이포를 다루며 루왁·프라푸치노·소락 같은 조합 명칭과 슈퍼릴리화이트 같은 치사 조합 경고를 함께 보여줍니다. 화이트 월을 포함한 구조형질과 라인브리딩 형질도 참고용으로 표시합니다. 한국어·영어·중국어·일본어를 지원하며 회원가입 없이 무료로 쓸 수 있습니다.</p>
   </section>
 
   <footer id="footer">확률은 멘델 유전 법칙에 따른 이론값입니다 · 라인브리딩(폴리제닉) 형질은 확률 계산 대상이 아닙니다</footer>
@@ -181,7 +185,7 @@
   </div>
 </div>
 
-<script src="crested-ui.js?v=020520"></script>
-<script src="crested-app.js?v=024811"></script>
+<script src="crested-ui.js?v=20260801a"></script>
+<script src="crested-app.js?v=20260801a"></script>
 </body>
 </html>

@@ -168,7 +168,8 @@ begin
 end $$;
 
 revoke all on function public.save_row(text,text,jsonb) from public;
-grant execute on function public.save_row(text,text,jsonb) to anon, authenticated;
+revoke execute on function public.save_row(text,text,jsonb) from anon;
+grant execute on function public.save_row(text,text,jsonb) to authenticated;
 
 
 /* ── 2. 이미 들어간 빈 값 정리 ───────────────────────────────────────────

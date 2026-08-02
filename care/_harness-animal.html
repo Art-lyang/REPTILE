@@ -7,7 +7,7 @@
 <meta name="robots" content="noindex, nofollow">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-<link rel="stylesheet" href="care.css?v=13">
+<link rel="stylesheet" href="care.css?v=20260731d">
 </head>
 <body>
 <header><div class="hd"><div class="hd-txt">
@@ -16,7 +16,8 @@
 <div class="wrap"><div id="body"></div></div>
 <div id="toast"></div>
 <script src="/assets/imgtool.js?v=1"></script>
-<script src="/assets/photo.js?v=1"></script>
+<script src="/assets/photo.js?v=20260731c"></script>
+<script src="care-photos.js?v=20260731d"></script>
 <script src="care-core.js?v=13"></script>
 <script>
 (function () {
@@ -33,7 +34,11 @@
     { id:'k1', name:'새끼1', species:'leopard', parent_a:ID, parent_b:'x' },
     { id:'k2', name:'새끼2', species:'leopard', parent_a:'x', parent_b:ID }
   ];
+  const demoPhoto = color => 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="900" height="600"><rect width="100%" height="100%" fill="' + color
+    + '"/><circle cx="450" cy="300" r="180" fill="#fff" opacity=".55"/></svg>');
   let animal = { id: ID, parent_a:'f', parent_b:'m', name: '노랑이', species: 'leopard', sex: 'female', hatch_date: '2024-05-02',
+                 photo_url: demoPhoto('#dca64c'), photos: [demoPhoto('#70967d'), demoPhoto('#9b8063'), demoPhoto('#7489a5')],
                  note: '비공개 메모 — 새면 안 됨', is_public: true, is_listed: false,
                  public_note: '2024년 5월 해칭. 순한 편입니다.', public_breeder: true,
                  share_token: 'DEMOtoken1234567890ab' };
@@ -62,6 +67,6 @@
   history.replaceState(null, '', '?id=' + ID);
 })();
 </script>
-<script src="animal-ui.js?v=13"></script>
+<script src="animal-ui.js?v=20260731c"></script>
 </body>
 </html>

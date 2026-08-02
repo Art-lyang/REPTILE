@@ -1,7 +1,10 @@
 (function (global) {
   'use strict';
 
-  const supportedSpecies = new Set(['gecko', 'crested', 'fattail']);
+  const supportedSpecies = new Set(['gecko', 'crested', 'fattail', 'ballpython']);
+  const ballPythonTraits = new Set([
+    'reduced', 'aberrant', 'banded', 'highgold', 'contrast', 'blushing',
+  ]);
   let cachedSpec = null;
   let cachedTraits = new Map();
 
@@ -12,7 +15,9 @@
     if (spec !== cachedSpec) {
       cachedSpec = spec;
       const options = spec && typeof spec.traitOptions === 'function' ? spec.traitOptions() : [];
-      cachedTraits = new Map(options.map(function (option) {
+      const supportedOptions = spec && spec.id === 'ballpython'
+        ? options.filter(function (option) { return ballPythonTraits.has(option[0]); }) : options;
+      cachedTraits = new Map(supportedOptions.map(function (option) {
         return [option[0], { id: option[0], name: option[1], group: option[2] || option[0] }];
       }));
     }

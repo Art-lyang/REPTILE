@@ -71,6 +71,20 @@ test('Given every feature factory, when the controller boots, then modules are c
   context.BreedingDraft = {};
   context.CarePhotos = {};
   context.LineTraitScores = {};
+  context.BreedingI18n = {
+    initialize() {},
+    t(key) {
+      return ({ backendTitle: '백엔드가 설정되지 않았습니다', backendBody: '설정 확인',
+        careAction: '케어로' })[key] || key;
+    },
+    html(key) { return key; },
+    friendly(error) { return String(error || ''); },
+    speciesName(species) { return species; },
+    groupName(group) { return group; },
+    calculatorUrl(url) { return url; },
+    managementUrl(species, tab) { return `breeding.html?species=${species}#${tab}`; },
+    language() { return 'ko'; }
+  };
 
   const slots = ['animalPanel', 'pairingPanel', 'clutchPanel', 'geneticGoal', 'events'];
   modules.forEach(([file, factory], index) => {
@@ -94,6 +108,7 @@ test('Given every feature factory, when the controller boots, then modules are c
   assert.strictEqual(eventDeps.pairingPanel, panels.pairingPanel);
   assert.strictEqual(eventDeps.clutchPanel, panels.clutchPanel);
   assert.strictEqual(eventDeps.geneticGoal, panels.geneticGoal);
+  assert.strictEqual(eventDeps.i18n, context.BreedingI18n);
   assert.equal(bindCount, 1);
   assert.match(nodes.get('body').innerHTML, /백엔드가 설정되지 않았습니다/);
 });

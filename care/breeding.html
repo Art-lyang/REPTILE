@@ -22,6 +22,12 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 <link rel="stylesheet" href="care.css?v=20260731d">
 <link rel="stylesheet" href="breeding-workspace.css?v=20260731h">
+<script src="breeding-i18n-ko.js?v=20260802b"></script>
+<script src="breeding-i18n-en.js?v=20260802b"></script>
+<script src="breeding-i18n-zh.js?v=20260802b"></script>
+<script src="breeding-i18n-ja.js?v=20260802b"></script>
+<script src="breeding-i18n.js?v=20260802b"></script>
+<script>window.BreedingI18n.initialize();</script>
 </head>
 <body class="breeding">
 
@@ -29,11 +35,11 @@
   <img class="hd-deco leaf" src="/assets/leaf.svg" alt="" aria-hidden="true">
   <div class="hd">
     <div class="hd-txt">
-      <h1 id="btitle">브리딩 관리</h1>
-      <div class="sub" id="bsub">개체 · 페어링 · 클러치를 기록합니다</div>
+      <h1 id="btitle" data-bm-text="pageHeader">브리딩 관리</h1>
+      <div class="sub" id="bsub" data-bm-text="pageSubtitle">개체 · 페어링 · 클러치를 기록합니다</div>
     </div>
     <div class="hd-btns">
-      <a class="blink" href="/care/" title="크리처 케어로그"><i class="bi bi-clipboard-heart" aria-hidden="true"></i><span>케어</span></a>
+      <a class="blink" href="/care/" title="크리처 케어로그" data-bm-title="care"><i class="bi bi-clipboard-heart" aria-hidden="true"></i><span data-bm-text="care">케어</span></a>
     </div>
   </div>
 </header>
@@ -43,28 +49,29 @@
        하나만 올라갈 수 있어서(모두 최상위 const SERVICE_ID 선언) 화면 안에서
        갈아끼울 수 없습니다. -->
   <div class="focusbar" id="spbar" style="display:none">
-    <span class="fl">종</span>
-    <select id="species" aria-label="종 고르기"></select>
+    <span class="fl" data-bm-text="species">종</span>
+    <select id="species" aria-label="종 고르기" data-bm-aria="speciesAria"></select>
     <i class="bi bi-chevron-down" aria-hidden="true"></i>
   </div>
 
   <div class="tabs" id="tabs" style="display:none">
-    <button class="tab on" data-t="animals"><i class="bi bi-heart" aria-hidden="true"></i>개체</button>
-    <button class="tab" data-t="pair"><i class="bi bi-arrow-left-right" aria-hidden="true"></i>페어링</button>
-    <button class="tab" data-t="clutch"><i class="bi bi-egg" aria-hidden="true"></i>클러치</button>
-    <button class="tab" data-t="goal"><i class="bi bi-bullseye" aria-hidden="true"></i>역산</button>
-    <button class="tab" data-t="analysis"><i class="bi bi-bar-chart-line" aria-hidden="true"></i>분석</button>
+    <button class="tab on" data-t="animals"><i class="bi bi-heart" aria-hidden="true"></i><span data-bm-text="tabAnimals">개체</span></button>
+    <button class="tab" data-t="pair"><i class="bi bi-arrow-left-right" aria-hidden="true"></i><span data-bm-text="tabPairings">페어링</span></button>
+    <button class="tab" data-t="clutch"><i class="bi bi-egg" aria-hidden="true"></i><span data-bm-text="tabClutches">클러치</span></button>
+    <button class="tab" data-t="goal"><i class="bi bi-bullseye" aria-hidden="true"></i><span data-bm-text="tabGoals">역산</span></button>
+    <button class="tab" data-t="analysis"><i class="bi bi-bar-chart-line" aria-hidden="true"></i><span data-bm-text="tabAnalysis">분석</span></button>
   </div>
 
-  <div id="body"><div class="empty">불러오는 중…</div></div>
+  <div id="body"><div class="empty" data-bm-text="loading">불러오는 중…</div></div>
 
   <div class="legal" hidden>
-    <a href="/terms.html#terms">이용약관</a> ·
-    <a href="/terms.html#privacy">개인정보처리방침</a>
+    <a href="/terms.html#terms" data-bm-text="terms">이용약관</a> ·
+    <a href="/terms.html#privacy" data-bm-text="privacy">개인정보처리방침</a>
   </div>
 </div>
 
 <div id="toast" role="status" aria-live="polite"></div>
+<script>window.BreedingI18n.apply(document);</script>
 
 <!-- 코어는 breeding-ui.js 가 ?species= 를 보고 골라 넣습니다.
      여기서 <script> 로 미리 넣으면 종을 바꿀 수 없습니다. -->
@@ -90,12 +97,13 @@
 <script src="care-photos.js?v=20260731d"></script>
 <script src="care-core.js?v=13"></script>
 <script src="/assets/analytics.js?v=20260731b"></script>
-<script src="care-app.js?v=13"></script>
-<script src="breeding-animal-panel.js?v=20260802a"></script>
-<script src="breeding-pairing-panel.js?v=20260802a"></script>
-<script src="breeding-clutch-panel.js?v=20260802a"></script>
-<script src="breeding-genetic-goal.js?v=20260802a"></script>
-<script src="breeding-events.js?v=20260802a"></script>
-<script src="breeding-ui.js?v=20260802a"></script>
+<script src="care-app.js?v=20260802a"></script>
+<script src="breeding-animal-panel.js?v=20260802b"></script>
+<script src="breeding-pairing-panel.js?v=20260802b"></script>
+<script src="breeding-clutch-panel.js?v=20260802b"></script>
+<script src="breeding-genetic-goal.js?v=20260802b"></script>
+<script src="breeding-events.js?v=20260802b"></script>
+<script src="breeding-row-scope.js?v=20260802c"></script>
+<script src="breeding-ui.js?v=20260802c"></script>
 </body>
 </html>

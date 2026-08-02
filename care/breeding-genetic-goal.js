@@ -12,6 +12,7 @@
     const CORES = deps.cores;
     const otherNote = deps.otherNote;
     const breedSpec = deps.breedSpec;
+    const I18n = deps.i18n;
 
     function tabGoal() {
       const B = breedSpec();
@@ -29,82 +30,84 @@
     function geneticGoalPanel() {
       const B = breedSpec();
       if (!CORES[S.species].goal) {
-        return '<div class="pad"><div class="lbl">목표 모프 역산</div>'
+        return '<div class="pad"><div class="lbl">' + esc(I18n.t('goalTitle')) + '</div>'
           + '<div class="empty" style="margin-top:12px">' + icon('bi-hourglass-split')
-          + esc(CORES[S.species].ko) + ' 역산은 아직 준비 중입니다.</div>'
+          + esc(I18n.t('goalUnsupported', { species: I18n.speciesName(S.species) })) + '</div>'
           + '<a class="btn ghost wide" style="text-decoration:none;margin-top:12px" href="'
-          + esc(CORES[S.species].calc || '/') + '">' + icon('bi-calculator')
-          + esc(CORES[S.species].ko) + ' 계산기에서 조합 확인</a></div>';
+          + esc(I18n.calculatorUrl(CORES[S.species].calc || '/')) + '">' + icon('bi-calculator')
+          + esc(I18n.t('goalCalculatorCheck', { species: I18n.speciesName(S.species) })) + '</a></div>';
       }
       const opts = B.visualOptions();
       const checks = B.goalCheck(opts.map(o => o[0]), S.animals);
       const badge = {};
       checks.forEach(function (c) {
-        if (c.ok) { badge[c.token] = ['ok', '가능']; return; }
+        if (c.ok) { badge[c.token] = ['ok', I18n.t('goalPossible')]; return; }
         const some = c.paths.some(p => p.needs.some(n => n.holders.length));
-        if (some) badge[c.token] = ['part', '일부'];
+        if (some) badge[c.token] = ['part', I18n.t('goalPartial')];
       });
-      return '<div class="pad"><div class="lbl">목표 모프 역산</div>'
-        + '<div class="hint">만들고 싶은 모프를 고르면 <b>내가 등록한 '
-        + esc(CORES[S.species].ko) + '</b> 로 닿을 수 있는지, 없다면 무엇이 없는지 알려줍니다. '
-        + '확률은 계산하지 않습니다 — 그건 계산기가 합니다.</div>'
+      return '<div class="pad"><div class="lbl">' + esc(I18n.t('goalTitle')) + '</div>'
+        + '<div class="hint">' + I18n.html('goalIntro', { species: I18n.speciesName(S.species) }) + '</div>'
         + otherNote()
-        + '<div class="hint">등록된 개체 <b>' + S.animals.length + '마리</b></div>'
+        + '<div class="hint">' + I18n.html('goalRegistered', { count: S.animals.length }) + '</div>'
         + '<div class="tokgrid">' + opts.map(t => {
             const b = badge[t[0]];
             return '<label class="tokchk"><input type="checkbox" class="g" value="' + esc(t[0]) + '">'
-              + esc(t[1]) + (b ? '<span class="ownb ' + b[0] + '">' + b[1] + '</span>' : '') + '</label>';
+              + esc(t[1]) + (b ? '<span class="ownb ' + b[0] + '">' + esc(b[1]) + '</span>' : '') + '</label>';
           }).join('') + '</div>'
         + '<div class="formbtns"><button class="btn" id="g_run">' + icon('bi-play')
-        + '가능한지 보기</button></div><div id="g_out"></div></div>';
+        + esc(I18n.t('goalRun')) + '</button></div><div id="g_out"></div></div>';
     }
 
     function runGoal() {
       const B = breedSpec();
       const tk = Array.prototype.slice.call(document.querySelectorAll('.g:checked')).map(x => x.value);
       const out = $('g_out');
-      if (!tk.length) { out.innerHTML = '<div class="err">목표 모프를 하나 이상 고르세요.</div>'; return; }
+      if (!tk.length) { out.innerHTML = '<div class="err">' + esc(I18n.t('goalSelectOne')) + '</div>'; return; }
       const res = B.goalCheck(tk, S.animals);
       const combo = B.comboName(tk);
       const blocked = res.filter(r => !r.ok);
       let h = '<div class="pathbox" style="margin-top:12px">'
-        + '<b>목표</b><br>' + (combo ? '<span class="combotag">콤보</span>' + esc(combo) + '<br>' : '')
+        + '<b>' + esc(I18n.t('goalTarget')) + '</b><br>'
+        + (combo ? '<span class="combotag">' + esc(I18n.t('goalCombo')) + '</span>' + esc(combo) + '<br>' : '')
         + esc(res.map(r => r.name).join(' · ')) + '</div>';
       h += '<div class="note ' + (blocked.length ? 'warn' : 'good') + '">'
         + icon(blocked.length ? 'bi-exclamation-triangle' : 'bi-check2-circle')
         + '<span>' + (blocked.length
-          ? '지금 개체로는 ' + blocked.length + '가지가 안 됩니다 — ' + esc(blocked.map(r => r.name).join(', '))
-          : '필요한 유전자를 모두 보유하고 있습니다. 실제 확률은 계산기에서 확인하세요.')
+          ? esc(I18n.t('goalBlocked', { count: blocked.length, names: blocked.map(r => r.name).join(', ') }))
+          : esc(I18n.t('goalReady')))
         + '</span></div>';
       h += res.map(function (r) {
         if (!r.known) {
           return '<div class="pathbox" style="margin-top:8px"><b>' + esc(r.name) + '</b><br>'
-            + '<span class="hint">이 종의 유전 정보에서 찾지 못한 항목입니다.</span></div>';
+            + '<span class="hint">' + esc(I18n.t('goalUnknown')) + '</span></div>';
         }
         if (r.ok) {
           const path = r.paths.filter(p => p.ok)[0];
           return '<div class="pathbox" style="margin-top:8px"><b>' + esc(r.name) + '</b> '
             + icon('bi-check2-circle') + '<br>' + path.needs.map(function (n) {
                 return '<span class="hint">' + esc(alleleLabel(n.allele)) + ' '
-                  + (n.need > 1 ? '양쪽 부모' : '한쪽 부모') + ' — 보유 '
-                  + n.holders.length + '마리 ('
-                  + esc(n.holders.slice(0, 3).map(a => a.name || '이름 없음').join(', '))
-                  + (n.holders.length > 3 ? ' 외' : '') + ')</span>';
+                  + esc(I18n.t(n.need > 1 ? 'goalBothParents' : 'goalOneParent')) + ' — '
+                  + esc(I18n.t('goalHeld', {
+                    count: n.holders.length,
+                    names: n.holders.slice(0, 3).map(a => a.name || I18n.t('unnamed')).join(', '),
+                    more: n.holders.length > 3 ? I18n.t('goalMore') : ''
+                  })) + '</span>';
               }).join('<br>') + '</div>';
         }
         return '<div class="pathbox" style="margin-top:8px"><b>' + esc(r.name) + '</b> '
           + icon('bi-x-circle') + '<br>' + r.paths.map(function (p, i) {
-              return '<span class="hint">' + (r.paths.length > 1 ? '경로 ' + (i + 1) + ' — ' : '')
+              return '<span class="hint">' + (r.paths.length > 1 ? esc(I18n.t('goalPath', { index: i + 1 })) : '')
                 + p.needs.map(function (n) {
                     return esc(alleleLabel(n.allele)) + ' '
-                      + (n.need > 1 ? '양쪽 부모' : '한쪽 부모') + ' '
-                      + (n.ok ? '(보유 ' + n.holders.length + ')'
-                        : '<b>보유 ' + n.holders.length + ' / 필요 ' + n.need + '</b>');
+                      + esc(I18n.t(n.need > 1 ? 'goalBothParents' : 'goalOneParent')) + ' '
+                      + (n.ok ? esc(I18n.t('goalHave', { count: n.holders.length }))
+                        : I18n.html('goalHaveNeed', { have: n.holders.length, need: n.need }));
                   }).join(' + ') + '</span>';
             }).join('<br>') + '</div>';
       }).join('');
       h += '<a class="btn ghost wide" style="text-decoration:none;margin-top:12px" href="'
-        + esc(CORES[S.species].calc) + '">' + icon('bi-calculator') + '계산기에서 확률 보기</a>';
+        + esc(I18n.calculatorUrl(CORES[S.species].calc)) + '">' + icon('bi-calculator')
+        + esc(I18n.t('goalCalculatorOdds')) + '</a>';
       out.innerHTML = h;
     }
 

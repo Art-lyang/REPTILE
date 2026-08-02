@@ -11,8 +11,8 @@
     const $ = deps.element;
     const esc = deps.esc;
     const icon = deps.icon;
-    const CORES = deps.cores;
     const act = deps.act;
+    const I18n = deps.i18n;
 
     function hatchDays(t) {
       t = parseFloat(t) || 28;
@@ -26,56 +26,55 @@
     function tabClutch() {
       if (S.edit && S.edit.what === 'clutch') return clutchForm(S.edit.row);
       let h = '<button class="btn wide" data-new="clutch" style="margin-bottom:14px">'
-            + icon('bi-plus-lg') + '클러치 등록</button>';
+            + icon('bi-plus-lg') + esc(I18n.t('clutchCreate')) + '</button>';
       if (!S.clutches.length) {
         return h + '<div class="pad"><div class="empty">' + icon('bi-egg')
-          + '등록된 클러치가 없습니다.</div></div>';
+          + esc(I18n.t('clutchEmpty')) + '</div></div>';
       }
       const today = C.today();
       return h + S.clutches.map(function (c) {
         const pair = S.pairs.filter(p => p.id === c.pairing)[0];
         const left = c.expected_hatch ? C.daysBetween(today, c.expected_hatch) : null;
         return '<div class="card"><div class="thumb">🥚</div><div class="info">'
-          + '<div class="nm">' + esc(pair ? (pair.name || '이름 없는 페어링') : '페어링 없음')
+          + '<div class="nm">' + esc(pair ? (pair.name || I18n.t('unnamedPairing')) : I18n.t('clutchNoPair'))
           + (left != null && left >= 0 ? '<span class="chip" style="color:var(--teal);border-color:var(--teal)">D-' + left + '</span>'
-             : left != null ? '<span class="chip">기한 지남</span>' : '') + '</div>'
-          + '<div class="ms">' + (c.laid_date ? '산란 ' + esc(c.laid_date) : '산란일 미입력')
-          + (c.egg_count ? ' · ' + c.egg_count + '개' : '')
-          + (c.temp ? ' · ' + c.temp + '℃' : '')
-          + (c.expected_hatch ? '<br>부화 예정 ' + esc(c.expected_hatch) : '')
+             : left != null ? '<span class="chip">' + esc(I18n.t('clutchOverdue')) + '</span>' : '') + '</div>'
+          + '<div class="ms">' + (c.laid_date ? esc(I18n.t('clutchLaid', { date: I18n.formatDate(c.laid_date) })) : esc(I18n.t('clutchLaidMissing')))
+          + (c.egg_count ? ' · ' + esc(I18n.t('clutchEggCount', { count: c.egg_count })) : '')
+          + (c.temp ? ' · ' + esc(I18n.t('clutchTemperature', { temp: c.temp })) : '')
+          + (c.expected_hatch ? '<br>' + esc(I18n.t('clutchExpected', { date: I18n.formatDate(c.expected_hatch) })) : '')
           + (c.note ? '<br>' + esc(c.note) : '') + '</div></div>'
           + '<div class="acts"><button class="mini" data-edit="clutch:' + c.id + '">'
-          + icon('bi-pencil') + '수정</button></div></div>';
+          + icon('bi-pencil') + esc(I18n.t('edit')) + '</button></div></div>';
       }).join('');
     }
 
     function clutchForm(c) {
       c = c || {};
-      return '<div class="pad"><div class="lbl">' + (c.id ? '클러치 수정' : '클러치 등록') + '</div>'
-        + '<div class="lbl2">페어링</div><select class="in" id="c_p" aria-label="페어링">'
-        + '<option value="">선택 안 함</option>'
+      return '<div class="pad"><div class="lbl">' + esc(I18n.t(c.id ? 'clutchEdit' : 'clutchCreate')) + '</div>'
+        + '<div class="lbl2">' + esc(I18n.t('clutchPairingLabel')) + '</div><select class="in" id="c_p" aria-label="' + esc(I18n.t('clutchPairingLabel')) + '">'
+        + '<option value="">' + esc(I18n.t('noSelection')) + '</option>'
         + S.pairs.map(p => '<option value="' + p.id + '"' + (c.pairing === p.id ? ' selected' : '') + '>'
-            + esc(p.name || '이름 없는 페어링') + '</option>').join('') + '</select>'
-        + '<div class="row2"><div><div class="lbl2"><label for="c_laid">산란일</label></div>'
+            + esc(p.name || I18n.t('unnamedPairing')) + '</option>').join('') + '</select>'
+        + '<div class="row2"><div><div class="lbl2"><label for="c_laid">' + esc(I18n.t('clutchLaidLabel')) + '</label></div>'
         + '<input class="in" id="c_laid" type="date" value="' + esc(c.laid_date || '') + '"></div>'
-        + '<div><div class="lbl2"><label for="c_n">알 개수</label></div>'
+        + '<div><div class="lbl2"><label for="c_n">' + esc(I18n.t('clutchEggsLabel')) + '</label></div>'
         + '<input class="in" id="c_n" type="number" min="0" max="99" inputmode="numeric" value="'
         + esc(c.egg_count == null ? '' : c.egg_count) + '"></div></div>'
-        + '<div class="lbl2"><label for="c_t">인큐베이터 온도 (℃)</label></div>'
+        + '<div class="lbl2"><label for="c_t">' + esc(I18n.t('clutchTemperatureLabel')) + '</label></div>'
         + '<input class="in" id="c_t" type="number" step="0.5" inputmode="decimal" value="'
         + esc(c.temp == null ? '' : c.temp) + '">'
         + (S.species === 'gecko'
-          ? '<div class="hint">온도를 적으면 부화 예정일을 <b>레오파드 기준</b>으로 자동 계산합니다.</div>'
-          : '<div class="hint">부화 예정일 자동 계산은 <b>레오파드 기준</b>입니다. '
-            + esc(CORES[S.species].ko) + ' 는 아래에서 직접 적어주세요.</div>')
-        + '<div class="lbl2"><label for="c_exp">부화 예정일</label></div>'
+          ? '<div class="hint">' + I18n.html('clutchAutoHint') + '</div>'
+          : '<div class="hint">' + I18n.html('clutchManualHint', { species: I18n.speciesName(S.species) }) + '</div>')
+        + '<div class="lbl2"><label for="c_exp">' + esc(I18n.t('clutchExpectedLabel')) + '</label></div>'
         + '<input class="in" id="c_exp" type="date" value="' + esc(c.expected_hatch || '') + '">'
-        + '<div class="lbl2"><label for="c_note">메모</label></div>'
+        + '<div class="lbl2"><label for="c_note">' + esc(I18n.t('clutchNoteLabel')) + '</label></div>'
         + '<input class="in" id="c_note" value="' + esc(c.note || '') + '">'
         + '<div class="err" id="c_err"></div><div class="formbtns"><button class="btn" id="c_save">'
-        + icon('bi-check-lg') + '저장</button><button class="btn ghost" data-cancel="1">취소</button>'
+        + icon('bi-check-lg') + esc(I18n.t('save')) + '</button><button class="btn ghost" data-cancel="1">' + esc(I18n.t('cancel')) + '</button>'
         + (c.id ? '<button class="btn danger" data-del="clutch:' + c.id + '" style="margin-left:auto">'
-          + icon('bi-trash3') + '삭제</button>' : '') + '</div></div>';
+          + icon('bi-trash3') + esc(I18n.t('delete')) + '</button>' : '') + '</div></div>';
     }
 
     function saveClutch() {
@@ -85,13 +84,14 @@
         exp = C.addDays($('c_laid').value, hatchDays(temp));
       }
       const row = Object.assign({}, S.edit.row || {}, {
+        species: S.species,
         pairing: $('c_p').value || null,
         laid_date: $('c_laid').value || null,
         egg_count: $('c_n').value ? parseInt($('c_n').value, 10) : null,
         temp: temp, expected_hatch: exp,
         note: $('c_note').value.trim() || null
       });
-      return act(async () => { await A.saveRow('clutches', row); S.edit = null; }, '저장했습니다');
+      return act(async () => { await A.saveRow('clutches', row); S.edit = null; }, I18n.t('saved'));
     }
 
     return { tabClutch: tabClutch, saveClutch: saveClutch };

@@ -12,18 +12,18 @@
 </head>
 <body class="breeding">
 <header><div class="hd"><div class="hd-txt">
-  <h1 id="btitle">브리딩 관리</h1><div class="sub" id="bsub"></div>
+  <h1 id="btitle" data-bm-text="pageHeader">브리딩 관리</h1><div class="sub" id="bsub" data-bm-text="pageSubtitle"></div>
 </div></div></header>
 <div class="wrap">
   <div class="focusbar" id="spbar" style="display:none">
-    <span class="fl">종</span><select id="species" aria-label="종"></select>
+    <span class="fl" data-bm-text="species">종</span><select id="species" aria-label="종" data-bm-aria="speciesAria"></select>
   </div>
   <div class="tabs" id="tabs" style="display:none">
-    <button class="tab on" data-t="animals"><i class="bi bi-heart"></i>개체</button>
-    <button class="tab" data-t="pair"><i class="bi bi-arrow-left-right"></i>페어링</button>
-    <button class="tab" data-t="clutch"><i class="bi bi-egg"></i>클러치</button>
-    <button class="tab" data-t="goal"><i class="bi bi-bullseye"></i>역산</button>
-    <button class="tab" data-t="analysis"><i class="bi bi-bar-chart-line"></i>분석</button>
+    <button class="tab on" data-t="animals"><i class="bi bi-heart"></i><span data-bm-text="tabAnimals">개체</span></button>
+    <button class="tab" data-t="pair"><i class="bi bi-arrow-left-right"></i><span data-bm-text="tabPairings">페어링</span></button>
+    <button class="tab" data-t="clutch"><i class="bi bi-egg"></i><span data-bm-text="tabClutches">클러치</span></button>
+    <button class="tab" data-t="goal"><i class="bi bi-bullseye"></i><span data-bm-text="tabGoals">역산</span></button>
+    <button class="tab" data-t="analysis"><i class="bi bi-bar-chart-line"></i><span data-bm-text="tabAnalysis">분석</span></button>
   </div>
   <div id="body"></div>
 </div>
@@ -104,11 +104,17 @@
   ].forEach(function (item) { window.CalculationHistoryStore.record(item, 'ko'); });
 })();
 </script>
-<script src="breeding-animal-panel.js?v=20260802a"></script>
-<script src="breeding-pairing-panel.js?v=20260802a"></script>
-<script src="breeding-clutch-panel.js?v=20260802a"></script>
-<script src="breeding-genetic-goal.js?v=20260802a"></script>
-<script src="breeding-events.js?v=20260802a"></script>
-<script src="breeding-ui.js?v=20260802a"></script>
+<script src="breeding-i18n-ko.js?v=20260802b"></script>
+<script src="breeding-i18n-en.js?v=20260802b"></script>
+<script src="breeding-i18n-zh.js?v=20260802b"></script>
+<script src="breeding-i18n-ja.js?v=20260802b"></script>
+<script src="breeding-i18n.js?v=20260802b"></script>
+<script src="breeding-animal-panel.js?v=20260802b"></script>
+<script src="breeding-pairing-panel.js?v=20260802b"></script>
+<script src="breeding-clutch-panel.js?v=20260802b"></script>
+<script src="breeding-genetic-goal.js?v=20260802b"></script>
+<script src="breeding-events.js?v=20260802b"></script>
+<script src="breeding-row-scope.js?v=20260802c"></script>
+<script src="breeding-ui.js?v=20260802c"></script>
 </body>
 </html>

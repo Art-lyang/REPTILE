@@ -8,12 +8,14 @@
   const D = window.BreedingDraft;
   const CarePhotos = window.CarePhotos;
   const LineTraitScores = window.LineTraitScores;
+  const I18n = window.BreedingI18n;
+  const BreedingRowScope = window.BreedingRowScope;
   const $ = id => document.getElementById(id);
   const CORES = {
-    gecko: { ko: '레오파드 게코', src: '/gecko/gecko-core.js', calc: '/gecko/', goal: true },
-    crested: { ko: '크레스티드 게코', src: '/crested/crested-core.js', calc: '/crested/', goal: true },
-    fattail: { ko: '아프리카 팻테일 게코', src: '/fattail/fattail-core.js', calc: '/fattail/', goal: true },
-    ballpython: { ko: '볼파이톤', src: '/ballpython/ball-core.js', calc: '/ballpython/', goal: false }
+    gecko: { src: '/gecko/gecko-core.js', calc: '/gecko/', goal: true },
+    crested: { src: '/crested/crested-core.js', calc: '/crested/', goal: true },
+    fattail: { src: '/fattail/fattail-core.js', calc: '/fattail/', goal: true },
+    ballpython: { src: '/ballpython/ball-core.js', calc: '/ballpython/', goal: false }
   };
   const S = { species: 'gecko', tab: 'animals', goalMode: 'genetic', animals: [], pairs: [],
     clutches: [], projects: [], edit: null, busy: false };
@@ -26,7 +28,6 @@
     });
   }
   function icon(n) { return '<i class="bi ' + n + '" aria-hidden="true"></i>'; }
-  function speciesKey(value) { return !value || value === 'leopard' ? 'gecko' : value; }
   function toast(message) {
     const target = $('toast');
     target.textContent = message;
@@ -39,16 +40,10 @@
     const [animals, pairs, clutches, projects] = await Promise.all([
       A.listAnimals(), A.listRows('pairings'), A.listRows('clutches'), A.listBreedingProjects(S.species)
     ]);
-    S.animals = animals.filter(a => speciesKey(a.species) === S.species);
+    S.animals = animals.filter(a => BreedingRowScope.speciesKey(a.species) === S.species);
     S.others = animals.length - S.animals.length;
-    const animalsById = new Map(animals.map(a => [a.id, a]));
-    S.pairs = pairs.filter(p => {
-      if (p.species) return speciesKey(p.species) === S.species;
-      const linked = animalsById.get(p.male) || animalsById.get(p.female);
-      return linked ? speciesKey(linked.species) === S.species : S.species === 'gecko';
-    });
-    const pairingIds = new Set(S.pairs.map(p => p.id));
-    S.clutches = clutches.filter(c => !c.pairing || pairingIds.has(c.pairing));
+    S.pairs = BreedingRowScope.pairings(pairs, animals, S.species);
+    S.clutches = BreedingRowScope.clutches(clutches, S.pairs, S.species);
     S.projects = projects;
   }
 
@@ -61,21 +56,21 @@
       render();
       if (ok) toast(typeof ok === 'function' ? ok(result) : ok);
       return result;
-    } catch (e) { toast(A.friendly(e)); }
+    } catch (e) { toast(I18n.friendly(e)); }
     finally { S.busy = false; }
   }
 
   function nameById(id) {
     const animal = S.animals.filter(item => item.id === id)[0];
-    return animal ? (animal.name || '이름 없음') : '-';
+    return animal ? (animal.name || I18n.t('unnamed')) : '-';
   }
   function projectById(id) { return S.projects.filter(project => project.id === id)[0] || null; }
   function goalText(key) {
     return window.BreedingGoalUI && BreedingGoalUI.t ? BreedingGoalUI.t(key) : key;
   }
   function otherNote() {
-    return S.others ? '<div class="hint">' + icon('bi-info-circle') + ' 다른 종 ' + S.others
-      + '마리는 위에서 종을 바꾸거나 <a href="/care/">크리처 케어로그</a>에서 볼 수 있어요.</div>' : '';
+    return S.others ? '<div class="hint">' + icon('bi-info-circle')
+      + ' ' + I18n.html('otherSpecies', { count: S.others }) + '</div>' : '';
   }
 
   function render() {
@@ -103,7 +98,7 @@
         pairCandidate: async (project, candidate) => {
           S.edit = { what: 'pair', row: BreedingProjectFlow.pairingDraft(project, candidate) };
           S.tab = 'pair';
-          try { history.replaceState(null, '', '?species=' + S.species + '#pair'); } catch (error) {}
+          try { history.replaceState(null, '', I18n.managementUrl(S.species, 'pair')); } catch (error) {}
           render();
         }
       });
@@ -113,7 +108,7 @@
   function assembleModules() {
     const base = { state: S, app: A, core: C, draft: D, photos: CarePhotos,
       lineTraitScores: LineTraitScores, photo: window.Photo, element: $, esc: esc, icon: icon,
-      cores: CORES, act: act, render: render, breedSpec: () => B };
+      cores: CORES, i18n: I18n, act: act, render: render, breedSpec: () => B };
     animalPanel = window.createBreedingAnimalPanel(Object.assign({}, base, {
       nameById: nameById, otherNote: otherNote
     }));
@@ -133,7 +128,7 @@
       const script = document.createElement('script');
       script.src = src;
       script.onload = () => done();
-      script.onerror = () => fail(new Error(src + ' 를 불러오지 못했습니다'));
+      script.onerror = () => fail(new Error(I18n.t('scriptLoadError', { src: src })));
       document.head.appendChild(script);
     });
   }
@@ -145,38 +140,39 @@
   }
 
   async function boot() {
-    if (!A.ready) { gate('bi-plug', '백엔드가 설정되지 않았습니다', 'assets/studio-config.js 를 확인해 주세요.', '/care/', '케어로'); return; }
+    I18n.initialize();
+    if (!A.ready) { gate('bi-plug', I18n.t('backendTitle'), I18n.t('backendBody'), '/care/', I18n.t('careAction')); return; }
     const querySpecies = new URLSearchParams(location.search).get('species');
     S.species = CORES[querySpecies] ? querySpecies : 'gecko';
     const hash = (location.hash || '').replace('#', '');
     if (['animals', 'pair', 'clutch', 'goal', 'analysis'].indexOf(hash) >= 0) S.tab = hash;
     await A.boot();
-    A.logVisit();
-    if (!A.user) { gate('bi-person-lock', '로그인이 필요합니다', '브리딩 기록은 계정에 저장됩니다.', '/gecko/login.html', '로그인'); return; }
-    if (!A.premium.active) { gate('bi-gem', '프리미엄 기능입니다', '개체·페어링·클러치·역산을 이용할 수 있습니다.', '/gecko/login.html', '프리미엄 코드 입력'); return; }
+    A.logVisit(I18n.language());
+    if (!A.user) { gate('bi-person-lock', I18n.t('loginTitle'), I18n.t('loginBody'), '/gecko/login.html', I18n.t('loginAction')); return; }
+    if (!A.premium.active) { gate('bi-gem', I18n.t('premiumTitle'), I18n.t('premiumBody'), '/gecko/login.html', I18n.t('premiumAction')); return; }
     try {
       // The adapter inspects the selected core, and the planner inspects the adapter.
       await loadScript(CORES[S.species].src + '?v=13');
       await loadScript('breeding-spec.js?v=13');
       await loadScript('/assets/linebreeding-planner.js?v=20260802b');
     } catch (e) {
-      gate('bi-exclamation-triangle', '계산기 데이터를 불러오지 못했습니다', esc(e.message), '/care/', '케어로');
+      gate('bi-exclamation-triangle', I18n.t('calculatorLoadTitle'), esc(e.message), '/care/', I18n.t('careAction'));
       return;
     }
     B = window.BreedSpec;
     if (!B) {
-      gate('bi-exclamation-triangle', '종 데이터를 읽지 못했습니다',
-        esc(CORES[S.species].ko) + ' 코어에서 유전 정보를 찾지 못했습니다.', '/care/', '케어로');
+      gate('bi-exclamation-triangle', I18n.t('speciesDataTitle'),
+        I18n.html('speciesDataBody', { species: I18n.speciesName(S.species) }), '/care/', I18n.t('careAction'));
       return;
     }
-    $('btitle').textContent = CORES[S.species].ko + ' 브리딩';
-    $('bsub').textContent = '개체 · 페어링 · 클러치 · 계산 분석을 관리합니다';
+    $('btitle').textContent = I18n.t('headerTitle', { species: I18n.speciesName(S.species) });
+    $('bsub').textContent = I18n.t('headerSubtitle');
     $('species').innerHTML = Object.keys(CORES).map(key => '<option value="' + key + '"'
-      + (key === S.species ? ' selected' : '') + '>' + esc(CORES[key].ko) + '</option>').join('');
+      + (key === S.species ? ' selected' : '') + '>' + esc(I18n.speciesName(key)) + '</option>').join('');
     $('spbar').style.display = '';
     $('tabs').style.display = '';
     try { await loadAll(); }
-    catch (e) { gate('bi-exclamation-triangle', '불러오지 못했습니다', esc(A.friendly(e)), '/care/', '케어로'); return; }
+    catch (e) { gate('bi-exclamation-triangle', I18n.t('loadTitle'), esc(I18n.friendly(e)), '/care/', I18n.t('careAction')); return; }
     const incoming = D ? BreedingDraft.load(S.species) : null;
     if (incoming) { pairingPanel.openCalculationAsPair(incoming); return; }
     render();

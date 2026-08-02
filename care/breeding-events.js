@@ -12,6 +12,7 @@
     const pairingPanel = deps.pairingPanel;
     const clutchPanel = deps.clutchPanel;
     const geneticGoal = deps.geneticGoal;
+    const I18n = deps.i18n;
 
     function onClick(ev) {
       const t = ev.target.closest('button');
@@ -23,7 +24,7 @@
         return leave.then(function () {
           S.tab = nextTab;
           S.edit = null;
-          try { history.replaceState(null, '', '?species=' + S.species + '#' + S.tab); } catch (e) {}
+          try { history.replaceState(null, '', I18n.managementUrl(S.species, S.tab)); } catch (e) {}
           render();
         });
       }
@@ -50,8 +51,9 @@
       }
       if (d.del) {
         const [what, id] = d.del.split(':');
-        const label = { animal: '개체', pair: '페어링', clutch: '클러치' }[what];
-        if (!confirm('이 ' + label + '을(를) 지울까요? 되돌릴 수 없습니다.')) return;
+        const confirmKey = { animal: 'deleteAnimalConfirm', pair: 'deletePairingConfirm',
+          clutch: 'deleteClutchConfirm' }[what];
+        if (!confirm(I18n.t(confirmKey))) return;
         const table = { animal: 'animals', pair: 'pairings', clutch: 'clutches' }[what];
         const animal = what === 'animal' ? S.animals.filter(x => x.id === id)[0] : null;
         return act(async () => {
@@ -64,7 +66,7 @@
           }
           S.edit = null;
           return { ok: true };
-        }, cleanup => cleanup && cleanup.ok ? '삭제했습니다' : CarePhotos.t('cleanupWarning'));
+        }, cleanup => cleanup && cleanup.ok ? I18n.t('deleted') : CarePhotos.t('cleanupWarning'));
       }
       if (t.id === 'f_save') return animalPanel.saveAnimal();
       if (t.id === 'p_save') return pairingPanel.savePair();
@@ -79,7 +81,7 @@
           const selected = await CarePhotos.select(slot, ev.target.files && ev.target.files[0]);
           if (selected) CarePhotos.refresh(document, A.sb);
         } catch (e) {
-          toast(A.friendly(e));
+          toast(I18n.friendly(e));
         } finally {
           ev.target.value = '';
         }
@@ -93,7 +95,7 @@
         return;
       }
       if (ev.target.id !== 'species') return;
-      location.href = 'breeding.html?species=' + encodeURIComponent(ev.target.value) + '#' + S.tab;
+      location.href = I18n.managementUrl(ev.target.value, S.tab);
     }
 
     function bind() {

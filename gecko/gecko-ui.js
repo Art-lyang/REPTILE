@@ -468,6 +468,11 @@ function applyLang(){
   setUpd('updSoon',(t.updSoonList||[]).map(x=>'<li>'+x+'</li>').join(''));
   document.getElementById('lbl-langtitle').textContent=t.langLabel;
   document.querySelectorAll('#langMenu button').forEach(b=>b.classList.toggle('on', b.dataset.lang===LANG));
+  const pro=document.getElementById('proBtn');
+  if(pro){
+    pro.href='/care/breeding.html?species=gecko'+(LANG==='ko'?'':'&lang='+encodeURIComponent(LANG));
+    const proText=pro.querySelector('span'); if(proText) proText.textContent=t.saveBreeding;
+  }
   // 후원 버튼 + 광고 영역
   const dn=document.getElementById('donateBtn'); dn.innerHTML='<i class="bi bi-cup-hot" aria-hidden="true"></i><span>'+escapeHtml(t.donate)+'</span>';
   dn.closest('.donate-wrap').style.display = SHOW_DONATE? '' : 'none';

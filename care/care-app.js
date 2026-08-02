@@ -26,6 +26,13 @@ const CareApp = (function () {
   const SB = (typeof SUPABASE_URL !== 'undefined' && window.supabase)
     ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON)
     : null;
+  const ERROR_MESSAGES = Object.freeze({
+    ownership: '내 기록이 아니거나 로그인이 풀렸습니다. 다시 로그인해 주세요.',
+    duplicate: '이미 오늘 처리한 항목입니다.', login: '로그인이 필요합니다.',
+    network: '서버에 연결하지 못했습니다. 잠시 뒤 다시 시도해 주세요.',
+    cycle: '반복 주기를 하나만 골라 주세요 (며칠마다 또는 요일).',
+    weight: '체중은 0보다 크고 10000g 미만이어야 합니다.'
+  });
 
   let USER = null;
   let PREM = { active: false, kind: null, expires_at: null };
@@ -46,14 +53,21 @@ const CareApp = (function () {
   /* Supabase 오류를 그대로 화면에 던지면 영어 원문이 나옵니다. 자주 나오는
      것만 우리말로 바꾸고, 모르는 것은 원문을 붙여 둡니다 — 감추면 무슨 일이
      났는지 알 수 없게 됩니다. */
+  function errorKey(err) {
+    const m = String((err && (err.message || err.msg)) || err || '');
+    if (/row-level security|violates row-level|내 기록이 아니거나/i.test(m)) return 'ownership';
+    if (/duplicate key|already exists|이미 오늘/i.test(m)) return 'duplicate';
+    if (/JWT|not signed in|401|로그인이 필요/i.test(m)) return 'login';
+    if (/Failed to fetch|NetworkError|서버에 연결하지/i.test(m)) return 'network';
+    if (/care_plans_cycle_ck|반복 주기/i.test(m)) return 'cycle';
+    if (/weight_logs_grams_ck|체중은 0보다/i.test(m)) return 'weight';
+    return null;
+  }
+
   function friendly(err) {
     const m = String((err && (err.message || err.msg)) || err || '');
-    if (/row-level security|violates row-level/i.test(m)) return '내 기록이 아니거나 로그인이 풀렸습니다. 다시 로그인해 주세요.';
-    if (/duplicate key|already exists/i.test(m)) return '이미 오늘 처리한 항목입니다.';
-    if (/JWT|not signed in|401/i.test(m)) return '로그인이 필요합니다.';
-    if (/Failed to fetch|NetworkError/i.test(m)) return '서버에 연결하지 못했습니다. 잠시 뒤 다시 시도해 주세요.';
-    if (/care_plans_cycle_ck/.test(m)) return '반복 주기를 하나만 골라 주세요 (며칠마다 또는 요일).';
-    if (/weight_logs_grams_ck/.test(m)) return '체중은 0보다 크고 10000g 미만이어야 합니다.';
+    const key = errorKey(err);
+    if (key) return ERROR_MESSAGES[key];
     return m || '알 수 없는 오류';
   }
 
@@ -72,6 +86,7 @@ const CareApp = (function () {
     get premium() { return PREM; },
     device: devId,
     friendly: friendly,
+    errorKey: errorKey,
 
     /* ── 로그인 · 프리미엄 ─────────────────────────────────────────────── */
     async boot() {
@@ -92,9 +107,9 @@ const CareApp = (function () {
 
     async signOut() { if (SB) await SB.auth.signOut(); },
 
-    logVisit() {
+    logVisit(lang) {
       if (SB && window.StudioAnalytics) {
-        try { window.StudioAnalytics.logVisit(SB, 'care', 'ko'); } catch (e) {}
+        try { window.StudioAnalytics.logVisit(SB, 'care', lang || 'ko'); } catch (e) {}
       }
     },
 

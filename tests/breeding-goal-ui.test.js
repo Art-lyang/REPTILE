@@ -158,6 +158,28 @@ test('Given four supported languages, when goal text loads, then keys match and 
   assert.equal(new Set(unsupported).size, locales.length);
 });
 
+test('Given a named line cross, when candidate cards render, then the calculated line name and reset warning are visible in every language', () => {
+  // Given: the planner already returns lineOutcome for every candidate
+  const text = loadWindowModule('assets/breeding-goal-i18n.js', 'BreedingGoalText');
+  const goalUi = requiredSource('care/breeding-goal-ui.js');
+
+  // When: the candidate renderer and four locale dictionaries are inspected
+  ['ko', 'en', 'zh', 'ja'].forEach((locale) => {
+    assert.equal(typeof text[locale].lineOutcome === 'string' && text[locale].lineOutcome.trim().length > 0, true,
+      `missing ${locale} lineOutcome translation`);
+    assert.equal(typeof text[locale].lineResetWarning === 'string' && text[locale].lineResetWarning.trim().length > 0, true,
+      `missing ${locale} lineResetWarning translation`);
+  });
+
+  // Then: the computed result is surfaced instead of being silently discarded
+  assert.match(goalUi, /pair\.lineOutcome\s*&&\s*pair\.lineOutcome\.name/,
+    'candidate cards must display the planner-calculated line outcome name');
+  assert.match(goalUi, /pair\.lineOutcome\.warning\s*===\s*['"]line_reset['"]/,
+    'candidate cards must translate the line-reset warning');
+  assert.match(goalUi, /pair\.status\s*!==\s*['"]insufficient['"]\s*&&\s*pair\.lineOutcome/,
+    'candidate cards must not show a target line name for insufficient pairings');
+});
+
 test('Given untrusted project input, when the project boundary parses it, then malformed targets and XSS stay inert', () => {
   // Given: the versioned sanitizer and hostile browser text
   const contract = loadWindowModule('assets/breeding-project-contract.js', 'BreedingProjectContract');

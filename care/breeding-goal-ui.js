@@ -139,10 +139,14 @@
       + (candidates.length ? '<div class="bg-candidates" role="list">' + candidates.slice(0, 6).map(function (pair) {
           const caution = pair.relationshipWarnings.length ? t.relationshipWarning
             : pair.reviewReasons.length ? t.missingInfo : '';
+          const lineName = pair.status !== 'insufficient' && pair.lineOutcome && pair.lineOutcome.name
+            ? '<p>' + esc(t.lineOutcome) + ': <strong>' + esc(pair.lineOutcome.name) + '</strong></p>' : '';
+          const lineWarning = pair.status !== 'insufficient' && pair.lineOutcome && pair.lineOutcome.warning === 'line_reset'
+            ? '<p>' + esc(t.lineResetWarning) + '</p>' : '';
           return '<article class="bg-candidate" data-bg-mobile-stack role="listitem"><div><span class="bg-state '
             + esc(pair.status) + '">' + esc(labels[pair.status] || t.resultInsufficient) + '</span><b>'
             + esc(names.get(pair.parentAId) || pair.parentAId) + ' × ' + esc(names.get(pair.parentBId) || pair.parentBId)
-            + '</b>' + (caution ? '<p>' + esc(caution) + '</p>' : '') + '</div>'
+            + '</b>' + lineName + lineWarning + (caution ? '<p>' + esc(caution) + '</p>' : '') + '</div>'
             + (pair.status === 'insufficient' ? '' : '<button class="mini" data-bg-save-pairing data-parent-a="'
               + esc(pair.parentAId) + '" data-parent-b="' + esc(pair.parentBId) + '">' + esc(t.savePairing) + '</button>')
             + '</article>';

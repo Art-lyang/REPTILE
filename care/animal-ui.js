@@ -632,6 +632,12 @@
       + icon('bi-arrow-right') + esc(label) + '</a></div></div>';
   }
 
+  function loginUrl() {
+    return I.url('/gecko/login.html', {
+      next: location.pathname + location.search + location.hash
+    });
+  }
+
   async function boot() {
     if (!A.ready) { gate('bi-plug', I.t('backendTitle'), I.t('backendBody'), '/care/', I.t('back')); return; }
 
@@ -639,9 +645,9 @@
     if (!S.id) { gate('bi-question-circle', I.t('animalNotFound'), I.t('animalIdMissing'), '/care/', I.t('careList')); return; }
 
     await A.boot();
-    A.logVisit();
-    if (!A.user) { gate('bi-person-lock', I.t('loginTitle'), I.t('loginBody'), '/gecko/login.html', I.t('loginAction')); return; }
-    if (!A.premium.active) { gate('bi-gem', I.t('premiumTitle'), I.t('premiumBody'), '/gecko/login.html', I.t('premiumAction')); return; }
+    A.logVisit(I.language());
+    if (!A.user) { gate('bi-person-lock', I.t('loginTitle'), I.t('loginBody'), loginUrl(), I.t('loginAction')); return; }
+    if (!A.premium.active) { gate('bi-gem', I.t('premiumTitle'), I.t('premiumBody'), I.url('/gecko/login.html'), I.t('premiumAction')); return; }
 
     try {
       await loadAll();

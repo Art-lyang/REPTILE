@@ -54,6 +54,11 @@
   function speciesOf(a) { return C.SPECIES[a && a.species] || C.SPECIES.other; }
   function speciesName(a) { return I.speciesName((a && a.species) || 'other'); }
   function planName(p) { return p.title ? I.presetTitle(p.title) : I.kindName(p.kind); }
+  function loginUrl() {
+    return I.url('/gecko/login.html', {
+      next: location.pathname + location.search + location.hash
+    });
+  }
 
   /* ── 데이터 불러오기 ──────────────────────────────────────────────────
      기록은 90일치만 받습니다. 화면에서 쓰는 것은 오늘 상태와 주간 요약뿐이라
@@ -1075,18 +1080,15 @@
       return;
     }
     await A.boot();
-    A.logVisit();
+    A.logVisit(I.language());
 
     if (!A.user) {
       $('body').innerHTML = '<div class="gate"><div class="pad">'
         + '<div class="gicon">' + icon('bi-person-lock') + '</div>'
         + '<div class="lbl">' + I.t('loginTitle') + '</div>'
         + '<div class="hint">' + I.t('loginBody') + '</div>'
-        /* login.html 은 로그인 뒤 돌아올 곳을 받지 않습니다. 없는 동작을
-           있는 것처럼 ?next= 를 붙이지 않고, 로그인하면 그 화면에 뜨는
-           링크로 돌아오게 둡니다. */
         + '<a class="btn wide" style="text-decoration:none;margin-top:16px" '
-        + 'href="' + I.url('/gecko/login.html') + '">' + icon('bi-box-arrow-in-right') + I.t('loginAction') + '</a>'
+        + 'href="' + loginUrl() + '">' + icon('bi-box-arrow-in-right') + I.t('loginAction') + '</a>'
         + '</div></div>';
       return;
     }

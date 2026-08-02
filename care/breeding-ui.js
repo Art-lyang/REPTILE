@@ -139,6 +139,13 @@
         + icon('bi-arrow-right') + label + '</a>' : '') + '</div></div>';
   }
 
+  function loginUrl() {
+    const query = new URLSearchParams();
+    if (I18n.language() !== 'ko') query.set('lang', I18n.language());
+    query.set('next', location.pathname + location.search + location.hash);
+    return '/gecko/login.html?' + query.toString();
+  }
+
   async function boot() {
     I18n.initialize();
     if (!A.ready) { gate('bi-plug', I18n.t('backendTitle'), I18n.t('backendBody'), '/care/', I18n.t('careAction')); return; }
@@ -148,8 +155,8 @@
     if (['animals', 'pair', 'clutch', 'goal', 'analysis'].indexOf(hash) >= 0) S.tab = hash;
     await A.boot();
     A.logVisit(I18n.language());
-    if (!A.user) { gate('bi-person-lock', I18n.t('loginTitle'), I18n.t('loginBody'), '/gecko/login.html', I18n.t('loginAction')); return; }
-    if (!A.premium.active) { gate('bi-gem', I18n.t('premiumTitle'), I18n.t('premiumBody'), '/gecko/login.html', I18n.t('premiumAction')); return; }
+    if (!A.user) { gate('bi-person-lock', I18n.t('loginTitle'), I18n.t('loginBody'), loginUrl(), I18n.t('loginAction')); return; }
+    if (!A.premium.active) { gate('bi-gem', I18n.t('premiumTitle'), I18n.t('premiumBody'), I18n.url('/gecko/login.html'), I18n.t('premiumAction')); return; }
     try {
       // The adapter inspects the selected core, and the planner inspects the adapter.
       await loadScript(CORES[S.species].src + '?v=13');

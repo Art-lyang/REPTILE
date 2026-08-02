@@ -9,7 +9,8 @@ const root = path.resolve(__dirname, '..');
 function planner() {
   const context = vm.createContext({});
   context.window = context;
-  ['gecko/gecko-core.js', 'care/breeding-spec.js', 'assets/linebreeding-planner.js']
+  ['gecko/gecko-core.js', 'care/breeding-spec.js', 'assets/linebreeding-species-policy.js',
+    'assets/linebreeding-planner.js']
     .forEach((relativePath) => vm.runInContext(
       fs.readFileSync(path.join(root, relativePath), 'utf8'),
       context,

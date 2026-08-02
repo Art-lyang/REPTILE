@@ -13,6 +13,7 @@ function loadPlanner() {
     'gecko/gecko-core.js',
     'care/breeding-spec.js',
     'care/care-core.js',
+    'assets/linebreeding-species-policy.js',
   ]) {
     const fullPath = path.join(root, relativePath);
     vm.runInContext(fs.readFileSync(fullPath, 'utf8'), context, { filename: relativePath });

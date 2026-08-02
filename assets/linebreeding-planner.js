@@ -1,24 +1,9 @@
 (function (global) {
   'use strict';
 
-  const options = global.BreedSpec && typeof global.BreedSpec.traitOptions === 'function' ? global.BreedSpec.traitOptions() : [];
-  const activeSpecies = global.BreedSpec && global.BreedSpec.id;
-  const supportedSpecies = new Set(['gecko', 'crested']);
-  const traitsById = new Map(options.map(function (option) {
-    return [option[0], { id: option[0], name: option[1], group: option[2] || option[0] }];
-  }));
+  const Policy = global.LineBreedingSpeciesPolicy;
 
-  function normalizedSpecies(species) { return species === 'leopard' ? 'gecko' : species; }
-
-  function supportsSpecies(species) {
-    const normalized = normalizedSpecies(species);
-    return supportedSpecies.has(normalized) && normalized === activeSpecies && traitsById.size > 0;
-  }
-
-  function animalMatchesSpecies(animal) {
-    if (!animal || typeof animal.species !== 'string' || !animal.species) return activeSpecies === 'gecko';
-    return normalizedSpecies(animal.species) === activeSpecies;
-  }
+  function supportsSpecies(species) { return !!Policy && Policy.supportsSpecies(species); }
 
   function sanitizeTarget(raw) {
     if (!raw || typeof raw !== 'object' || raw.version !== 1) throw new TypeError('Target version must be 1');
@@ -30,7 +15,7 @@
     }
     if (!Array.isArray(raw.traits) || raw.traits.length !== expectedTraits) throw new TypeError(raw.mode + ' target has an invalid trait count');
     const traits = raw.traits.map(function (entry) {
-      if (!entry || typeof entry.id !== 'string' || !traitsById.has(entry.id)) throw new TypeError('Target trait id is unsupported');
+      if (!entry || typeof entry.id !== 'string' || !Policy || !Policy.trait(entry.id)) throw new TypeError('Target trait id is unsupported');
       if (!Number.isInteger(entry.targetScore) || entry.targetScore < 1 || entry.targetScore > 5) {
         throw new TypeError('Target score must be an integer from 1 through 5');
       }
@@ -111,24 +96,6 @@
     return warnings;
   }
 
-  function lineOutcome(target) {
-    const metadata = target.traits.map(function (trait) { return traitsById.get(trait.id); });
-    if (target.mode === 'line_fix') return { name: metadata[0].name, warning: null };
-    const ids = new Set(target.traits.map(function (trait) { return trait.id; }));
-    const combo = activeSpecies === 'gecko' && typeof matchPolyCombo === 'function'
-      ? matchPolyCombo(ids) : null;
-    if (combo) {
-      const language = typeof global.LANG === 'string' ? global.LANG : 'ko';
-      return { name: combo[language] || combo.en || combo.ko, warning: null };
-    }
-    if (activeSpecies === 'gecko' && metadata[0].group === metadata[1].group) {
-      const base = traitsById.get(metadata[0].group);
-      return { name: base ? base.name : metadata[0].name, warning: 'line_reset' };
-    }
-    const separator = activeSpecies === 'gecko' ? ' ' : ' × ';
-    return { name: metadata.map(function (trait) { return trait.name; }).join(separator), warning: null };
-  }
-
   function evidenceFor(target, first, second) {
     return target.traits.map(function (trait) {
       const holders = [first, second].map(function (animal) {
@@ -148,7 +115,7 @@
           : holderScores.every(function (score) { return score < trait.targetScore; })) {
         assessment = 'below_target';
       }
-      return { id: trait.id, name: traitsById.get(trait.id).name,
+      return { id: trait.id, name: Policy.trait(trait.id).name,
         targetScore: trait.targetScore, scores: scores, assessment: assessment };
     });
   }
@@ -156,9 +123,9 @@
   function buildCandidatePairs(project, animals, target) {
     if (!project || !supportsSpecies(project.species)) return [];
     const parsed = animalIndex(animals);
-    const eligible = Array.from(parsed.index.values()).filter(animalMatchesSpecies)
+    const eligible = Array.from(parsed.index.values()).filter(Policy.animalMatchesSpecies)
       .sort(function (a, b) { return a.id < b.id ? -1 : a.id > b.id ? 1 : 0; });
-    const outcome = lineOutcome(target);
+    const outcome = Policy.lineOutcome(target);
     const pairs = [];
     for (let i = 0; i < eligible.length; i += 1) {
       for (let j = i + 1; j < eligible.length; j += 1) {

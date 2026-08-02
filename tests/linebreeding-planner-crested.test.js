@@ -9,7 +9,8 @@ const root = path.resolve(__dirname, '..');
 function loadPlanner() {
   const context = vm.createContext({});
   context.window = context;
-  ['crested/crested-core.js', 'care/breeding-spec.js', 'assets/linebreeding-planner.js']
+  ['crested/crested-core.js', 'care/breeding-spec.js', 'assets/linebreeding-species-policy.js',
+    'assets/linebreeding-planner.js']
     .forEach((relativePath) => vm.runInContext(
       fs.readFileSync(path.join(root, relativePath), 'utf8'),
       context,

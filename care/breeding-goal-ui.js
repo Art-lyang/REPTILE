@@ -125,40 +125,11 @@
     let result;
     try { result = window.LineBreedingPlanner.roadmap({ project: project, animals: current.animals || [] }); }
     catch (error) { output.innerHTML = '<div class="note warn">' + esc(t.missingInfo) + '</div>'; return; }
-    if (!result.supported) { output.innerHTML = '<div class="empty">' + esc(t.unsupported) + '</div>'; return; }
-    const names = new Map((current.animals || []).map(animal => [animal.id, animal.name || animal.id]));
-    const labels = { ready: t.resultReady, review: t.resultReview, insufficient: t.resultInsufficient };
-    const candidates = result.candidates || [];
-    const progress = window.BreedingProjectFlow.projectState(project, current.pairings || [], current.animals || []);
-    const actionKeys = { create_pairing: 'actionCreatePairing', reselect_parents: 'actionReselect',
-      await_offspring: 'actionAwaitOffspring', select_next_pairing: 'actionSelectNext',
-      complete_evaluations: 'actionEvaluate', continue_selection: 'actionContinue' };
-    const selectedIds = new Set(progress.assessments.filter(item => item.status === 'selected')
-      .map(item => item.animalId));
-    const selectedNames = progress.offspring.filter(animal => selectedIds.has(animal.id))
-      .map(animal => animal.name || animal.id);
+    const progress = result.supported
+      ? window.BreedingProjectFlow.projectState(project, current.pairings || [], current.animals || []) : null;
     current.activeProject = project;
-    output.innerHTML = '<h3>' + esc(t.roadmap) + '</h3>'
-      + (candidates.length ? '<div class="bg-candidates" role="list">' + candidates.slice(0, 6).map(function (pair) {
-          const caution = pair.relationshipWarnings.length ? t.relationshipWarning
-            : pair.reviewReasons.length ? t.missingInfo : '';
-          const lineName = pair.status !== 'insufficient' && pair.lineOutcome && pair.lineOutcome.name
-            ? '<p>' + esc(t.lineOutcome) + ': <strong>' + esc(pair.lineOutcome.name) + '</strong></p>' : '';
-          const lineWarning = pair.status !== 'insufficient' && pair.lineOutcome && pair.lineOutcome.warning === 'line_reset'
-            ? '<p>' + esc(t.lineResetWarning) + '</p>' : '';
-          return '<article class="bg-candidate" data-bg-mobile-stack role="listitem"><div><span class="bg-state '
-            + esc(pair.status) + '">' + esc(labels[pair.status] || t.resultInsufficient) + '</span><b>'
-            + esc(names.get(pair.parentAId) || pair.parentAId) + ' × ' + esc(names.get(pair.parentBId) || pair.parentBId)
-            + '</b>' + lineName + lineWarning + (caution ? '<p>' + esc(caution) + '</p>' : '') + '</div>'
-            + (pair.status === 'insufficient' ? '' : '<button class="mini" data-bg-save-pairing data-parent-a="'
-              + esc(pair.parentAId) + '" data-parent-b="' + esc(pair.parentBId) + '">' + esc(t.savePairing) + '</button>')
-            + '</article>';
-        }).join('') + '</div>' : '<div class="bw-empty">' + esc(t.noCandidates) + '</div>')
-      + '<ol class="bg-roadmap"><li>' + esc(t.stepOne) + '</li><li>' + esc(t.stepTwo) + '</li><li>'
-      + esc(t.stepThree) + '</li></ol><div class="note info"><b>' + esc(t.actualProgress) + '</b><span>'
-      + esc(t[actionKeys[progress.nextAction]] || t.actionContinue)
-      + (selectedNames.length ? '<br>' + esc(t.selectedOffspring) + ': ' + esc(selectedNames.join(', ')) : '')
-      + '</span></div>';
+    output.innerHTML = window.BreedingGoalResults.html({ result: result, progress: progress,
+      animals: current.animals || [], text: t });
   }
 
   function switchMode(root, mode, handlers) {

@@ -61,14 +61,17 @@ test('Given existing planning surfaces, when goal contracts are added, then calc
 
 test('Given private goal modules, when pages boot, then only breeding management and its harness wire them', () => {
   // Given: three independently owned future modules
-  ['care/breeding-goal-ui.js', 'assets/breeding-goal-i18n.js',
-    'assets/breeding-project-contract.js'].forEach(requiredSource);
+  ['care/breeding-goal-ui.js', 'care/breeding-goal-results.js',
+    'assets/breeding-goal-i18n.js', 'assets/breeding-project-contract.js',
+    'assets/linebreeding-species-policy.js'].forEach(requiredSource);
   const pageScripts = scriptNames(read('care/breeding.html'));
   const harnessScripts = scriptNames(read('care/_harness-breed.html'));
   const publicScripts = scriptNames(read('gecko/index.html'));
   const goalScripts = [
     'breeding-project-contract.js',
     'breeding-goal-i18n.js',
+    'linebreeding-species-policy.js',
+    'breeding-goal-results.js',
     'breeding-goal-ui.js',
   ];
 
@@ -88,6 +91,7 @@ test('Given the oversized breeding controller, when goal modes are introduced, t
   // Given: the legacy genetic goal remains in the controller
   const controller = read('care/breeding-ui.js');
   const goalUi = requiredSource('care/breeding-goal-ui.js');
+  const goalResults = requiredSource('care/breeding-goal-results.js');
   const css = read('care/breeding-workspace.css');
 
   // When: goal ownership is inspected
@@ -101,11 +105,12 @@ test('Given the oversized breeding controller, when goal modes are introduced, t
   assert.match(controller, /BreedingGoalUI\.(?:html|render)/);
   assert.match(controller, /BreedingGoalUI\.bind/);
   assert.doesNotMatch(controller, /sanitizeTarget|breeding_projects|candidatePairs|relationshipWarnings/);
+  assert.match(goalUi, /BreedingGoalResults\.html/);
   assert.match(goalUi, /role=["']tablist["']/);
   assert.match(goalUi, /role=["']tab["']/);
   assert.match(goalUi, /aria-selected/);
-  assert.match(goalUi, /role=["']list["']/);
-  assert.match(goalUi, /role=["']listitem["']/);
+  assert.match(goalUi + goalResults, /role=["']list["']/);
+  assert.match(goalUi + goalResults, /role=["']listitem["']/);
   assert.match(goalUi, /(?:role=["']status["']|aria-live=["']polite["'])/);
   assert.match(goalUi, /data-bg-mobile-stack/);
   assert.match(css, /@media[^{}]*max-width\s*:\s*(?:360|4\d\d)px[\s\S]*data-bg-mobile-stack/);
@@ -161,7 +166,7 @@ test('Given four supported languages, when goal text loads, then keys match and 
 test('Given a named line cross, when candidate cards render, then the calculated line name and reset warning are visible in every language', () => {
   // Given: the planner already returns lineOutcome for every candidate
   const text = loadWindowModule('assets/breeding-goal-i18n.js', 'BreedingGoalText');
-  const goalUi = requiredSource('care/breeding-goal-ui.js');
+  const goalResults = requiredSource('care/breeding-goal-results.js');
 
   // When: the candidate renderer and four locale dictionaries are inspected
   ['ko', 'en', 'zh', 'ja'].forEach((locale) => {
@@ -172,11 +177,11 @@ test('Given a named line cross, when candidate cards render, then the calculated
   });
 
   // Then: the computed result is surfaced instead of being silently discarded
-  assert.match(goalUi, /pair\.lineOutcome\s*&&\s*pair\.lineOutcome\.name/,
+  assert.match(goalResults, /pair\.lineOutcome\s*&&\s*pair\.lineOutcome\.name/,
     'candidate cards must display the planner-calculated line outcome name');
-  assert.match(goalUi, /pair\.lineOutcome\.warning\s*===\s*['"]line_reset['"]/,
+  assert.match(goalResults, /pair\.lineOutcome\.warning\s*===\s*['"]line_reset['"]/,
     'candidate cards must translate the line-reset warning');
-  assert.match(goalUi, /pair\.status\s*!==\s*['"]insufficient['"]\s*&&\s*pair\.lineOutcome/,
+  assert.match(goalResults, /pair\.status\s*!==\s*['"]insufficient['"]\s*&&\s*pair\.lineOutcome/,
     'candidate cards must not show a target line name for insufficient pairings');
 });
 

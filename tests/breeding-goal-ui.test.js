@@ -2,6 +2,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const test = require('node:test');
+const { breedingSource } = require('./helpers/breeding-source');
 const vm = require('node:vm');
 
 const root = path.resolve(__dirname, '..');
@@ -44,7 +45,7 @@ test('Given existing planning surfaces, when goal contracts are added, then calc
   // Given: the public calculator and private breeding workspace
   const calculator = read('gecko/index.html');
   const breedingPage = read('care/breeding.html');
-  const breedingUi = read('care/breeding-ui.js');
+  const breedingUi = breedingSource();
 
   // When: their current ownership markers are inspected
   const publicScripts = scriptNames(calculator);
@@ -89,7 +90,7 @@ test('Given private goal modules, when pages boot, then only breeding management
 
 test('Given the oversized breeding controller, when goal modes are introduced, then line planning is delegated', () => {
   // Given: the legacy genetic goal remains in the controller
-  const controller = read('care/breeding-ui.js');
+  const controller = breedingSource();
   const goalUi = requiredSource('care/breeding-goal-ui.js');
   const goalResults = requiredSource('care/breeding-goal-results.js');
   const css = read('care/breeding-workspace.css');

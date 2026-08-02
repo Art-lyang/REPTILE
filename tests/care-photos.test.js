@@ -3,6 +3,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const test = require('node:test');
 const vm = require('node:vm');
+const { breedingSource } = require('./helpers/breeding-source');
 
 const root = path.resolve(__dirname, '..');
 const read = (relativePath) => {
@@ -259,7 +260,7 @@ test('Given care animal pages, when they boot, then editing and detail views sha
   const pages = ['care/index.html', 'care/animal.html', 'care/breeding.html', 'care/p.html'];
   const careUi = read('care/care-ui.js');
   const animalUi = read('care/animal-ui.js');
-  const breedingUi = read('care/breeding-ui.js');
+  const breedingUi = breedingSource();
   const pubUi = read('care/pub-ui.js');
   const photoModule = read('care/care-photos.js');
 

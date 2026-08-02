@@ -3,6 +3,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const test = require('node:test');
 const vm = require('node:vm');
+const { breedingSource } = require('./helpers/breeding-source');
 
 const root = path.resolve(__dirname, '..');
 
@@ -158,7 +159,7 @@ test('Given the leopard calculator, when history is integrated, then it records 
   const page = fs.readFileSync(path.join(root, 'gecko', 'index.html'), 'utf8');
   const ui = fs.readFileSync(path.join(root, 'gecko', 'gecko-ui.js'), 'utf8');
   const breedingPage = fs.readFileSync(path.join(root, 'care', 'breeding.html'), 'utf8');
-  const breedingUi = fs.readFileSync(path.join(root, 'care', 'breeding-ui.js'), 'utf8');
+  const breedingUi = breedingSource();
 
   assert.match(page, /\/assets\/calculation-history-store\.js/);
   assert.doesNotMatch(page, /calculation-history-i18n\.js/);

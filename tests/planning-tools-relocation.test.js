@@ -3,6 +3,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const test = require('node:test');
 const vm = require('node:vm');
+const { breedingSource } = require('./helpers/breeding-source');
 
 const root = path.resolve(__dirname, '..');
 
@@ -82,7 +83,7 @@ test('Given the public leopard calculator, when it renders a result, then planni
 
 test('Given breeding management, when it loads, then the analysis workspace owns the relocated planning tools', () => {
   const page = fs.readFileSync(path.join(root, 'care', 'breeding.html'), 'utf8');
-  const ui = fs.readFileSync(path.join(root, 'care', 'breeding-ui.js'), 'utf8');
+  const ui = breedingSource();
   const css = fs.readFileSync(path.join(root, 'care', 'breeding-workspace.css'), 'utf8');
 
   assert.match(page, /data-t="analysis"/);

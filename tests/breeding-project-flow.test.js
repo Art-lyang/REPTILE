@@ -3,6 +3,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const test = require('node:test');
 const vm = require('node:vm');
+const { breedingSource } = require('./helpers/breeding-source');
 
 const root = path.resolve(__dirname, '..');
 
@@ -95,7 +96,7 @@ test('Given every project flow response, when serialized, then no probability or
 
 test('Given the goal UI and pairing controller, when inspected, then candidate handoff fields are wired', () => {
   assert.match(read('care/breeding-goal-ui.js'), /data-bg-save-pairing/);
-  assert.match(read('care/breeding-ui.js'), /\bproject_id\b/);
-  assert.match(read('care/breeding-ui.js'), /\bproject_step\b/);
+  assert.match(breedingSource(), /\bproject_id\b/);
+  assert.match(breedingSource(), /\bproject_step\b/);
   assert.match(read('care/breeding.html'), /breeding-project-flow\.js/);
 });

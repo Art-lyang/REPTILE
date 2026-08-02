@@ -3,6 +3,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const test = require('node:test');
 const vm = require('node:vm');
+const { breedingSource } = require('./helpers/breeding-source');
 
 const root = path.resolve(__dirname, '..');
 
@@ -133,7 +134,7 @@ test('Given the breeding page, when scripts boot, then line scores load before t
 
 test('Given the animal editor, when scores persist, then it uses the line trait score field', () => {
   // Given
-  const controller = read('care/breeding-ui.js');
+  const controller = breedingSource();
   // When
   const usesScores = /\bline_trait_scores\b/.test(controller);
   // Then
@@ -142,7 +143,7 @@ test('Given the animal editor, when scores persist, then it uses the line trait 
 
 test('Given selected line traits, when their editor renders, then each trait has its own score control', () => {
   // Given
-  const controller = read('care/breeding-ui.js');
+  const controller = breedingSource();
   // When
   const hasPerTraitControls = /\bdata-line-trait-score\b/.test(controller);
   // Then
@@ -151,7 +152,7 @@ test('Given selected line traits, when their editor renders, then each trait has
 
 test('Given the per-trait editor, when its source is inspected, then the legacy grade control is absent', () => {
   // Given
-  const controller = read('care/breeding-ui.js');
+  const controller = breedingSource();
   // When
   const hasLegacyControl = /\bid=["']f_grade["']/.test(controller);
   // Then
@@ -159,7 +160,7 @@ test('Given the per-trait editor, when its source is inspected, then the legacy 
 });
 
 test('Given many unselected line traits on mobile, when the editor renders, then only selected score controls are visible', () => {
-  const controller = read('care/breeding-ui.js');
+  const controller = breedingSource();
   assert.match(controller, /data-line-trait-score[\s\S]{0,240}\(checked\s*\?\s*['"]['"]\s*:\s*['"] hidden['"]\)/,
     'unchecked line-trait score controls must render hidden');
   assert.match(controller, /score\.hidden\s*=\s*!ev\.target\.checked/,

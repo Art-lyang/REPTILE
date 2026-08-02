@@ -3,6 +3,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const test = require('node:test');
 const vm = require('node:vm');
+const { breedingSource } = require('./helpers/breeding-source');
 
 const root = path.resolve(__dirname, '..');
 const read = (relativePath) => {
@@ -98,7 +99,7 @@ test('Given the leopard calculator and breeding manager, when pages boot, then h
   const calculator = read('gecko/index.html');
   const calculatorUi = read('gecko/gecko-ui.js');
   const breedingPage = read('care/breeding.html');
-  const breedingUi = read('care/breeding-ui.js');
+  const breedingUi = breedingSource();
 
   assert.match(calculator, /assets\/breeding-draft\.js/);
   assert.match(calculator, /assets\/calculation-history-store\.js/);

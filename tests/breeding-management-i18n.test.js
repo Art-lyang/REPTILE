@@ -113,6 +113,7 @@ test('Given a classified backend error, when management presents it, then one sh
     ['Failed to fetch', 'network'],
     ['care_plans_cycle_ck', 'cycle'],
     ['weight_logs_grams_ck', 'weight'],
+    ['clutch and pairing species must match', 'link'],
   ];
   cases.forEach(([message, key]) => {
     assert.equal(loaded.context.CareApp.errorKey(new Error(message)), key);
@@ -136,7 +137,7 @@ test('Given production and harness pages, when scripts load, then all management
     assert.ok(scripts.indexOf(expectedI18n.at(-1)) < scripts.indexOf(firstPanel), `${page} I18n must precede panels`);
   });
   const production = read('care/breeding.html');
-  assert.ok(production.indexOf('breeding-i18n.js?v=20260802b') < production.indexOf('</head>'));
+  assert.ok(production.indexOf('breeding-i18n.js?v=20260802c') < production.indexOf('</head>'));
   assert.ok(production.indexOf('BreedingI18n.apply(document)') < production.indexOf('supabase-js@'));
 });
 
@@ -163,7 +164,7 @@ test('Given the Leopard calculator language changes, when its management entry i
 
 test('Given the shared care backend changes, when production pages boot, then every consumer requests the same fresh version', () => {
   ['care/index.html', 'care/animal.html', 'care/breeding.html'].forEach((page) => {
-    assert.match(read(page), /care-app\.js\?v=20260802a/, page);
+    assert.match(read(page), /care-app\.js\?v=20260802c/, page);
   });
 });
 

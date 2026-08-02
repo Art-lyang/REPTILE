@@ -31,7 +31,8 @@ const CareApp = (function () {
     duplicate: '이미 오늘 처리한 항목입니다.', login: '로그인이 필요합니다.',
     network: '서버에 연결하지 못했습니다. 잠시 뒤 다시 시도해 주세요.',
     cycle: '반복 주기를 하나만 골라 주세요 (며칠마다 또는 요일).',
-    weight: '체중은 0보다 크고 10000g 미만이어야 합니다.'
+    weight: '체중은 0보다 크고 10000g 미만이어야 합니다.',
+    link: '페어링 연결 정보가 현재 개체·종과 맞지 않습니다. 목록을 새로고침한 뒤 다시 선택해 주세요.'
   });
 
   let USER = null;
@@ -61,6 +62,7 @@ const CareApp = (function () {
     if (/Failed to fetch|NetworkError|서버에 연결하지/i.test(m)) return 'network';
     if (/care_plans_cycle_ck|반복 주기/i.test(m)) return 'cycle';
     if (/weight_logs_grams_ck|체중은 0보다/i.test(m)) return 'weight';
+    if (/pairing not found|clutch and pairing (?:owners|species) must match|pairing does not belong/i.test(m)) return 'link';
     return null;
   }
 

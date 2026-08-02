@@ -54,6 +54,7 @@
     errorNetwork: 'Could not connect to the server. Please try again shortly.',
     errorCycle: 'Choose only one repeat schedule: every few days or specific weekdays.',
     errorWeight: 'Weight must be greater than 0 and less than 10,000 g.',
+    errorLink: 'This pairing no longer matches the selected animals or species. Refresh the list and choose it again.',
     errorUnknown: 'Unknown error',
     animalCreate: 'Add Animal',
     animalEdit: 'Edit Animal',

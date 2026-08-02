@@ -54,6 +54,7 @@
     errorNetwork: '서버에 연결하지 못했습니다. 잠시 뒤 다시 시도해 주세요.',
     errorCycle: '반복 주기를 하나만 골라 주세요 (며칠마다 또는 요일).',
     errorWeight: '체중은 0보다 크고 10000g 미만이어야 합니다.',
+    errorLink: '페어링 연결 정보가 현재 개체·종과 맞지 않습니다. 목록을 새로고침한 뒤 다시 선택해 주세요.',
     errorUnknown: '알 수 없는 오류',
     animalCreate: '개체 등록',
     animalEdit: '개체 수정',

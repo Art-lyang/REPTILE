@@ -54,6 +54,7 @@
     errorNetwork: '无法连接服务器。请稍后重试。',
     errorCycle: '请只选择一种重复周期（每隔若干天或指定星期）。',
     errorWeight: '体重必须大于 0 且小于 10000g。',
+    errorLink: '该配对信息与当前个体或物种不一致。请刷新列表后重新选择。',
     errorUnknown: '未知错误',
     animalCreate: '登记个体',
     animalEdit: '编辑个体',

@@ -100,7 +100,10 @@
   function html(options) {
     current = Object.assign({}, options || {});
     current.projects = safeProjects(current.projects);
-    current.supported = current.species === 'gecko' && Array.isArray(current.traits) && current.traits.length > 0;
+    current.supported = !!(window.LineBreedingPlanner
+      && typeof window.LineBreedingPlanner.supportsSpecies === 'function'
+      && window.LineBreedingPlanner.supportsSpecies(current.species)
+      && Array.isArray(current.traits) && current.traits.length > 0);
     const t = text();
     const line = current.mode === 'line';
     return '<div class="bg-goal"><div class="bg-modes" role="tablist">'

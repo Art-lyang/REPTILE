@@ -2,9 +2,23 @@
   'use strict';
 
   const options = global.BreedSpec && typeof global.BreedSpec.traitOptions === 'function' ? global.BreedSpec.traitOptions() : [];
+  const activeSpecies = global.BreedSpec && global.BreedSpec.id;
+  const supportedSpecies = new Set(['gecko', 'crested']);
   const traitsById = new Map(options.map(function (option) {
     return [option[0], { id: option[0], name: option[1], group: option[2] || option[0] }];
   }));
+
+  function normalizedSpecies(species) { return species === 'leopard' ? 'gecko' : species; }
+
+  function supportsSpecies(species) {
+    const normalized = normalizedSpecies(species);
+    return supportedSpecies.has(normalized) && normalized === activeSpecies && traitsById.size > 0;
+  }
+
+  function animalMatchesSpecies(animal) {
+    if (!animal || typeof animal.species !== 'string' || !animal.species) return activeSpecies === 'gecko';
+    return normalizedSpecies(animal.species) === activeSpecies;
+  }
 
   function sanitizeTarget(raw) {
     if (!raw || typeof raw !== 'object' || raw.version !== 1) throw new TypeError('Target version must be 1');
@@ -101,16 +115,18 @@
     const metadata = target.traits.map(function (trait) { return traitsById.get(trait.id); });
     if (target.mode === 'line_fix') return { name: metadata[0].name, warning: null };
     const ids = new Set(target.traits.map(function (trait) { return trait.id; }));
-    const combo = typeof matchPolyCombo === 'function' ? matchPolyCombo(ids) : null;
+    const combo = activeSpecies === 'gecko' && typeof matchPolyCombo === 'function'
+      ? matchPolyCombo(ids) : null;
     if (combo) {
       const language = typeof global.LANG === 'string' ? global.LANG : 'ko';
       return { name: combo[language] || combo.en || combo.ko, warning: null };
     }
-    if (metadata[0].group === metadata[1].group) {
+    if (activeSpecies === 'gecko' && metadata[0].group === metadata[1].group) {
       const base = traitsById.get(metadata[0].group);
       return { name: base ? base.name : metadata[0].name, warning: 'line_reset' };
     }
-    return { name: metadata.map(function (trait) { return trait.name; }).join(' '), warning: null };
+    const separator = activeSpecies === 'gecko' ? ' ' : ' × ';
+    return { name: metadata.map(function (trait) { return trait.name; }).join(separator), warning: null };
   }
 
   function evidenceFor(target, first, second) {
@@ -138,11 +154,10 @@
   }
 
   function buildCandidatePairs(project, animals, target) {
-    if (!project || project.species !== 'gecko') return [];
+    if (!project || !supportsSpecies(project.species)) return [];
     const parsed = animalIndex(animals);
-    const eligible = Array.from(parsed.index.values()).filter(function (animal) {
-      return !animal.species || animal.species === 'gecko' || animal.species === 'leopard';
-    }).sort(function (a, b) { return a.id < b.id ? -1 : a.id > b.id ? 1 : 0; });
+    const eligible = Array.from(parsed.index.values()).filter(animalMatchesSpecies)
+      .sort(function (a, b) { return a.id < b.id ? -1 : a.id > b.id ? 1 : 0; });
     const outcome = lineOutcome(target);
     const pairs = [];
     for (let i = 0; i < eligible.length; i += 1) {
@@ -189,7 +204,7 @@
 
   function candidatePairs(input) {
     const project = input && input.project;
-    if (!project || project.species !== 'gecko') return [];
+    if (!project || !supportsSpecies(project.species)) return [];
     const target = sanitizeTarget(project.target);
     return buildCandidatePairs(project, input.animals, target);
   }
@@ -197,7 +212,7 @@
   function roadmap(input) {
     const project = input && input.project;
     const species = project && typeof project.species === 'string' ? project.species : 'unknown';
-    if (species !== 'gecko') return { species: species, supported: false, status: 'unsupported' };
+    if (!supportsSpecies(species)) return { species: species, supported: false, status: 'unsupported' };
     const target = sanitizeTarget(project.target);
     const candidates = buildCandidatePairs(project, input.animals, target);
     const status = candidates.some(function (pair) { return pair.status === 'ready'; }) ? 'ready'
@@ -206,6 +221,6 @@
     return { species: species, supported: true, status: status, target: target, candidates: candidates };
   }
 
-  global.LineBreedingPlanner = Object.freeze({ sanitizeTarget: sanitizeTarget,
+  global.LineBreedingPlanner = Object.freeze({ sanitizeTarget: sanitizeTarget, supportsSpecies: supportsSpecies,
     candidatePairs: candidatePairs, relationshipWarnings: relationshipWarnings, roadmap: roadmap });
 })(window);

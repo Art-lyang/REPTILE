@@ -775,7 +775,7 @@
     try {
       await loadScript(CORES[S.species].src + '?v=13');
       await loadScript('breeding-spec.js?v=13');
-      await loadScript('/assets/linebreeding-planner.js?v=20260731a');
+      await loadScript('/assets/linebreeding-planner.js?v=20260802a');
     } catch (e) {
       gate('bi-exclamation-triangle', '계산기 데이터를 불러오지 못했습니다', esc(e.message), '/care/', '케어로');
       return;

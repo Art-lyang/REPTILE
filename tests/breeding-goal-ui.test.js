@@ -180,6 +180,13 @@ test('Given a named line cross, when candidate cards render, then the calculated
     'candidate cards must not show a target line name for insufficient pairings');
 });
 
+test('Given a species adapter with line traits, when the goal UI initializes, then it is not limited to Leopard geckos', () => {
+  const goalUi = requiredSource('care/breeding-goal-ui.js');
+
+  assert.doesNotMatch(goalUi, /current\.species\s*===\s*['"]gecko['"]\s*&&/,
+    'line planning support must follow the loaded species adapter instead of a gecko-only check');
+});
+
 test('Given untrusted project input, when the project boundary parses it, then malformed targets and XSS stay inert', () => {
   // Given: the versioned sanitizer and hostile browser text
   const contract = loadWindowModule('assets/breeding-project-contract.js', 'BreedingProjectContract');

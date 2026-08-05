@@ -18,7 +18,7 @@ mkdir -p dist
 # 아래 case 필터를 그냥 통과해 버립니다.
 git -c core.quotepath=false ls-files --cached --others --exclude-standard -z | while IFS= read -r -d '' f; do
   case "$f" in
-    docs/*|tests/*|*.test.js|README*|design-qa.md|supabase_*|구글로그인*|build.sh|wrangler.jsonc|.assetsignore|tools/*|worker/*) continue ;;
+    docs/*|tests/*|*.test.js|README*|design-qa.md|supabase_*|구글로그인*|build.sh|wrangler.jsonc|.assetsignore|.gitignore|tools/*|worker/*) continue ;;
     # 앱인토스 미니앱의 소스. 웹사이트가 아니라 토스 앱 안에서 도는 번들이고,
     # 여기 있는 허브(toss/index.html)는 ryangstudio.com 홈과 역할이 겹칩니다.
     # 번들은 tools/build_toss.py 가 dist-toss/ 로 따로 만듭니다.

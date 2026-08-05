@@ -97,9 +97,9 @@ test('Given a non-Korean management route, when tabs, species, and calculators a
   i18n.initialize();
 
   // When / Then
-  assert.equal(i18n.managementUrl('fattail', 'clutch'), 'breeding.html?species=fattail&lang=ja#clutch');
+  assert.equal(i18n.managementUrl('fattail', 'clutch'), 'breeding.html?species=fattail&v=20260803m&lang=ja#clutch');
   assert.equal(i18n.managementUrl('gecko', 'pair', { from: 'analysis' }),
-    'breeding.html?species=gecko&lang=ja&from=analysis#pair');
+    'breeding.html?species=gecko&v=20260803m&lang=ja&from=analysis#pair');
   assert.equal(i18n.calculatorUrl('/crested/'), '/ja/crested/');
 });
 
@@ -114,12 +114,15 @@ test('Given a classified backend error, when management presents it, then one sh
     ['care_plans_cycle_ck', 'cycle'],
     ['weight_logs_grams_ck', 'weight'],
     ['clutch and pairing species must match', 'link'],
+    ['null value in column "public_weight" violates not-null constraint', 'data'],
+    ['CARE_SIRE_INVALID', 'parent'],
   ];
   cases.forEach(([message, key]) => {
     assert.equal(loaded.context.CareApp.errorKey(new Error(message)), key);
     assert.notEqual(loaded.i18n.friendly(new Error(message)), message);
   });
   assert.equal(loaded.i18n.friendly(new Error('JWT expired')), 'Sign in required.');
+  assert.equal(loaded.i18n.friendly(new Error('internal database detail')), 'Unknown error');
   assert.doesNotMatch(read('care/breeding-i18n.js'), /row-level security|duplicate key|Failed to fetch/);
   assert.match(read('care/care-app.js'), /errorKey:\s*errorKey/);
 });
@@ -137,7 +140,8 @@ test('Given production and harness pages, when scripts load, then all management
     assert.ok(scripts.indexOf(expectedI18n.at(-1)) < scripts.indexOf(firstPanel), `${page} I18n must precede panels`);
   });
   const production = read('care/breeding.html');
-  assert.ok(production.indexOf('breeding-i18n.js?v=20260802c') < production.indexOf('</head>'));
+  assert.ok(production.indexOf('breeding-i18n.js?v=20260803i') >= 0);
+  assert.ok(production.indexOf('breeding-i18n.js?v=20260803i') < production.indexOf('</head>'));
   assert.ok(production.indexOf('BreedingI18n.apply(document)') < production.indexOf('supabase-js@'));
 });
 
@@ -157,20 +161,21 @@ test('Given the management controller, when dependencies and core loading are in
 test('Given the Leopard calculator language changes, when its management entry is updated, then label and route follow the active language', () => {
   const calculator = read('gecko/gecko-ui.js');
   const page = read('gecko/index.html');
-  assert.match(calculator, /pro\.href='\/care\/breeding\.html\?species=gecko'.*LANG.*lang=/);
+  assert.match(calculator, /pro\.href='\/care\/breeding\.html\?species=gecko&v=20260803m'.*LANG.*lang=/);
   assert.match(calculator, /proText\.textContent=t\.saveBreeding/);
-  assert.match(page, /gecko-ui\.js\?v=20260802c/);
+  assert.match(page, /gecko-ui\.js\?v=20260803d/);
 });
 
 test('Given the shared care backend changes, when production pages boot, then every consumer requests the same fresh version', () => {
   ['care/index.html', 'care/animal.html', 'care/breeding.html'].forEach((page) => {
-    assert.match(read(page), /care-app\.js\?v=20260802c/, page);
+    assert.match(read(page), /care-app\.js\?v=20260803m/, page);
   });
 });
 
 test('Given every management feature module, when visible copy is audited, then no Korean-only UI literal bypasses I18n', () => {
   const modules = ['breeding-ui.js', 'breeding-animal-panel.js', 'breeding-pairing-panel.js',
-    'breeding-clutch-panel.js', 'breeding-genetic-goal.js', 'breeding-events.js'];
+    'breeding-mating-panel.js', 'breeding-hatch-panel.js', 'breeding-clutch-panel.js',
+    'breeding-genetic-goal.js', 'breeding-events.js'];
   modules.forEach((file) => {
     const executable = read(`care/${file}`).replace(/^\s*\/\/.*$/gm, '');
     assert.doesNotMatch(executable, /[가-힣]/, `${file} visible copy must use BreedingI18n`);

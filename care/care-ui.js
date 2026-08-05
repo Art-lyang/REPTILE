@@ -10,7 +10,12 @@
   const C = window.CareCore;
   const A = window.CareApp;
   const I = window.CareI18n;
+  const R = window.CareRoutine;
+  const CareTodayUi = window.CareTodayUi;
+  const CarePlanUi = window.CarePlanUi;
+  const CareHealthUi = window.CareHealthUi;
   const CarePhotos = window.CarePhotos;
+  const LifeStage = window.AnimalLifeStage;
   const $ = id => document.getElementById(id);
 
   function esc(s) {
@@ -25,11 +30,15 @@
      숨겨두지 않습니다 — 그러면 어디가 진짜인지 알 수 없게 됩니다. */
   const S = {
     tab: 'today',
-    animals: [], plans: [], records: [], weights: [], feeds: [],
+    animals: [], plans: [], records: [], weights: [], feeds: [], streak: 0,
     focus: '',       // 개체 필터 ('' = 전체)
     editAnimal: null, editPlan: null, editFeed: null,
     busy: false
   };
+  const AnimalForm = window.createCareAnimalForm({
+    state: S, app: A, core: C, i18n: I, photos: CarePhotos, lifeStage: LifeStage,
+    element: $, escapeHtml: esc, icon: icon, act: act
+  });
 
   function toast(msg) {
     const t = $('toast');
@@ -66,10 +75,13 @@
      여유를 두려고 7일이 아니라 90일로 잡았습니다. */
   async function loadAll() {
     const from = C.addDays(C.today(), -90);
-    const [animals, plans, records, weights, feeds] = await Promise.all([
-      A.listAnimals(), A.listPlans(), A.listRecords(from), A.listWeights(null), A.listFeeds()
+    const [animals, plans, records, weights, feeds, streak] = await Promise.all([
+      A.listAnimals(), A.listPlans(), A.listRecords(from), A.listWeights(null), A.listFeeds(),
+      A.routineStreak()
     ]);
     S.animals = animals; S.plans = plans; S.records = records; S.weights = weights; S.feeds = feeds;
+    S.streak = streak;
+    window.CareAnimalEditRoute.activate(S, CarePhotos, A, location, history);
   }
 
   /* 캘린더에 넣을 주문 안내. 계산은 core 가 합니다. */
@@ -115,59 +127,14 @@
 
   function tabToday() {
     const day = C.today();
-    const plans = S.plans.filter(p => p.is_active !== false)
+    const routinePlans = S.plans.filter(p => p.is_active !== false);
+    const plans = routinePlans
                          .filter(p => !S.focus || p.animal_id === S.focus || !p.animal_id);
-
-    if (!S.plans.length) {
-      return '<div class="pad"><div class="empty">'
-        + icon('bi-calendar-plus') + I.t('noPlansTitle') + '<br>' + I.t('noPlansBody') + '</div>'
-        + '<button class="btn wide" data-go="plans" style="margin-top:14px">'
-        + icon('bi-arrow-right-circle') + I.t('createPlan') + '</button></div>';
-    }
-
-    const rows = plans.map(p => ({ p: p, st: C.planStatus(p, day, doneDatesFor(p.id)) }));
-    const late = rows.filter(r => r.st.overdue > 0 && !r.st.done);
-    const now  = rows.filter(r => r.st.due && !r.st.done && r.st.overdue === 0);
-    const did  = rows.filter(r => r.st.done);
-
-    let h = '';
-    h += '<div class="pad"><div class="lbl">' + esc(I.formatDate(day, { dateStyle: 'full' })) + '</div>'
-       + '<div class="hint">' + esc(I.t('todayTaskCount', { count: I.formatNumber(late.length + now.length) }))
-       + (did.length ? ' · ' + esc(I.t('completedCount', { count: I.formatNumber(did.length) })) : '') + '</div></div>';
-
-    if (late.length) {
-      h += '<div class="sect"><h2>' + I.t('overdueSection') + '</h2><span class="n">' + late.length + '</span></div>';
-      h += late.map(r => taskRow(r, true)).join('');
-    }
-    if (now.length) {
-      h += '<div class="sect"><h2>' + I.t('today') + '</h2><span class="n">' + now.length + '</span></div>';
-      h += now.map(r => taskRow(r, false)).join('');
-    }
-    if (!late.length && !now.length) {
-      h += '<div class="pad"><div class="empty">'
-        + icon('bi-check2-circle') + I.t('allDoneToday') + '</div></div>';
-    }
-    if (did.length) {
-      h += '<div class="sect"><h2>' + I.t('completedSection') + '</h2><span class="n">' + did.length + '</span></div>';
-      h += did.map(r => taskRow(r, false)).join('');
-    }
-    return h;
-  }
-
-  function taskRow(r, isLate) {
-    const p = r.p, st = r.st, k = C.kindInfo(p.kind);
-    const who = p.animal_id ? animalName(p.animal_id) : I.t('all');
-    const cls = 'task' + (st.done ? ' did' : (isLate ? ' late' : ''));
-    let sub = kindTag(p.kind) + esc(who) + ' · ' + esc(I.cycleLabel(p));
-    if (isLate) sub += ' · <span class="late-t">' + esc(I.t('daysOverdue', { count: I.formatNumber(st.overdue) })) + '</span>';
-    if (p.detail) sub += '<br>' + esc(I.planDetail(p.detail));
-
-    return '<div class="' + cls + '">'
-      + '<button class="tick' + (st.done ? ' on' : '') + '" data-tick="' + p.id + '" '
-      + 'aria-label="' + esc(planName(p) + ' ' + I.t(st.done ? 'taskUndo' : 'taskComplete')) + '">'
-      + (st.done ? '<i class="bi bi-check-lg" aria-hidden="true"></i>' : '') + '</button>'
-      + '<div class="tinfo"><div class="tname">' + esc(planName(p)) + '</div>'
-      + '<div class="tsub">' + sub + '</div></div></div>';
+    return CareTodayUi.render({
+      plans: plans, routinePlans: routinePlans, records: S.records, day: day, streak: S.streak,
+      core: C, routine: R, i18n: I, escapeHtml: esc, icon: icon,
+      animalName: animalName, planName: planName, kindTag: kindTag
+    });
   }
 
   /* =============================================================================
@@ -208,12 +175,13 @@
     bits.push(I.t('countPlans', { count: I.formatNumber(nPlans) }));
     if (a.hatch_date) bits.push(I.t('hatchDate', { date: I.formatDate(a.hatch_date) }));
 
-    const sex = a.sex === 'male' ? '<span class="chip">♂ ' + I.t('sexMale') + '</span>'
-              : a.sex === 'female' ? '<span class="chip">♀ ' + I.t('sexFemale') + '</span>' : '';
+    const sex = a.sex === 'male' ? '<span class="chip">' + icon('bi-gender-male chip-sex') + I.t('sexMale') + '</span>'
+              : a.sex === 'female' ? '<span class="chip">' + icon('bi-gender-female chip-sex') + I.t('sexFemale') + '</span>' : '';
+    const stage = '<span class="chip">' + esc(I.t(LifeStage.labelKey(a.life_stage))) + '</span>';
 
     return '<div class="card">'
       + '<div class="thumb">' + (a.photo_url ? Photo.tag(a.photo_url, a.name || '') : info.icon) + '</div>'
-      + '<div class="info"><div class="nm">' + esc(a.name || I.t('unnamed')) + sex + '</div>'
+      + '<div class="info"><div class="nm">' + esc(a.name || I.t('unnamed')) + sex + stage + '</div>'
       + '<div class="ms">' + esc(bits.join(' · ')) + '</div></div>'
       + '<div class="acts">'
       /* 개체 관리 화면으로. 주소에 id 가 들어가 즐겨찾기에 둘 수 있습니다. */
@@ -225,40 +193,18 @@
   }
 
   function animalForm(a) {
-    const isNew = !a.id;
-    const spOpts = Object.keys(C.SPECIES).map(k =>
-      '<option value="' + k + '"' + (a.species === k ? ' selected' : '') + '>'
-      + C.SPECIES[k].icon + ' ' + esc(I.speciesName(k)) + '</option>').join('');
-
-    return '<div class="pad">'
-      + '<div class="lbl">' + I.t(isNew ? 'addAnimal' : 'editAnimal') + '</div>'
-      + '<div class="lbl2">' + I.t('name') + '</div><input class="in" id="f_name" value="' + esc(a.name || '') + '" placeholder="' + esc(I.t('animalNamePlaceholder')) + '">'
-      + '<div class="lbl2">' + I.t('species') + '</div><select class="in" id="f_species">' + spOpts + '</select>'
-      + '<div class="hint">' + I.t('speciesPlanHint') + '</div>'
-      + '<div class="row2">'
-      + '<div><div class="lbl2"><label for="f_sex">' + I.t('sex') + '</label></div><select class="in" id="f_sex">'
-      + [['unknown', 'sexUnknown'], ['male', 'sexMale'], ['female', 'sexFemale']].map(o =>
-          '<option value="' + o[0] + '"' + ((a.sex || 'unknown') === o[0] ? ' selected' : '') + '>' + I.t(o[1]) + '</option>').join('')
-      + '</select></div>'
-      /* 빈 날짜 칸은 브라우저에 따라 아무것도 안 보입니다. 눌러야 무슨 칸인지
-         알 수 있다는 지적이 있어 제목을 밖에 두고 label 로 묶었습니다. */
-      + '<div><div class="lbl2"><label for="f_hatch">' + I.t('hatchAdoptionDate') + '</label></div>'
-      + '<input class="in" id="f_hatch" type="date" value="' + esc(a.hatch_date || '') + '"></div>'
-      + '</div>'
-      + CarePhotos.editorHtml(a, A)
-      + '<div class="lbl2">' + I.t('note') + '</div><textarea class="in" id="f_note">' + esc(a.note || '') + '</textarea>'
-      + '<div class="err" id="f_err"></div>'
-      + '<div class="formbtns"><button class="btn" id="f_save">' + icon('bi-check-lg') + I.t('save') + '</button>'
-      + '<button class="btn ghost" data-cancel="animal">' + I.t('cancel') + '</button>'
-      + (isNew ? '' : '<button class="btn danger" data-delanimal="' + a.id + '" style="margin-left:auto">'
-                    + icon('bi-trash3') + I.t('delete') + '</button>')
-      + '</div></div>';
+    return AnimalForm.html(a);
   }
 
   /* ── 체중 ─────────────────────────────────────────────────────────── */
   function weightPanel(a) {
     const w = S.weights.filter(x => x.animal_id === a.id)
-                       .sort((x, y) => x.measured_on < y.measured_on ? -1 : 1);
+                       .sort((x, y) => {
+                         if (x.measured_on !== y.measured_on) return x.measured_on < y.measured_on ? -1 : 1;
+                         const left = x.measured_at || x.created_at || '';
+                         const right = y.measured_at || y.created_at || '';
+                         return left < right ? -1 : left > right ? 1 : 0;
+                       });
     const rng = speciesOf(a).weightRange;
 
     let head = '';
@@ -298,12 +244,8 @@
     if (hi - lo < 1) { lo -= 1; hi += 1; }          // 값이 거의 같으면 납작해집니다
     const span = hi - lo;
 
-    const t0 = C.parseYmd(w[0].measured_on).getTime();
-    const t1 = C.parseYmd(w[w.length - 1].measured_on).getTime();
-    const dt = Math.max(1, t1 - t0);
-
-    const pt = x => {
-      const px = PAD + (C.parseYmd(x.measured_on).getTime() - t0) / dt * (W - PAD * 2);
+    const pt = (x, index) => {
+      const px = PAD + index / Math.max(1, w.length - 1) * (W - PAD * 2);
       const py = PAD + (1 - (Number(x.grams) - lo) / span) * (H - PAD * 2);
       return [Math.round(px * 10) / 10, Math.round(py * 10) / 10];
     };
@@ -326,132 +268,12 @@
      계획
      ============================================================================= */
   function tabPlans() {
-    if (S.editPlan) return planForm(S.editPlan);
-
-    let h = '<div class="pad"><div class="lbl">' + I.t('exportCalendar') + '</div>'
-      + '<div class="hint">' + I.t('exportCalendarHint') + '</div>'
-      + '<button class="btn wide" id="ics" style="margin-top:10px" ' + (S.plans.length ? '' : 'disabled') + '>'
-      + icon('bi-calendar-check') + I.t('downloadCalendar')
-      + (S.plans.length ? ' (' + I.t('countItems', { count: I.formatNumber(S.plans.filter(p => p.is_active !== false).length) }) + ')' : '') + '</button></div>';
-
-    h += '<div class="row2" style="margin-bottom:14px">'
-      + '<button class="btn" data-newplan="1">' + icon('bi-plus-lg') + I.t('addPlan') + '</button>'
-      + '<button class="btn ghost" id="preset">' + icon('bi-magic') + I.t('speciesDefaults') + '</button></div>';
-
-    if (!S.plans.length) {
-      return h + '<div class="pad"><div class="empty">'
-        + icon('bi-arrow-repeat') + I.t('noPlanList') + '<br>' + I.t('noPlanListHint') + '</div></div>';
-    }
-
-    /* 개체별로 묶습니다. 공통 계획을 맨 위에 둡니다. */
-    const groups = [{ id: '', label: I.t('wholeHome') }].concat(
-      S.animals.map(a => ({ id: a.id, label: (speciesOf(a).icon + ' ' + (a.name || I.t('unnamed'))) })));
-
-    groups.forEach(function (g) {
-      const list = S.plans.filter(p => (p.animal_id || '') === g.id);
-      if (!list.length) return;
-      h += '<div class="sect"><h2>' + esc(g.label) + '</h2><span class="n">' + list.length + '</span></div>';
-      h += list.map(planCard).join('');
+    return CarePlanUi.render({
+      plans: S.plans, animals: S.animals, feeds: S.feeds, editPlan: S.editPlan,
+      calendarOrderCount: feedOrders().length,
+      core: C, routine: R, i18n: I, escapeHtml: esc, icon: icon,
+      speciesOf: speciesOf, planName: planName
     });
-    return h;
-  }
-
-  function planCard(p) {
-    const k = C.kindInfo(p.kind);
-    const off = p.is_active === false;
-    return '<div class="card"' + (off ? ' style="opacity:.5"' : '') + '>'
-      + '<div class="thumb" style="background:' + k.color + '1a;border-color:' + k.color + '33;color:' + k.color + '">'
-      + '<i class="bi ' + k.icon + '" aria-hidden="true"></i></div>'
-      + '<div class="info"><div class="nm">' + esc(planName(p))
-      + (off ? '<span class="chip off">' + I.t('disabled') + '</span>' : '') + '</div>'
-      + '<div class="ms">' + esc(I.cycleLabel(p))
-      + (p.time_of_day ? ' · ' + esc(String(p.time_of_day).slice(0, 5)) : ' · ' + I.t('allDay'))
-      + (p.detail ? ' · ' + esc(I.planDetail(p.detail)) : '') + '</div></div>'
-      + '<div class="acts"><button class="mini" data-editplan="' + p.id + '">'
-      + icon('bi-pencil') + I.t('edit') + '</button></div></div>';
-  }
-
-  function planForm(p) {
-    const isNew = !p.id;
-    const mode = (p.weekdays && p.weekdays.length) ? 'week' : 'days';
-    /* <option> 안에서는 아이콘 폰트가 렌더되지 않습니다. 여기만 emoji 를 씁니다. */
-    const kinds = Object.keys(C.CARE_KINDS).map(k =>
-      '<option value="' + k + '"' + (p.kind === k ? ' selected' : '') + '>'
-      + C.CARE_KINDS[k].emoji + ' ' + esc(I.kindName(k)) + '</option>').join('');
-    const aOpts = '<option value="">' + I.t('wholeHome') + '</option>' + S.animals.map(a =>
-      '<option value="' + a.id + '"' + (p.animal_id === a.id ? ' selected' : '') + '>'
-      + speciesOf(a).icon + ' ' + esc(a.name || I.t('unnamed')) + '</option>').join('');
-
-    return '<div class="pad">'
-      + '<div class="lbl">' + I.t(isNew ? 'addPlan' : 'editPlan') + '</div>'
-      + '<div class="row2">'
-      + '<div><div class="lbl2">' + I.t('type') + '</div><select class="in" id="p_kind">' + kinds + '</select></div>'
-      + '<div><div class="lbl2">' + I.t('target') + '</div><select class="in" id="p_animal">' + aOpts + '</select></div>'
-      + '</div>'
-      + '<div class="lbl2">' + I.t('name') + '</div><input class="in" id="p_title" value="' + esc(I.presetTitle(p.title || '')) + '" placeholder="' + esc(I.t('planNamePlaceholder')) + '">'
-      + '<div class="lbl2">' + I.t('planDetail') + '</div>'
-      + '<input class="in" id="p_detail" value="' + esc(I.planDetail(p.detail || '')) + '">'
-
-      /* 먹이를 연결하면 이 계획을 완료할 때 그 먹이가 1회분 줄어듭니다.
-         비워두면 기록만 남고 재고는 그대로입니다. */
-      + '<div class="lbl2"><label for="p_feed">' + I.t('linkedFeed') + '</label></div>'
-      + '<select class="in" id="p_feed"><option value="">' + I.t('noFeedLink') + '</option>'
-      + S.feeds.filter(f => f.is_active !== false).map(f =>
-          '<option value="' + f.id + '"' + (p.feed_item_id === f.id ? ' selected' : '') + '>'
-          + C.feedKindInfo(f.kind).emoji + ' ' + esc(f.name) + '</option>').join('')
-      + '</select>'
-      + '<div class="hint">' + (S.feeds.length
-          ? I.t('linkedFeedHint') : I.t('linkFeedFirst')) + '</div>'
-
-      + '<div class="lbl2">' + I.t('repeat') + '</div>'
-      + '<div class="modes">'
-      + '<button class="mode' + (mode === 'days' ? ' on' : '') + '" data-mode="days">' + I.t('everyFewDays') + '</button>'
-      + '<button class="mode' + (mode === 'week' ? ' on' : '') + '" data-mode="week">' + I.t('chooseWeekdays') + '</button>'
-      + '</div>'
-      /* 자주 쓰는 주기는 버튼으로 바로 고릅니다. 숫자를 직접 적는 칸도
-         남겨둡니다 — 5일·10일처럼 버튼에 없는 주기를 쓰는 사람이 있습니다. */
-      + '<div id="m_days" style="display:' + (mode === 'days' ? 'block' : 'none') + '">'
-      + '<div class="presets">' + [
-          [1, I.t('cycleDaily')], [2, I.t('every2Days')], [3, I.t('every3Days')], [4, I.t('every4Days')],
-          [7, I.t('cycleWeekly')], [14, I.t('every2Weeks')], [30, I.t('monthly')]
-        ].map(x =>
-          '<button class="preset' + (Number(p.interval_days) === x[0] ? ' on' : '') + '" '
-          + 'data-preset="' + x[0] + '">' + x[1] + '</button>').join('') + '</div>'
-      + '<div class="lbl2" style="margin-top:12px"><label for="p_interval">' + I.t('customDays') + '</label></div>'
-      + '<input class="in" id="p_interval" type="number" min="1" max="365" inputmode="numeric" '
-      + 'value="' + (p.interval_days || 1) + '">'
-      + '<div class="hint">' + I.t('intervalHint') + '</div></div>'
-
-      + '<div id="m_week" style="display:' + (mode === 'week' ? 'block' : 'none') + '">'
-      + '<div class="wdays">' + [0,1,2,3,4,5,6].map(i =>
-          '<button class="wd' + ((p.weekdays || []).indexOf(i) >= 0 ? ' on' : '') + '" data-wd="' + i + '">' + I.weekdayShort(i) + '</button>').join('')
-      + '</div>'
-      /* 요일도 자주 쓰는 묶음을 한 번에. 파충류는 '월·목 급여' 처럼
-         주 2~3회가 흔합니다. */
-      + '<div class="presets">' + [
-          [[1, 4], I.t('mondayThursday')], [[2, 5], I.t('tuesdayFriday')], [[1, 3, 5], I.t('mondayWednesdayFriday')],
-          [[0, 6], I.t('weekend')], [[0, 1, 2, 3, 4, 5, 6], I.t('cycleDaily')]
-        ].map(x =>
-          '<button class="preset" data-wdset="' + x[0].join(',') + '">' + x[1] + '</button>').join('') + '</div>'
-      + '<div class="hint">' + I.t('weekdayHint') + '</div></div>'
-
-      + '<div class="row2">'
-      + '<div><div class="lbl2">' + I.t('startDate') + '</div><input class="in" id="p_start" type="date" value="' + esc(p.start_date || C.today()) + '"></div>'
-      + '<div><div class="lbl2">' + I.t('reminderTime') + '</div><input class="in" id="p_time" type="time" value="' + esc(p.time_of_day ? String(p.time_of_day).slice(0, 5) : '') + '"></div>'
-      + '</div>'
-      + '<div class="hint">' + I.t('reminderHint') + '</div>'
-
-      + '<div class="lbl2">' + I.t('use') + '</div>'
-      + '<select class="in" id="p_active">'
-      + '<option value="1"' + (p.is_active !== false ? ' selected' : '') + '>' + I.t('active') + '</option>'
-      + '<option value="0"' + (p.is_active === false ? ' selected' : '') + '>' + I.t('inactivePlan') + '</option>'
-      + '</select>'
-      + '<div class="err" id="p_err"></div>'
-      + '<div class="formbtns"><button class="btn" id="p_save">' + icon('bi-check-lg') + I.t('save') + '</button>'
-      + '<button class="btn ghost" data-cancel="plan">' + I.t('cancel') + '</button>'
-      + (isNew ? '' : '<button class="btn danger" data-delplan="' + p.id + '" style="margin-left:auto">'
-                    + icon('bi-trash3') + I.t('delete') + '</button>')
-      + '</div></div>';
   }
 
   /* =============================================================================
@@ -616,82 +438,12 @@
         남깁니다. care-core.js 의 SIGNS 머리말에 이유가 있습니다.
      ============================================================================= */
   function tabHealth() {
-    if (!S.animals.length) {
-      return '<div class="pad"><div class="empty">' + icon('bi-heart-pulse')
-        + I.t('healthNeedAnimal') + '</div></div>';
-    }
-    /* 개체를 골라야 합니다. 어느 개체의 증세인지 모르면 기록이 쓸모없습니다. */
-    if (!S.focus) {
-      return '<div class="pad"><div class="lbl">' + I.t('symptomObservation') + '</div>'
-        + '<div class="hint">' + I.t('chooseAnimalForSigns') + '</div>'
-        + '<div class="empty" style="margin-top:12px">' + icon('bi-arrow-up')
-        + I.t('chooseAnimalAbove') + '</div></div>';
-    }
-
-    const a = animalById(S.focus);
-    const recs = S.records.filter(r => r.animal_id === S.focus);
-    const status = C.signStatus(recs, C.today());
-    const open = status.filter(s => s.open);
-    const closed = status.filter(s => !s.open);
-    const codes = C.signsFor(a.species);
-
-    let h = '';
-
-    /* 1. 지금 보고 있는 것 */
-    if (open.length) {
-      h += '<div class="sect"><h2>' + I.t('observing') + '</h2><span class="n">' + I.formatNumber(open.length) + '</span></div>';
-      h += open.map(function (s) {
-        const g = C.SIGNS[s.code] || {};
-        return '<div class="signcard' + (g.vet ? ' vet' : '') + '">'
-          + '<div class="sgtop"><div class="sgname">' + esc(I.signName(s.code)) + '</div>'
-          + '<div class="sgdays">' + I.t('daysRunning', { count: I.formatNumber(s.days) }) + '</div></div>'
-          + '<div class="sgwhat">' + esc(I.signWhat(s.code)) + '</div>'
-          + (g.vet ? '<div class="sgvet">' + icon('bi-hospital') + I.t('vetRecommended') + '</div>' : '')
-          + '<div class="sgfoot"><span>' + I.t('firstLastRecords', {
-            first: I.formatDate(s.first), last: I.formatDate(s.last), count: I.formatNumber(s.n)
-          }) + '</span>'
-          + '<span class="sgbtns">'
-          + '<button class="mini" data-sign="' + s.code + '" data-sact="again">' + icon('bi-plus-lg') + I.t('againToday') + '</button>'
-          + '<button class="mini" data-sign="' + s.code + '" data-sact="end">' + icon('bi-check-lg') + I.t('resolved') + '</button>'
-          + '</span></div></div>';
-      }).join('');
-    }
-
-    /* 2. 기록하기 */
-    h += '<div class="pad"><div class="lbl">' + I.t('recordSymptom') + '</div>'
-      + '<div class="hint">' + esc(I.t('observationOnly', { name: a.name || I.t('unnamed') })) + '</div>'
-      + '<div class="signgrid">' + codes.map(function (code) {
-          const g = C.SIGNS[code];
-          const on = open.some(s => s.code === code);
-          return '<button class="sgpick' + (on ? ' on' : '') + '" data-sign="' + code + '" data-sact="new">'
-            + esc(I.signName(code)) + (g.vet ? '<i class="bi bi-hospital" aria-hidden="true" title="' + esc(I.t('vetAdviceTitle')) + '"></i>' : '')
-            + '</button>';
-        }).join('') + '</div>'
-      + '<input class="in" id="sg_note" placeholder="' + esc(I.t('symptomMemoPlaceholder')) + '" style="margin-top:10px">'
-      + '</div>';
-
-    /* 3. 지난 것 */
-    if (closed.length) {
-      h += '<div class="sect"><h2>' + I.t('resolvedSection') + '</h2><span class="n">' + I.formatNumber(closed.length) + '</span></div>';
-      h += closed.map(function (s) {
-        return '<div class="card"><div class="info"><div class="nm">' + esc(I.signName(s.code))
-          + '<span class="chip">' + I.t('resolved') + '</span></div>'
-          + '<div class="ms">' + I.formatDate(s.first) + ' ~ ' + I.formatDate(s.last) + ' · ' + I.t('countTimes', { count: I.formatNumber(s.n) }) + '</div></div>'
-          + '<div class="acts"><button class="mini" data-sign="' + s.code + '" data-sact="again">'
-          + icon('bi-arrow-counterclockwise') + I.t('again') + '</button></div></div>';
-      }).join('');
-    }
-
-    /* 4. 유전 관련은 계산기가 봅니다 */
-    const calc = (C.SPECIES[a.species] || {}).calc;
-    h += '<div class="pad"><div class="lbl">' + I.t('morphRisks') + '</div>'
-      + '<div class="hint">' + I.t('morphRisksHint') + '</div>'
-      + (calc ? '<a class="btn ghost wide" style="text-decoration:none;margin-top:10px" href="' + esc(I.calculatorUrl(calc)) + '">'
-                + icon('bi-calculator') + esc(I.t('openCalculator', { species: I.speciesName(a.species) })) + '</a>'
-              : '<div class="hint">' + I.t('noCalculator') + '</div>')
-      + '<div class="safety">' + esc(I.t('safetyNote')) + '</div></div>';
-
-    return h;
+    const resolved = CareHealthUi.resolveAnimalId(S.animals, S.focus);
+    if (resolved && !S.focus && S.animals.length === 1) S.focus = resolved;
+    return CareHealthUi.render({
+      animals: S.animals, focus: S.focus, records: S.records, today: C.today(),
+      core: C, i18n: I, escapeHtml: esc, icon: icon
+    });
   }
 
   /* =============================================================================
@@ -835,7 +587,7 @@
       return act(() => A.refillFeed(f.id, n), I.t('refilled'));
     }
 
-    if (t.id === 'f_save') return saveAnimal();
+    if (t.id === 'f_save') return AnimalForm.save();
 
     if (d.delanimal) {
       if (!confirm(I.t('animalDeleteConfirm'))) return;
@@ -864,13 +616,37 @@
     }
     /* 계획 폼의 반복 방식 토글. 그 폼이 열려 있을 때만 동작해야 합니다 —
        다른 화면에도 data-mode 가 생기면 여기서 없는 요소를 만지고 죽습니다. */
-    if (d.mode && $('m_days') && $('m_week')) {
-      document.querySelectorAll('.mode').forEach(m => m.classList.toggle('on', m === t));
-      $('m_days').style.display = d.mode === 'days' ? 'block' : 'none';
-      $('m_week').style.display = d.mode === 'week' ? 'block' : 'none';
+    if (d.mode && document.querySelector('.repeat-panel')) {
+      document.querySelectorAll('.mode').forEach(function (mode) {
+        const active = mode === t;
+        mode.classList.toggle('on', active);
+        mode.setAttribute('aria-pressed', String(active));
+      });
+      document.querySelectorAll('.repeat-panel').forEach(function (panel) {
+        panel.hidden = panel.id !== 'm_' + d.mode;
+      });
       return;
     }
-    if (d.wd !== undefined) { t.classList.toggle('on'); return; }
+    if (d.wd !== undefined) {
+      t.classList.toggle('on');
+      t.setAttribute('aria-pressed', String(t.classList.contains('on')));
+      return;
+    }
+    if (d.weeklyTarget !== undefined) {
+      const target = parseInt(d.weeklyTarget, 10);
+      $('p_weekly_target').value = String(target);
+      document.querySelectorAll('.weekly-target').forEach(function (button) {
+        const active = button === t;
+        button.classList.toggle('on', active);
+        button.setAttribute('aria-pressed', String(active));
+      });
+      document.querySelectorAll('.weekly-target-preview i').forEach(function (dot, index) {
+        dot.classList.toggle('on', index < target);
+      });
+      const copy = document.querySelector('.weekly-target-copy');
+      if (copy) copy.textContent = I.t('weeklyTargetCount', { count: I.formatNumber(target) });
+      return;
+    }
 
     /* 주기 프리셋 — 누르면 숫자 칸에 넣고 그 버튼만 켜둡니다. 숫자만 바꾸고
        버튼은 그대로 두면 어떤 게 골라진 건지 알 수 없습니다. */
@@ -883,7 +659,11 @@
     /* 요일 묶음 — 해당 요일만 켭니다 (더하는 게 아니라 갈아끼웁니다) */
     if (d.wdset !== undefined) {
       const want = d.wdset.split(',');
-      document.querySelectorAll('.wd').forEach(b => b.classList.toggle('on', want.indexOf(b.dataset.wd) >= 0));
+      document.querySelectorAll('.wd').forEach(function (button) {
+        const active = want.indexOf(button.dataset.wd) >= 0;
+        button.classList.toggle('on', active);
+        button.setAttribute('aria-pressed', String(active));
+      });
       t.parentNode.querySelectorAll('.preset').forEach(b => b.classList.toggle('on', b === t));
       return;
     }
@@ -920,32 +700,6 @@
   });
 
   /* ── 저장 동작 ────────────────────────────────────────────────────── */
-  function saveAnimal() {
-    const name = $('f_name').value.trim();
-    if (!name) { $('f_err').textContent = I.t('nameRequired'); return; }
-    const fields = {
-      name: name,
-      species: $('f_species').value,
-      sex: $('f_sex').value,
-      hatch_date: $('f_hatch').value || null,
-      note: $('f_note').value.trim() || null
-    };
-    return act(async () => {
-      const photos = await CarePhotos.prepare();
-      const row = Object.assign({}, S.editAnimal, fields, photos);
-      try {
-        await A.saveAnimal(row);
-      } catch (error) {
-        const rollback = await CarePhotos.rollback();
-        if (!rollback.ok) throw new Error(CarePhotos.t('rollbackWarning'));
-        throw error;
-      }
-      const cleanup = await CarePhotos.commit(photos);
-      S.editAnimal = null;
-      return cleanup;
-    }, cleanup => cleanup && cleanup.ok ? I.t('saved') : CarePhotos.t('cleanupWarning'));
-  }
-
   function saveWeight(animalId) {
     const g = parseFloat($('w_g').value);
     const a = animalById(animalId);
@@ -991,14 +745,21 @@
 
   function savePlan() {
     const p = S.editPlan;
-    const weekMode = document.querySelector('.mode.on') && document.querySelector('.mode.on').dataset.mode === 'week';
+    const activeMode = document.querySelector('.mode.on');
+    const mode = activeMode ? activeMode.dataset.mode : 'days';
+    const weekMode = mode === 'week';
+    const targetMode = mode === 'target';
     const wd = weekMode
       ? Array.prototype.slice.call(document.querySelectorAll('.wd.on')).map(b => +b.dataset.wd)
       : [];
     if (weekMode && !wd.length) { $('p_err').textContent = I.t('weekdayRequired'); return; }
 
     const iv = parseInt($('p_interval').value, 10);
-    if (!weekMode && (!iv || iv < 1 || iv > 365)) { $('p_err').textContent = I.t('intervalRequired'); return; }
+    if (mode === 'days' && (!iv || iv < 1 || iv > 365)) { $('p_err').textContent = I.t('intervalRequired'); return; }
+    const weeklyTarget = targetMode ? parseInt($('p_weekly_target').value, 10) : null;
+    if (targetMode && (!weeklyTarget || weeklyTarget < 1 || weeklyTarget > 7)) {
+      $('p_err').textContent = I.t('weeklyTargetRequired'); return;
+    }
 
     const row = {
       id: p.id,
@@ -1006,8 +767,10 @@
       kind: $('p_kind').value,
       title: I.canonicalPresetTitle($('p_title').value.trim()) || null,
       detail: I.canonicalPlanDetail($('p_detail').value.trim()) || null,
-      interval_days: weekMode ? null : iv,
+      feed_item_id: $('p_feed').value || null,
+      interval_days: mode === 'days' ? iv : null,
       weekdays: weekMode ? wd : null,
+      weekly_target: targetMode ? weeklyTarget : null,
       start_date: $('p_start').value || C.today(),
       time_of_day: $('p_time').value || null,
       is_active: $('p_active').value === '1'
@@ -1108,7 +871,9 @@
     /* 헤더 부제를 계정 정보로 바꿉니다. 로그인 전에는 이 도구가 무엇인지
        설명하는 문구가 들어 있고, 들어온 뒤에는 그 설명이 필요 없습니다. */
     $('who').textContent = (A.user.email || '')
-      + (A.premium.kind === 'sub' ? ' · ' + I.t('subscription') : A.premium.kind ? ' · ' + I.t('trial') : '');
+      + (A.premium.kind === 'sub' ? ' · ' + I.t('subscription')
+        : A.premium.kind === 'trial' ? ' · ' + I.t('trial')
+          : A.premium.kind ? ' · ' + I.t('premiumAccess') : '');
     $('acctBtn').style.display = '';
     $('tabs').style.display = '';
     S.tab = tabFromHash();

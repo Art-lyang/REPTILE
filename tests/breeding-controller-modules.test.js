@@ -86,7 +86,7 @@ test('Given every feature factory, when the controller boots, then modules are c
     language() { return 'ko'; }
   };
 
-  const slots = ['animalPanel', 'pairingPanel', 'clutchPanel', 'geneticGoal', 'events'];
+  const slots = ['animalPanel', 'pairingPanel', 'matingPanel', 'hatchPanel', 'clutchPanel', 'geneticGoal', 'events'];
   modules.forEach(([file, factory], index) => {
     context[factory] = (deps) => {
       calls.push(file);
@@ -106,6 +106,8 @@ test('Given every feature factory, when the controller boots, then modules are c
   assert.deepEqual(calls, modules.map(([file]) => file));
   assert.strictEqual(eventDeps.animalPanel, panels.animalPanel);
   assert.strictEqual(eventDeps.pairingPanel, panels.pairingPanel);
+  assert.strictEqual(eventDeps.matingPanel, panels.matingPanel);
+  assert.strictEqual(eventDeps.hatchPanel, panels.hatchPanel);
   assert.strictEqual(eventDeps.clutchPanel, panels.clutchPanel);
   assert.strictEqual(eventDeps.geneticGoal, panels.geneticGoal);
   assert.strictEqual(eventDeps.i18n, context.BreedingI18n);

@@ -58,7 +58,7 @@ const SHOW_DONATE     = false;
    ※ 링크만 감출 뿐 terms.html 은 그대로 접근 가능합니다.
      개인정보처리방침은 공개 의무가 있으므로 파일을 지우지 마세요.
      정식 공개(회원가입 오픈) 전에 반드시 true 로 되돌려야 합니다. */
-const SHOW_ACCOUNT_UI  = false;
+const SHOW_ACCOUNT_UI  = true;
 const SHOW_LEGAL_LINKS = false;
 
 /* --- 후원 계좌 --- */

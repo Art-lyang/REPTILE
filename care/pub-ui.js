@@ -19,6 +19,8 @@
 
   const C = window.CareCore;
   const I = window.CareI18n;
+  const Cards = window.PublicAnimalCards;
+  const WeightChart = window.PublicWeightChart;
   const $ = id => document.getElementById(id);
   const SB = (typeof SUPABASE_URL !== 'undefined' && window.supabase)
     ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON) : null;
@@ -58,8 +60,9 @@
     const body = '<div class="nm">' + esc(p.name || I.t('unnamed')) + '</div>'
       + '<div class="ms">' + (chips(p.morphs) || '<span class="ms">' + I.t('morphInfoMissing') + '</span>')
       + chips(p.hets, 'het') + '</div>';
-    return '<div class="card">'
+    return '<div class="card parent-card">'
       + '<div class="pside">' + label + '</div>'
+      + (p.photo ? '<div class="pparent-photo">' + Photo.tag(p.photo, p.name || '') + '</div>' : '')
       + '<div class="info">' + body + '</div>'
       + (p.token
           ? '<div class="acts"><a class="mini" href="' + I.url('/care/p.html', { t: p.token }) + '">'
@@ -68,7 +71,16 @@
       + '</div>';
   }
 
-  function render(a) {
+  function breederCards(list, token) {
+    if (!list || !list.length) return '';
+    return '<div class="pad"><div class="breeder-more"><div><div class="lbl">' + I.t('breederAnimals')
+      + '</div><div class="hint">' + I.t('breederPreviewHint') + '</div></div>'
+      + '<a class="mini" href="' + I.url('/care/breeder.html', { t: token }) + '">'
+      + I.t('breederProfileLink') + ' ' + icon('bi-arrow-right') + '</a></div>'
+      + Cards.grid(list.slice(0, 4)) + '</div>';
+  }
+
+  function render(a, related, token) {
     const sp = C.SPECIES[a.species] || C.SPECIES.other;
     const age = I.ageText(a.hatch_date, C.today());
     const sex = a.sex === 'male' ? I.t('sexMale') + ' ♂' : a.sex === 'female' ? I.t('sexFemale') + ' ♀' : null;
@@ -78,14 +90,19 @@
     const facts = [
       [I.t('speciesFact'), sp.icon + ' ' + I.speciesName(a.species)],
       [I.t('sexFact'), sex],
+      [I.t('lifeStage'), a.life_stage ? I.t(window.AnimalLifeStage.labelKey(a.life_stage)) : null],
       [I.t('hatchFact'), a.hatch_date ? I.formatDate(a.hatch_date) : null],
-      [I.t('ageFact'), age]
+      [I.t('ageFact'), age],
+      [I.t('clutchFact'), a.clutch || null],
+      [I.t('latestWeightFact'), a.latest_weight
+        ? I.formatNumber(a.latest_weight.grams) + 'g · ' + I.formatDate(a.latest_weight.measured_on) : null]
     ].filter(f => f[1]);
 
     let h = '<div class="phead">' + photoStrip(a) + '</div>';
 
     h += '<div class="pad"><div class="ptitle">' + esc(a.name || I.t('unnamed')) + '</div>'
-      + (a.breeder ? '<div class="pbreeder">' + icon('bi-person-badge') + esc(a.breeder) + '</div>' : '')
+      + (a.breeder ? '<a class="pbreeder" href="' + I.url('/care/breeder.html', { t: token }) + '">'
+        + icon('bi-person-badge') + esc(a.breeder) + ' ' + icon('bi-chevron-right') + '</a>' : '')
       + '<div class="pfacts">' + facts.map(f =>
           '<div><span class="pk">' + esc(f[0]) + '</span><span class="pv">' + esc(f[1]) + '</span></div>').join('')
       + '</div>';
@@ -106,16 +123,21 @@
         + parentRow('a', pa) + parentRow('b', pb) + '</div>';
     }
 
+    h += WeightChart.html(a.weight_history, I, esc);
+    h += breederCards(related, token);
     h += '<div class="pad" style="text-align:center">'
       + '<div class="hint">' + I.t('publicOwnerNotice') + '</div>'
       + '<a class="btn ghost wide" style="text-decoration:none;margin-top:12px" href="' + I.url('/care/') + '">'
-      + icon('bi-clipboard-heart') + I.t('startCare') + '</a></div>';
+      + icon('bi-clipboard-heart') + I.t('startCare') + '</a>'
+      + '<a class="btn ghost wide" style="text-decoration:none;margin-top:8px" href="' + I.url('/') + '">'
+      + icon('bi-house') + I.t('studioHome') + '</a></div>';
 
     $('body').innerHTML = h;
     /* 익명 방문자도 서명을 받습니다 — 공개된 개체에 붙은 사진이면
        읽기 정책이 허용합니다 (supabase_v25.sql ap_read). 공개를 끄면
        그 순간부터 서명이 안 나옵니다. */
     Photo.hydrate($('body'), SB);
+    WeightChart.mount($('body'), a.weight_history);
   }
 
   /* 작은 사진을 누르면 큰 자리와 바꿉니다. 라이트박스를 따로 만들지 않은 것은
@@ -147,6 +169,19 @@
       notFound(I.t('shareClosed'));
       return;
     }
-    render(data);
+    let related = [];
+    if (data.breeder) {
+      try {
+        const r = await SB.rpc('public_breeder_profile', {
+          p_token: t, p_species: null, p_limit: 8, p_offset: 0
+        });
+        if (!r.error && r.data) {
+          related = (r.data.animals || []).filter(function (animal) { return animal.token !== t; });
+        }
+      } catch (e) {
+        console.warn('Related public animal cards could not be loaded.');
+      }
+    }
+    render(data, related, t);
   })();
 })();

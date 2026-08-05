@@ -31,6 +31,11 @@
   const C = window.CareCore;
   const A = window.CareApp;
   const I = window.CareI18n;
+  const LifeStage = window.AnimalLifeStage;
+  const Calendar = window.AnimalCalendar;
+  const RecordDialog = window.AnimalRecordDialog;
+  const FeedingDialog = window.AnimalFeedingDialog;
+  const EditRoute = window.CareAnimalEditRoute;
   const $ = id => document.getElementById(id);
 
   function esc(s) {
@@ -40,7 +45,7 @@
   }
   function icon(n) { return '<i class="bi ' + n + '" aria-hidden="true"></i>'; }
 
-  const S = { id: null, animal: null, animals: [], plans: [], records: [], weights: [],
+  const S = { id: null, animal: null, animals: [], plans: [], records: [], weights: [], feeds: [],
               busy: false, range: 90, upGen: 2 };
 
   function toast(m) {
@@ -50,8 +55,8 @@
   function speciesOf(a) { return C.SPECIES[a && a.species] || C.SPECIES.other; }
 
   async function loadAll() {
-    const [animals, plans, records, weights] = await Promise.all([
-      A.listAnimals(), A.listPlans(), A.listRecords(C.addDays(C.today(), -400)), A.listWeights(S.id)
+    const [animals, plans, records, weights, feeds] = await Promise.all([
+      A.listAnimals(), A.listPlans(), A.listRecords(C.addDays(C.today(), -400)), A.listWeights(S.id), A.listFeeds()
     ]);
     S.animals = animals;                       // 족보가 부모·자식을 찾을 때 씁니다
     S.animal = animals.filter(a => a.id === S.id)[0] || null;
@@ -60,6 +65,7 @@
     S.plans = plans.filter(p => p.animal_id === S.id || !p.animal_id);
     S.records = records.filter(r => r.animal_id === S.id);
     S.weights = weights;
+    S.feeds = feeds;
   }
 
   async function act(fn, ok) {
@@ -108,7 +114,7 @@
           return '<button class="qbtn' + (on ? ' on' : '') + '" data-quick="' + k + '" '
             + 'style="' + (on ? '' : '--qc:' + i.color) + '">'
             + '<i class="bi ' + i.icon + '" aria-hidden="true"></i><span>' + esc(I.kindName(k)) + '</span></button>';
-        }).join('') + '</div></div>';
+        }).join('') + '</div>' + FeedingDialog.html(I, S.feeds) + RecordDialog.html(I) + '</div>';
   }
 
   /* 종류별 마지막으로 한 날 */
@@ -160,9 +166,8 @@
      SVG 가 아니라 HTML 로 그립니다. 사진을 원형으로 자르고, 이름을 줄바꿈하고,
      눌러서 그 개체로 넘어가는 것 — 셋 다 HTML 이 그냥 되는 일이고 SVG 에서는
      foreignObject 나 clipPath 를 얹어야 합니다. 세대를 잇는 선도 SVG 대신
-     CSS 로 긋습니다(care.css 의 .pedlink). 좌표를 계산해 선을 그리지 않고
-     세대 사이에 높이 있는 칸을 하나 두는 방식이라, 칸 수가 바뀌어도
-     따라 그릴 것이 없습니다.
+     CSS 로 긋습니다. 부모 두 칸을 한 묶음으로 잡는 .pedbranch 를 세대 사이에
+     두므로 2·4·8칸으로 늘어날 때도 같은 규칙으로 다음 세대 중앙에 모입니다.
 
      ⚠️ 세대가 늘면 폭이 두 배씩 커집니다. 3세대면 조부모 4칸이라 폰에서
         넘칩니다. 가로 스크롤을 허용하되, 화면 밖으로 나가는 것이 아니라
@@ -181,7 +186,8 @@
 
     /* 세대별 칸 수가 2·4·8 로 늘어납니다. 카드 하나에 최소 폭을 주고
        그 배수로 전체 폭을 잡습니다. */
-    const CARD = 92, GAP = 10;
+    const compactDefaultTree = up <= 2 && window.matchMedia('(max-width: 440px)').matches;
+    const CARD = compactDefaultTree ? 72 : 92, GAP = compactDefaultTree ? 6 : 10;
     const widest = p.slots.length ? p.slots[p.slots.length - 1] : 1;
     const W = Math.max(widest * (CARD + GAP), 300);
 
@@ -190,13 +196,21 @@
     for (let g = p.up.length - 1; g >= 0; g--) {
       const n = p.slots[g];
       const cells = [];
+      const branches = [];
       for (let s = 0; s < n; s++) {
         const node = p.up[g].filter(x => x.slot === s)[0];
         cells.push(pedCell(node, g));
       }
-      rows += '<div class="pedrow" style="grid-template-columns:repeat(' + n + ',1fr)">'
+      for (let pair = 0; pair < n / 2; pair++) {
+        const left = p.up[g].some(x => x.slot === pair * 2);
+        const right = p.up[g].some(x => x.slot === pair * 2 + 1);
+        branches.push('<span class="pedbranch' + (left ? ' has-left' : '')
+          + (right ? ' has-right' : '') + '"></span>');
+      }
+      rows += '<div class="pedrow ancestors" style="grid-template-columns:repeat(' + n + ',1fr)">'
             + cells.join('') + '</div>'
-            + '<div class="pedlink" aria-hidden="true"></div>';
+            + '<div class="pedlinks" style="grid-template-columns:repeat(' + (n / 2)
+            + ',1fr)" aria-hidden="true">' + branches.join('') + '</div>';
     }
     /* 본인 */
     rows += '<div class="pedrow" style="grid-template-columns:1fr">'
@@ -273,7 +287,7 @@
   /* 체중 곡선. 종별로 흔한 범위를 배경 띠로 함께 그립니다 — 값 하나만 보면
      그게 큰 편인지 작은 편인지 알 수 없습니다. */
   function weightBlock() {
-    const w = S.weights.slice().sort((a, b) => a.measured_on < b.measured_on ? -1 : 1);
+    const w = sortedWeights(S.weights);
     const sum = C.weightSummary(w);
     let h = '<div class="pad"><div class="lbl">' + I.t('weight') + '</div>';
 
@@ -282,7 +296,7 @@
         + '<span><b>' + I.formatNumber(sum.latest) + 'g</b>' + I.t('latest') + ' · ' + esc(I.formatDate(sum.latestOn, { month: 'short', day: 'numeric' })) + '</span>'
         + '<span>' + I.t('minMaxWeight', { min: I.formatNumber(sum.min), max: I.formatNumber(sum.max) }) + '</span>'
         + (sum.delta == null ? '' : '<span>' + I.t('totalWeightChange', { change: (sum.delta > 0 ? '+' : '') + I.formatNumber(sum.delta) }) + '</span>')
-        + '</div>' + chart(w);
+        + '</div>' + chart(w) + weightHistory(w);
     } else if (sum.count === 1) {
       h += '<div class="wstat"><span><b>' + I.formatNumber(sum.latest) + 'g</b>' + esc(I.formatDate(sum.latestOn, { month: 'short', day: 'numeric' })) + '</span></div>'
         + '<div class="hint">' + I.t('graphAfterTwo') + '</div>';
@@ -302,6 +316,26 @@
     return h;
   }
 
+  function sortedWeights(weights) {
+    return (weights || []).slice().sort(function (a, b) {
+      if (a.measured_on !== b.measured_on) return a.measured_on < b.measured_on ? -1 : 1;
+      const left = a.measured_at || a.created_at || '';
+      const right = b.measured_at || b.created_at || '';
+      return left < right ? -1 : left > right ? 1 : 0;
+    });
+  }
+
+  function weightHistory(weights) {
+    if (!weights.length) return '';
+    return '<div class="weightHistory"><div class="lbl2">' + I.t('weightHistory') + '</div>'
+      + weights.slice().reverse().slice(0, 20).map(function (weight) {
+          return '<div class="weight-history-row"><span><b>' + I.formatNumber(weight.grams) + 'g</b><small>'
+            + esc(I.formatDate(weight.measured_on, { year: 'numeric', month: 'short', day: 'numeric' }))
+            + '</small></span><button class="mini del" data-delweight="' + weight.id + '" aria-label="'
+            + esc(I.t('deleteWeightAria')) + '">' + icon('bi-x-lg') + '</button></div>';
+        }).join('') + '</div>';
+  }
+
   function chart(w) {
     const W = 660, H = 190, PADL = 40, PADR = 14, PADT = 18, PADB = 26;
     const vals = w.map(x => Number(x.grams));
@@ -314,13 +348,10 @@
     if (hi - lo < 2) { lo -= 1; hi += 1; }
     const span = hi - lo;
 
-    const t0 = C.parseYmd(w[0].measured_on).getTime();
-    const t1 = C.parseYmd(w[w.length - 1].measured_on).getTime();
-    const dt = Math.max(1, t1 - t0);
-    const X = x => PADL + (C.parseYmd(x.measured_on).getTime() - t0) / dt * (W - PADL - PADR);
+    const X = (x, index) => PADL + index / Math.max(1, w.length - 1) * (W - PADL - PADR);
     const Y = g => PADT + (1 - (Number(g) - lo) / span) * (H - PADT - PADB);
 
-    const pts = w.map(x => [Math.round(X(x) * 10) / 10, Math.round(Y(x.grams) * 10) / 10]);
+    const pts = w.map((x, index) => [Math.round(X(x, index) * 10) / 10, Math.round(Y(x.grams) * 10) / 10]);
     const line = pts.map((p, i) => (i ? 'L' : 'M') + p[0] + ' ' + p[1]).join(' ');
     const area = line + ' L' + pts[pts.length - 1][0] + ' ' + (H - PADB) + ' L' + pts[0][0] + ' ' + (H - PADB) + ' Z';
 
@@ -348,22 +379,11 @@
   /* 12주 히트맵 — 빠진 구간이 눈에 띄게 */
   function heatmap() {
     const days = C.dailyCounts(S.records, 84, C.today());
-    /* 첫 칸이 일요일에 오도록 앞을 비웁니다. 안 맞추면 요일 줄이 어긋나
-       '주말에 자주 빠진다' 같은 것이 안 보입니다. */
-    const pad = days[0].weekday;
-    const cells = new Array(pad).fill(null).concat(days);
-    const max = Math.max(1, Math.max.apply(null, days.map(d => d.count)));
-
     return '<div class="pad"><div class="lbl">' + I.t('recent12Weeks') + '</div>'
       + '<div class="hint">' + I.t('heatmapHint') + '</div>'
-      + '<div class="heat">' + cells.map(function (d) {
-          if (!d) return '<span class="hc pad"></span>';
-          const lv = d.count === 0 ? 0 : Math.min(4, Math.ceil(d.count / max * 4));
-          return '<span class="hc l' + lv + '" title="' + I.formatDate(d.date) + ' · ' + I.t('countItems', { count: I.formatNumber(d.count) }) + '"></span>';
-        }).join('') + '</div>'
-      + '<div class="heatlg"><span>' + I.t('less') + '</span>'
-      + [0, 1, 2, 3, 4].map(l => '<span class="hc l' + l + '"></span>').join('')
-      + '<span>' + I.t('more') + '</span></div></div>';
+      + Calendar.render({
+        days: days, records: S.records, i18n: I, escapeHtml: esc, kindInfo: C.kindInfo
+      }) + '</div>';
   }
 
   /* 최근 기록 — 지울 수 있게 */
@@ -385,7 +405,9 @@
       }
       const i = C.kindInfo(r.kind);
       let title = r.title || r.detail || r.note || I.kindName(r.kind);
-      if (r.kind === 'symptom') {
+      if (r.kind === 'feed' && r.feed_name) {
+        title = Calendar.recordParts(r, { kindInfo: C.kindInfo, i18n: I }).join(' · ');
+      } else if (r.kind === 'symptom') {
         title = (r.title === 'resolved' || r.title === '해소') ? I.t('resolved') : I.signName(r.detail);
       } else if (r.title === i.ko) {
         title = I.kindName(r.kind);
@@ -419,7 +441,7 @@
     const url = a.share_token
       ? location.origin + I.url('/care/p.html', { t: a.share_token }) : '';
 
-    let h = '<div class="pad"><div class="lbl">' + I.t('shareQr') + '</div>'
+    let h = '<div class="pad" id="share-card"><div class="lbl">' + I.t('shareQr') + '</div>'
       + '<div class="hint">' + I.t('shareHint') + '</div>'
 
       + '<div class="shareon">'
@@ -440,6 +462,11 @@
       + '<input type="checkbox" id="sh_breeder"' + (a.public_breeder ? ' checked' : '') + '>'
       + I.t('showBreeder') + '</label>'
       + '<div class="hint">' + I.t('breederHint') + '</div>'
+
+      + '<label class="tokchk" style="display:flex;align-items:center;gap:8px;margin:12px 0 0;font-size:13px">'
+      + '<input type="checkbox" id="sh_weight"' + (a.public_weight ? ' checked' : '') + '>'
+      + I.t('showLatestWeight') + '</label>'
+      + '<div class="hint">' + I.t('publicWeightHint') + '</div>'
 
       /* 링크 공유와 목록 노출은 전혀 다른 결정이라 따로 묻습니다.
          분양 상대 한 사람에게 보여주려고 켠 것이 갤러리에 함께 올라가면
@@ -539,6 +566,7 @@
     $('aname').textContent = a.name || I.t('unnamed');
     $('asub').innerHTML = sp.icon + ' ' + esc(I.speciesName(a.species))
       + (a.sex === 'male' ? ' · ' + I.t('sexMale') + ' ♂' : a.sex === 'female' ? ' · ' + I.t('sexFemale') + ' ♀' : '')
+      + ' · ' + esc(I.t(LifeStage.labelKey(a.life_stage)))
       + (a.note ? ' · ' + esc(a.note) : '');
 
     $('body').innerHTML =
@@ -568,10 +596,31 @@
 
     if (d.carePhotoView) return window.CarePhotos.swap(t);
     if (d.quick) {
-      return act(() => A.addRecord({ animal_id: S.id, kind: d.quick, title: null }),
-        I.t('recorded', { name: I.kindName(d.quick) }));
+      if (d.quick === 'feed') {
+        const lastFeed = S.records.find(r => r.kind === 'feed' && r.feed_item_id);
+        return FeedingDialog.open(S.feeds, lastFeed && lastFeed.feed_item_id);
+      }
+      if (d.quick === 'memo') return RecordDialog.open('memo');
+      const quickKind = d.quick;
+      return act(() => A.addRecord({ animal_id: S.id, kind: quickKind, title: null }),
+        I.t('recorded', { name: I.kindName(quickKind) }));
+    }
+    if (t.id === 'recordDialogSave') {
+      const payload = RecordDialog.payload('memo', $('recordDialogText').value);
+      if (!payload.note) { $('recordDialogError').textContent = I.t('memoRequired'); return; }
+      RecordDialog.close();
+      payload.animal_id = S.id;
+      return act(() => A.addRecord(payload), I.t('recorded', { name: I.kindName('memo') }));
+    }
+    if (t.id === 'feedingDialogSave') {
+      const result = FeedingDialog.buildPayload(FeedingDialog.valuesFrom($('feedingDialog')), S.feeds);
+      if (result.error) { $('feedingDialogError').textContent = I.t(result.error); return; }
+      FeedingDialog.close();
+      result.payload.animal_id = S.id;
+      return act(() => A.addRecord(result.payload), I.t('recorded', { name: I.kindName('feed') }));
     }
     if (d.delrec) return act(() => A.deleteRecord(d.delrec), I.t('removed'));
+    if (d.delweight) return act(() => A.deleteWeight(d.delweight), I.t('removed'));
     if (d.upgen) { S.upGen = parseInt(d.upgen, 10); return render(); }
 
     /* ── 공유 ── */
@@ -589,12 +638,14 @@
     }
     if (t.id === 'sh_save') {
       const want = $('sh_toggle').classList.contains('on');
-      return act(() => A.setShare(S.id, want, $('sh_note').value, $('sh_breeder').checked, false, $('sh_listed').checked),
+      return act(() => A.setShare(S.id, want, $('sh_note').value, $('sh_breeder').checked, false,
+                    $('sh_listed').checked, $('sh_weight').checked),
                  want ? I.t('madePublic') : I.t('madePrivate'));
     }
     if (t.id === 'sh_rotate') {
       if (!confirm(I.t('rotateConfirm'))) return;
-      return act(() => A.setShare(S.id, true, $('sh_note').value, $('sh_breeder').checked, true, $('sh_listed').checked),
+      return act(() => A.setShare(S.id, true, $('sh_note').value, $('sh_breeder').checked, true,
+                    $('sh_listed').checked, $('sh_weight').checked),
                  I.t('rotated'));
     }
     if (t.id === 'sh_copy') {
@@ -621,6 +672,10 @@
     }
   });
 
+  document.addEventListener('change', function (ev) {
+    if (ev.target.closest && ev.target.closest('#feedingDialog')) FeedingDialog.sync(S.feeds);
+  });
+
   /* =============================================================================
      시작
      ============================================================================= */
@@ -643,6 +698,7 @@
 
     S.id = new URLSearchParams(location.search).get('id');
     if (!S.id) { gate('bi-question-circle', I.t('animalNotFound'), I.t('animalIdMissing'), '/care/', I.t('careList')); return; }
+    $('animalEdit').href = EditRoute.editUrl(S.id, I);
 
     await A.boot();
     A.logVisit(I.language());

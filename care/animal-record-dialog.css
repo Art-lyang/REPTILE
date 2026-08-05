@@ -1,0 +1,10 @@
+.record-dialog{
+  width:min(520px,calc(100vw - 28px));border:1px solid var(--hair);border-radius:20px;
+  padding:0;background:var(--card);color:var(--ink);box-shadow:0 24px 80px rgba(0,0,0,.24)
+}
+.record-dialog::backdrop{background:rgba(13,20,17,.46);backdrop-filter:blur(2px)}
+.record-dialog form{padding:20px}.record-dialog-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px}
+.record-dialog-head>div{font-size:18px;font-weight:850}.record-dialog textarea{resize:vertical;min-height:124px;margin-top:10px}
+@media(max-width:560px){.record-dialog{margin:auto 14px 18px;width:calc(100vw - 28px)}.record-dialog form{padding:18px}}
+.weightHistory{margin-top:16px;border-top:1px solid var(--hair);padding-top:4px}.weight-history-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 2px;border-bottom:1px solid var(--hair)}
+.weight-history-row>span{display:flex;align-items:baseline;gap:9px}.weight-history-row b{font-size:14px}.weight-history-row small{color:var(--ink2);font-size:11.5px}

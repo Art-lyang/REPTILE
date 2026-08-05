@@ -259,6 +259,7 @@ test('Given care animal pages, when they boot, then editing and detail views sha
   // Given: care entry pages and their UI modules
   const pages = ['care/index.html', 'care/animal.html', 'care/breeding.html', 'care/p.html'];
   const careUi = read('care/care-ui.js');
+  const careAnimalForm = read('care/care-animal-form.js');
   const animalUi = read('care/animal-ui.js');
   const breedingUi = breedingSource();
   const pubUi = read('care/pub-ui.js');
@@ -268,9 +269,10 @@ test('Given care animal pages, when they boot, then editing and detail views sha
   for (const page of pages) {
     assert.match(read(page), /care-photos\.js\?v=/, `${page} must load the shared photo module`);
   }
-  assert.match(careUi, /CarePhotos\.editorHtml/);
-  assert.match(careUi, /CarePhotos\.prepare/);
-  assert.match(careUi, /CarePhotos\.commit/);
+  assert.match(careUi, /createCareAnimalForm/);
+  assert.match(careAnimalForm, /Photos\.editorHtml/);
+  assert.match(careAnimalForm, /Photos\.prepare/);
+  assert.match(careAnimalForm, /Photos\.commit/);
   assert.match(animalUi, /CarePhotos\.galleryHtml/);
   assert.match(breedingUi, /CarePhotos\.editorHtml/);
   assert.match(pubUi, /CarePhotos\.stripHtml/);
@@ -292,4 +294,18 @@ test('Given photo metadata from the browser, when the database migration is appl
   assert.match(setup, /photos\s+text\[\]\s+not null default '\{\}'/i);
   assert.match(setup, /care_animal_photos_guard/i);
   assert.doesNotMatch(setup, /animal-photos (bucket|policies) setup failed/i);
+});
+
+test('Given a public QR card, when an anonymous visitor requests its private photos, then the storage policy checks publication outside animal RLS', () => {
+  const productionUpgradeSql = read('supabase_v36.sql');
+  const freshInstallSql = read('supabase_setup.sql');
+
+  for (const sql of [productionUpgradeSql, freshInstallSql]) {
+    assert.match(sql, /create schema if not exists private/i);
+    assert.match(sql, /create or replace function private\.care_is_public_animal_photo\s*\(/i);
+    assert.match(sql, /security definer[\s\S]*set search_path\s*=\s*''/i);
+    assert.match(sql, /private\.care_is_public_animal_photo\s*\(\s*storage\.objects\.name\s*,\s*storage\.objects\.owner_id\s*\)/i);
+    assert.match(sql, /revoke all on function private\.care_is_public_animal_photo\(text,text\) from public/i);
+    assert.match(sql, /grant execute on function private\.care_is_public_animal_photo\(text,text\) to anon, authenticated/i);
+  }
 });

@@ -23,6 +23,7 @@
   --eggplant:#675780; --leaf:#5c8a3a;
   --warn-bg:#fbeae3; --warn-bd:#f0c3b2; --warn-fg:#b4402a;
   --good-bg:#eaf2e4; --good-bd:#c9ddba; --good-fg:#3d6b28;
+  --ped-line:rgba(7,90,72,.34);
   --shadow:0 2px 4px rgba(35,48,41,.03), 0 10px 28px rgba(35,48,41,.07);
   --radius:22px;                       /* (theme) 큰 카드 */
   --radius-sm:18px;                    /* (theme/base) 목록 카드 */
@@ -36,6 +37,7 @@
     --leaf:#8fc16a; --butter:#d9ab4a;
     --warn-bg:#2e1713; --warn-bd:#6e2e22; --warn-fg:#f3a594;
     --good-bg:#1a2418; --good-bd:#33502a; --good-fg:#9cd183;
+    --ped-line:rgba(58,169,135,.5);
     --shadow:0 3px 8px rgba(0,0,0,.18), 0 18px 40px rgba(0,0,0,.2);
     --hdbg:#1a211d;
   }
@@ -228,6 +230,27 @@ header .sub{
 textarea.in{min-height:76px;resize:vertical;line-height:1.6}
 .row2>*{min-width:0}
 input.in[type="date"]{min-width:0;max-width:100%}
+.animal-weight-register{
+  min-width:0;margin:17px 0 4px;padding:14px 15px 15px;
+  border:1px solid var(--hair);border-radius:16px;background:var(--card2);
+}
+.animal-weight-register legend{
+  padding:0 7px;color:var(--ink);font-size:13px;font-weight:800;
+}
+.animal-initial-weight .lbl2{margin-top:2px}
+.weight-input-unit{position:relative}
+.weight-input-unit .in{padding-right:42px;margin-bottom:0;background:var(--card)}
+.weight-input-unit>span{
+  position:absolute;right:15px;top:50%;transform:translateY(-50%);
+  color:var(--ink2);font-size:13px;font-weight:800;pointer-events:none;
+}
+.animal-weight-public{
+  display:grid;grid-template-columns:auto minmax(0,1fr);align-items:start;gap:10px;
+  margin-top:13px;padding-top:13px;border-top:1px solid var(--hair);cursor:pointer;
+}
+.animal-weight-public input{width:18px;height:18px;margin:2px 0 0;accent-color:var(--teal)}
+.animal-weight-public b{display:block;font-size:13.5px;color:var(--ink)}
+.animal-weight-public small{display:block;margin-top:3px;color:var(--ink2);font-size:11.5px;line-height:1.55}
 /* 두 칸 나란히. 단, 한 칸이라도 제 내용을 못 담을 만큼 좁아지면 세로로
    내려놓습니다.
 
@@ -284,13 +307,12 @@ input.in[type="date"]{min-width:0;max-width:100%}
 
 /* ── 빈 상태 (theme .empty) ───────────────────────────────────────────── */
 .empty{
-  min-height:116px; display:flex; flex-direction:column;
-  align-items:center; justify-content:center; gap:6px;
+  min-height:116px; display:block;
   border:1px solid var(--hair); border-radius:20px;
   color:var(--ink2); font-size:13.5px; line-height:1.8; text-align:center;
   padding:26px 18px;
 }
-.empty i{font-size:26px;opacity:.45}
+.empty>i{font-size:26px;opacity:.45;display:block;margin:0 auto 8px}
 
 /* ── 오늘 할 일 ───────────────────────────────────────────────────────── */
 .task{
@@ -334,8 +356,14 @@ input.in[type="date"]{min-width:0;max-width:100%}
 }
 .thumb img{width:100%;height:100%;object-fit:cover;display:block}
 .thumb i{font-size:19px}
+.thumb.thumb-empty{background:var(--card2)}
 .info{flex:1;min-width:0}
 .nm{font-weight:780;font-size:15px;letter-spacing:-.025em;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.animal-card-heading{display:flex;align-items:flex-start;min-width:0}
+.animal-card-name{font-weight:780;font-size:15px;line-height:1.35;letter-spacing:-.025em;overflow-wrap:anywhere}
+.animal-card-meta{display:flex;align-items:center;flex-wrap:nowrap;gap:6px;min-width:0;min-height:22px;margin-top:4px;overflow:hidden}
+.animal-card-meta .chip{flex:0 0 auto;white-space:nowrap}
+.animal-card-meta .animal-card-combo{flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis}
 .ms{font-size:11.5px;color:var(--ink2);margin-top:2px;word-break:keep-all;line-height:1.6}
 /* 라인브리딩 색 강도 — 5점 만점을 점으로 보여줍니다.
    빈 점까지 그려야 '3' 이 3/5 인지 3/10 인지 헷갈리지 않습니다. */
@@ -353,6 +381,15 @@ input.in[type="date"]{min-width:0;max-width:100%}
   padding:2px 9px; font-size:10.5px; font-weight:700; color:var(--ink2);
 }
 .chip.off{opacity:.7}
+/* 성별 기호 — ♀/♂(U+2640/2642)는 본문 한글 폰트에 없어 시스템 기호 폰트로
+   대체됩니다. 대체 폰트는 베이스라인과 상하 여백이 달라서, 기호와 글자가 한
+   텍스트 노드로 묶여 있으면 .chip 의 align-items:center 로도 어긋난 채 남습니다
+   (기호가 글자보다 떠 보이던 원인). 같은 자리를 아이콘 폰트로 바꾸면 나머지
+   아이콘과 metric 이 같아지고, 기호가 별도 flex 항목이 되어 글자와 따로 세로
+   가운데를 잡습니다. bootstrap-icons 의 vertical-align:-.125em 은 flex 항목
+   안에서 다시 기호를 내리므로 여기서만 되돌립니다. */
+.chip .chip-sex{flex:0 0 auto;font-size:11.5px;line-height:1}
+.chip .chip-sex::before{vertical-align:0}
 
 /* ── 고르는 칩 : 계산기 .chip 과 같은 규칙 ────────────────────────────── */
 .wdays{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:10px}
@@ -736,15 +773,25 @@ body.cropper-open{overflow:hidden;touch-action:none}
 .pedscroll{overflow-x:auto;padding:4px 2px 8px;margin:10px -2px 0}
 .pedtree{display:flex;flex-direction:column}
 .pedrow{display:grid;gap:8px}
-.pedcell{display:flex;justify-content:center;min-width:0}
+.pedcell{display:flex;justify-content:center;min-width:0;position:relative}
 .pedcell.empty{visibility:hidden}
 
-/* 세대 사이를 잇는 선. 좌표를 계산해 긋는 대신 세대마다 높이 있는 칸을
-   하나 두고, 그 안에 세로선을 가운데 놓습니다. 칸 수가 바뀌어도 손댈 게 없습니다. */
-.pedlink{height:16px;position:relative}
-.pedlink::before{
-  content:'';position:absolute;left:50%;top:0;bottom:0;width:1px;
-  background:var(--hair);transform:translateX(-.5px);
+.pedrow.ancestors .pedcell:not(.empty)::after{
+  content:'';position:absolute;left:50%;bottom:-8px;width:2px;height:8px;
+  background:var(--ped-line);transform:translateX(-1px);
+}
+.pedlinks{height:28px;display:grid}
+.pedbranch{position:relative;--branch-left:50%;--branch-right:50%}
+.pedbranch.has-left.has-right{--branch-left:25%;--branch-right:25%}
+.pedbranch.has-left:not(.has-right){--branch-left:25%;--branch-right:50%}
+.pedbranch.has-right:not(.has-left){--branch-left:50%;--branch-right:25%}
+.pedbranch.has-left::before,.pedbranch.has-right::before{
+  content:'';position:absolute;left:var(--branch-left);right:var(--branch-right);top:7px;
+  height:2px;background:var(--ped-line);
+}
+.pedbranch.has-left::after,.pedbranch.has-right::after{
+  content:'';position:absolute;left:50%;top:7px;bottom:0;width:2px;
+  background:var(--ped-line);transform:translateX(-1px);
 }
 
 .pedbox{
@@ -773,6 +820,12 @@ a.pedbox:hover{border-color:var(--teal);transform:translateY(-1px)}
 }
 .pedrole{font-size:10px;font-weight:800;color:var(--ink2)}
 .pedbox.repeated .pedrole,.pedbox.repeated .pedname{color:var(--warn-fg)}
+
+@media (max-width:440px){
+  .pedbox{width:72px;padding:8px 4px;gap:4px}
+  .pedface{width:38px;height:38px;font-size:17px}
+  .pedname{font-size:10.5px}
+}
 
 /* 세대 수 고르기 */
 .pedgens{display:flex;gap:6px;margin-top:10px}

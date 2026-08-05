@@ -470,7 +470,7 @@ function applyLang(){
   document.querySelectorAll('#langMenu button').forEach(b=>b.classList.toggle('on', b.dataset.lang===LANG));
   const pro=document.getElementById('proBtn');
   if(pro){
-    pro.href='/care/breeding.html?species=gecko'+(LANG==='ko'?'':'&lang='+encodeURIComponent(LANG));
+    pro.href='/care/breeding.html?species=gecko&v=20260803m'+(LANG==='ko'?'':'&lang='+encodeURIComponent(LANG));
     const proText=pro.querySelector('span'); if(proText) proText.textContent=t.saveBreeding;
   }
   // 후원 버튼 + 광고 영역

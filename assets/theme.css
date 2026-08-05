@@ -155,6 +155,13 @@ header .sub {
   padding: 0 16px;
 }
 
+/* 로그인 버튼은 세션을 확인할 때까지 hidden 으로 둡니다(assets/account-btn.js).
+   그런데 .blink 가 display 를 지정해서 hidden 만으로는 사라지지 않습니다.
+   속성 두 개(0,2,0)라 .blink(0,1,0) 를 특이도로 이깁니다 — !important 불필요. */
+[data-account-btn][hidden] {
+  display: none;
+}
+
 .langbtn {
   height: 44px;
   padding: 0 15px;

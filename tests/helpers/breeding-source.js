@@ -5,6 +5,8 @@ const root = path.resolve(__dirname, '..', '..');
 const BREEDING_FACTORIES = Object.freeze([
   ['breeding-animal-panel.js', 'createBreedingAnimalPanel'],
   ['breeding-pairing-panel.js', 'createBreedingPairingPanel'],
+  ['breeding-mating-panel.js', 'createBreedingMatingPanel'],
+  ['breeding-hatch-panel.js', 'createBreedingHatchPanel'],
   ['breeding-clutch-panel.js', 'createBreedingClutchPanel'],
   ['breeding-genetic-goal.js', 'createBreedingGeneticGoal'],
   ['breeding-events.js', 'createBreedingEvents'],

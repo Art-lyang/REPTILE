@@ -18,16 +18,19 @@
     const act = deps.act;
     const render = deps.render;
     const I18n = deps.i18n;
+    const LifeStage = deps.lifeStage;
 
-    function tabPair() {
+    function tabPair(options) {
       if (S.edit && S.edit.what === 'pair') return pairForm(S.edit.row);
+      const visiblePairs = options && options.ungroupedOnly
+        ? S.pairs.filter(pairing => !pairing.group_id) : S.pairs;
       let h = '<button class="btn wide" data-new="pair" style="margin-bottom:14px">'
             + icon('bi-plus-lg') + esc(I18n.t('pairingCreate')) + '</button>';
-      if (!S.pairs.length) {
+      if (!visiblePairs.length) {
         return h + '<div class="pad"><div class="empty">' + icon('bi-arrow-left-right')
           + I18n.html('pairingEmpty') + '</div></div>';
       }
-      return h + S.pairs.map(p =>
+      return h + visiblePairs.map(p =>
         '<div class="card"><div class="info"><div class="nm">' + esc(p.name || I18n.t('unnamedPairing')) + '</div>'
         + '<div class="ms">' + esc(nameById(p.male)) + ' ♂ × ' + esc(nameById(p.female)) + ' ♀'
         + (p.target_morph ? '<br>' + I18n.html('pairingTarget', { target: p.target_morph }) : '')
@@ -52,9 +55,9 @@
         + '<div class="lbl2"><label for="p_name">' + esc(I18n.t('pairingNameLabel')) + '</label></div>'
         + '<input class="in" id="p_name" value="' + esc(p.name || '') + '" placeholder="' + esc(I18n.t('pairingNamePlaceholder')) + '">'
         + '<div class="row2"><div><div class="lbl2">' + esc(I18n.t('pairingMaleLabel')) + '</div><select class="in" id="p_m" aria-label="' + esc(I18n.t('pairingMaleLabel')) + '">'
-        + opt(p.male, a => a.sex !== 'female') + '</select></div>'
+        + opt(p.male, a => a.sex === 'male' && a.life_stage === 'adult') + '</select></div>'
         + '<div><div class="lbl2">' + esc(I18n.t('pairingFemaleLabel')) + '</div><select class="in" id="p_f" aria-label="' + esc(I18n.t('pairingFemaleLabel')) + '">'
-        + opt(p.female, a => a.sex !== 'male') + '</select></div></div>'
+        + opt(p.female, a => a.sex === 'female' && a.life_stage === 'adult') + '</select></div></div>'
         + '<div class="hint">' + esc(I18n.t('pairingSexHint')) + '</div>'
         + '<div class="lbl2"><label for="p_target">' + esc(I18n.t('pairingTargetLabel')) + '</label></div>'
         + '<input class="in" id="p_target" value="' + esc(p.target_morph || '') + '" maxlength="120" placeholder="' + esc(I18n.t('pairingTargetPlaceholder')) + '">'
@@ -117,9 +120,19 @@
     function savePair() {
       const current = S.edit.row || {};
       const calculation = normalizedCalculation(current.calculation || S.importDraft);
+      const maleId = $('p_m').value || null;
+      const femaleId = $('p_f').value || null;
+      const male = S.animals.filter(animal => animal.id === maleId)[0];
+      const female = S.animals.filter(animal => animal.id === femaleId)[0];
+      if ((maleId && !LifeStage.isEligibleParent(male, 'sire'))
+          || (femaleId && !LifeStage.isEligibleParent(female, 'dam'))
+          || (maleId && maleId === femaleId)) {
+        $('p_err').textContent = I18n.t('pairingAdultRequired');
+        return;
+      }
       const row = Object.assign({}, S.edit.row || {}, {
         name: $('p_name').value.trim() || null,
-        male: $('p_m').value || null, female: $('p_f').value || null,
+        male: maleId, female: femaleId,
         note: $('p_note').value.trim() || null,
         species: S.species,
         target_morph: $('p_target').value.trim() || null,
@@ -138,6 +151,7 @@
 
     return {
       tabPair: tabPair,
+      pairForm: pairForm,
       tabAnalysis: tabAnalysis,
       normalizedCalculation: normalizedCalculation,
       openCalculationAsPair: openCalculationAsPair,

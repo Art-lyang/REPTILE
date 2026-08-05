@@ -125,7 +125,7 @@ test('Given a new production module, when the deployment bundle is built, then u
 test('Given local QA and orchestration artifacts, when the deployment bundle is built, then private work files are excluded', () => {
   const build = read('build.sh');
 
-  for (const privatePath of ['.omo/*', '.playwright-cli/*', 'output/*', 'plans/*', 'dist-*/*', '.debug-journal.md']) {
+  for (const privatePath of ['.omo/*', '.playwright-cli/*', 'output/*', 'qa-artifacts/*', 'plans/*', 'dist-*/*', '.debug-journal.md', '.test-output*']) {
     assert.ok(build.includes(privatePath), `build.sh must exclude ${privatePath}`);
   }
 });

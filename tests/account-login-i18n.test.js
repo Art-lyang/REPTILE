@@ -137,6 +137,16 @@ test('Given account messages contain user or server values, when HTML is rendere
   assert.match(login, /LoginLocale\.html\('consentGateBody',\{email:u\.email\|\|''\}\)/);
 });
 
+test('Given an unexpected account backend error, when it is shown, then raw server English is replaced by the selected language', () => {
+  const korean = loadLoginI18n().i18n;
+  const english = loadLoginI18n('?lang=en').i18n;
+  const raw = 'Database internal error: relation secret_table failed';
+
+  assert.equal(korean.friendly(new Error(raw)), '처리 중 오류가 발생했습니다. 잠시 뒤 다시 시도해 주세요.');
+  assert.equal(english.friendly(new Error(raw)), 'Something went wrong. Please try again shortly.');
+  assert.notEqual(korean.friendly(new Error(raw)), raw);
+});
+
 test('Given signups and recovery requests are paused, when account I18n is added, then both server-facing guards remain intact', () => {
   const config = read('assets/studio-config.js');
   const login = read('gecko/login.html');

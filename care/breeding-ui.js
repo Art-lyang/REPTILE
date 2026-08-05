@@ -10,6 +10,7 @@
   const LineTraitScores = window.LineTraitScores;
   const I18n = window.BreedingI18n;
   const BreedingRowScope = window.BreedingRowScope;
+  const HatchOutcomes = window.BreedingHatchOutcomes;
   const $ = id => document.getElementById(id);
   const CORES = {
     gecko: { src: '/gecko/gecko-core.js', calc: '/gecko/', goal: true },
@@ -18,9 +19,9 @@
     ballpython: { src: '/ballpython/ball-core.js', calc: '/ballpython/', goal: false }
   };
   const S = { species: 'gecko', tab: 'animals', goalMode: 'genetic', animals: [], pairs: [],
-    clutches: [], projects: [], edit: null, busy: false };
+    clutches: [], projects: [], groups: [], matingEvents: [], edit: null, busy: false };
   let B = null;
-  let animalPanel, pairingPanel, clutchPanel, geneticGoal;
+  let animalPanel, pairingPanel, matingPanel, hatchPanel, clutchPanel, geneticGoal;
 
   function esc(s) {
     return String(s == null ? '' : s).replace(/[&<>"']/g, function (x) {
@@ -37,14 +38,17 @@
   }
 
   async function loadAll() {
-    const [animals, pairs, clutches, projects] = await Promise.all([
-      A.listAnimals(), A.listRows('pairings'), A.listRows('clutches'), A.listBreedingProjects(S.species)
+    const [animals, pairs, clutches, projects, groups] = await Promise.all([
+      A.listAnimals(), A.listRows('pairings'), A.listRows('clutches'), A.listBreedingProjects(S.species),
+      A.listMatingGroups(S.species)
     ]);
     S.animals = animals.filter(a => BreedingRowScope.speciesKey(a.species) === S.species);
     S.others = animals.length - S.animals.length;
     S.pairs = BreedingRowScope.pairings(pairs, animals, S.species);
     S.clutches = BreedingRowScope.clutches(clutches, S.pairs, S.species);
     S.projects = projects;
+    S.groups = groups;
+    S.matingEvents = await A.listMatingEvents(groups.map(group => group.id));
   }
 
   async function act(fn, ok) {
@@ -78,7 +82,7 @@
       tab.classList.toggle('on', tab.getAttribute('data-t') === S.tab));
     $('body').innerHTML = ({
       animals: animalPanel.tabAnimals,
-      pair: pairingPanel.tabPair,
+      pair: matingPanel.tabMating,
       clutch: clutchPanel.tabClutch,
       goal: geneticGoal.tabGoal,
       analysis: pairingPanel.tabAnalysis
@@ -108,18 +112,28 @@
   function assembleModules() {
     const base = { state: S, app: A, core: C, draft: D, photos: CarePhotos,
       lineTraitScores: LineTraitScores, photo: window.Photo, element: $, esc: esc, icon: icon,
-      cores: CORES, i18n: I18n, act: act, render: render, breedSpec: () => B };
+      cores: CORES, i18n: I18n, lifeStage: window.AnimalLifeStage,
+      hatchOutcomes: HatchOutcomes, act: act, render: render, breedSpec: () => B };
     animalPanel = window.createBreedingAnimalPanel(Object.assign({}, base, {
       nameById: nameById, otherNote: otherNote
     }));
     pairingPanel = window.createBreedingPairingPanel(Object.assign({}, base, {
       nameById: nameById, projectById: projectById, goalText: goalText
     }));
-    clutchPanel = window.createBreedingClutchPanel(base);
+    matingPanel = window.createBreedingMatingPanel(Object.assign({}, base, {
+      matingGroups: window.BreedingMatingGroups, nameById: nameById,
+      projectById: projectById, pairingPanel: pairingPanel
+    }));
+    hatchPanel = window.createBreedingHatchPanel(Object.assign({}, base, {
+      nameById: nameById, toast: toast
+    }));
+    clutchPanel = window.createBreedingClutchPanel(Object.assign({}, base, {
+      nameById: nameById, hatchPanel: hatchPanel
+    }));
     geneticGoal = window.createBreedingGeneticGoal(Object.assign({}, base, { otherNote: otherNote }));
     window.createBreedingEvents(Object.assign({}, base, {
       toast: toast, animalPanel: animalPanel, pairingPanel: pairingPanel,
-      clutchPanel: clutchPanel, geneticGoal: geneticGoal
+      matingPanel: matingPanel, hatchPanel: hatchPanel, clutchPanel: clutchPanel, geneticGoal: geneticGoal
     })).bind();
   }
 

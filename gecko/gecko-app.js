@@ -5,6 +5,13 @@
 (function(){
   const SB = (SUPABASE_URL && window.supabase) ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON) : null;
   const esc = escapeHtml;
+  const accountLabels={
+    ko:{login:'로그인',account:'내 정보'},
+    en:{login:'Log in',account:'Account'},
+    zh:{login:'登录',account:'账户'},
+    ja:{login:'ログイン',account:'アカウント'}
+  };
+  function accountLabel(key){ const labels=accountLabels[LANG]||accountLabels.ko; return labels[key]||accountLabels.ko[key]; }
   function dev(){ try{ let d=localStorage.getItem('leoDevice'); if(!d){ d='dev_'+Math.random().toString(36).slice(2,10)+Date.now().toString(36); localStorage.setItem('leoDevice',d); } return d; }catch(e){ return 'dev_anon'; } }
   let USER=null;                       // 로그인한 사용자
   function uid(){ return USER? 'u_'+USER.id : dev(); }   // 프리미엄·데이터 소유 키
@@ -80,7 +87,7 @@
       const ab=document.getElementById('acctBtn');
       if(ab){
         ab.style.display=SHOW_ACCOUNT_UI?'':'none';
-        ab.innerHTML='<i class="bi bi-person" aria-hidden="true"></i><span>로그인</span>';
+        ab.innerHTML='<i class="bi bi-person" aria-hidden="true"></i><span>'+accountLabel('login')+'</span>';
       }
       return;
     }
@@ -98,7 +105,7 @@
     if(ab){
       // 노출 스위치 — 테스트 기간에는 로그인 진입 자체를 감춤 (gecko-core.js)
       ab.style.display = SHOW_ACCOUNT_UI ? '' : 'none';
-      ab.innerHTML = '<i class="bi bi-person" aria-hidden="true"></i><span>'+(USER?'내 정보':'로그인')+'</span>';
+      ab.innerHTML = '<i class="bi bi-person" aria-hidden="true"></i><span>'+(USER?accountLabel('account'):accountLabel('login'))+'</span>';
     }
     if(pro) pro.style.display = isPrem? '' : 'none';
     const ad=document.getElementById('adSlot'); if(ad && isPrem) ad.style.display='none';   // 프리미엄 = 광고 제거

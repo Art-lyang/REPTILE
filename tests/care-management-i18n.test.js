@@ -87,6 +87,7 @@ test('Given every care entry page, when its head is parsed, then locale modules 
     'care/animal.html': 'animal-ui.js',
     'care/gallery.html': 'gallery-ui.js',
     'care/p.html': 'pub-ui.js',
+    'care/breeder.html': 'breeder-ui.js',
   };
 
   for (const [page, uiScript] of Object.entries(pages)) {
@@ -101,7 +102,7 @@ test('Given every care entry page, when its head is parsed, then locale modules 
 });
 
 test('Given localized care UI modules, when they render dynamic content, then they use the shared I18n boundary', () => {
-  for (const file of ['care/care-ui.js', 'care/animal-ui.js', 'care/gallery-ui.js', 'care/pub-ui.js']) {
+  for (const file of ['care/care-ui.js', 'care/animal-ui.js', 'care/gallery-ui.js', 'care/pub-ui.js', 'care/breeder-ui.js']) {
     const source = read(file);
     assert.match(source, /CareI18n/, `${file} must use CareI18n`);
     assert.match(source, /I\.t\(/, `${file} must translate dynamic labels`);
@@ -178,7 +179,9 @@ test('Given system-generated records and presets, when another language is activ
   assert.match(dashboard, /title:\s*t\.title,\s*detail:\s*t\.detail/);
   assert.match(dashboard, /canonicalPresetTitle\(\$\('p_title'\)\.value\.trim\(\)\)/);
   assert.match(dashboard, /canonicalPlanDetail\(\$\('p_detail'\)\.value\.trim\(\)\)/);
-  assert.match(animal, /kind:\s*d\.quick,\s*title:\s*null/);
+  assert.match(animal, /quickKind\s*=\s*d\.quick/);
+  assert.match(animal, /kind:\s*quickKind,\s*title:\s*null/);
+  assert.match(animal, /d\.quick === 'feed'[\s\S]*FeedingDialog\.open/);
 });
 
 test('Given old and new symptom status records, when status is calculated, then stable codes and legacy Korean values remain compatible', () => {

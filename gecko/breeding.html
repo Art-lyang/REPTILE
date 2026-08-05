@@ -29,13 +29,13 @@
 <script>
   /* replace 를 씁니다 — history 에 남기면 뒤로 가기가 여기로 돌아와
      다시 튕겨나가는 무한 반복이 됩니다. */
-  location.replace('/care/breeding.html?species=gecko' + (location.hash || ''));
+  location.replace('/care/breeding.html?species=gecko&v=20260803m' + (location.hash || ''));
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.8/dist/umd/supabase.js"></script>
 <script src="../assets/studio-config.js?v=20260731b"></script>
 <script src="/assets/imgtool.js?v=1"></script>
-<script src="gecko-core.js?v=20260801b"></script>
+<script src="gecko-core.js?v=20260804a"></script>
 <style>
   :root{
     --bg:#EDEAE1; --card:#FDFCF9; --card2:#F4F1E9; --ink:#26221D; --ink2:#8A8375;
@@ -113,7 +113,7 @@
 <body>
 <header>
   <a class="back" href="index.html">← 계산기</a>
-  <a class="back" style="left:auto;right:14px" href="/care/breeding.html?species=gecko">다른 종 →</a>
+  <a class="back" style="left:auto;right:14px" href="/care/breeding.html?species=gecko&amp;v=20260803m">다른 종 →</a>
   <h1>🦎 브리딩 관리</h1>
   <div class="sub" id="who"></div>
 </header>

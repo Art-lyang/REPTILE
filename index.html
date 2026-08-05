@@ -35,7 +35,7 @@
   <link rel="preconnect" href="https://cdn.jsdelivr.net">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/static/pretendard.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-  <link rel="stylesheet" href="./home-redesign.css?v=020025">
+  <link rel="stylesheet" href="./home-redesign.css?v=20260806a">
   <script type="application/ld+json">
   {
     "@context":"https://schema.org",
@@ -62,6 +62,8 @@
         <a href="#roadmap">제작 중</a>
         <a href="#contact">문의</a>
       </div>
+      <!-- 로그인 / 내 정보. 라벨과 아이콘은 assets/account-btn.js 가 채웁니다. -->
+      <a class="nav-account" data-account-btn hidden></a>
       <a class="nav-cta" href="#projects">공개 도구 보기 <i class="bi bi-arrow-right"></i></a>
       <button class="menu-btn" type="button" aria-label="메뉴 열기" aria-expanded="false"><i class="bi bi-list"></i></button>
     </div>
@@ -70,6 +72,8 @@
       <a href="#tiu">TIU 세계관</a>
       <a href="#roadmap">제작 중</a>
       <a href="#contact">문의</a>
+      <!-- 좁은 화면에서는 헤더 버튼이 숨으므로 여기에도 둡니다. -->
+      <a data-account-btn hidden></a>
     </div>
   </nav>
 
@@ -285,5 +289,6 @@
     </div>
   </footer>
   <script src="./home-redesign.js?v=20260728b"></script>
+  <script src="./assets/account-btn.js?v=20260806a"></script>
 </body>
 </html>

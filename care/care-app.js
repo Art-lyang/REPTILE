@@ -26,13 +26,21 @@ const CareApp = (function () {
   const SB = (typeof SUPABASE_URL !== 'undefined' && window.supabase)
     ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON)
     : null;
+  const PlanStore = window.CarePlanStore;
   const ERROR_MESSAGES = Object.freeze({
     ownership: '내 기록이 아니거나 로그인이 풀렸습니다. 다시 로그인해 주세요.',
     duplicate: '이미 오늘 처리한 항목입니다.', login: '로그인이 필요합니다.',
     network: '서버에 연결하지 못했습니다. 잠시 뒤 다시 시도해 주세요.',
-    cycle: '반복 주기를 하나만 골라 주세요 (며칠마다 또는 요일).',
+    cycle: '반복 주기를 하나만 골라 주세요 (며칠마다, 요일 또는 주간 횟수).',
     weight: '체중은 0보다 크고 10000g 미만이어야 합니다.',
-    link: '페어링 연결 정보가 현재 개체·종과 맞지 않습니다. 목록을 새로고침한 뒤 다시 선택해 주세요.'
+    hatch: '해칭일은 오늘보다 미래로 설정할 수 없습니다.',
+    link: '페어링 연결 정보가 현재 개체·종과 맞지 않습니다. 목록을 새로고침한 뒤 다시 선택해 주세요.',
+    parent: '부모 개체 조건이 맞지 않습니다. 성체 수컷과 성체 암컷을 다시 선택해 주세요.',
+    mating: '메이팅 그룹의 개체·혈통 연결 조건이 맞지 않습니다. 성체 개체를 다시 선택해 주세요.',
+    matingHistory: '기록이나 클러치가 있는 암컷은 메이팅 그룹에서 뺄 수 없습니다. 그룹을 종료 상태로 보관해 주세요.',
+    hatchOutcome: '알 상태와 부화 결과를 확인해 주세요. 부화 수만큼만 새끼 개체를 등록할 수 있습니다.',
+    data: '입력한 정보를 저장할 수 없습니다. 페이지를 새로고침한 뒤 다시 시도해 주세요.',
+    unknown: '처리 중 오류가 발생했습니다. 잠시 뒤 다시 시도해 주세요.'
   });
 
   let USER = null;
@@ -51,31 +59,50 @@ const CareApp = (function () {
     } catch (e) { return 'dev_anon'; }
   }
 
-  /* Supabase 오류를 그대로 화면에 던지면 영어 원문이 나옵니다. 자주 나오는
-     것만 우리말로 바꾸고, 모르는 것은 원문을 붙여 둡니다 — 감추면 무슨 일이
-     났는지 알 수 없게 됩니다. */
+  /* Supabase 오류를 그대로 화면에 던지면 영어 원문과 내부 구조가 노출됩니다.
+     안정적인 오류 코드로 분류해 화면에는 번역 가능한 안내만 보내고, 원문은
+     개발자가 확인할 수 있도록 브라우저 콘솔에만 남깁니다. */
   function errorKey(err) {
+    if (err && err.careErrorKey) return String(err.careErrorKey);
     const m = String((err && (err.message || err.msg)) || err || '');
+    const code = String((err && err.code) || '');
     if (/row-level security|violates row-level|내 기록이 아니거나/i.test(m)) return 'ownership';
-    if (/duplicate key|already exists|이미 오늘/i.test(m)) return 'duplicate';
+    if (/duplicate key|already exists|이미 오늘/i.test(m) || code === '23505') return 'duplicate';
     if (/JWT|not signed in|401|로그인이 필요/i.test(m)) return 'login';
     if (/Failed to fetch|NetworkError|서버에 연결하지/i.test(m)) return 'network';
-    if (/care_plans_cycle_ck|반복 주기/i.test(m)) return 'cycle';
+    if (/care_plans_(?:cycle|weekly_target)_ck|반복 주기/i.test(m)) return 'cycle';
     if (/weight_logs_grams_ck|체중은 0보다/i.test(m)) return 'weight';
+    if (/hatch_date cannot be in the future|해칭일은 오늘보다/i.test(m)) return 'hatch';
     if (/pairing not found|clutch and pairing (?:owners|species) must match|pairing does not belong/i.test(m)) return 'link';
+    if (/CARE_MATING_GROUP_MEMBER_HAS_HISTORY/i.test(m)) return 'matingHistory';
+    if (/CARE_CLUTCH_|clutches_outcome_counts_ck/i.test(m)) return 'hatchOutcome';
+    if (/CARE_MATING_(?:GROUP|EVENT)/i.test(m)) return 'mating';
+    if (/CARE_(?:PARENT|SIRE|DAM|LINKED_SIRE|LINKED_DAM|LINKED_PAIRING)/i.test(m)) return 'parent';
+    if (/null value in column|not-null constraint|violates check constraint|invalid input syntax/i.test(m)
+        || /^(?:23502|23514|22P02|PGRST202|PGRST204|42703)$/.test(code)) return 'data';
     return null;
   }
 
   function friendly(err) {
-    const m = String((err && (err.message || err.msg)) || err || '');
     const key = errorKey(err);
     if (key) return ERROR_MESSAGES[key];
-    return m || '알 수 없는 오류';
+    return ERROR_MESSAGES.unknown;
+  }
+
+  function userError(err) {
+    const key = errorKey(err) || 'unknown';
+    const wrapped = new Error(ERROR_MESSAGES[key] || ERROR_MESSAGES.unknown);
+    wrapped.careErrorKey = key;
+    wrapped.code = String((err && err.code) || '');
+    return wrapped;
   }
 
   async function req(p) {
     const r = await p;
-    if (r && r.error) throw new Error(friendly(r.error));
+    if (r && r.error) {
+      try { console.error('[CareApp]', r.error); } catch (ignore) {}
+      throw userError(r.error);
+    }
     return r ? r.data : null;
   }
 
@@ -126,8 +153,17 @@ const CareApp = (function () {
       });
     },
 
-    async saveAnimal(row) {
-      return req(SB.rpc('save_row', { p_device: devId(), p_table: 'animals', p_row: row }));
+    async saveAnimal(row, initialWeight) {
+      const payload = Object.assign({
+        is_public: false, is_listed: false, public_breeder: false, public_weight: false,
+        line_trait_scores: {}, life_stage: 'baby_unknown'
+      }, row || {});
+      if (initialWeight !== null && initialWeight !== undefined && initialWeight !== '') {
+        return req(SB.rpc('save_animal_with_initial_weight', {
+          p_device: devId(), p_row: payload, p_grams: Number(initialWeight), p_measured_on: null
+        }));
+      }
+      return req(SB.rpc('save_row', { p_device: devId(), p_table: 'animals', p_row: payload }));
     },
 
     async deleteAnimal(id) {
@@ -162,7 +198,7 @@ const CareApp = (function () {
          나간 뒤로는 회수할 방법이 없습니다. */
       const up = await SB.storage.from(window.Photo.BUCKET)
         .upload(path, blob, { contentType: 'image/jpeg', upsert: true });
-      if (up.error) throw new Error(friendly(up.error));
+      if (up.error) throw userError(up.error);
 
       /* 저장해 두는 문자열입니다. 이 주소로는 사진이 안 열립니다 —
          비공개니까요. 화면에 그릴 때 Photo 가 여기서 경로를 잘라내
@@ -187,6 +223,72 @@ const CareApp = (function () {
 
     async deleteRow(table, id) {
       return req(SB.rpc('delete_row', { p_device: devId(), p_table: table, p_id: id }));
+    },
+
+    async saveClutch(row) {
+      if (!USER) throw new Error('로그인이 필요합니다.');
+      const payload = {};
+      ['pairing', 'laid_date', 'temp', 'expected_hatch', 'egg_count', 'note', 'species'].forEach(function (key) {
+        if (Object.prototype.hasOwnProperty.call(row || {}, key)) payload[key] = row[key];
+      });
+      if (row && row.id) payload.id = row.id;
+      return req(SB.rpc('save_clutch_v48', { p_row: payload }));
+    },
+
+    async saveClutchOutcome(id, outcome) {
+      if (!USER) throw new Error('로그인이 필요합니다.');
+      const payload = {};
+      ['fertile_count', 'infertile_count', 'stopped_count', 'hatched_count',
+        'actual_hatch_date', 'outcome_closed'].forEach(function (key) {
+        if (Object.prototype.hasOwnProperty.call(outcome || {}, key)) payload[key] = outcome[key];
+      });
+      return req(SB.rpc('save_clutch_outcome', { p_clutch_id: id, p_outcome: payload }));
+    },
+
+    async listClutchOffspring(clutchIds) {
+      if (!USER || !Array.isArray(clutchIds) || !clutchIds.length) return [];
+      return (await req(SB.rpc('my_clutch_offspring', { p_clutch_ids: clutchIds }))) || [];
+    },
+
+    async listMatingGroups(species) {
+      if (!USER) return [];
+      let query = SB.from('mating_groups').select('*')
+        .order('updated_at', { ascending: false }).limit(100);
+      if (species) query = query.eq('species', species);
+      return (await req(query)) || [];
+    },
+
+    async saveMatingGroup(group, femaleIds) {
+      if (!USER) throw new Error('로그인이 필요합니다.');
+      const payload = {};
+      ['id', 'species', 'name', 'male', 'status', 'start_date', 'end_date', 'target_morph',
+        'project_id', 'project_step', 'note'].forEach(function (key) {
+        if (Object.prototype.hasOwnProperty.call(group || {}, key)) payload[key] = group[key];
+      });
+      return req(SB.rpc('save_mating_group', { p_group: payload, p_female_ids: femaleIds || [] }));
+    },
+
+    async listMatingEvents(groupIds) {
+      if (!USER || !Array.isArray(groupIds) || !groupIds.length) return [];
+      return (await req(SB.from('mating_events').select('*').in('group_id', groupIds)
+        .order('occurred_on', { ascending: false }).order('created_at', { ascending: false }).limit(300))) || [];
+    },
+
+    async saveMatingEvent(event) {
+      if (!USER) throw new Error('로그인이 필요합니다.');
+      const payload = {};
+      ['group_id', 'pairing_id', 'occurred_on', 'result', 'note'].forEach(function (key) {
+        if (Object.prototype.hasOwnProperty.call(event || {}, key)) payload[key] = event[key];
+      });
+      if (event && event.id) {
+        return req(SB.from('mating_events').update(payload).eq('id', event.id).select().single());
+      }
+      return req(SB.from('mating_events').insert(payload).select().single());
+    },
+
+    async deleteMatingEvent(id) {
+      if (!USER) throw new Error('로그인이 필요합니다.');
+      return req(SB.from('mating_events').delete().eq('id', id));
     },
 
     async listBreedingProjects(species) {
@@ -232,18 +334,7 @@ const CareApp = (function () {
     },
 
     async savePlan(p) {
-      const row = {
-        animal_id: p.animal_id || null,
-        kind: p.kind,
-        title: p.title || null,
-        detail: p.detail || null,
-        feed_item_id: p.feed_item_id || null,
-        interval_days: p.interval_days || null,
-        weekdays: (p.weekdays && p.weekdays.length) ? p.weekdays : null,
-        start_date: p.start_date || CareCore.today(),
-        time_of_day: p.time_of_day || null,
-        is_active: p.is_active !== false
-      };
+      const row = PlanStore.row(p, CareCore.today());
       if (p.id) return req(SB.from('care_plans').update(row).eq('id', p.id).select().single());
       return req(SB.from('care_plans').insert(row).select().single());
     },
@@ -268,6 +359,11 @@ const CareApp = (function () {
         .limit(2000)) || [];
     },
 
+    async routineStreak() {
+      const value = await req(SB.rpc('care_routine_streak'));
+      return Math.max(0, parseInt(value, 10) || 0);
+    },
+
     async addRecord(r) {
       return req(SB.from('care_records').insert({
         animal_id: r.animal_id || null,
@@ -276,7 +372,15 @@ const CareApp = (function () {
         done_date: r.done_date || CareCore.today(),
         title: r.title || null,
         detail: r.detail || null,
-        note: r.note || null
+        note: r.note || null,
+        feed_item_id: r.feed_item_id || null,
+        feed_name: r.feed_name || null,
+        feed_category: r.feed_category || null,
+        feed_state: r.feed_state || null,
+        offered_amount: r.offered_amount == null ? null : Number(r.offered_amount),
+        eaten_amount: r.eaten_amount == null ? null : Number(r.eaten_amount),
+        feed_unit: r.feed_unit || null,
+        feeding_result: r.feeding_result || null
       }).select().single());
     },
 
@@ -318,20 +422,28 @@ const CareApp = (function () {
 
     /* ── 체중 ──────────────────────────────────────────────────────────── */
     async listWeights(animalId) {
-      let q = SB.from('weight_logs').select('*').order('measured_on', { ascending: true });
-      if (animalId) q = q.eq('animal_id', animalId);
-      return req(q.limit(2000)) || [];
+      const build = withMeasuredAt => {
+        let q = SB.from('weight_logs').select('*').order('measured_on', { ascending: true });
+        if (withMeasuredAt) q = q.order('measured_at', { ascending: true });
+        q = q.order('created_at', { ascending: true });
+        if (animalId) q = q.eq('animal_id', animalId);
+        return q.limit(2000);
+      };
+      let response = await build(true);
+      if (response.error && /measured_at|schema cache|column .* does not exist/i.test(response.error.message || '')) {
+        response = await build(false);
+      }
+      if (response.error) throw userError(response.error);
+      return response.data || [];
     },
 
-    /* 같은 날 다시 재면 덮어씁니다. (animal_id, measured_on) 유일 제약이
-       있어 그냥 insert 하면 실패합니다. */
     async saveWeight(animalId, grams, dateStr, note) {
-      return req(SB.from('weight_logs').upsert({
+      return req(SB.from('weight_logs').insert({
         animal_id: animalId,
         grams: grams,
         measured_on: dateStr || CareCore.today(),
         note: note || null
-      }, { onConflict: 'animal_id,measured_on' }).select().single());
+      }).select().single());
     },
 
     async deleteWeight(id) {
@@ -381,14 +493,19 @@ const CareApp = (function () {
        animals 를 직접 update 하지 않고 함수를 부릅니다. 직접 고치게 열어두면
        공개 여부만 바꾸려던 정책이 개체 전체를 쓰기 가능하게 만듭니다.
        (supabase_v18.sql 3장) */
-    async setShare(animalId, isPublic, note, showBreeder, rotate) {
-      return req(SB.rpc('set_animal_share', {
+    async setShare(animalId, isPublic, note, showBreeder, rotate, listed, showWeight) {
+      const args = {
         p_id: animalId,
         p_public: !!isPublic,
         p_note: note || null,
         p_breeder: !!showBreeder,
-        p_rotate: !!rotate
-      }));
+        p_rotate: !!rotate,
+        p_listed: !!listed,
+        p_weight: !!showWeight
+      };
+      const response = await SB.rpc('set_animal_share', args);
+      if (response.error) throw userError(response.error);
+      return response.data;
     }
   };
 })();

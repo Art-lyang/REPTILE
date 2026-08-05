@@ -423,7 +423,7 @@ function buildIcs(plans, animalNames, host, orders, labels) {
     'X-WR-CALNAME:' + icsEscape((labels && labels.calendarName) || '사육 케어')
   ];
   (plans || []).forEach(function (p) {
-    if (p.is_active === false) return;
+    if (p.is_active === false || Number(p.weekly_target) > 0) return;
     L = L.concat(icsEvent(p, p.animal_id ? names[p.animal_id] : null, host, labels));
   });
   (orders || []).forEach(function (o) {
@@ -557,6 +557,8 @@ function feedKindInfo(k) {
    주기가 규칙적이라 평균으로 환산해도 오차가 크지 않습니다. */
 function planPerDay(plan) {
   if (!plan || plan.is_active === false) return 0;
+  const weekly = Number(plan.weekly_target);
+  if (Number.isInteger(weekly) && weekly >= 1 && weekly <= 7) return weekly / 7;
   if (Array.isArray(plan.weekdays) && plan.weekdays.length) return plan.weekdays.length / 7;
   const n = parseInt(plan.interval_days, 10);
   return (n && n > 0) ? 1 / n : 0;
@@ -897,7 +899,12 @@ function lastDoneByKind(records, endDate) {
 
 /* 체중 한눈에 */
 function weightSummary(weights) {
-  const w = (weights || []).slice().sort((a, b) => a.measured_on < b.measured_on ? -1 : 1);
+  const w = (weights || []).slice().sort(function (a, b) {
+    if (a.measured_on !== b.measured_on) return a.measured_on < b.measured_on ? -1 : 1;
+    const left = a.measured_at || a.created_at || '';
+    const right = b.measured_at || b.created_at || '';
+    return left < right ? -1 : left > right ? 1 : 0;
+  });
   if (!w.length) return { count: 0 };
   const g = w.map(x => Number(x.grams));
   const round1 = v => Math.round(v * 10) / 10;

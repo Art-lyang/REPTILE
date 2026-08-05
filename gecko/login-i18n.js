@@ -122,7 +122,7 @@
     if (/Email not confirmed/i.test(message)) return t('errUnconfirmed');
     if (/rate limit|too many/i.test(message)) return t('errRateLimit');
     if (/provider is not enabled|Unsupported provider/i.test(message)) return t('errProviderDisabled');
-    return message;
+    return t('errUnknown');
   }
 
   function apply(root) {

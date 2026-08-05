@@ -123,6 +123,12 @@
   function country() {
     var K = 'studioGeo';
     try {
+      var host = String(location.hostname || '').toLowerCase();
+      if (host === 'localhost' || host === '127.0.0.1' || host === '0.0.0.0' || host === '::1') {
+        return Promise.resolve(null);
+      }
+    } catch (e) {}
+    try {
       var c = JSON.parse(localStorage.getItem(K) || 'null');
       if (c && c.v && Date.now() - c.t < 864e5) return Promise.resolve(c.v);
     } catch (e) {}

@@ -49,7 +49,7 @@ function project(projectTarget, species = 'gecko') {
 
 function animal(id, sex, morphs, scores, parents = {}) {
   return {
-    id, user_id: 'user-1', species: 'gecko', name: id, sex,
+    id, user_id: 'user-1', species: 'gecko', name: id, sex, life_stage: 'adult',
     hatch_date: null, morphs, hets: [], color_grade: null,
     line_trait_scores: scores, parent_a: null, parent_b: null,
     photo_url: null, photos: [], note: null,
@@ -205,7 +205,7 @@ test('Given two confirmed males, when candidates are made, then the same-sex pai
   assert.equal(result.length, 0);
 });
 
-test('Given an animal of unknown sex, when candidates are made, then the pair remains for review', () => {
+test('Given an adult with unknown sex, when candidates are made, then it is excluded from breeding candidates', () => {
   // Given
   const animals = [
     animal('known', 'male', ['blacknight'], { blacknight: 5 }),
@@ -214,9 +214,18 @@ test('Given an animal of unknown sex, when candidates are made, then the pair re
   // When
   const result = candidates(target('line_fix', ['blacknight']), animals);
   // Then
-  assert.equal(result.length, 1);
-  assert.equal(result[0].status, 'review');
-  assert.deepEqual(plain(result[0].reviewReasons), ['sex_unknown']);
+  assert.equal(result.length, 0);
+});
+
+test('Given a subadult with a confirmed sex, when candidates are made, then it is excluded until adulthood', () => {
+  const animals = [
+    animal('male', 'male', ['blacknight'], { blacknight: 5 }, { life_stage: 'subadult' }),
+    animal('female', 'female', ['blacknight'], { blacknight: 5 }),
+  ];
+
+  const result = candidates(target('line_fix', ['blacknight']), animals);
+
+  assert.equal(result.length, 0);
 });
 
 test('Given a parent lacks the target trait, when candidates are made, then the pair is insufficient', () => {

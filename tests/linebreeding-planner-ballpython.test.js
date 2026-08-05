@@ -50,6 +50,7 @@ function animal(id, sex, morphs, species = 'ballpython') {
     id,
     species,
     sex,
+    life_stage: 'adult',
     morphs,
     line_trait_scores: Object.fromEntries(morphs.map((traitId) => [traitId, 5])),
     parent_a: null,

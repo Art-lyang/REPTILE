@@ -26,6 +26,15 @@ img{display:block;max-width:100%}
 .nav-links a{padding:8px 12px;color:var(--muted);font-size:13px;font-weight:650}
 .nav-links a:hover{color:var(--ink)}
 .nav-cta{border:1px solid rgba(200,144,58,.45);border-radius:9px;padding:10px 15px;font-size:12px;font-weight:750;color:#e5c993}
+/* 로그인 / 내 정보 — 눈에 띄는 정도는 '공개 도구 보기'(.nav-cta) 아래로 둡니다.
+   계정은 이미 쓰는 사람이 찾아가는 길이고, 처음 온 사람에게 먼저 보여야 할
+   것은 도구 쪽이라 금색 테두리를 나눠 갖지 않습니다. */
+.nav-account{display:inline-flex;align-items:center;gap:6px;padding:8px 12px;
+  color:var(--muted);font-size:13px;font-weight:650;white-space:nowrap}
+.nav-account:hover{color:var(--ink)}
+/* 세션 확인 전까지는 감춥니다(assets/account-btn.js). 위의 display 지정과
+   .mobile-menu a{display:flex} 를 특이도(0,2,0)로 이깁니다. */
+[data-account-btn][hidden]{display:none}
 .menu-btn,.mobile-menu{display:none}
 .hero{min-height:690px;padding:72px 0 40px;display:grid;grid-template-columns:.82fr 1.18fr;gap:68px;align-items:center;position:relative}
 .hero::before{content:"";position:absolute;left:-35px;top:40px;width:1px;height:600px;background:var(--line)}
@@ -119,7 +128,10 @@ footer{border-top:1px solid var(--line);padding:34px 0 50px;color:var(--muted)}
 }
 @media(max-width:680px){
   .shell,.nav-inner{width:calc(100% - 28px)}.nav-inner{height:60px}
-  .nav-links,.nav-cta{display:none}.menu-btn{display:grid;margin-left:auto;background:transparent;border:0;color:var(--ink);font-size:24px}
+  /* 좁은 화면에서는 헤더를 로고 + 햄버거로만 남깁니다. 로그인은 이미 열린
+     메뉴 안에 같은 버튼이 있어서, 헤더에 남겨 두면 중복인 데다 44px 터치
+     기준에도 못 미치는 작은 표적이 하나 더 생깁니다. */
+  .nav-links,.nav-cta,.nav-account{display:none}.menu-btn{display:grid;margin-left:auto;background:transparent;border:0;color:var(--ink);font-size:24px}
   .mobile-menu.open{display:grid;padding:8px 14px 16px;border-top:1px solid var(--line)}.mobile-menu a{padding:10px;font-size:13px;color:var(--muted)}
   .hero{padding:48px 0 30px;min-height:0}.hero h1{font-size:60px}.hero-lead{font-size:23px}.hero-actions{align-items:flex-start;flex-direction:column}
   .hero-product{min-height:450px;padding:16px}.mini-calc{grid-template-columns:1fr}.calc-result{display:none}.hero-gecko{width:70%;right:-45px}.mini-open{right:16px}

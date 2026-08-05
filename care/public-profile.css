@@ -1,0 +1,25 @@
+.psection-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
+.pweight-now{font-size:24px;font-weight:850;letter-spacing:-.04em;color:var(--teal)}
+.pweight canvas{display:block;width:100%;height:180px;margin-top:14px;border-radius:14px;background:var(--card2)}
+.pweight-axis{display:flex;justify-content:space-between;margin-top:7px;color:var(--ink2);font-size:11px;font-weight:650}
+.pparent-photo{width:54px;height:54px;flex:0 0 54px;border-radius:16px;overflow:hidden;background:var(--gtile);border:1px solid var(--hair)}
+.pparent-photo img{width:100%;height:100%;object-fit:cover;display:block}
+.parent-card{align-items:center}
+.pbreeder{text-decoration:none;transition:border-color .14s,color .14s}
+.pbreeder:hover{border-color:var(--teal);color:var(--teal)}
+.breeder-more{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:14px}
+.breeder-more .mini{text-decoration:none;white-space:nowrap}
+body.breeder-public .wrap{max-width:1040px}
+.breeder-hero{display:grid;grid-template-columns:auto 1fr;align-items:center;gap:18px;padding:22px}
+.breeder-mark{width:62px;height:62px;border-radius:20px;display:flex;align-items:center;justify-content:center;background:var(--teal);color:#fff;font-size:27px}
+.breeder-eyebrow{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--teal)}
+.breeder-name{margin:4px 0 2px;font-size:28px;line-height:1.15;letter-spacing:-.045em}
+.breeder-meta{color:var(--ink2);font-size:13px;font-weight:650}
+.breeder-filter{display:flex;gap:7px;overflow-x:auto;padding:4px 0 12px;scrollbar-width:none}
+.breeder-filter::-webkit-scrollbar{display:none}
+.breeder-filter button{flex:0 0 auto;min-height:38px;padding:7px 15px;border:1px solid var(--hair);border-radius:999px;background:var(--card);color:var(--ink2);font:750 12px inherit;cursor:pointer}
+.breeder-filter button.on{background:var(--teal);border-color:var(--teal);color:#fff}
+.breeder-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+.breeder-empty{padding:46px 20px;text-align:center;color:var(--ink2);border:1px dashed var(--hair);border-radius:var(--radius)}
+@media(max-width:700px){.breeder-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.breeder-filter{flex-wrap:wrap;overflow:visible}.breeder-hero{padding:18px}.breeder-name{font-size:24px}}
+@media(max-width:380px){.breeder-mark{width:52px;height:52px;border-radius:17px}.breeder-hero{gap:13px}.breeder-name{font-size:21px}}

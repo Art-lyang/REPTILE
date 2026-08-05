@@ -17,6 +17,21 @@
     staple: 'feedKindStaple', treat: 'feedKindTreat', special: 'feedKindSpecial',
     supplement: 'feedKindSupplement', substrate: 'feedKindSubstrate', other: 'feedKindOther'
   });
+  const feedCategoryKeys = Object.freeze({
+    prepared: 'feedCategoryPrepared', insect: 'feedCategoryInsect', whole_prey: 'feedCategoryWholePrey',
+    plant: 'feedCategoryPlant', supplement: 'feedCategorySupplement', other: 'feedCategoryOther'
+  });
+  const feedStateKeys = Object.freeze({
+    ready: 'feedStateReady', live: 'feedStateLive', frozen: 'feedStateFrozen', thawed: 'feedStateThawed',
+    powder: 'feedStatePowder', mixed: 'feedStateMixed', fresh: 'feedStateFresh', other: 'feedStateOther'
+  });
+  const feedingResultKeys = Object.freeze({
+    all: 'feedingResultAll', partial: 'feedingResultPartial', refused: 'feedingResultRefused', unknown: 'feedingResultUnknown'
+  });
+  const feedUnitKeys = Object.freeze({
+    piece: 'feedUnitPiece', g: 'feedUnitGram', ml: 'feedUnitMl', scoop: 'feedUnitScoop',
+    portion: 'feedUnitPortion', other: 'feedUnitOther'
+  });
   const signKeys = Object.freeze({
     floppy_tail: 'signFloppyTail', kinked_tail: 'signKinkedTail', autotomy: 'signAutotomy',
     wobble: 'signWobble', stargazing: 'signStargazing', stereotypy: 'signStereotypy',
@@ -163,6 +178,10 @@
   function speciesName(code) { return t(speciesKeys[code] || 'speciesOther'); }
   function kindName(code) { return t(kindKeys[code] || 'kindCustom'); }
   function feedKindName(code) { return t(feedKindKeys[code] || 'feedKindOther'); }
+  function feedCategoryName(code) { return t(feedCategoryKeys[code] || 'feedCategoryOther'); }
+  function feedStateName(code) { return t(feedStateKeys[code] || 'feedStateOther'); }
+  function feedingResultName(code) { return t(feedingResultKeys[code] || 'feedingResultUnknown'); }
+  function feedUnitName(code) { return feedUnitKeys[code] ? t(feedUnitKeys[code]) : String(code || ''); }
   function signName(code) { return t(signKeys[code] || 'signUnknown', { code: code || '' }); }
   function signWhat(code) {
     const key = signKeys[code];
@@ -180,6 +199,8 @@
   }
 
   function cycleLabel(plan) {
+    const weeklyTarget = parseInt(plan && plan.weekly_target, 10);
+    if (weeklyTarget > 0) return t('weeklyTargetCount', { count: formatNumber(weeklyTarget) });
     if (Array.isArray(plan && plan.weekdays) && plan.weekdays.length) {
       const sorted = plan.weekdays.slice().sort(function (a, b) { return a - b; });
       if (sorted.length === 7) return t('cycleDaily');
@@ -259,12 +280,12 @@
     const key = w.CareApp && typeof w.CareApp.errorKey === 'function'
       ? w.CareApp.errorKey(error) : null;
     if (key) return t('error' + key.charAt(0).toUpperCase() + key.slice(1));
-    const message = String((error && (error.message || error.msg)) || error || '');
-    return message || t('errorUnknown');
+    return t('errorUnknown');
   }
 
   w.CareI18n = Object.freeze({ language, t, html, apply, initialize, url, formatDate,
-    formatNumber, speciesName, kindName, feedKindName, signName, signWhat, feedLevelName,
+    formatNumber, speciesName, kindName, feedKindName, feedCategoryName, feedStateName,
+    feedingResultName, feedUnitName, signName, signWhat, feedLevelName,
     weekdayShort, cycleLabel, ageText, relativeDays, presetTitle, canonicalPresetTitle,
     planDetail, canonicalPlanDetail, summaryNote, calculatorUrl,
     friendly });

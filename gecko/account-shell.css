@@ -1,0 +1,6 @@
+.account-tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;background:var(--card2);border-radius:13px;padding:5px;margin:-4px 0 18px}
+.account-tab{min-width:0;border:0;border-radius:9px;background:transparent;color:var(--ink2);padding:9px 4px;font:700 12px/1.25 inherit;cursor:pointer}
+.account-tab.on{background:var(--card);color:var(--teal);box-shadow:0 1px 4px rgba(38,34,29,.14)}
+[data-account-pane][hidden]{display:none!important}.account-section-title{font-size:15px;font-weight:850;margin:2px 0 12px}
+.admin-note{margin-top:14px;padding:11px 12px;border:1px solid rgba(234,195,106,.5);border-radius:12px;background:rgba(234,195,106,.14);font-size:12.5px;font-weight:750;color:var(--ink)}
+@media(max-width:480px){.account-tabs{grid-template-columns:repeat(2,1fr)}}

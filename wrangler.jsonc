@@ -4,6 +4,11 @@
   // 배포:  npx wrangler deploy
   "name": "ryangstudio",
   "compatibility_date": "2026-07-27",
+  "main": "./worker/index.mjs",
+  "vars": {
+    "SUPABASE_URL": "https://icjuhsktqcfloiqdfxtm.supabase.co",
+    "SUPABASE_PUBLISHABLE_KEY": "sb_publishable_uAf776_KFEyAqG_eWJdYRQ_zm3n_uKm"
+  },
 
   // 저장소 루트가 아니라 dist/ 를 올립니다. 루트에는 supabase_*.sql 과 docs/ 가
   // 같이 있어서 그대로 배포하면 공개됩니다. dist/ 는 ./build.sh 가 git 목록에서
@@ -13,7 +18,9 @@
   // 색인하고 깨진 링크도 드러나지 않습니다. 여러 페이지로 된 정적 사이트라
   // 없는 주소는 그냥 404 가 맞습니다. 옛 경로는 _redirects 가 처리합니다.
   "assets": {
-    "directory": "./dist"
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "run_worker_first": ["/api/billing/*", "/api/admin/*"]
   },
 
   // 대시보드에서 이미 붙여둔 커스텀 도메인. 명시해 두지 않으면 배포하면서

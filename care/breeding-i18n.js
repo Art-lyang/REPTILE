@@ -98,7 +98,7 @@
   }
 
   function managementUrl(species, tab, params) {
-    const query = ['species=' + encodeURIComponent(species || 'gecko')];
+    const query = ['species=' + encodeURIComponent(species || 'gecko'), 'v=20260803m'];
     if (language() !== 'ko') query.push('lang=' + encodeURIComponent(language()));
     Object.keys(params || {}).forEach(function (key) {
       if (params[key] != null) query.push(encodeURIComponent(key) + '=' + encodeURIComponent(params[key]));
@@ -107,11 +107,10 @@
   }
 
   function friendly(error) {
-    const message = String((error && (error.message || error.msg)) || error || '');
     const kind = w.CareApp && typeof w.CareApp.errorKey === 'function'
       ? w.CareApp.errorKey(error) : null;
     if (kind) return t('error' + kind.charAt(0).toUpperCase() + kind.slice(1));
-    return message || t('errorUnknown');
+    return t('errorUnknown');
   }
 
   w.BreedingI18n = Object.freeze({ language, t, html, apply, initialize, formatDate,

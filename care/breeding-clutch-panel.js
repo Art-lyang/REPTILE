@@ -13,6 +13,18 @@
     const icon = deps.icon;
     const act = deps.act;
     const I18n = deps.i18n;
+    const nameById = deps.nameById;
+    const hatchPanel = deps.hatchPanel;
+
+    function groupFor(pair) {
+      return pair && pair.group_id ? S.groups.filter(group => group.id === pair.group_id)[0] || null : null;
+    }
+
+    function pairingLabel(pair) {
+      const group = groupFor(pair);
+      if (!group) return pair.name || I18n.t('unnamedPairing');
+      return group.name + ' · ' + nameById(pair.female);
+    }
 
     function hatchDays(t) {
       t = parseFloat(t) || 28;
@@ -25,6 +37,7 @@
 
     function tabClutch() {
       if (S.edit && S.edit.what === 'clutch') return clutchForm(S.edit.row);
+      if (S.edit && S.edit.what === 'hatch') return hatchPanel.form(S.edit.row);
       let h = '<button class="btn wide" data-new="clutch" style="margin-bottom:14px">'
             + icon('bi-plus-lg') + esc(I18n.t('clutchCreate')) + '</button>';
       if (!S.clutches.length) {
@@ -36,14 +49,14 @@
         const pair = S.pairs.filter(p => p.id === c.pairing)[0];
         const left = c.expected_hatch ? C.daysBetween(today, c.expected_hatch) : null;
         return '<div class="card"><div class="thumb">🥚</div><div class="info">'
-          + '<div class="nm">' + esc(pair ? (pair.name || I18n.t('unnamedPairing')) : I18n.t('clutchNoPair'))
+          + '<div class="nm">' + esc(pair ? pairingLabel(pair) : I18n.t('clutchNoPair'))
           + (left != null && left >= 0 ? '<span class="chip" style="color:var(--teal);border-color:var(--teal)">D-' + left + '</span>'
              : left != null ? '<span class="chip">' + esc(I18n.t('clutchOverdue')) + '</span>' : '') + '</div>'
           + '<div class="ms">' + (c.laid_date ? esc(I18n.t('clutchLaid', { date: I18n.formatDate(c.laid_date) })) : esc(I18n.t('clutchLaidMissing')))
           + (c.egg_count ? ' · ' + esc(I18n.t('clutchEggCount', { count: c.egg_count })) : '')
           + (c.temp ? ' · ' + esc(I18n.t('clutchTemperature', { temp: c.temp })) : '')
           + (c.expected_hatch ? '<br>' + esc(I18n.t('clutchExpected', { date: I18n.formatDate(c.expected_hatch) })) : '')
-          + (c.note ? '<br>' + esc(c.note) : '') + '</div></div>'
+          + (c.note ? '<br>' + esc(c.note) : '') + '</div>' + hatchPanel.summaryCard(c) + '</div>'
           + '<div class="acts"><button class="mini" data-edit="clutch:' + c.id + '">'
           + icon('bi-pencil') + esc(I18n.t('edit')) + '</button></div></div>';
       }).join('');
@@ -55,7 +68,7 @@
         + '<div class="lbl2">' + esc(I18n.t('clutchPairingLabel')) + '</div><select class="in" id="c_p" aria-label="' + esc(I18n.t('clutchPairingLabel')) + '">'
         + '<option value="">' + esc(I18n.t('noSelection')) + '</option>'
         + S.pairs.map(p => '<option value="' + p.id + '"' + (c.pairing === p.id ? ' selected' : '') + '>'
-            + esc(p.name || I18n.t('unnamedPairing')) + '</option>').join('') + '</select>'
+            + esc(pairingLabel(p)) + '</option>').join('') + '</select>'
         + '<div class="row2"><div><div class="lbl2"><label for="c_laid">' + esc(I18n.t('clutchLaidLabel')) + '</label></div>'
         + '<input class="in" id="c_laid" type="date" value="' + esc(c.laid_date || '') + '"></div>'
         + '<div><div class="lbl2"><label for="c_n">' + esc(I18n.t('clutchEggsLabel')) + '</label></div>'
@@ -91,7 +104,7 @@
         temp: temp, expected_hatch: exp,
         note: $('c_note').value.trim() || null
       });
-      return act(async () => { await A.saveRow('clutches', row); S.edit = null; }, I18n.t('saved'));
+      return act(async () => { await A.saveClutch(row); S.edit = null; }, I18n.t('saved'));
     }
 
     return { tabClutch: tabClutch, saveClutch: saveClutch };

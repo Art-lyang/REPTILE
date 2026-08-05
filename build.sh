@@ -18,7 +18,7 @@ mkdir -p dist
 # 아래 case 필터를 그냥 통과해 버립니다.
 git -c core.quotepath=false ls-files --cached --others --exclude-standard -z | while IFS= read -r -d '' f; do
   case "$f" in
-    docs/*|tests/*|*.test.js|README*|design-qa.md|supabase_*|구글로그인*|build.sh|wrangler.jsonc|.assetsignore|tools/*) continue ;;
+    docs/*|tests/*|*.test.js|README*|design-qa.md|supabase_*|구글로그인*|build.sh|wrangler.jsonc|.assetsignore|tools/*|worker/*) continue ;;
     # 앱인토스 미니앱의 소스. 웹사이트가 아니라 토스 앱 안에서 도는 번들이고,
     # 여기 있는 허브(toss/index.html)는 ryangstudio.com 홈과 역할이 겹칩니다.
     # 번들은 tools/build_toss.py 가 dist-toss/ 로 따로 만듭니다.
@@ -26,10 +26,7 @@ git -c core.quotepath=false ls-files --cached --others --exclude-standard -z | w
     # 개발용 설정(로컬 미리보기 서버 등). 사이트 파일이 아니고, 올려두면
     # 우리가 어떤 도구로 작업하는지만 드러납니다.
     .claude/*) continue ;;
-    .omo/*|.playwright-cli/*|output/*|plans/*|dist-*/*|.debug-journal.md) continue ;;
-    # 로컬 검수·오케스트레이션 자료와 화면 증거는 서비스 자산이 아닙니다.
-    # 새 파일도 자동 포함하는 빌드이므로 명시적으로 제외해 공개를 막습니다.
-    .omo/*|.playwright-cli/*|output/*|plans/*|.debug-journal.md) continue ;;
+    .omo/*|.playwright-cli/*|output/*|qa-artifacts/*|plans/*|dist-*/*|.debug-journal.md|.test-output*) continue ;;
     # UI 확인용 하네스. 가짜 백엔드를 물려 화면만 그려보는 파일이라
     # 실제 사이트에 올라가면 안 됩니다. (care/_harness.html)
     */_harness*.html) continue ;;

@@ -24,6 +24,7 @@ function leopard(id, sex) {
     id,
     species: 'leopard',
     sex,
+    life_stage: 'adult',
     morphs: ['blacknight'],
     line_trait_scores: { blacknight: 5 },
     parent_a: null,

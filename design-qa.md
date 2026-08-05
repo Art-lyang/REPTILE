@@ -1,30 +1,58 @@
-# Photo Cropper Design QA
+# Design QA — 구조화 급여 기록
 
-## Scope
+## 비교 기준
 
-- Mobile viewport: 390 × 844
-- Reference: `C:\Users\Administrator\.codex\codex-remote-attachments\019fb302-3c66-7971-b7c5-c4b9025bf6b4\3E19EB4F-7FFA-4B35-AD18-0A50C9B1CC6D\1-사진-1.jpg`
-- Implementation capture: `C:\Users\Administrator\.codex\visualizations\2026\07\30\019fb302-3c66-7971-b7c5-c4b9025bf6b4\photo-cropper-mobile.png`
+- 참고 자료
+  - `1-사진-1.jpg` — 589×1280, 기록·체중·달력 정보 구조
+  - `2-사진-2.jpg` — 589×1280, 메이팅·산란 기록 흐름
+  - `3-사진-3.jpg` — 589×1280, 월간 캘린더와 스마트 알림 흐름
+- 구현 캡처
+  - `qa-artifacts/feeding-mobile-final.png` — 375×812
+  - `qa-artifacts/feeding-desktop-final.png` — 1265×889 (1280×900 뷰포트의 스크롤바 제외 캡처)
+- 검수 뷰포트: 모바일 390×844, 데스크톱 1280×900, device pixel ratio 1
+- 비교 방식: 참고 화면과 모바일 구현 캡처를 같은 시각 입력으로 열어 정보 계층, 반복 입력 속도, 색상 적합성을 비교했다.
 
-## Visual comparison
+## 적용 방향
 
-- The full-screen header, large cancel/apply controls, crop grid, circular profile-safe guide, and dark editing surface follow the reference hierarchy.
-- The production frame intentionally saves a 4:3 image because the care detail gallery uses 4:3. The centered circle communicates the 1:1 profile-safe area without discarding the wider saved photo.
-- The native photo-library filmstrip from the reference is not recreated. Browser file selection remains native, while the app owns only the crop step after selection.
-- The stage now starts directly below the header. The remaining dark space centers the format guidance and keeps zoom controls reachable at the bottom.
+- 참고 앱의 핵심인 “짧은 입력 → 날짜별 기록 → 달력에서 상세 확인” 흐름만 가져왔다.
+- 화면 스타일은 기존 프로젝트의 아이보리 카드, 짙은 초록색 선택 상태, 둥근 입력 요소를 유지했다.
+- 파충류 종류에 따라 달라지는 먹이를 하나의 고정 목록으로 제한하지 않고 `슈퍼푸드·사료`, `곤충`, `통먹이`, `식물성`, `영양제`, `기타`로 나눴다.
+- 통먹이는 `생먹이`, `냉동`, `해동`을 구분할 수 있어 뱀 먹이 기록도 같은 흐름을 사용한다.
 
-## Interaction verification
+## 집중 영역 검수
 
-- Dragging updates both horizontal and vertical image offsets.
-- Zoom changes the rendered image from 1× to 2× and reset restores the initial framing.
-- Apply creates an 840 × 630 JPEG preview from the tested source image.
-- Cancel preserves the previously applied preview.
-- Additional photos use the same 4:3 editor without the profile-safe circle.
-- No browser warnings or errors were recorded.
+### 급여 입력
 
-## Automated verification
+- 등록 먹이 선택 또는 직접 입력이 가능하다.
+- 먹이 종류, 급여 상태, 제공량, 단위, 섭취 결과, 실제 섭취량, 날짜, 메모를 한 흐름에서 기록한다.
+- `전부 먹음`은 실제 섭취량을 제공량으로, `거부`는 0으로 저장한다.
+- `일부 먹음`은 실제 섭취량 입력란을 열고 0보다 크며 제공량보다 작은 값만 허용한다.
+- 등록 먹이를 사용하면 기록 시점의 이름·단위가 스냅샷으로 남아 나중에 먹이 목록이 바뀌어도 과거 기록이 유지된다.
 
-- Full Node test suite: 60 passed, 0 failed.
-- Deployment build: completed, including all three new cropper modules.
+### 모바일
 
-Final result: passed
+- 390px에서 가로 넘침이 없고 선택 칩은 두 열로 정리된다.
+- 저장·취소 버튼을 모달 하단에 고정해 긴 입력 중에도 완료 동작이 항상 보인다.
+- 모달을 열 때 숫자 입력란에 자동 초점을 주지 않아 모바일 키보드가 갑자기 열리거나 화면이 중간으로 이동하지 않는다.
+- 모든 선택 칩은 최소 44px 높이를 확보했다.
+
+### 달력·최근 기록
+
+- 날짜별 상세에는 먹이명, 종류, 상태, 제공량, 섭취 결과와 메모가 함께 표시된다.
+- `냉동 마우스 호퍼 · 통먹이 · 해동 · 1 마리·개 · 전부 먹음 · 완전 해동 후 급여`가 최근 기록과 달력 상세에 표시되는 것을 확인했다.
+
+## 수정 이력
+
+1. 초기 구현에서는 긴 모바일 모달에서 저장 버튼이 첫 화면 아래에 있었다.
+2. 모달 본문만 스크롤하고 저장·취소 버튼은 하단에 고정하도록 구조를 나눴다.
+3. 자동 포커스로 본문이 중간에서 열리는 문제를 제거했다.
+4. 모바일과 데스크톱을 다시 캡처하고 구조화 급여 저장, 일부 섭취 검증, 최근 기록 표시를 재확인했다.
+
+## 잔여 시각 문제
+
+- P0: 없음
+- P1: 없음
+- P2: 없음
+- P3: 없음
+
+final result: passed

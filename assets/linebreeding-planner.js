@@ -123,7 +123,10 @@
   function buildCandidatePairs(project, animals, target) {
     if (!project || !supportsSpecies(project.species)) return [];
     const parsed = animalIndex(animals);
-    const eligible = Array.from(parsed.index.values()).filter(Policy.animalMatchesSpecies)
+    const eligible = Array.from(parsed.index.values()).filter(function (animal) {
+      return Policy.animalMatchesSpecies(animal) && animal.life_stage === 'adult'
+        && (animal.sex === 'male' || animal.sex === 'female');
+    })
       .sort(function (a, b) { return a.id < b.id ? -1 : a.id > b.id ? 1 : 0; });
     const outcome = Policy.lineOutcome(target);
     const pairs = [];

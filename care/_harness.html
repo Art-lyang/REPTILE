@@ -5,14 +5,18 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>care 하네스 (임시)</title>
 <meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="data:,">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-<link rel="stylesheet" href="care.css?v=20260802e">
-<script src="care-i18n-ko.js?v=20260802e"></script>
-<script src="care-i18n-en.js?v=20260802e"></script>
-<script src="care-i18n-zh.js?v=20260802e"></script>
-<script src="care-i18n-ja.js?v=20260802e"></script>
-<script src="care-i18n.js?v=20260802e"></script>
+<link rel="stylesheet" href="care.css?v=20260803b">
+<link rel="stylesheet" href="care-routine.css?v=20260802a">
+<link rel="stylesheet" href="care-alert.css?v=20260804a">
+<link rel="stylesheet" href="care-plan-bulk-delete.css?v=20260804a">
+<script src="care-i18n-ko.js?v=20260804n"></script>
+<script src="care-i18n-en.js?v=20260804n"></script>
+<script src="care-i18n-zh.js?v=20260804n"></script>
+<script src="care-i18n-ja.js?v=20260804n"></script>
+<script src="care-i18n.js?v=20260803l"></script>
 <script>window.CareI18n.initialize('pageTitle');</script>
 </head>
 <body>
@@ -41,28 +45,42 @@
 <script src="photo-cropper-geometry.js?v=20260731d"></script>
 <script src="photo-cropper.js?v=20260731d"></script>
 <script src="care-photos.js?v=20260731d"></script>
-<script src="care-core.js?v=14"></script>
+<script src="animal-life-stage.js?v=20260803a"></script>
+<script src="care-core.js?v=16"></script>
+<script src="care-animal-edit-route.js?v=20260803a"></script>
+<script src="care-health-ui.js?v=20260803a"></script>
+<script src="care-routine.js?v=20260802b"></script>
+<script src="care-plan-store.js?v=20260802a"></script>
+<script src="care-today-ui.js?v=20260802b"></script>
+<script src="care-plan-ui.js?v=20260802b"></script>
+<script src="care-alerts.js?v=20260804a"></script>
 <script>
 /* 가짜 백엔드. 실제 care-app.js 대신 이걸 물려 화면만 확인합니다. */
 (function () {
   const C = window.CareCore, T = C.today();
   const CR = 'c1', LEO = 'l1';
-  const animals = [{ id: CR, name: '하양이', species: 'crested', sex: 'female' },
-                   { id: LEO, name: '노랑이', species: 'leopard', sex: 'male' }];
+  const animals = [{ id: CR, name: '하양이', species: 'crested', sex: 'female', life_stage: 'adult' },
+                   { id: LEO, name: '노랑이', species: 'leopard', sex: 'male', life_stage: 'subadult' }];
   let records = [
     { id: 's1', animal_id: CR, kind: 'symptom', detail: 'floppy_tail', title: '관찰', done_date: C.addDays(T, -11) },
     { id: 's2', animal_id: CR, kind: 'symptom', detail: 'floppy_tail', title: '관찰', done_date: C.addDays(T, -4) },
     { id: 's3', animal_id: CR, kind: 'symptom', detail: 'shed_stuck', title: '관찰', done_date: C.addDays(T, -30) },
     { id: 's4', animal_id: CR, kind: 'symptom', detail: 'shed_stuck', title: '해소', done_date: C.addDays(T, -26) },
-    { id: 's5', animal_id: CR, kind: 'symptom', detail: 'resp', title: '관찰', done_date: C.addDays(T, -1) }
+    { id: 's5', animal_id: CR, kind: 'symptom', detail: 'resp', title: '관찰', done_date: C.addDays(T, -1) },
+    { id: 'r1', animal_id: CR, plan_id: 'pf1', kind: 'feed', done_date: C.addDays(T, -4) },
+    { id: 'r2', animal_id: CR, plan_id: 'pf1', kind: 'feed', done_date: C.addDays(T, -2) },
+    { id: 'r3', animal_id: LEO, plan_id: 'pf4', kind: 'clean', done_date: C.addDays(T, -2) },
+    { id: 'r4', animal_id: LEO, plan_id: 'pf4', kind: 'clean', done_date: T }
   ];
   const plans = [
     { id:'pf1', animal_id:CR, kind:'feed', title:'CGD 급여', feed_item_id:'f1',
       interval_days:2, start_date:C.addDays(T,-60), is_active:true },
-    { id:'pf2', animal_id:LEO, kind:'treat', title:'밀웜 간식', feed_item_id:'f2',
+    { id:'pf2', animal_id:LEO, kind:'custom', title:'밀웜 간식', feed_item_id:'f2',
       weekdays:[2,5], start_date:C.addDays(T,-60), is_active:true },
     { id:'pf3', animal_id:CR, kind:'supplement', title:'칼슘', feed_item_id:'f3',
-      weekdays:[1,4], start_date:C.addDays(T,-60), is_active:true }
+      weekdays:[1,4], start_date:C.addDays(T,-60), is_active:true },
+    { id:'pf4', animal_id:LEO, kind:'clean', title:'상태 확인', weekly_target:3,
+      start_date:C.addDays(T,-60), is_active:true }
   ];
   const feeds = [
     { id:'f1', name:'판게아 파파야', kind:'staple', brand:'Pangea', unit:'g',
@@ -77,7 +95,7 @@
       amount_left:0, amount_full:100, lead_days:1, is_active:false }
   ];
   const noop = async () => {};
-  const saveAnimal = async row => {
+  const saveAnimal = async (row, initialWeight) => {
     const found = animals.find(a => a.id === row.id);
     if (found) Object.assign(found, row);
     else {
@@ -85,6 +103,21 @@
       animals.push(row);
     }
     window.__saved.push(['animal', row]);
+    if (initialWeight !== null && initialWeight !== undefined && initialWeight !== '') {
+      window.__saved.push(['weight', {
+        animal_id: row.id, grams: Number(initialWeight), measured_on: T
+      }]);
+    }
+    return row.id;
+  };
+  const savePlan = async row => {
+    const found = plans.find(plan => plan.id === row.id);
+    if (found) Object.assign(found, row);
+    else {
+      row.id = 'p' + (plans.length + 1);
+      plans.push(row);
+    }
+    window.__saved.push(['plan', row]);
   };
   window.__saved = [];
   window.CareApp = {
@@ -93,18 +126,31 @@
     device: () => 'd', friendly: e => String((e && e.message) || e), boot: async () => ({}), logVisit: () => {},
     uploadPhoto: async file => URL.createObjectURL(file),
     listAnimals: async () => animals, listPlans: async () => plans,
-    listRecords: async () => records, listWeights: async () => [],
+    listRecords: async () => records, routineStreak: async () => 1, listWeights: async () => [],
     listFeeds: async () => feeds, saveFeed: noop, deleteFeed: noop, refillFeed: noop,
-    saveAnimal: saveAnimal, deleteAnimal: noop, savePlan: noop, deletePlan: noop, addPlans: noop,
+    saveAnimal: saveAnimal, deleteAnimal: noop, savePlan: savePlan, deletePlan: noop,
+    addPlans: async rows => rows.forEach(savePlan),
     addRecord: async r => {
       window.__saved.push(r);
       records = records.concat([Object.assign({ id: 'n' + window.__saved.length, done_date: T }, r)]);
     },
-    deleteRecord: noop, completePlan: noop, undoPlan: noop, saveWeight: noop, deleteWeight: noop
+    deleteRecord: noop,
+    completePlan: async plan => window.CareApp.addRecord({
+      animal_id: plan.animal_id, plan_id: plan.id, kind: plan.kind,
+      done_date: T, title: plan.title, detail: plan.detail
+    }),
+    undoPlan: async plan => { records = records.filter(r => !(r.plan_id === plan.id && r.done_date === T)); },
+    saveWeight: async (animalId, grams, measuredOn) => {
+      window.__saved.push(['weight', { animal_id: animalId, grams: grams, measured_on: measuredOn || T }]);
+    },
+    deleteWeight: noop
   };
 })();
 </script>
+<script src="care-alert-ui.js?v=20260804a"></script>
+<script src="care-plan-bulk-delete.js?v=20260804a"></script>
 <script>window.CareI18n.apply(document);</script>
-<script src="care-ui.js?v=20260803a"></script>
+<script src="care-animal-form.js?v=20260803b"></script>
+<script src="care-ui.js?v=20260804g"></script>
 </body>
 </html>

@@ -12,9 +12,13 @@
 <!-- GENES / POLY / COMBOS / tokenOptions 를 쓰기 위해 게코 코어를 그대로 불러옵니다 -->
 <script src="../assets/studio-config.js?v=20260731b"></script>
 <script src="../assets/imgtool.js?v=1"></script>
-<script src="../gecko/gecko-core.js?v=20260801b"></script>
+<script src="../gecko/gecko-core.js?v=20260804a"></script>
 <script src="admin-crested.js?v=232324"></script>
 <script src="admin-text.js?v=222126"></script>
+<link rel="stylesheet" href="admin-members.css?v=20260804b">
+<script src="admin-members-i18n.js?v=20260804b"></script>
+<script src="admin-member-actions.js?v=20260804c"></script>
+<script src="admin-members.js?v=20260804b"></script>
 <style>
   :root{
     --bg:#EDEAE1;            /* Cloud Dancer 톤 그룹 배경 */
@@ -988,6 +992,10 @@ async function seedCombos(){
 
   let memQ='', memFilter='all';
   async function tabMember(){
+    if(window.AdminMembers){
+      await window.AdminMembers.render({SB,body:document.getElementById('adBody'),adminUser,esc,download});
+      return;
+    }
     const body=document.getElementById('adBody'); body.innerHTML='불러오는 중…';
     const r=await SB.from('profiles').select('*').order('created_at',{ascending:false});
     if(r.error){ body.innerHTML='<div class="aerr"><b>회원 정보를 볼 권한이 없습니다.</b><br><br>'

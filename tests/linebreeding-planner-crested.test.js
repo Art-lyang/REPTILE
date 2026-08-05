@@ -35,6 +35,7 @@ function animal(id, sex, morphs, scores, species = 'crested') {
     id,
     species,
     sex,
+    life_stage: 'adult',
     morphs,
     line_trait_scores: scores,
     parent_a: null,

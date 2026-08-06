@@ -53,6 +53,7 @@
     planBulkMode: 'Select plans to delete', planBulkCount: '{count} selected', planBulkHint: 'Choose the plans to remove, then select Delete.',
     planBulkDeleteAction: 'Delete {count} selected', planBulkDeleteConfirm: 'Delete {count} selected plans? Existing completion records will remain.',
     planBulkSelectAria: 'Select {name} plan',
+    planBulkSelectAll: 'Select all', planBulkClearAll: 'Clear all',
     noPlanList: 'No plans yet.', noPlanListHint: 'Select <b>Species defaults</b> to add common routines at once.',
     wholeHome: '🏠 Shared care', disabled: 'Off', allDay: 'All day', type: 'Type', target: 'Animal',
     planNamePlaceholder: 'e.g. Calcium dusting', planDetail: 'Notes (food or supplement name)', linkedFeed: 'Linked food (optional)',

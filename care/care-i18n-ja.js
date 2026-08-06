@@ -44,6 +44,7 @@
     planBulkMode: '計画を選んで削除', planBulkCount: '{count}件を選択中', planBulkHint: '削除する計画を選んでから、削除を押してください。',
     planBulkDeleteAction: '選択した{count}件を削除', planBulkDeleteConfirm: '選択した{count}件の計画を削除しますか？完了記録は残ります。',
     planBulkSelectAria: '{name}の計画を選択',
+    planBulkSelectAll: 'すべて選択', planBulkClearAll: 'すべて解除',
     addPlan: '計画を追加', editPlan: '計画を編集', speciesDefaults: '種別の基本値', noPlanList: '計画がまだありません。',
     noPlanListHint: '<b>種別の基本値</b>を押すと、よく使う周期をまとめて作成できます。', wholeHome: '🏠 全体共通', disabled: 'オフ', allDay: '終日', type: '種類', target: '対象',
     planNamePlaceholder: '例）カルシウムダスティング', planDetail: 'メモ（フード・サプリ名など）', linkedFeed: '使用するフード（任意）',

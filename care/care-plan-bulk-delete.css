@@ -1,6 +1,15 @@
 .routine-plan-bulk-actions{margin:0 0 14px}
-.routine-plan-bulk-bar{display:none;align-items:center;justify-content:space-between;gap:14px;margin:0 0 16px;padding:14px 15px;border:1px solid var(--warn-bd);border-radius:18px;background:var(--warn-bg);color:var(--warn-fg)}
+/* 안내 띠 — 빨강(--warn)에서 --sel 로 바꿨습니다. 이 띠가 하는 말은 "고른 뒤
+   삭제를 눌러 주세요"라는 안내인데, 빨간 배경이라 이미 뭔가 지워졌거나 잘못
+   눌렀다는 뜻으로 읽혔습니다. 되돌릴 수 없는 신호는 삭제 버튼(.btn danger)에만
+   둡니다. (care.css 의 --sel-* 참고) */
+.routine-plan-bulk-bar{display:none;align-items:center;justify-content:space-between;gap:14px;margin:0 0 16px;padding:14px 15px;border:1px solid var(--sel-bd);border-radius:18px;background:var(--sel-bg);color:var(--sel-fg)}
 .routine-plan-bulk-bar strong{font-size:14px}.routine-plan-bulk-bar p{margin:3px 0 0;font-size:12px;line-height:1.5}.routine-plan-bulk-buttons{display:flex;gap:8px;flex:0 0 auto}.routine-plan-bulk-buttons .btn{min-height:42px;padding:0 13px;font-size:13px}
-.plan-bulk-choice{display:none;flex:0 0 auto;cursor:pointer}.plan-bulk-choice input{position:absolute;opacity:0}.plan-bulk-choice span{display:block;width:24px;height:24px;border:1.5px solid var(--chipbd);border-radius:8px;background:var(--card);box-shadow:var(--shadow)}.plan-bulk-choice input:checked + span{background:var(--teal);border-color:var(--teal)}.plan-bulk-choice input:checked + span::after{content:'✓';display:block;color:#fff;font-size:15px;font-weight:800;line-height:21px;text-align:center}.plan-bulk-choice input:focus-visible + span{outline:3px solid rgba(7,90,72,.24);outline-offset:2px}
+/* 체크박스 — input 에 크기를 주지 않아 브라우저 기본값(13x13)으로 남아 있었고,
+   position:absolute 인데 기준이 될 조상도 없어서 24px 네모의 왼쪽 위 어딘가에
+   걸쳐 있었습니다. 그 13x13 위에서는 네이티브 체크박스의 기본 커서(화살표)가
+   이기고 나머지에서만 손가락이 떠서, 같은 네모 안인데 커서가 둘로 갈렸습니다.
+   input 을 라벨 전체에 맞춰 덮고 커서를 지정해 한 덩어리로 만듭니다. */
+.plan-bulk-choice{display:none;flex:0 0 auto;cursor:pointer;position:relative}.plan-bulk-choice input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:pointer}.plan-bulk-choice span{display:block;width:24px;height:24px;border:1.5px solid var(--chipbd);border-radius:8px;background:var(--card);box-shadow:var(--shadow)}.plan-bulk-choice input:checked + span{background:var(--teal);border-color:var(--teal)}.plan-bulk-choice input:checked + span::after{content:'✓';display:block;color:#fff;font-size:15px;font-weight:800;line-height:21px;text-align:center}.plan-bulk-choice input:focus-visible + span{outline:3px solid rgba(7,90,72,.24);outline-offset:2px}
 #body.plan-bulk-mode .routine-plan-bulk-actions{display:none}#body.plan-bulk-mode .routine-plan-bulk-bar,#body.plan-bulk-mode .plan-bulk-choice{display:flex}#body.plan-bulk-mode .card .acts{display:none}#body.plan-bulk-mode .card{gap:11px}
 @media (max-width:520px){.routine-plan-bulk-bar{align-items:stretch;flex-direction:column}.routine-plan-bulk-buttons .btn{flex:1}.routine-plan-bulk-buttons .danger{min-width:0}}

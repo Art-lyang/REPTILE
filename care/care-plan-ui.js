@@ -155,7 +155,12 @@
       + options.icon('bi-check2-square') + I.t('planBulkMode') + '</button></div>'
       + '<div class="routine-plan-bulk-bar" aria-live="polite"><div><strong data-plan-bulk-count>'
       + I.t('planBulkCount', { count: I.formatNumber(0) }) + '</strong><p>' + I.t('planBulkHint')
-      + '</p></div><div class="routine-plan-bulk-buttons"><button class="btn ghost" data-plan-bulk-cancel>'
+      + '</p></div><div class="routine-plan-bulk-buttons">'
+      /* 전체 선택 — 없을 때는 계획이 56개면 56번 눌러야 했습니다.
+         라벨은 상황에 따라 전체 선택 / 전체 해제로 바뀝니다(bulk-delete.js). */
+      + '<button class="btn ghost" data-plan-bulk-all><span data-plan-bulk-all-label>'
+      + I.t('planBulkSelectAll') + '</span></button>'
+      + '<button class="btn ghost" data-plan-bulk-cancel>'
       + I.t('cancel') + '</button><button class="btn danger" data-plan-bulk-delete disabled>'
       + options.icon('bi-trash3') + '<span data-plan-bulk-delete-label>'
       + I.t('planBulkDeleteAction', { count: I.formatNumber(0) }) + '</span></button></div></div>';

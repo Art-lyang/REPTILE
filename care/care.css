@@ -23,6 +23,10 @@
   --eggplant:#675780; --leaf:#5c8a3a;
   --warn-bg:#fbeae3; --warn-bd:#f0c3b2; --warn-fg:#b4402a;
   --good-bg:#eaf2e4; --good-bd:#c9ddba; --good-fg:#3d6b28;
+  /* 고르는 중임을 알리는 안내 띠. 빨강(--warn)을 쓰면 "내가 뭘 잘못 눌렀나"로
+     읽혀서, 실제로 되돌릴 수 없는 것은 삭제 버튼 하나뿐인데 화면 전체가
+     경고처럼 보였습니다. 지우는 신호는 .btn danger 에만 남깁니다. */
+  --sel-bg:#eef4f1; --sel-bd:#cadfd6; --sel-fg:#1d4b3f;
   --ped-line:rgba(7,90,72,.34);
   --shadow:0 2px 4px rgba(35,48,41,.03), 0 10px 28px rgba(35,48,41,.07);
   --radius:22px;                       /* (theme) 큰 카드 */
@@ -37,6 +41,7 @@
     --leaf:#8fc16a; --butter:#d9ab4a;
     --warn-bg:#2e1713; --warn-bd:#6e2e22; --warn-fg:#f3a594;
     --good-bg:#1a2418; --good-bd:#33502a; --good-fg:#9cd183;
+    --sel-bg:#18231f; --sel-bd:#2f4a41; --sel-fg:#a9d8c8;
     --ped-line:rgba(58,169,135,.5);
     --shadow:0 3px 8px rgba(0,0,0,.18), 0 18px 40px rgba(0,0,0,.2);
     --hdbg:#1a211d;

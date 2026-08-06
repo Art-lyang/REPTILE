@@ -54,6 +54,7 @@
     planBulkMode: '계획 선택 삭제', planBulkCount: '{count}개 선택됨', planBulkHint: '지울 계획을 고른 뒤 삭제를 눌러 주세요.',
     planBulkDeleteAction: '선택한 {count}개 삭제', planBulkDeleteConfirm: '선택한 {count}개 계획을 지울까요? 완료 기록은 남아 있습니다.',
     planBulkSelectAria: '{name} 계획 선택',
+    planBulkSelectAll: '전체 선택', planBulkClearAll: '전체 해제',
     noPlanList: '아직 계획이 없습니다.', noPlanListHint: '<b>종별 기본값</b>을 누르면 흔히 쓰는 주기가 한 번에 만들어집니다.',
     wholeHome: '🏠 전체 공통', disabled: '꺼짐', allDay: '종일', type: '종류', target: '대상',
     planNamePlaceholder: '예) 칼슘 더스팅', planDetail: '메모 (먹이 종류, 영양제 이름 등)', linkedFeed: '쓰는 먹이 (선택)',

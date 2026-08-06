@@ -34,15 +34,36 @@
     return I && I.formatNumber ? I.formatNumber(value) : String(value);
   }
 
+  function boxes(rootElement) {
+    return Array.prototype.slice.call(rootElement.querySelectorAll('[data-plan-bulk-id]'));
+  }
+
+  /* 전체 선택 / 전체 해제. 하나라도 안 고른 게 있으면 모두 고르고, 이미 다
+     골랐으면 모두 풉니다. 계획이 수십 개일 때 하나씩 누르지 않아도 되게 합니다. */
+  function toggleAll(rootElement) {
+    const all = boxes(rootElement);
+    if (!all.length) return;
+    const target = all.some(function (input) { return !input.checked; });
+    all.forEach(function (input) { input.checked = target; });
+    update(rootElement);
+  }
+
   function update(rootElement) {
     if (!rootElement) return 0;
-    const I = i18n(), selected = count(rootElement);
+    const I = i18n(), all = boxes(rootElement), selected = count(rootElement);
     const countNode = rootElement.querySelector('[data-plan-bulk-count]');
     const label = rootElement.querySelector('[data-plan-bulk-delete-label]');
     const button = rootElement.querySelector('[data-plan-bulk-delete]');
+    const allButton = rootElement.querySelector('[data-plan-bulk-all]');
+    const allLabel = rootElement.querySelector('[data-plan-bulk-all-label]');
     if (countNode && I) countNode.textContent = I.t('planBulkCount', { count: formatCount(selected) });
     if (label && I) label.textContent = I.t('planBulkDeleteAction', { count: formatCount(selected) });
     if (button) button.disabled = selected === 0 || pending;
+    if (allButton) allButton.disabled = !all.length || pending;
+    if (allLabel && I) {
+      allLabel.textContent = I.t(all.length && selected === all.length
+        ? 'planBulkClearAll' : 'planBulkSelectAll');
+    }
     return selected;
   }
 
@@ -82,13 +103,14 @@
   }
 
   function onClick(event) {
-    const target = event.target.closest('[data-plan-bulk-mode], [data-plan-bulk-cancel], [data-plan-bulk-delete]');
+    const target = event.target.closest('[data-plan-bulk-mode], [data-plan-bulk-cancel], [data-plan-bulk-all], [data-plan-bulk-delete]');
     if (!target) return;
     const rootElement = root();
     if (!rootElement) return;
     event.preventDefault();
     if (target.hasAttribute('data-plan-bulk-mode')) return setMode(rootElement, true);
     if (target.hasAttribute('data-plan-bulk-cancel')) return setMode(rootElement, false);
+    if (target.hasAttribute('data-plan-bulk-all')) return toggleAll(rootElement);
     if (target.hasAttribute('data-plan-bulk-delete')) return confirmAndDelete(rootElement);
   }
 
@@ -103,6 +125,8 @@
     global.document.addEventListener('change', onChange);
   }
 
-  global.CarePlanBulkDelete = Object.freeze({ selectedIds: selectedIds, deletePlans: deletePlans, init: init });
+  global.CarePlanBulkDelete = Object.freeze({
+    selectedIds: selectedIds, deletePlans: deletePlans, toggleAll: toggleAll, init: init,
+  });
   init();
 })(window);

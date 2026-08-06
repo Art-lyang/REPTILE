@@ -655,5 +655,10 @@ applyLang();
 (function(){
   let dismissed=false;
   try{ dismissed=(localStorage.getItem('crUpdDismiss')===UPD_VER+'|'+todayKey()); }catch(e){ dismissed=false; }
-  if(!dismissed) openUpd();
+  /* 서버에서 받은 문구가 확정된 뒤에 엽니다. 기본 문구로 먼저 열면 읽는 도중에
+     내용이 바뀝니다(assets/uitext.js 참고). 늦어지면 기본 문구로 그냥 엽니다. */
+  if(!dismissed){
+    if(window.StudioText && StudioText.whenReady) StudioText.whenReady(1200).then(openUpd);
+    else openUpd();
+  }
 })();

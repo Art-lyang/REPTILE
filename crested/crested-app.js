@@ -6,6 +6,10 @@
    계산 로직은 건드리지 않습니다. 여기서는 기록만 합니다. */
 var CR_SB = (typeof SUPABASE_URL !== 'undefined' && SUPABASE_URL && window.supabase)
   ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON) : null;
+/* 헤더의 로그인 버튼(assets/account-btn.js)이 이 클라이언트를 같이 씁니다.
+   내주지 않으면 그쪽이 하나 더 만들고, 같은 저장소 키를 쓰는 클라이언트가
+   둘이 되어 토큰 갱신이 서로 엇갈릴 수 있습니다. */
+window.__studioSB = CR_SB;
 
 (function () {
   'use strict';

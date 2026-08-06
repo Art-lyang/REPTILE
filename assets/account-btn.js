@@ -36,16 +36,13 @@
   function label(key) { return LABELS[lang()][key]; }
 
   function client() {
-    /* 페이지가 이미 만들어 둔 클라이언트가 있으면 그것을 씁니다. 같은 저장소를
-       쓰는 클라이언트를 두 번 만들면 supabase-js 가 경고를 냅니다. */
+    /* 페이지가 내준 클라이언트만 씁니다. 없다고 해서 직접 만들지는 않습니다.
+       같은 저장소 키를 쓰는 클라이언트가 둘이 되면 supabase-js 가 경고를 내고,
+       두 클라이언트가 각자 토큰을 갱신하다 서로 엇갈릴 수 있습니다.
+       클라이언트가 없는 화면(홈)은 아래 storedSession() 으로 라벨만 정합니다.
+       계산기들은 *-app.js 에서 window.__studioSB 로 내줍니다. */
     if (w.__studioSB) return w.__studioSB;
-    if (!w.supabase || !w.SUPABASE_URL || !w.SUPABASE_ANON) return null;
-    try {
-      w.__studioSB = w.supabase.createClient(w.SUPABASE_URL, w.SUPABASE_ANON);
-    } catch (e) {
-      return null;
-    }
-    return w.__studioSB;
+    return null;
   }
 
   /* SDK 없이 로그인 여부만 보기.

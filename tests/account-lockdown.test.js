@@ -318,5 +318,5 @@ test('Given the crested calculator needs analytics and live morph data, when it 
   const clientCreations = app.match(/createClient\(/g) || [];
 
   assert.equal(clientCreations.length, 1);
-  assert.match(read('crested/index.html'), /crested-app\.js\?v=20260801a/);
+  assert.match(read('crested/index.html'), /crested-app\.js\?v=20260806c/);
 });

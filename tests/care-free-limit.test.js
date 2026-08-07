@@ -101,6 +101,20 @@ test('Given a paid keeper, when the cap is written, then it blocks new animals w
   assert.doesNotMatch(sql, /create or replace function private\.care_active_animal_ids/);
 });
 
+test('Given every migration, when an error is raised, then it uses the form Postgres actually accepts', () => {
+  /* 한 번 데인 자리입니다. 형식 문자열의 '%' 에 넣을 인자 없이 USING message 를
+     함께 주면 42601 too few parameters specified for RAISE 로 함수 생성이
+     통째로 실패합니다. 로컬에 Postgres 가 없어 컴파일로는 못 잡으니 형태로 막습니다. */
+  ['supabase_v53.sql', 'supabase_v54.sql', 'supabase_v55.sql'].forEach(function (file) {
+    const sql = read(file);
+    assert.doesNotMatch(sql, /raise\s+exception\s+'[^']*'[^;]*using[^;]*message\s*=/i,
+      file + ' : 형식 문자열과 USING message 를 같이 쓰면 안 됩니다');
+    /* 형식 문자열에 '%' 를 넣었으면 뒤에 인자가 와야 합니다. */
+    assert.doesNotMatch(sql, /raise\s+exception\s+'[^']*%[^']*'\s*(using|;)/i,
+      file + ' : % 를 썼는데 넣을 인자가 없습니다');
+  });
+});
+
 test('Given a quota, when the screen decides whether to nag, then a roomy paid account stays quiet', () => {
   const ui = read('care/care-ui.js');
 

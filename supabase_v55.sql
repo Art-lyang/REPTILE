@@ -38,9 +38,16 @@ begin
   if p_is_new then
     select count(*) into used from public.animals a where a.user_id = p_user;
     if used >= lim then
-      raise exception '%' using
-        errcode = '42501',
-        message = case when premium then 'CARE_PREMIUM_LIMIT_REACHED' else 'CARE_FREE_LIMIT_REACHED' end;
+      /* 메시지를 case 식으로 만들려다 RAISE 형식을 틀렸던 자리입니다.
+         (형식 문자열의 '%' 에 넣을 인자 없이 USING message 를 함께 주면
+          42601 too few parameters specified for RAISE 로 거부됩니다)
+         v54 에서 이미 통과한 형태를 그대로 두 번 씁니다. 덜 영리하지만
+         확실합니다. */
+      if premium then
+        raise exception 'CARE_PREMIUM_LIMIT_REACHED' using errcode = '42501';
+      else
+        raise exception 'CARE_FREE_LIMIT_REACHED' using errcode = '42501';
+      end if;
     end if;
     return;
   end if;

@@ -133,7 +133,14 @@
     return `<details class="mm-nick">
       <summary>${escape(t('nickHistory'))} <span>${escape(t('nickUsed', { used: used, limit: 2 }))}</span></summary>
       <ul>${rows}</ul>
-      <button type="button" class="mini" data-nick-reset="${member.user_id}"${used ? '' : ' disabled'}>${escape(t('nickReset'))}</button>
+      <div class="mm-nick-edit">
+        <input class="ain" id="nick-${member.user_id}" data-nick-input="${member.user_id}"
+          value="${escape(member.nickname || '')}" placeholder="${escape(t('nickBlankAuto'))}"
+          aria-label="${escape(t('nickSet'))}">
+        <button type="button" class="mini" data-nick-save="${member.user_id}">${escape(t('nickSet'))}</button>
+        <button type="button" class="mini" data-nick-reset="${member.user_id}"${used ? '' : ' disabled'}>${escape(t('nickReset'))}</button>
+      </div>
+      <p>${escape(t('nickSetHint'))}</p>
     </details>`;
   }
 
@@ -241,6 +248,9 @@
     state.body.querySelectorAll('[data-nick-reset]').forEach(button => {
       button.onclick = () => resetNickname(button.dataset.nickReset);
     });
+    state.body.querySelectorAll('[data-nick-save]').forEach(button => {
+      button.onclick = () => saveNickname(button.dataset.nickSave);
+    });
   }
 
   function exportCsv() {
@@ -290,6 +300,25 @@
        그대로 떠야 합니다 — 안내 한 칸 때문에 관리 화면 전체가 막히면 안 됩니다. */
     state.nicknames = (!nicknames.error && nicknames.data) || {};
     renderContent();
+  }
+
+  /* 관리자가 직접 바꾸는 것은 회원의 2회 제한을 쓰지 않습니다(supabase_v59 의
+     app.nickname_bypass). 문의로 들어온 추가 변경을 여기서 처리하기 때문입니다.
+     비우고 저장하면 서버가 새로 지어 줍니다. */
+  async function saveNickname(userId) {
+    const input = state.body.querySelector(`[data-nick-input="${userId}"]`);
+    if (!input || state.busy) return;
+    state.busy = true;
+    try {
+      const result = await state.SB.rpc('admin_set_nickname',
+        { p_target: userId, p_nickname: String(input.value || '').trim() });
+      if (result.error) throw result.error;
+      await load();
+    } catch (error) {
+      window.alert(t('nickSetFailed') + '\n' + (error.message || error.code || ''));
+    } finally {
+      state.busy = false;
+    }
   }
 
   async function resetNickname(userId) {

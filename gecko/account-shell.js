@@ -11,7 +11,16 @@
     var t = options.i18n.t;
     var overview = '<div data-account-pane="overview">' + options.overview + '</div>';
     var status = '<div class="msg account-status" id="msg" role="status" aria-live="polite"></div>';
-    if (options.isAdmin) return status + overview;
+    /* 관리자에게도 프로필 칸은 줍니다. 동의·보안 설정은 여전히 안 보여 주지만,
+       닉네임은 관리자도 한 명의 이용자로서 갖는 것이라 바꿀 길이 있어야 합니다 —
+       개체를 공개하면 그 닉네임이 브리더명으로 그대로 나갑니다. */
+    if (options.isAdmin) {
+      return '<nav class="account-tabs" aria-label="' + esc(t('accountSettings')) + '">'
+        + '<button class="account-tab on" data-account-tab="overview">' + esc(t('accountOverview')) + '</button>'
+        + '<button class="account-tab" data-account-tab="profile">' + esc(t('profileSettings')) + '</button></nav>'
+        + status + overview
+        + '<div data-account-pane="profile" hidden></div>';
+    }
     return '<nav class="account-tabs" aria-label="' + esc(t('accountSettings')) + '">'
       + '<button class="account-tab on" data-account-tab="overview">' + esc(t('accountOverview')) + '</button>'
       + '<button class="account-tab" data-account-tab="profile">' + esc(t('profileSettings')) + '</button>'

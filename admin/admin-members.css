@@ -44,9 +44,15 @@
 .mm-nick li b{color:var(--ink);font-size:11.5px;word-break:break-all}
 .mm-nick li em{font-style:normal;font-weight:800}
 .mm-nick .mm-nick-empty{grid-template-columns:1fr;text-align:center}
-.mm-nick button{margin-top:8px}
+.mm-nick-edit{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:7px;margin-top:9px}
+.mm-nick-edit .ain{margin-bottom:0;padding:9px 10px;font-size:12px}
+.mm-nick-edit .mini{white-space:nowrap}
+.mm-nick>p{margin:6px 0 0;font-size:11px;color:var(--ink2);line-height:1.6}
 @media(max-width:430px){
   .mm-nick li{grid-template-columns:1fr}
+  /* 좁은 화면에서 세 칸을 나란히 두면 버튼 글자가 잘립니다. */
+  .mm-nick-edit{grid-template-columns:1fr 1fr}
+  .mm-nick-edit .ain{grid-column:1/-1}
 }
 .mm-protected b{color:var(--eggplant)}.mm-empty,.mm-loading{background:var(--card2);border-radius:12px;padding:28px 14px;text-align:center;color:var(--ink2);font-size:13px}
 .mm-error{padding:18px}.mm-dialog{width:min(480px,calc(100vw - 28px));border:0;border-radius:16px;background:var(--card);color:var(--ink);padding:0;box-shadow:0 24px 80px rgba(0,0,0,.28)}

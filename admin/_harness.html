@@ -52,6 +52,15 @@
         if(nicknames[args.p_target]) nicknames[args.p_target].used=0;
         return {data:{reset_at:'2026-08-07T00:00:00Z'},error:null};
       }
+      if(fn==='admin_set_nickname'){
+        const row=rows.find(r=>r.user_id===args.p_target);
+        const before=row.nickname;
+        /* 비우면 서버가 새로 짓습니다. 관리자 변경은 used 를 올리지 않습니다. */
+        row.nickname=(args.p_nickname||'').trim()||'포근한 집사 042';
+        const e=nicknames[args.p_target]||(nicknames[args.p_target]={used:0,items:[]});
+        e.items.unshift({at:'2026-08-08T02:00:00Z',from:before,to:row.nickname,kind:'admin'});
+        return {data:{nickname:row.nickname},error:null};
+      }
       if(fn==='admin_set_animal_limit'){
         if(args.p_limit==null) delete limits[args.p_target];
         else limits[args.p_target]=args.p_limit;

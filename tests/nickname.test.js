@@ -94,7 +94,12 @@ test('Given the account screen, when the nickname is cleared, then it is not mer
   assert.match(LOGIN, /SB\.rpc\('set_my_nickname',\{p_nickname:wanted\}\)/);
   assert.match(LOGIN, /nickname:legacy\?\(wanted\|\|null\):null/);
   /* 서버가 지어 준 이름을 칸에 되돌려 주지 않으면 저장이 안 된 것처럼 보입니다. */
-  assert.match(LOGIN, /\$\('iNick'\)\.value=n\.data\.nickname\|\|''/);
+  assert.match(LOGIN, /function applyNickResult\(data\)[\s\S]{0,220}input\.value=data\.nickname\|\|''/);
+  /* 저장 절차를 두 화면(일반 계정 · 관리자)이 같이 씁니다. 한쪽에 복사해 두면
+     그 화면에서만 조용히 옛 동작이 남습니다. */
+  assert.equal((LOGIN.match(/async function submitNickname/g) || []).length, 1);
+  assert.equal((LOGIN.match(/await submitNickname\(/g) || []).length, 2);
+  assert.equal((LOGIN.match(/applyNickResult\(/g) || []).length, 3); // 정의 1 + 호출 2
 });
 
 test('Given v59 is not applied yet, when the account screen saves, then it falls back instead of losing the edit', () => {
@@ -163,6 +168,53 @@ test('Given the admin dictionary, when a language is missing a key, then the car
     keys.forEach(function (key) {
       assert.match(block, new RegExp(key + '\\s*:'), lang + ' 에 ' + key + ' 가 없습니다');
     });
+  });
+});
+
+test('Given an admin account, when they open their account page, then they can change their own nickname', () => {
+  const shell = read('gecko/account-shell.js');
+  /* 예전에는 관리자면 개요 말고는 아무 칸도 안 그렸습니다. 닉네임이 필수가 된
+     뒤로는 관리자도 본인 이름을 바꿀 길이 있어야 합니다 — 개체를 공개하면
+     그 닉네임이 브리더명으로 그대로 나갑니다. */
+  assert.match(shell, /if \(options\.isAdmin\) \{[\s\S]*?data-account-pane="profile"/);
+  /* 동의·보안·탈퇴는 여전히 관리자에게 보여 주지 않습니다.
+     분기 안에도 같은 'return <nav class="account-tabs"' 가 있어서, 그걸 끝으로
+     삼으면 정작 검사할 부분이 잘려 나갑니다. 블록의 닫는 괄호까지 자릅니다. */
+  const start = shell.indexOf('if (options.isAdmin) {');
+  const adminBranch = shell.slice(start, shell.indexOf('\n    }\n', start));
+  assert.match(adminBranch, /data-account-pane="profile"/, '슬라이스가 잘못 잘렸습니다');
+  assert.doesNotMatch(adminBranch, /data-account-pane="(privacy|security)"/);
+
+  assert.match(LOGIN, /async function renderAdminProfile/);
+  assert.match(LOGIN, /isAdmin\? renderAdminProfile\(run\) : renderConsentSettings\(run\)/);
+  /* 관리자 칸은 set_my_nickname 만 씁니다. save_consent 를 거치면 동의 기록이
+     같이 건드려집니다. */
+  const branch = LOGIN.slice(LOGIN.indexOf('async function renderAdminProfile'));
+  const body = branch.slice(0, branch.indexOf('\n}\n'));
+  assert.doesNotMatch(body, /saveConsent/);
+});
+
+test('Given an admin fixes a nickname on request, when they save it, then it does not spend the member quota', () => {
+  const ui = read('admin/admin-members.js');
+  assert.match(ui, /admin_set_nickname/);
+  assert.match(ui, /data-nick-save/);
+  /* 비우면 서버가 새로 지어 줍니다 — 그 안내가 자리표시자에 있어야 합니다. */
+  assert.match(ui, /placeholder="\$\{escape\(t\('nickBlankAuto'\)\)\}"/);
+  /* 배선은 한 곳(bindCards)에만 있어야 합니다. */
+  assert.equal((ui.match(/\[data-nick-save\]/g) || []).length, 1);
+});
+
+test('Given the admin summary text, when the profile tab exists, then it tells the admin where the nickname lives', () => {
+  /* 이 문구는 '관리자에게는 무엇을 안 보여 주는지' 를 설명합니다. 프로필 칸이
+     생겼는데 문구를 그대로 두면, 안 보여 준다고 적힌 것이 눈앞에 있는 셈이라
+     관리자가 자기 눈을 의심합니다. 닉네임을 어디서 바꾸는지 말해 줘야 합니다. */
+  const wants = { ko: '닉네임', en: 'nickname', ja: 'ニックネーム', zh: '昵称' };
+  Object.keys(wants).forEach(function (lang) {
+    const dict = read('gecko/login-i18n-' + lang + '.js');
+    const value = /adminOnlySummary: '([^']*)'/.exec(dict);
+    assert.ok(value, lang + ' 에 adminOnlySummary 가 없습니다');
+    assert.ok(value[1].includes(wants[lang]),
+      lang + ' 문구가 닉네임을 어디서 바꾸는지 알려 주지 않습니다: ' + value[1]);
   });
 });
 

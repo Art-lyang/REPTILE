@@ -14,13 +14,13 @@
 <script src="../assets/studio-config.js?v=20260731b"></script>
 <script src="/assets/imgtool.js?v=1"></script>
 <script src="gecko-core.js?v=20260804a"></script>
-<script src="login-i18n-ko.js?v=20260804b"></script>
-<script src="login-i18n-en.js?v=20260804b"></script>
-<script src="login-i18n-zh.js?v=20260804b"></script>
-<script src="login-i18n-ja.js?v=20260804b"></script>
+<script src="login-i18n-ko.js?v=20260808a"></script>
+<script src="login-i18n-en.js?v=20260808a"></script>
+<script src="login-i18n-zh.js?v=20260808a"></script>
+<script src="login-i18n-ja.js?v=20260808a"></script>
 <script src="login-i18n.js?v=20260804a"></script>
 <link rel="stylesheet" href="account-shell.css?v=20260803b">
-<script src="account-shell.js?v=20260803b"></script>
+<script src="account-shell.js?v=20260808a"></script>
 <script>window.LoginI18n.initialize();</script>
 <!-- 가입 봇 차단. TURNSTILE_SITE_KEY 가 비어 있으면 이 스크립트를 아예
      읽지 않습니다 — 키 없이 위젯만 띄우면 토큰이 안 나와 가입이 막힙니다. -->
@@ -480,7 +480,7 @@ async function renderMe(u,isAdmin){
   $('root').innerHTML=AccountShell.html({overview:overview,isAdmin:isAdmin,i18n:LoginLocale});
   AccountShell.bind($('root'));
   $('out').onclick=async()=>{ await SB.auth.signOut(); location.reload(); };
-  if(!isAdmin) renderConsentSettings(run).catch(error=>{
+  (isAdmin? renderAdminProfile(run) : renderConsentSettings(run)).catch(error=>{
     if(run===ACCOUNT_RENDER) say('e',err(error));
   });
 }
@@ -503,6 +503,50 @@ function nickNoteText(s){
   if(!s) return '';
   const left=Math.max(0, (s.limit||2) - (s.used||0));
   return left>0 ? t('nickChangesLeft').replace('{n}', String(left)) : t('nickChangesNone');
+}
+/* 닉네임 저장 절차는 일반 계정 화면과 관리자 화면이 같이 씁니다. 두 곳에
+   따로 적어 두면 한쪽만 고치게 되고, 그 화면에서만 조용히 옛 동작이 남습니다.
+   legacy 는 v59 를 아직 적용하지 않은 상태입니다. */
+async function submitNickname(wanted){
+  const n=await SB.rpc('set_my_nickname',{p_nickname:wanted});
+  const legacy=!!(n.error && /set_my_nickname|does not exist|PGRST202/i
+    .test(String(n.error.message||'')+' '+String(n.error.code||'')));
+  return { n:n, legacy:legacy };
+}
+/* 서버가 지어 준 이름을 화면에 되돌려 줍니다. 안 하면 지운 칸이 빈 채로
+   남아 사용자는 저장이 안 된 줄 압니다. */
+function applyNickResult(data){
+  if(!data) return;
+  const input=$('iNick'); if(input) input.value=data.nickname||'';
+  const note=$('nickNote'); if(note) note.textContent=nickNoteText(data);
+}
+
+/* 관리자 계정의 프로필 칸. 닉네임만 둡니다 — 동의 항목은 관리자에게 보여
+   주지 않기로 한 기존 판단을 그대로 두고, 실제로 막혀 있던 것(본인 닉네임을
+   바꿀 방법이 없던 것)만 엽니다. set_my_nickname 은 동의와 무관한 함수라
+   save_consent 를 거치지 않아도 됩니다. */
+async function renderAdminProfile(run){
+  const nick=await nickStatus();
+  if(run!==ACCOUNT_RENDER) return;
+  const profilePane=AccountShell.pane($('root'),'profile');
+  if(!profilePane) return;
+  const box=document.createElement('div');
+  box.className='consent'; box.style.marginTop='16px';
+  box.innerHTML='<div style="font-size:13px;font-weight:800;padding:2px 2px 8px">'+t('profileTitle')+'</div>'
+    +'<input class="in" id="iNick" placeholder="'+esc(t('nickname'))+'" value="'+esc((nick&&nick.nickname)||'')+'" style="margin-bottom:0">'
+    +(nick? '<div class="cNote" id="nickNote">'+esc(nickNoteText(nick))+'</div>' : '')
+    +'<div class="cNote">'+t('adminProfileNote')+'</div>'
+    +'<button class="btn ghost" id="nSave" style="margin-top:10px">'+t('saveSettings')+'</button>';
+  profilePane.appendChild(box);
+  $('nSave').onclick=async()=>{
+    $('nSave').disabled=true;
+    const r=await submitNickname($('iNick').value.trim());
+    $('nSave').disabled=false;
+    if(r.legacy) return say('e',t('errUnknown'));
+    if(r.n.error) return say('e',err(r.n.error));
+    applyNickResult(r.n.data);
+    say('o',t('saved'));
+  };
 }
 
 async function renderConsentSettings(run){
@@ -564,9 +608,7 @@ async function renderConsentSettings(run){
     /* 닉네임만 따로 보냅니다. save_consent 는 빈 값을 '건드리지 않음' 으로 읽어서
        '지우고 저장하면 새로 지어 준다' 를 표현할 수 없습니다.
        v59 적용 전이면 함수가 없으므로 예전처럼 같이 실어 보냅니다. */
-    const n=await SB.rpc('set_my_nickname',{p_nickname:wanted});
-    const legacy=!!(n.error && /set_my_nickname|does not exist|PGRST202/i
-      .test(String(n.error.message||'')+' '+String(n.error.code||'')));
+    const { n, legacy } = await submitNickname(wanted);
     const r=await saveConsent({terms:true,privacy:true,age:true,third:$('sThird').checked,
       mail:$('sMail').checked, sms:$('sSms').checked, ai:$('sAi').checked,
       phone:$('sPhone').value.trim()||null,
@@ -575,12 +617,7 @@ async function renderConsentSettings(run){
     $('sSave').disabled=false;
     if(n.error && !legacy) return say('e',err(n.error));
     if(r.error) return say('e',err(r.error));
-    /* 서버가 지어 준 이름을 화면에 되돌려 줍니다. 안 하면 지운 칸이 빈 채로
-       남아 사용자는 저장이 안 된 줄 압니다. */
-    if(!legacy && n.data){
-      $('iNick').value=n.data.nickname||'';
-      const note=$('nickNote'); if(note) note.textContent=nickNoteText(n.data);
-    }
+    if(!legacy) applyNickResult(n.data);
     say('o',t('saved'));
   };
 

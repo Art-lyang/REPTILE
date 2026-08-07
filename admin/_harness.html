@@ -9,6 +9,10 @@
     *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,sans-serif}.wrap{max-width:720px;margin:auto;padding:16px}.apad{background:var(--card);border-radius:14px;padding:16px}.ain{width:100%;padding:11px 12px;border:1px solid var(--chipbd);border-radius:10px;background:var(--card2);color:var(--ink)}.abtn,.mini{border:0;border-radius:9px;padding:8px 11px;font-weight:700}.abtn{background:var(--teal);color:white}.abtn.ghost,.mini{background:#e8e5dd;color:var(--ink)}.mini.del{color:var(--warn-hi-fg)}.aerr{color:var(--warn-hi-fg)}
   </style>
   <link rel="stylesheet" href="admin-members.css">
+  <!-- 읽는 순서가 있습니다. i18n(문구 사전) → member-actions(조치 대화상자) →
+       members(화면). 앞의 둘이 빠져 있어서 이 하네스는 그동안 열리지도 않았습니다. -->
+  <script src="admin-members-i18n.js"></script>
+  <script src="admin-member-actions.js"></script>
   <script src="admin-members.js"></script>
 </head>
 <body><main class="wrap"><div id="body" class="apad"></div></main>
@@ -20,7 +24,20 @@
     {user_id:'33333333-3333-4333-8333-333333333333',email:'restricted@example.com',name:'제한 회원',nickname:'restricted',phone:null,providers:['kakao'],created_at:'2026-07-21T00:00:00Z',last_sign_in_at:'2026-08-01T09:00:00Z',email_confirmed_at:'2026-07-21T00:01:00Z',account_status:'restricted',tier:'general',is_admin:false},
     {user_id:'44444444-4444-4444-8444-444444444444',email:'member@example.com',name:'일반 회원',nickname:'member',phone:null,providers:['email'],created_at:'2026-08-01T00:00:00Z',last_sign_in_at:null,email_confirmed_at:null,account_status:'active',tier:'general',is_admin:false}
   ];
-  const SB={rpc:async()=>({data:rows,error:null}),auth:{getSession:async()=>({data:{session:{access_token:'test-token'}}})}};
+  /* 개체 상한은 따로 받아 옵니다. 함수 이름으로 갈라 주지 않으면 회원 목록이
+     상한 자리에도 들어가서 화면이 엉뚱하게 그려집니다. */
+  const limits = { };
+  const SB={
+    rpc:async(fn,args)=>{
+      if(fn==='admin_animal_limits') return {data:limits,error:null};
+      if(fn==='admin_set_animal_limit'){
+        if(args.p_limit==null) delete limits[args.p_target];
+        else limits[args.p_target]=args.p_limit;
+        return {data:{override:args.p_limit},error:null};
+      }
+      return {data:rows,error:null};
+    },
+    auth:{getSession:async()=>({data:{session:{access_token:'test-token'}}})}};
   window.fetch=async(_url,options)=>{const input=JSON.parse(options.body);const row=rows.find(item=>item.user_id===input.targetId);if(input.action==='restrict')row.account_status='restricted';if(input.action==='restore')row.account_status='active';if(input.action==='set_tier')row.tier=input.tier;if(input.action==='delete')rows=rows.filter(item=>item.user_id!==input.targetId);return new Response(JSON.stringify({ok:true}),{status:200,headers:{'Content-Type':'application/json'}})};
   const esc=value=>String(value??'').replace(/[&<>"]/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[char]));
   AdminMembers.render({SB,body:document.getElementById('body'),adminUser:{id:ownerId},esc,download:()=>{}});

@@ -51,6 +51,7 @@
     freeSlotActivate: '有効にする', freeSlotActivated: '有効な個体に切り替えました。',
     quotaFull: '枠がすべて埋まりました。新しい個体を登録するには既存の個体を削除してください。',
     quotaPremiumHint: '個体は最大{limit}匹まで登録できます。',
+    quotaCustomHint: 'このアカウントは{limit}匹まで登録できるよう個別に調整されています。',
     addPlan: '計画を追加', editPlan: '計画を編集', speciesDefaults: '種別の基本値', noPlanList: '計画がまだありません。',
     noPlanListHint: '<b>種別の基本値</b>を押すと、よく使う周期をまとめて作成できます。', wholeHome: '🏠 全体共通', disabled: 'オフ', allDay: '終日', type: '種類', target: '対象',
     planNamePlaceholder: '例）カルシウムダスティング', planDetail: 'メモ（フード・サプリ名など）', linkedFeed: '使用するフード（任意）',

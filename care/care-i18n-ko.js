@@ -61,6 +61,7 @@
     freeSlotActivate: '활성으로', freeSlotActivated: '활성 개체로 바꿨어요.',
     quotaFull: '자리를 모두 채웠어요. 새 개체를 등록하려면 기존 개체를 지워 주세요.',
     quotaPremiumHint: '개체는 최대 {limit}마리까지 등록할 수 있어요.',
+    quotaCustomHint: '이 계정은 {limit}마리까지 등록할 수 있도록 따로 조정되어 있어요.',
     noPlanList: '아직 계획이 없습니다.', noPlanListHint: '<b>종별 기본값</b>을 누르면 흔히 쓰는 주기가 한 번에 만들어집니다.',
     wholeHome: '🏠 전체 공통', disabled: '꺼짐', allDay: '종일', type: '종류', target: '대상',
     planNamePlaceholder: '예) 칼슘 더스팅', planDetail: '메모 (먹이 종류, 영양제 이름 등)', linkedFeed: '쓰는 먹이 (선택)',

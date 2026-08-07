@@ -4,6 +4,12 @@
   const SUPPORTED = ['ko', 'en', 'zh', 'ja'];
   const COPY = {
     ko: {
+      animalLimit: '개체 등록 상한', save: '저장',
+      animalLimitDefault: '기본 {count}',
+      animalLimitHintDefault: '기본값 {count}마리를 적용 중입니다. 비워 두면 기본값을 따릅니다.',
+      animalLimitHintCustom: '이 회원만 {count}마리로 조정했습니다.',
+      animalLimitRange: '1에서 100 사이의 정수를 입력하세요.',
+      animalLimitFailed: '상한을 바꾸지 못했습니다.',
       title: '회원 관리', description: '회원 상태와 이용 권한을 관리합니다. 모든 변경 사유는 기록됩니다.',
       language: '언어', all: '전체', active: '정상', restricted: '이용 제한', general: '일반', premium: '프리미엄',
       admins: '관리자', members: '전체 회원', search: '이메일·이름·닉네임·연락처 검색', status: '상태', tier: '권한',
@@ -24,6 +30,12 @@
       statusAll: '모든 상태', tierAll: '모든 권한', consent: '수신 동의', protected: '보호됨', unknown: '-',
     },
     en: {
+      animalLimit: 'Animal limit', save: 'Save',
+      animalLimitDefault: 'Default {count}',
+      animalLimitHintDefault: 'Using the default of {count}. Leave blank to follow the default.',
+      animalLimitHintCustom: 'Set to {count} for this member only.',
+      animalLimitRange: 'Enter a whole number between 1 and 100.',
+      animalLimitFailed: 'Could not change the limit.',
       title: 'Member management', description: 'Manage member status and access. A reason is recorded for every change.',
       language: 'Language', all: 'All', active: 'Active', restricted: 'Restricted', general: 'General', premium: 'Premium',
       admins: 'Admins', members: 'Members', search: 'Search email, name, nickname, or phone', status: 'Status', tier: 'Access',
@@ -44,6 +56,12 @@
       statusAll: 'All statuses', tierAll: 'All access', consent: 'Consent', protected: 'Protected', unknown: '-',
     },
     zh: {
+      animalLimit: '个体登记上限', save: '保存',
+      animalLimitDefault: '默认 {count}',
+      animalLimitHintDefault: '正在使用默认值 {count} 只。留空则按默认值。',
+      animalLimitHintCustom: '仅对该会员调整为 {count} 只。',
+      animalLimitRange: '请输入 1 到 100 之间的整数。',
+      animalLimitFailed: '未能修改上限。',
       title: '会员管理', description: '管理会员状态与使用权限。每次变更都会记录原因。',
       language: '语言', all: '全部', active: '正常', restricted: '限制使用', general: '普通', premium: '高级',
       admins: '管理员', members: '全部会员', search: '搜索邮箱、姓名、昵称或联系方式', status: '状态', tier: '权限',
@@ -64,6 +82,12 @@
       statusAll: '所有状态', tierAll: '所有权限', consent: '接收同意', protected: '受保护', unknown: '-',
     },
     ja: {
+      animalLimit: '個体登録の上限', save: '保存',
+      animalLimitDefault: '既定 {count}',
+      animalLimitHintDefault: '既定値の{count}匹を適用中です。空欄にすると既定値に従います。',
+      animalLimitHintCustom: 'この会員のみ{count}匹に調整しました。',
+      animalLimitRange: '1〜100の整数を入力してください。',
+      animalLimitFailed: '上限を変更できませんでした。',
       title: '会員管理', description: '会員状態と利用権限を管理します。すべての変更理由が記録されます。',
       language: '言語', all: 'すべて', active: '正常', restricted: '利用制限', general: '一般', premium: 'プレミアム',
       admins: '管理者', members: '全会員', search: 'メール・氏名・ニックネーム・連絡先を検索', status: '状態', tier: '権限',

@@ -49,6 +49,7 @@
     freeSlotActivate: '设为有效', freeSlotActivated: '已切换为有效个体。',
     quotaFull: '名额已满。要登记新个体请先删除已有个体。',
     quotaPremiumHint: '最多可登记 {limit} 只个体。',
+    quotaCustomHint: '此账户已单独调整为最多可登记 {limit} 只。',
     addPlan: '添加计划', editPlan: '编辑计划', speciesDefaults: '物种默认值', noPlanList: '尚无计划。',
     noPlanListHint: '点击<b>物种默认值</b>可一键创建常用周期。', wholeHome: '🏠 全体共用', disabled: '关闭', allDay: '全天', type: '类型', target: '对象',
     planNamePlaceholder: '例：钙粉', planDetail: '备注（饲料、补充剂名称等）', linkedFeed: '使用的饲料（可选）', noFeedLink: '不关联',

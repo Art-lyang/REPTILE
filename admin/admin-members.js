@@ -5,10 +5,17 @@
 
   const state = {
     SB: null, body: null, adminUser: null, esc: null, download: null,
-    lang: 'ko', rows: [], query: '', status: 'all', tier: 'all', busy: false,
+    lang: 'ko', rows: [], query: '', status: 'all', tier: 'all', busy: false, limits: {},
   };
   let actionController = null;
-  const t = key => COPY[state.lang][key] || COPY.ko[key] || key;
+  /* {count} 같은 자리를 값으로 바꿔 줍니다. 넘기지 않으면 예전과 똑같이
+     문구를 그대로 돌려줍니다 — 기존 호출부는 손대지 않아도 됩니다. */
+  const t = (key, values) => {
+    const text = COPY[state.lang][key] || COPY.ko[key] || key;
+    if (!values) return text;
+    return String(text).replace(/\{(\w+)\}/g, (whole, name) =>
+      (Object.prototype.hasOwnProperty.call(values, name) ? String(values[name]) : whole));
+  };
   const escape = value => state.esc(value == null ? '' : value);
 
   function detectLanguage() {
@@ -85,6 +92,30 @@
     </div>`;
   }
 
+  /* 개체 상한.
+     -------------------------------------------------------------------------
+     기본은 무료 10 / 유료 50 입니다(supabase_v54·v55). 여기서 정한 값은 그
+     회원에게만 적용되고, 비우면 기본값으로 돌아갑니다.
+
+     100 이 위쪽 끝인 이유는 사진 용량입니다 — 무료 요금제 스토리지가 1GB 라,
+     100마리씩 쓰는 회원이 열댓 명이면 요금제를 올려야 합니다. 무제한으로 두면
+     그 판단을 할 기회 없이 넘어갑니다. */
+  function limitBox(member) {
+    if (member.is_admin || member.user_id === state.adminUser.id) return '';
+    const current = state.limits[member.user_id];
+    const base = member.tier === 'premium' ? 50 : 10;
+    return `<div class="mm-limit">
+      <label for="lim-${member.user_id}">${escape(t('animalLimit'))}</label>
+      <input class="ain" id="lim-${member.user_id}" type="number" min="1" max="100"
+        inputmode="numeric" placeholder="${escape(t('animalLimitDefault', { count: base }))}"
+        value="${current == null ? '' : current}" data-limit-input="${member.user_id}">
+      <button type="button" class="mini" data-limit-save="${member.user_id}">${escape(t('save'))}</button>
+      <p>${escape(current == null
+        ? t('animalLimitHintDefault', { count: base })
+        : t('animalLimitHintCustom', { count: current }))}</p>
+    </div>`;
+  }
+
   function memberCard(member) {
     const providers = (member.providers || []).join(' · ') || t('unknown');
     const premiumMeta = member.tier === 'premium'
@@ -104,6 +135,7 @@
         ${premiumMeta}
       </dl>
       ${actions(member)}
+      ${limitBox(member)}
     </article>`;
   }
 
@@ -174,6 +206,9 @@
     state.body.querySelectorAll('[data-member-action]').forEach(button => {
       button.onclick = () => actionController.open(button);
     });
+    state.body.querySelectorAll('[data-limit-save]').forEach(button => {
+      button.onclick = () => saveLimit(button.dataset.limitSave);
+    });
   }
 
   function exportCsv() {
@@ -197,6 +232,9 @@
     state.body.querySelectorAll('[data-member-action]').forEach(button => {
       button.onclick = () => actionController.open(button);
     });
+    state.body.querySelectorAll('[data-limit-save]').forEach(button => {
+      button.onclick = () => saveLimit(button.dataset.limitSave);
+    });
     state.body.querySelectorAll('[data-dialog-close]').forEach(button => {
       button.onclick = () => document.getElementById('mmDialog').close();
     });
@@ -205,13 +243,43 @@
 
   async function load() {
     state.body.innerHTML = `<div class="mm-loading">${escape(t('loading'))}</div>`;
-    const result = await state.SB.rpc('admin_list_members');
+    /* 조정된 상한은 따로 받아 옵니다. admin_list_members 의 반환 모양을 바꾸려면
+       함수를 지웠다 다시 만들어야 해서, 짧은 목록 하나를 더 받는 편이 낫습니다
+       (대부분의 회원은 조정이 없습니다). */
+    const [result, limits] = await Promise.all([
+      state.SB.rpc('admin_list_members'),
+      state.SB.rpc('admin_animal_limits'),
+    ]);
     if (result.error) {
       state.body.innerHTML = `<div class="aerr mm-error"><b>${escape(t('loadError'))}</b><p>${escape(result.error.code || '')}</p></div>`;
       return;
     }
     state.rows = result.data || [];
+    /* v58 을 적용하기 전이면 함수가 없습니다. 그때는 조정이 없는 것으로 두고
+       화면은 그대로 뜹니다 — 상한 칸만 기본값으로 보입니다. */
+    state.limits = (!limits.error && limits.data) || {};
     renderContent();
+  }
+
+  async function saveLimit(userId) {
+    const input = state.body.querySelector(`[data-limit-input="${userId}"]`);
+    if (!input || state.busy) return;
+    const raw = String(input.value || '').trim();
+    const value = raw === '' ? null : Number(raw);
+    if (value !== null && (!Number.isInteger(value) || value < 1 || value > 100)) {
+      window.alert(t('animalLimitRange'));
+      return;
+    }
+    state.busy = true;
+    try {
+      const result = await state.SB.rpc('admin_set_animal_limit', { p_target: userId, p_limit: value });
+      if (result.error) throw result.error;
+      await load();
+    } catch (error) {
+      window.alert(t('animalLimitFailed') + '\n' + (error.message || error.code || ''));
+    } finally {
+      state.busy = false;
+    }
   }
 
   async function render(options) {

@@ -180,8 +180,12 @@
         + '<div class="quotahint">' + esc(
             over ? I.t('freeQuotaOver', { count: I.formatNumber(over) })
               : full ? I.t('quotaFull', { limit: I.formatNumber(q.limit) })
-                : q.premium ? I.t('quotaPremiumHint', { limit: I.formatNumber(q.limit) })
-                  : I.t('freeQuotaHint', { limit: I.formatNumber(q.limit) })
+                /* 관리자가 따로 올려 준 회원은 무료·유료 기본 설명이 맞지
+                   않습니다. 10마리라고 적혀 있는데 30마리를 쓰고 있으면
+                   문의가 옵니다. */
+                : q.custom ? I.t('quotaCustomHint', { limit: I.formatNumber(q.limit) })
+                  : q.premium ? I.t('quotaPremiumHint', { limit: I.formatNumber(q.limit) })
+                    : I.t('freeQuotaHint', { limit: I.formatNumber(q.limit) })
           ) + '</div></div>'
         /* 유료는 더 권할 것이 없으니 결제 안내를 붙이지 않습니다. */
         + (q.premium ? ''

@@ -20,6 +20,17 @@
 .mm-meta div{min-width:0}.mm-meta dt{font-size:10px;color:var(--ink2);margin-bottom:1px}.mm-meta dd{font-size:11.5px;margin:0;overflow-wrap:anywhere}
 .mm-actions{display:flex;justify-content:flex-end;gap:6px;flex-wrap:wrap;padding-top:10px;border-top:1px solid var(--hair)}
 .mm-protected{display:flex;gap:7px;align-items:center;padding-top:10px;border-top:1px solid var(--hair);font-size:11px;color:var(--ink2)}
+/* 개체 상한 조정. 회원 조치 버튼과 성격이 달라(되돌릴 수 있고 위험하지 않음)
+   같은 줄에 두지 않고 아래에 따로 둡니다. 숫자 칸은 세 자리라 넓을 필요가
+   없어서, 남는 폭은 설명이 가져갑니다. */
+.mm-limit{display:grid;grid-template-columns:auto 88px auto;gap:8px;align-items:center;
+  padding-top:10px;margin-top:10px;border-top:1px solid var(--hair)}
+.mm-limit label{font-size:11.5px;font-weight:800;color:var(--ink2)}
+.mm-limit .ain{margin-bottom:0;text-align:center;padding:9px 6px}
+.mm-limit p{grid-column:1/-1;margin:0;font-size:11px;color:var(--ink2);line-height:1.6}
+@media(max-width:430px){
+  .mm-limit{grid-template-columns:1fr 88px auto}
+}
 .mm-protected b{color:var(--eggplant)}.mm-empty,.mm-loading{background:var(--card2);border-radius:12px;padding:28px 14px;text-align:center;color:var(--ink2);font-size:13px}
 .mm-error{padding:18px}.mm-dialog{width:min(480px,calc(100vw - 28px));border:0;border-radius:16px;background:var(--card);color:var(--ink);padding:0;box-shadow:0 24px 80px rgba(0,0,0,.28)}
 .mm-dialog::backdrop{background:rgba(20,19,16,.48);backdrop-filter:blur(2px)}.mm-dialog form{padding:18px}

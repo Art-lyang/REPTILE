@@ -161,6 +161,9 @@ const CareApp = (function () {
         QUOTA = {
           premium: !!q.premium,
           limit: Number(q.limit) || 0,
+          /* 관리자가 이 회원만 따로 올려 준 값인지(supabase_v58). 화면에서
+             그렇다고 알려 주면 왜 남들과 다른지 묻지 않아도 됩니다. */
+          custom: !!q.custom,
           used: Number(q.used) || 0,
           active: Array.isArray(q.active) ? q.active : null,
           known: true,

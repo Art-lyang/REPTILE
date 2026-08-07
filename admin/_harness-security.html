@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>admin 보안 탭 하네스 (임시)</title>
+<!-- 가짜 응답을 물려 화면만 그려보는 파일입니다. build.sh 가 배포에서 제외합니다. -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<style>
+  :root{--bg:#EDEAE1;--card:#fffdf9;--card2:#f8f4eb;--ink:#18382f;--ink2:#746f64;
+        --hair:rgba(43,57,48,.11);--teal:#075a48;--warn-fg:#b4402a}
+  body{background:var(--bg);color:var(--ink);font-family:system-ui,sans-serif;margin:0;padding:18px}
+  .apad{background:var(--card);border-radius:16px;padding:16px;max-width:980px;margin:auto}
+  .alabel2{font-size:12px;font-weight:700;color:var(--ink2);margin:14px 0 6px}
+  .ahint{font-size:11px;color:var(--ink2);margin:8px 0 4px}
+  .asub{font-size:11.5px;color:var(--ink2);margin-top:2px}
+  .aerr{background:#fbeae3;border:1px solid #f0c3b2;color:#b4402a;border-radius:12px;padding:14px;font-size:13px}
+  .statrow{display:flex;gap:8px;margin-bottom:6px;flex-wrap:wrap}
+  .statcard{flex:1 1 110px;min-width:104px;background:var(--card2);border-radius:12px;padding:12px}
+  .statn{font-size:24px;font-weight:800;color:var(--teal)}
+  .statl{font-size:11px;color:var(--ink2);margin-top:2px}
+  .statx{font-size:10.5px;color:var(--ink2);margin-top:4px}
+  .atblwrap{overflow-x:auto;margin-top:4px}
+  .atbl{border-collapse:collapse;width:100%;font-size:12.5px}
+  .atbl th,.atbl td{border-bottom:1px solid var(--hair);padding:7px 8px;text-align:left;white-space:nowrap}
+  .secbars{display:flex;align-items:flex-end;gap:4px;height:110px;padding:6px 2px 0;
+    background:var(--card2);border-radius:12px;margin-bottom:4px;overflow-x:auto}
+  .secbar{flex:1 1 0;min-width:16px;height:100%;display:flex;flex-direction:column;
+    justify-content:flex-end;align-items:center;gap:3px}
+  .secbarfill{width:70%;min-height:2px;background:var(--teal);border-radius:3px 3px 0 0}
+  .secbar span{font-size:9px;color:var(--ink2);flex:0 0 auto}
+  .secua{max-width:260px;overflow:hidden;text-overflow:ellipsis;color:var(--ink2)}
+  .secfail{color:var(--warn-fg)}
+  .hbar{max-width:980px;margin:0 auto 12px;display:flex;gap:6px;flex-wrap:wrap}
+  .hbar button{border:1px solid var(--hair);background:var(--card);border-radius:9px;
+    padding:8px 12px;font-size:12px;font-weight:700;cursor:pointer}
+</style>
+</head>
+<body>
+<div class="hbar">
+  <button data-case="full">기록 있음</button>
+  <button data-case="empty">기록 없음</button>
+  <button data-case="missing">마이그레이션 전</button>
+  <button data-case="forbidden">권한 없음</button>
+</div>
+<div class="apad" id="body"></div>
+
+<script src="admin-security.js"></script>
+<script>
+const esc = v => String(v==null?'':v).replace(/[&<>"']/g, c =>
+  ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+/* 화면이 어제·오늘을 그리므로 기준 시각을 고정해 두면 하네스가 흔들리지 않습니다. */
+const NOW = Date.parse('2026-08-07T12:00:00+09:00');
+const day = n => new Date(NOW - n*86400000).toISOString();
+
+const EVENTS = [
+  {ts:day(0), kind:'admin_probe',     method:'GET',  path:'/api/admin/users',        ip:'45.155.205.11', country:'RU', ua:'python-requests/2.31.0'},
+  {ts:day(0), kind:'billing_probe',   method:'POST', path:'/api/billing/checkout',   ip:'103.72.11.9',   country:'CN', ua:'Mozilla/5.0 (compatible; Bytespider)'},
+  {ts:day(1), kind:'admin_auth_fail', method:'POST', path:'/api/admin/members/action', ip:'8.8.8.8',     country:'US', ua:'curl/8.4.0'},
+  {ts:day(2), kind:'admin_probe',     method:'GET',  path:'/api/admin/config',       ip:'45.155.205.11', country:'RU', ua:'Go-http-client/1.1'},
+  {ts:day(5), kind:'admin_probe',     method:'GET',  path:'/api/admin/.env',         ip:'192.0.2.44',    country:'NL', ua:'Mozilla/5.0'},
+];
+const SUMMARY = [
+  {day:'2026-08-07', kind:'admin_probe', n:1}, {day:'2026-08-07', kind:'billing_probe', n:1},
+  {day:'2026-08-06', kind:'admin_auth_fail', n:1},
+  {day:'2026-08-05', kind:'admin_probe', n:1},
+  {day:'2026-08-02', kind:'admin_probe', n:1},
+];
+const AUDIT = [
+  {created_at:day(1), action:'set_tier',   status:'success', reason:'체험판 지급 요청',
+   actor_email:'owner@ryangstudio.com', target_email:'user1@example.com'},
+  {created_at:day(3), action:'restrict',   status:'success', reason:'약관 위반 신고 접수',
+   actor_email:'owner@ryangstudio.com', target_email:'user2@example.com'},
+  {created_at:day(4), action:'delete',     status:'failed',  reason:'본인 요청 탈퇴',
+   actor_email:'owner@ryangstudio.com', target_email:'user3@example.com'},
+];
+
+const CASES = {
+  full:      () => ({summary:{data:SUMMARY}, events:{data:EVENTS}, audit:{data:AUDIT}}),
+  empty:     () => ({summary:{data:[]},      events:{data:[]},     audit:{data:[]}}),
+  missing:   () => ({summary:{error:{message:'Could not find the function in the schema cache'}},
+                     events:{error:{message:'Could not find the function in the schema cache'}},
+                     audit:{error:{message:'Could not find the function in the schema cache'}}}),
+  forbidden: () => ({summary:{data:null}, events:{data:null}, audit:{data:null}}),
+};
+
+function run(name){
+  const c = CASES[name]();
+  const SB = { rpc: async (fn) => fn==='admin_security_summary' ? c.summary
+                              : fn==='admin_security_events'  ? c.events : c.audit };
+  window.AdminSecurity.render({SB, body:document.getElementById('body'), esc, now:NOW});
+}
+document.querySelectorAll('[data-case]').forEach(b => b.onclick = () => run(b.dataset.case));
+run('full');
+</script>
+</body>
+</html>

@@ -1,7 +1,17 @@
 import { MESSAGES, SUPPORTED } from './member-action-messages.mjs';
+import { recordSecurityEvent } from '../security-log.mjs';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const ACTIONS = new Set(['restrict', 'restore', 'set_tier', 'delete']);
+
+/* 보안 기록에 남길 실패.
+   여기에 401(토큰 없음·형식 불량)을 넣으면 안 됩니다. 그러면 인증도 하지 않은
+   요청이 우리 쪽 DB 호출을 하나씩 만들어 내서, 기록 기능 자체가 증폭 수단이
+   됩니다. 그 경우는 아래에서 통째로 막고, 인증을 통과한 뒤 권한에서 걸린
+   것만 남깁니다 — 이미 로그인한 부관리자가 최고관리자 동작을 시도한 경우라
+   오히려 이쪽이 볼 가치가 큽니다.
+   ADMIN_RECENT_AUTH_REQUIRED 는 정당한 관리자의 세션 만료라 빠집니다. */
+const RECORDED_AUTH_FAILURES = new Set(['ADMIN_OWNER_REQUIRED']);
 
 class AdminActionError extends Error {
   constructor(code, status, cause) {
@@ -183,7 +193,7 @@ async function record(config, actorId, input, action = input.action, status = 's
   });
 }
 
-export async function handleAdminMemberAction(request, env) {
+export async function handleAdminMemberAction(request, env, ctx) {
   const language = languageOf(request);
   try {
     if (request.method !== 'POST') throw new AdminActionError('ADMIN_METHOD_NOT_ALLOWED', 405);
@@ -230,6 +240,14 @@ export async function handleAdminMemberAction(request, env) {
     const safe = error instanceof AdminActionError
       ? error : new AdminActionError('ADMIN_UPSTREAM_FAILED', 500, error);
     if (safe.status >= 500) console.error('admin member action failed', safe.cause || safe);
+    /* 남의 자격으로 들어오려 한 것만 남깁니다.
+       ADMIN_RECENT_AUTH_REQUIRED 는 정당한 최고관리자인데 로그인이 오래돼서
+       다시 하라는 뜻이라 공격이 아닙니다. 그것까지 모으면 진짜 시도가 묻힙니다.
+       코드만 남기고 본문은 남기지 않습니다 — 요청에는 대상 회원 정보가 들어
+       있어서 그대로 쌓으면 그게 또 유출입니다. */
+    if (RECORDED_AUTH_FAILURES.has(safe.code)) {
+      recordSecurityEvent(request, env, ctx, 'admin_auth_fail', { code: safe.code });
+    }
     return json({ ok: false, code: safe.code, message: message(language, safe.code) }, safe.status);
   }
 }

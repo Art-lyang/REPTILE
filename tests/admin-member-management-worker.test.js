@@ -123,7 +123,11 @@ test('Given a non-owner account, when an admin mutation is requested, then it is
 
   assert.equal(response.status, 403);
   assert.equal((await response.json()).code, 'ADMIN_OWNER_REQUIRED');
-  assert.deepEqual(calls, ['/rest/v1/rpc/my_admin_role']);
+  /* 권한 확인에서 막히고, 회원을 건드리는 호출은 하나도 나가지 않아야 합니다.
+     보안 기록(record_security_event)은 남습니다 — 부관리자가 최고관리자 동작을
+     시도한 것이라 관리자 화면의 보안 탭에 보여야 합니다. */
+  assert.deepEqual(calls, ['/rest/v1/rpc/my_admin_role', '/rest/v1/rpc/record_security_event']);
+  assert.equal(calls.filter(c => c.startsWith('/auth/v1/admin/users')).length, 0);
 });
 
 test('Given an owner, when a member is restricted, then the target is guarded, banned through Auth Admin, and audited', async () => {

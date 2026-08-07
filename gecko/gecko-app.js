@@ -75,6 +75,13 @@
     }catch(e){}
   }
 
+  /* gecko-ui.js 가 화면 언어에 맞는 사전을 window.__navText 로 내줍니다.
+     아직 준비 전이면 한국어로 둡니다 — 빈 글자보다는 낫습니다. */
+  function navText(key){
+    const d = window.__navText || {};
+    return d[key] || {navPremium:'프리미엄 코드', navSub:'구독 중', navTrial:'체험판 이용중'}[key] || '';
+  }
+
   /* ---------- 프리미엄 코드 ---------- */
   let isPrem=false, premKind=null, premExp=null;
   async function refreshPrem(){
@@ -96,7 +103,9 @@
          isPrem=!!d.active; premKind=d.kind||null; premExp=d.expires_at||null; }
     catch(e){ try{ const r2=await SB.rpc('is_premium',{p_device:uid()}); isPrem=!!r2.data; }catch(x){ isPrem=false; } }
     if(btn) btn.innerHTML = '<i class="bi bi-gem" aria-hidden="true"></i><span>'
-      +(isPrem? (premKind==='sub'?'구독 중':'체험판 이용중') : '프리미엄 코드')+'</span>';
+      /* 문구는 gecko-ui.js 의 사전에서 가져옵니다. 여기 한국어를 박아 두면
+         영어·일본어·중국어 페이지에서 이 버튼만 한국어로 남습니다. */
+      +navText(isPrem? (premKind==='sub'?'navSub':'navTrial') : 'navPremium')+'</span>';
     // 노출 스위치 — 준비 중이면 버튼 자체를 숨김 (gecko-core.js 참고)
     if(btn && !SHOW_PREMIUM_UI) btn.style.display='none';
     window.__isPrem = isPrem;

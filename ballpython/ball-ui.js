@@ -18,6 +18,7 @@ const I18N = {
     title:'볼파이톤 모프 계산기',
     sub:'부모의 유전 형질을 선택해 새끼 모프 확률을 계산하세요',
     langLabel:'언어', parentA:'부모 A', parentB:'부모 B',
+    navStudio:'스튜디오', navGallery:'다른 집사들의 개체 구경하기', navMail:'문의하기',
     parentRole:'유전 형질 선택', helpBtn:'선택 도움말',
     searchPh:'모프 검색 (예: 파스텔, pied, yb)', searchClear:'검색 지우기',
     searchNone:'검색 결과가 없습니다. 다른 이름이나 영문 철자로 찾아보세요.',
@@ -92,6 +93,7 @@ const I18N = {
     title:'Ball Python Morph Calculator',
     sub:'Pick each parent’s genetics to see the probability of each offspring morph',
     langLabel:'Language', parentA:'Parent A', parentB:'Parent B',
+    navStudio:'Studio', navGallery:'See other keepers’ animals', navMail:'Contact',
     parentRole:'Choose genetic traits', helpBtn:'Help',
     searchPh:'Search morphs (e.g. pastel, pied, yb)', searchClear:'Clear search',
     searchNone:'No matches. Try another spelling or the English name.',
@@ -166,6 +168,7 @@ const I18N = {
     title:'ボールパイソン モルフ計算機',
     sub:'両親の遺伝形質を選ぶと、仔のモルフ確率を計算します',
     langLabel:'言語', parentA:'親 A', parentB:'親 B',
+    navStudio:'スタジオ', navGallery:'ほかの飼い主の個体を見る', navMail:'お問い合わせ',
     parentRole:'遺伝形質を選択', helpBtn:'ヘルプ',
     searchPh:'モルフ検索（例：パステル, pied, yb）', searchClear:'検索をクリア',
     searchNone:'該当するモルフがありません。別の表記や英語名でお試しください。',
@@ -240,6 +243,7 @@ const I18N = {
     title:'球蟒基因计算器',
     sub:'选择父母双方的基因，即可计算后代各形态的概率',
     langLabel:'语言', parentA:'亲本 A', parentB:'亲本 B',
+    navStudio:'工作室', navGallery:'看看其他饲主的个体', navMail:'联系我们',
     parentRole:'选择遗传性状', helpBtn:'帮助',
     searchPh:'搜索形态（例：帕斯特, pied, yb）', searchClear:'清除搜索',
     searchNone:'没有匹配的形态，请换个写法或用英文名试试。',
@@ -732,6 +736,15 @@ function applyLang(){
   setH('note',t.note);
   set('lbl-terms',t.terms); set('lbl-privacy',t.privacy);
   set('footer',t.footer); set('lbl-langtitle',t.langLabel);
+  /* 헤더·하단의 고정 문구. HTML 에 한국어로 박혀 있어서 영어·일본어·중국어
+     페이지에 그대로 남아 있었습니다 — 계산 결과는 번역되는데 그 주변만
+     한국어라, 바깥에서 들어온 사람에게는 반쯤 깨진 화면으로 보입니다. */
+  [['.blink.home span', 'navStudio'],
+   ['.bottom-links .blink:not(#mailLink) span', 'navGallery'],
+   ['#mailLink span', 'navMail']].forEach(function (pair) {
+    const node = document.querySelector(pair[0]);
+    if (node && t[pair[1]]) node.textContent = t[pair[1]];
+  });
   setH('lbl-updh','<i class="bi bi-megaphone" aria-hidden="true"></i> '+escapeHtml(t.updH));
   setH('lbl-upddone','<i class="bi bi-check-circle-fill" aria-hidden="true"></i> '+escapeHtml(t.updDone));
   setH('lbl-updsoon','<i class="bi bi-clock" aria-hidden="true"></i> '+escapeHtml(t.updSoon));

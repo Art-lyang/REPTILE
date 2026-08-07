@@ -11,6 +11,7 @@ const I18N = {
     title:'펫테일 게코 모프 계산기',
     sub:'부모의 유전 형질을 선택해 새끼 모프 확률을 계산하세요',
     langLabel:'언어', parentA:'부모 A', parentB:'부모 B',
+    navStudio:'스튜디오', navGallery:'다른 집사들의 개체 구경하기', navMail:'문의하기',
     parentRole:'유전 형질 선택', helpBtn:'선택 도움말',
     selectedLabel:'선택된 형질', selNone:'아직 고르지 않았어요',
     reset:'초기화', calc:'모프 계산하기',
@@ -79,6 +80,7 @@ const I18N = {
     title:'African Fat-Tailed Gecko Morph Calculator',
     sub:'Pick each parent’s genetics to see the probability of each offspring morph',
     langLabel:'Language', parentA:'Parent A', parentB:'Parent B',
+    navStudio:'Studio', navGallery:'See other keepers’ animals', navMail:'Contact',
     parentRole:'Choose genetic traits', helpBtn:'Help',
     selectedLabel:'Selected', selNone:'Nothing selected yet',
     reset:'Reset', calc:'Calculate Morphs',
@@ -146,6 +148,7 @@ const I18N = {
     title:'ファットテールゲッコー モルフ計算機',
     sub:'両親の遺伝形質を選ぶと、仔のモルフ確率を計算します',
     langLabel:'言語', parentA:'親 A', parentB:'親 B',
+    navStudio:'スタジオ', navGallery:'ほかの飼い主の個体を見る', navMail:'お問い合わせ',
     parentRole:'遺伝形質を選択', helpBtn:'ヘルプ',
     selectedLabel:'選択した形質', selNone:'まだ選んでいません',
     reset:'リセット', calc:'モルフを計算',
@@ -213,6 +216,7 @@ const I18N = {
     title:'肥尾守宫基因计算器',
     sub:'选择父母双方的基因，即可计算后代各形态的概率',
     langLabel:'语言', parentA:'亲本 A', parentB:'亲本 B',
+    navStudio:'工作室', navGallery:'看看其他饲主的个体', navMail:'联系我们',
     parentRole:'选择遗传性状', helpBtn:'帮助',
     selectedLabel:'已选性状', selNone:'尚未选择',
     reset:'重置', calc:'计算形态',
@@ -558,6 +562,15 @@ function applyLang(){
   setH('note',t.note);
   set('lbl-terms',t.terms); set('lbl-privacy',t.privacy);
   set('footer',t.footer); set('lbl-langtitle',t.langLabel);
+  /* 헤더·하단의 고정 문구. HTML 에 한국어로 박혀 있어서 영어·일본어·중국어
+     페이지에 그대로 남아 있었습니다 — 계산 결과는 번역되는데 그 주변만
+     한국어라, 바깥에서 들어온 사람에게는 반쯤 깨진 화면으로 보입니다. */
+  [['.blink.home span', 'navStudio'],
+   ['.bottom-links .blink:not(#mailLink) span', 'navGallery'],
+   ['#mailLink span', 'navMail']].forEach(function (pair) {
+    const node = document.querySelector(pair[0]);
+    if (node && t[pair[1]]) node.textContent = t[pair[1]];
+  });
   setH('lbl-updh','<i class="bi bi-megaphone" aria-hidden="true"></i> '+escapeHtml(t.updH));
   setH('lbl-upddone','<i class="bi bi-check-circle-fill" aria-hidden="true"></i> '+escapeHtml(t.updDone));
   setH('lbl-updsoon','<i class="bi bi-clock" aria-hidden="true"></i> '+escapeHtml(t.updSoon));

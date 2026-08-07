@@ -8,6 +8,9 @@ const I18N = {
     title:'레오파드 게코 모프 계산기',
     sub:'부모의 유전 형질을 선택해 새끼 모프 확률을 계산하세요',
     langLabel:'언어',
+    navStudio:'스튜디오', navPremium:'프리미엄 코드', navUpdate:'업데이트 노트',
+    navSub:'구독 중', navTrial:'체험판 이용중',
+    navGallery:'다른 집사들의 개체 구경하기', navMail:'문의하기',
     parentA:'부모 A', parentB:'부모 B',
     parentRole:'유전 형질 선택', helpBtn:'선택 도움말', selectedLabel:'선택된 형질',
     reset:'초기화', calc:'모프 계산하기', saveBreeding:'브리딩 관리에 저장',
@@ -54,6 +57,9 @@ const I18N = {
     title:'Leopard Gecko Morph Calculator',
     sub:'Pick each parent’s genetics to see the probability of each offspring morph',
     langLabel:'Language',
+    navStudio:'Studio', navPremium:'Premium code', navUpdate:'Update notes',
+    navSub:'Subscribed', navTrial:'Trial active',
+    navGallery:'See other keepers’ animals', navMail:'Contact',
     parentA:'Parent A', parentB:'Parent B',
     parentRole:'Select genetic traits', helpBtn:'Selection help', selectedLabel:'Selected traits',
     reset:'Reset', calc:'Calculate Morphs', saveBreeding:'Save to Breeding',
@@ -100,6 +106,9 @@ const I18N = {
     title:'豹纹守宫基因计算器',
     sub:'选择父母双方的基因，即可计算后代各形态的概率',
     langLabel:'语言',
+    navStudio:'工作室', navPremium:'高级代码', navUpdate:'更新记录',
+    navSub:'订阅中', navTrial:'试用中',
+    navGallery:'看看其他饲主的个体', navMail:'联系我们',
     parentA:'亲本 A', parentB:'亲本 B',
     parentRole:'选择遗传性状', helpBtn:'选择帮助', selectedLabel:'已选性状',
     reset:'重置', calc:'计算形态', saveBreeding:'保存到繁育管理',
@@ -146,6 +155,9 @@ const I18N = {
     title:'ヒョウモントカゲモドキ モルフ計算機',
     sub:'両親の遺伝形質を選ぶと、仔のモルフ確率を計算します',
     langLabel:'言語',
+    navStudio:'スタジオ', navPremium:'プレミアムコード', navUpdate:'更新履歴',
+    navSub:'購読中', navTrial:'体験版利用中',
+    navGallery:'ほかの飼い主の個体を見る', navMail:'お問い合わせ',
     parentA:'親 A', parentB:'親 B',
     parentRole:'遺伝形質を選択', helpBtn:'選択ヘルプ', selectedLabel:'選択した形質',
     reset:'リセット', calc:'モルフを計算', saveBreeding:'ブリーディング管理に保存',
@@ -468,6 +480,26 @@ function applyLang(){
   setUpd('updSoon',(t.updSoonList||[]).map(x=>'<li>'+x+'</li>').join(''));
   document.getElementById('lbl-langtitle').textContent=t.langLabel;
   document.querySelectorAll('#langMenu button').forEach(b=>b.classList.toggle('on', b.dataset.lang===LANG));
+  /* 헤더·하단의 고정 문구. HTML 에 한국어로 박혀 있어서 영어·일본어·중국어
+     페이지에 그대로 남아 있었습니다 — 계산 결과는 번역되는데 그 주변만
+     한국어라, 바깥에서 들어온 사람에게는 반쯤 깨진 화면으로 보입니다. */
+  [['.blink.home span', 'navStudio'],
+   ['.topnav .update-btn span', 'navUpdate'],
+   ['.bottom-links .blink:not(#mailLink) span', 'navGallery'],
+   ['#mailLink span', 'navMail']].forEach(function (pair) {
+    const node = document.querySelector(pair[0]);
+    if (node && t[pair[1]]) node.textContent = t[pair[1]];
+  });
+  /* 프리미엄 버튼은 상태에 따라 글자가 바뀝니다(gecko-app.js). 아직 상태를
+     모르는 동안만 이 이름을 씁니다 — 안 그러면 화면이 뜨자마자 한국어가
+     한 번 스쳤다가 바뀝니다. */
+  /* gecko-app.js 가 프리미엄 버튼 글자를 상태에 따라 다시 씁니다. 그쪽에서도
+     같은 사전을 쓸 수 있게 내줍니다 — 문구를 두 벌 두면 한쪽만 번역됩니다. */
+  window.__navText = t;
+
+  const premLabel = document.querySelector('#premBtn span');
+  if (premLabel && !window.__isPrem && t.navPremium) premLabel.textContent = t.navPremium;
+
   const pro=document.getElementById('proBtn');
   if(pro){
     pro.href='/care/breeding.html?species=gecko&v=20260803m'+(LANG==='ko'?'':'&lang='+encodeURIComponent(LANG));

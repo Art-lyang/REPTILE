@@ -128,8 +128,8 @@
     "sha256": "05048f874312c04d"
   },
   "ballpython/ball-ui.js": {
-    "version": "20260806b",
-    "sha256": "64cba49d557dacdc"
+    "version": "20260809a",
+    "sha256": "cd25b091cc36ba58"
   },
   "ballpython/ball.css": {
     "version": "07302330",
@@ -412,8 +412,8 @@
     "sha256": "e567e48597443523"
   },
   "crested/crested-ui.js": {
-    "version": "20260806b",
-    "sha256": "300af8f8243ac166"
+    "version": "20260809a",
+    "sha256": "2d4d08289ce64fa2"
   },
   "crested/crested.css": {
     "version": "07302330",
@@ -432,8 +432,8 @@
     "sha256": "9fdc60b663bce93c"
   },
   "fattail/fattail-ui.js": {
-    "version": "20260806b",
-    "sha256": "a59663832c5b6130"
+    "version": "20260809a",
+    "sha256": "09950e4f2c5ec6df"
   },
   "fattail/fattail.css": {
     "version": "07302330",
@@ -448,8 +448,8 @@
     "sha256": "9c2262f690a41f45"
   },
   "gecko/gecko-app.js": {
-    "version": "20260808a",
-    "sha256": "7be404a09ce933e4"
+    "version": "20260809a",
+    "sha256": "8e403c033bc22f3c"
   },
   "gecko/gecko-boot.js": {
     "version": "014345",
@@ -468,8 +468,8 @@
     "sha256": "2d3246913ce9b645"
   },
   "gecko/gecko-ui.js": {
-    "version": "20260806b",
-    "sha256": "75dafd436a98209f"
+    "version": "20260809a",
+    "sha256": "12620b1ea6533170"
   },
   "gecko/gecko.css": {
     "version": "20260731f",

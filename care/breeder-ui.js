@@ -53,9 +53,9 @@
   function render() {
     document.title = profile.breeder + ' · ' + I.t('breederProfile');
     document.getElementById('body').innerHTML = '<section class="pad breeder-hero">'
-      + '<div class="breeder-mark' + (badge ? ' has-logo' : '') + '">'
-      + (badge && badge.logo_url
-          ? '<img src="' + esc(badge.logo_url) + '" alt="">'
+      + '<div class="breeder-mark' + (badge && badge.image ? ' has-logo' : '') + '">'
+      + (badge && badge.image
+          ? '<img src="' + esc(badge.image) + '" alt="">'
           : icon('bi-person-heart')) + '</div><div>'
       + '<div class="breeder-eyebrow">' + esc(I.t('breederProfile')) + '</div>'
       /* 이름을 누르면 변경 이력이 열립니다. 분양받는 쪽이 '이 사람이 이름을
@@ -63,7 +63,9 @@
          불러옵니다 — 대부분은 열어 보지 않습니다. */
       + '<h1 class="breeder-name"><button type="button" id="nickToggle"'
       + ' aria-expanded="false" aria-controls="nickHist">' + esc(profile.breeder)
-      + (badge ? '<i class="bi bi-patch-check-fill breeder-mark-check" title="'
+      /* 파란 표시는 승인된 곳에만. 이미지가 있다고 확인된 것이 되면
+         인증 표시가 아무 뜻도 없어집니다. */
+      + (badge && badge.verified ? '<i class="bi bi-patch-check-fill breeder-mark-check" title="'
           + esc(I.t('bizVerifiedTitle', { name: badge.biz_name })) + '"></i>' : '')
       + icon('bi-chevron-down') + '</button></h1>'
       + '<div class="breeder-nick" id="nickHist" hidden></div>'
@@ -137,7 +139,9 @@
        배지 없이 그립니다 — 배지 때문에 브리더 페이지가 안 뜨면 안 됩니다. */
     try {
       const b = await SB.rpc('public_breeder_badge', { p_token: token });
-      if (!b.error && b.data && b.data.biz_name) badge = b.data;
+      /* image 나 verified 중 하나만 있어도 그릴 것이 있습니다 — 인증 없이
+         프로필 이미지만 올린 브리더가 대부분일 것입니다(supabase_v62). */
+      if (!b.error && b.data && (b.data.image || b.data.verified)) badge = b.data;
     } catch (error) { /* 배지는 없어도 됩니다 */ }
     render();
   }());

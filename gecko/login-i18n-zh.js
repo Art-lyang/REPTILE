@@ -60,6 +60,8 @@
     joinBizNote: '注册会立即完成。商家认证需管理员核验后通过，在此之前也可与普通会员一样使用。',
     nameCharset: '姓名仅可使用文字、数字和 - _ . ，不能使用表情符号。',
     nickCharset: '昵称仅可使用文字、数字和 - _ . ，不能使用表情符号。',
+    avatarTitle: '繁育者头像', avatarPick: '选择图片', avatarClear: '删除',
+    avatarHint: '在公开个体页面中显示为繁育者名称左侧的小圆形图片。PNG、JPG、WebP，512KB 以内。通过商家认证后，将改为显示已审核的标志。',
     nicknameRequired: '昵称（必填 · 社区显示名称）',
     adminProfileNote: '管理员账户仅可修改昵称。公开个体后，此名称将作为繁育者名称显示。', nickNeeded: '请输入昵称。',
     nickChangesLeft: '昵称还可以修改 {n} 次。留空保存时将为您重新生成。',

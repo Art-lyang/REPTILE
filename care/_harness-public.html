@@ -57,16 +57,20 @@ window.supabase = { createClient(){ return {
   rpc(name){
     /* ?biz=none 이면 미인증, ?biz=nologo 면 인증만 된 상태를 봅니다. */
     if(name === 'public_breeder_badge'){
+      /* ?biz= 로 네 조합을 봅니다.
+         (없음) 인증+로고 · image  이미지만 · verified 인증만 · none 아무것도 */
       const biz=new URLSearchParams(location.search).get('biz')||'';
       if(biz==='none') return Promise.resolve({ data:{}, error:null });
       const logo='data:image/svg+xml;base64,'+btoa('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="12" fill="#0e7c7b"/><text x="32" y="41" font-size="26" fill="#fff" text-anchor="middle" font-family="sans-serif">R</text></svg>');
-      return Promise.resolve({ data:{ biz_name:'량스튜디오', logo_url: biz==='nologo'? null : logo }, error:null });
+      if(biz==='image')    return Promise.resolve({ data:{ verified:false, biz_name:null, image:logo }, error:null });
+      if(biz==='verified') return Promise.resolve({ data:{ verified:true, biz_name:'량스튜디오', image:null }, error:null });
+      return Promise.resolve({ data:{ verified:true, biz_name:'량스튜디오', image:logo, logo_url:logo }, error:null });
     }
     return Promise.resolve({ data:name === 'public_animal' ? publicAnimal : { breeder:'Ryang Gecko', total:breederAnimals.length, animals:breederAnimals }, error:null });
   },
   storage:{ from(){ return { createSignedUrls(){ return Promise.resolve({data:[],error:null}); } }; } }
 }; } };
 </script>
-<script src="pub-ui.js?v=20260808a"></script>
+<script src="pub-ui.js?v=20260808b"></script>
 </body>
 </html>

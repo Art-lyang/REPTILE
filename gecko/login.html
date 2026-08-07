@@ -14,10 +14,10 @@
 <script src="../assets/studio-config.js?v=20260731b"></script>
 <script src="/assets/imgtool.js?v=1"></script>
 <script src="gecko-core.js?v=20260804a"></script>
-<script src="login-i18n-ko.js?v=20260808c"></script>
-<script src="login-i18n-en.js?v=20260808c"></script>
-<script src="login-i18n-zh.js?v=20260808c"></script>
-<script src="login-i18n-ja.js?v=20260808c"></script>
+<script src="login-i18n-ko.js?v=20260808d"></script>
+<script src="login-i18n-en.js?v=20260808d"></script>
+<script src="login-i18n-zh.js?v=20260808d"></script>
+<script src="login-i18n-ja.js?v=20260808d"></script>
 <script src="login-i18n.js?v=20260808a"></script>
 <link rel="stylesheet" href="account-shell.css?v=20260803b">
 <script src="account-shell.js?v=20260808a"></script>
@@ -660,6 +660,53 @@ function bizBoxHTML(b){
     +'<div class="cNote">'+t('bizHint')+'</div>';
 }
 
+/* 브리더 프로필 이미지. 사업자 인증과는 별개입니다 — 이미지는 '나를 알아보게
+   하는 것' 이고, 인증 표시는 '우리가 확인했다는 것' 입니다. 이미지를 올렸다고
+   확인된 것이 되면 인증 표시가 아무 뜻도 없어집니다.
+   그래서 프리미엄도 인증도 묻지 않고 누구나 등록합니다(supabase_v62). */
+async function renderAvatarBox(profilePane){
+  const b=await bizStatus();
+  if(!b) return;                       // v60 이전이면 그리지 않습니다
+  const box=document.createElement('div');
+  box.className='consent'; box.style.marginTop='12px';
+  profilePane.appendChild(box);
+
+  function draw(url){
+    box.innerHTML='<div style="font-size:13px;font-weight:800;padding:2px 2px 8px">'+t('avatarTitle')+'</div>'
+      +'<div style="display:flex;align-items:center;gap:10px">'
+        +'<img id="avImg" alt="" style="width:46px;height:46px;border-radius:50%;object-fit:cover;'
+          +'background:var(--card);border:1px solid var(--hair);'
+          +'display:'+(url?'block':'none')+'" src="'+esc(url||'')+'">'
+        +'<button class="btn ghost" id="avPick" style="margin:0;flex:1">'+t('avatarPick')+'</button>'
+        +(url? '<button class="btn ghost" id="avClear" style="margin:0;flex:0 0 auto">'+t('avatarClear')+'</button>' : '')
+        +'<input type="file" id="avFile" accept="image/png,image/jpeg,image/webp" hidden>'
+      +'</div>'
+      +'<div class="cNote">'+t('avatarHint')+'</div>';
+    $('avPick').onclick=()=>$('avFile').click();
+    $('avFile').onchange=async()=>{
+      const file=$('avFile').files[0]; if(!file) return;
+      $('avPick').disabled=true;
+      try{
+        const next=await uploadLogo(file);          // 같은 버킷·같은 검사
+        const r=await SB.rpc('set_my_avatar',{p_url:next});
+        if(r.error) throw r.error;
+        draw(r.data && r.data.avatar_url);
+        say('o',t('saved'));
+      }catch(e){ say('e',bizErr(e)); }
+      const pick=$('avPick'); if(pick) pick.disabled=false;
+      const f=$('avFile'); if(f) f.value='';
+    };
+    const clear=$('avClear');
+    if(clear) clear.onclick=async()=>{
+      clear.disabled=true;
+      const r=await SB.rpc('set_my_avatar',{p_url:null});
+      if(r.error){ clear.disabled=false; return say('e',bizErr(r.error)); }
+      draw(null); say('o',t('saved'));
+    };
+  }
+  draw(b.avatar_url||null);
+}
+
 async function renderBusinessBox(profilePane){
   const first=await bizStatus();
   /* v60 적용 전이거나 프리미엄이 아니면 아예 안 그립니다. 안 되는 칸을 회색으로
@@ -761,6 +808,9 @@ async function renderConsentSettings(run){
   /* 사업자 인증은 기다리지 않고 붙입니다. 프리미엄이 아닌 대부분의 회원에게는
      아무것도 안 그리는데, 그 판정을 기다리느라 아래 동의 설정이 늦게 뜨면
      화면이 덜컥거립니다. */
+  /* 프로필 이미지는 누구나, 사업자 인증은 프리미엄만. 둘 다 기다리지 않고
+     붙입니다 — 판정을 기다리느라 아래 동의 설정이 늦게 뜨면 화면이 덜컥거립니다. */
+  renderAvatarBox(profilePane).catch(()=>{});
   renderBusinessBox(profilePane).catch(()=>{});
 
   const box=document.createElement('div');

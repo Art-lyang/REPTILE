@@ -45,10 +45,13 @@ window.supabase = { createClient(){ return {
   rpc(fn){
     if(fn==='public_breeder_badge'){
       /* ?biz=none 이면 미인증, ?biz=nologo 면 인증은 됐는데 로고가 없는 경우. */
+      /* ?biz= 로 네 조합을 봅니다.
+         (없음) 인증+로고 · image  이미지만 · verified 인증만 · none 아무것도 */
       const biz=new URLSearchParams(location.search).get('biz')||'';
-      if(biz==='none') return Promise.resolve({data:{},error:null});
-      return Promise.resolve({data:{biz_name:'량스튜디오',
-        logo_url: biz==='nologo'? null : okLogo},error:null});
+      if(biz==='none')     return Promise.resolve({data:{},error:null});
+      if(biz==='image')    return Promise.resolve({data:{verified:false,biz_name:null,image:okLogo},error:null});
+      if(biz==='verified') return Promise.resolve({data:{verified:true,biz_name:'량스튜디오',image:null},error:null});
+      return Promise.resolve({data:{verified:true,biz_name:'량스튜디오',image:okLogo,logo_url:okLogo},error:null});
     }
     if(fn==='public_nickname_history'){
       if(nickMode==='err') return Promise.resolve({data:null,error:{code:'PGRST202',message:'not found'}});
@@ -59,6 +62,6 @@ window.supabase = { createClient(){ return {
   storage:{from(){return{createSignedUrls(){return Promise.resolve({data:[],error:null});}};}}
 }; } };
 </script>
-<script src="breeder-ui.js?v=20260808a"></script>
+<script src="breeder-ui.js?v=20260808b"></script>
 </body>
 </html>

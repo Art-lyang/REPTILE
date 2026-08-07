@@ -16,12 +16,15 @@ const BREEDER = read('care/breeder-ui.js');
 test('Given a business number is stored, when it is published, then it never leaves the server', () => {
   /* 공개 함수가 돌려주는 것은 상호명과 로고뿐이어야 합니다. 등록번호가 한 번
      새어 나가면 주워 담을 수 없습니다. */
-  const fn = SQL.slice(SQL.indexOf('function public.public_breeder_badge'));
+  /* v62 가 이 함수를 다시 씁니다. 최신 정의를 봐야 합니다 — v60 것만 보면
+     이미 갈아엎은 함수를 검사하는 셈입니다. */
+  const V62 = read('supabase_v62.sql');
+  const fn = V62.slice(V62.indexOf('function public.public_breeder_badge'));
   const body = fn.slice(0, fn.indexOf('$$;'));
-  assert.match(body, /jsonb_build_object\('biz_name', b\.biz_name, 'logo_url', b\.logo_url\)/);
   assert.doesNotMatch(body, /biz_number/);
-  /* 승인된 경우에만, 그것도 공개·브리더표시를 켠 개체의 토큰으로만 열립니다. */
+  /* 인증 표시는 승인된 경우에만. 이미지는 있어도 표시는 안 붙습니다. */
   assert.match(body, /b\.status = 'approved'/);
+  assert.match(body, /'verified', exists \(select 1 from biz\)/);
   assert.match(body, /a\.share_token = p_token and a\.is_public = true and a\.public_breeder = true/);
 });
 
@@ -135,8 +138,10 @@ test('Given only the highest admin may decide, when the function runs, then it c
 
 test('Given the badge is shown, when the name is long, then the logo replaces the icon instead of stacking', () => {
   /* 이름 뒤에 로고를 덧붙이면 줄이 길어져 좁은 화면에서 브리더명이 잘립니다. */
-  assert.match(PUB, /badge && badge\.logo_url\s*\n?\s*\? '<img class="pbizlogo"[\s\S]{0,120}: icon\('bi-person-badge'\)/);
-  assert.match(BREEDER, /badge && badge\.logo_url\s*\n?\s*\? '<img src="[\s\S]{0,120}: icon\('bi-person-heart'\)/);
+  /* v62 부터는 그림 하나를 image 로 받습니다 — 승인된 곳은 로고, 아니면
+     본인이 올린 프로필 이미지입니다. 화면이 둘 중 무엇인지 고르지 않습니다. */
+  assert.match(PUB, /badge && badge\.image\s*\n?\s*\? '<img class="pbizlogo"[\s\S]{0,120}: icon\('bi-person-badge'\)/);
+  assert.match(BREEDER, /badge && badge\.image\s*\n?\s*\? '<img src="[\s\S]{0,120}: icon\('bi-person-heart'\)/);
   /* 어떤 비율로 올라올지 모르니 contain 이어야 합니다. cover 면 양끝이 잘려
      무슨 상표인지 알아볼 수 없습니다. */
   const css = read('care/public-profile.css');

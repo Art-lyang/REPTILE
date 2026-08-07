@@ -172,8 +172,8 @@
     "sha256": "e7579a6be1336ad6"
   },
   "care/breeder-ui.js": {
-    "version": "20260808a",
-    "sha256": "4d8c8b69d4d755c7"
+    "version": "20260808b",
+    "sha256": "4eb7cffe82ff9e4c"
   },
   "care/breeding-animal-panel.js": {
     "version": "20260807c",
@@ -372,8 +372,8 @@
     "sha256": "9fac99f7ccdb4649"
   },
   "care/pub-ui.js": {
-    "version": "20260808a",
-    "sha256": "4a2fe6bba56598e2"
+    "version": "20260808b",
+    "sha256": "fa6d23015212be94"
   },
   "care/public-animal-cards.js": {
     "version": "20260803a",
@@ -476,20 +476,20 @@
     "sha256": "5c4e6f3dd6012a05"
   },
   "gecko/login-i18n-en.js": {
-    "version": "20260808c",
-    "sha256": "9ffcb84d6537c274"
+    "version": "20260808d",
+    "sha256": "2a2c011d4b831ac9"
   },
   "gecko/login-i18n-ja.js": {
-    "version": "20260808c",
-    "sha256": "5c302932855a380f"
+    "version": "20260808d",
+    "sha256": "168baeddb46fa39d"
   },
   "gecko/login-i18n-ko.js": {
-    "version": "20260808c",
-    "sha256": "84463a5ab18e5ef6"
+    "version": "20260808d",
+    "sha256": "8e73e3e2939d9d67"
   },
   "gecko/login-i18n-zh.js": {
-    "version": "20260808c",
-    "sha256": "a6dfae3d0aa4327e"
+    "version": "20260808d",
+    "sha256": "95481e4b7630d268"
   },
   "gecko/login-i18n.js": {
     "version": "20260808a",

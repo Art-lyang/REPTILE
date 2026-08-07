@@ -61,6 +61,8 @@
     joinBizNote: 'Your account is created right away. Business verification is approved after an admin checks it, and until then you can use everything a personal account can.',
     nameCharset: 'Names may use letters, digits, and - _ . only. Emoji are not allowed.',
     nickCharset: 'Nicknames may use letters, digits, and - _ . only. Emoji are not allowed.',
+    avatarTitle: 'Breeder profile image', avatarPick: 'Choose an image', avatarClear: 'Remove',
+    avatarHint: 'Shown as a small circle to the left of your breeder name on public animal pages. PNG, JPG, or WebP under 512KB. If your business is verified, the approved logo is shown instead.',
     nicknameRequired: 'Nickname (required · community display name)',
     adminProfileNote: 'Admin accounts can change the nickname only. If you publish an animal, this name appears as the breeder name.', nickNeeded: 'Please enter a nickname.',
     nickChangesLeft: 'You can change your nickname {n} more time(s). Save it blank and we will pick a new one for you.',

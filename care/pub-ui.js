@@ -101,15 +101,17 @@
     let h = '<div class="phead">' + photoStrip(a) + '</div>';
 
     h += '<div class="pad"><div class="ptitle">' + esc(a.name || I.t('unnamed')) + '</div>'
-      + (a.breeder ? '<a class="pbreeder' + (badge ? ' verified' : '') + '" href="'
+      + (a.breeder ? '<a class="pbreeder' + (badge && badge.verified ? ' verified' : '') + '" href="'
         + I.url('/care/breeder.html', { t: token }) + '">'
         /* 인증된 업체면 로고가 사람 아이콘 자리를 대신합니다. 로고를 이름 뒤에
            덧붙이면 줄이 길어져 좁은 화면에서 이름이 잘립니다. */
-        + (badge && badge.logo_url
-            ? '<img class="pbizlogo" src="' + esc(badge.logo_url) + '" alt="">'
+        + (badge && badge.image
+            ? '<img class="pbizlogo" src="' + esc(badge.image) + '" alt="">'
             : icon('bi-person-badge'))
         + esc(a.breeder)
-        + (badge ? '<i class="bi bi-patch-check-fill pbizmark" title="'
+        /* 파란 표시는 승인된 곳에만. 이미지가 있다고 확인된 것이 되면
+           인증 표시가 아무 뜻도 없어집니다. */
+        + (badge && badge.verified ? '<i class="bi bi-patch-check-fill pbizmark" title="'
             + esc(I.t('bizVerifiedTitle', { name: badge.biz_name })) + '"></i>' : '')
         + ' ' + icon('bi-chevron-right') + '</a>' : '')
       + '<div class="pfacts">' + facts.map(f =>
@@ -186,7 +188,9 @@
     if (data.breeder) {
       try {
         const b = await SB.rpc('public_breeder_badge', { p_token: t });
-        if (!b.error && b.data && b.data.biz_name) badge = b.data;
+        /* image 나 verified 중 하나만 있어도 그릴 것이 있습니다 — 인증 없이
+           프로필 이미지만 올린 브리더가 대부분일 것입니다(supabase_v62). */
+        if (!b.error && b.data && (b.data.image || b.data.verified)) badge = b.data;
       } catch (e) { /* 배지는 없어도 됩니다 */ }
       try {
         const r = await SB.rpc('public_breeder_profile', {

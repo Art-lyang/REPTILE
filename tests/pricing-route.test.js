@@ -15,7 +15,7 @@ function read(file) {
 
 test('Given a free member is at the animal limit, when they ask for more, then they see what premium adds', () => {
   const ui = read('care/care-ui.js');
-  assert.match(ui, /q\.premium \? ''\s*\n\s*: '<a class="mini" href="\/pricing\.html">/);
+  assert.match(ui, /q\.premium \? ''\s*\n\s*: '<a class="mini" href="' \+ esc\(I\.url\('\/pricing\.html'\)\)/);
   /* 유료 회원에게는 더 권할 것이 없습니다. */
   assert.match(ui, /q\.premium \? ''/);
 });
@@ -29,7 +29,7 @@ test('Given a free member opens breeding management, when the gate stops them, t
 
 test('Given the account page lists features, when a free member reads it, then breeding is visible but priced', () => {
   const login = read('gecko/login.html');
-  assert.match(login, /prem\.active\? esc\(LoginLocale\.url\('\/care\/breeding\.html[^)]*\)\) : '\/pricing\.html'/);
+  assert.match(login, /prem\.active\? LoginLocale\.url\('\/care\/breeding\.html[\s\S]{0,60}: LoginLocale\.url\('\/pricing\.html'\)/);
 });
 
 test('Given signups are closed, when the account page renders, then the care log is not advertised', () => {
@@ -54,11 +54,10 @@ test('Given pricing is the destination, when someone lands there, then they are 
   assert.match(pricing, /href="\/gecko\/login\.html"/);
 });
 
-test('Given pricing is Korean-only, when a link points at it, then no lang is appended', () => {
-  /* I18n.url() 은 lang 을 붙입니다. 한국어 전용 페이지에 ?lang=en 을 달아 봐야
-     영어가 나오지 않으니, 그 자리에는 붙이지 않습니다. */
+test('Given pricing now speaks four languages, when a link points at it, then the language travels', () => {
+  /* 처음에는 한국어 전용이라 lang 을 일부러 뺐습니다. 번역이 붙은 뒤로는
+     반대로, 안 붙이면 영어로 보던 사람이 한국어 요금표를 보게 됩니다. */
   ['care/care-ui.js', 'care/breeding-ui.js'].forEach(function (file) {
-    const source = read(file);
-    assert.doesNotMatch(source, /url\('\/pricing\.html'\)/, file);
+    assert.match(read(file), /url\('\/pricing\.html'\)/, file);
   });
 });

@@ -248,8 +248,8 @@
     "sha256": "d0d2d303499a5f7b"
   },
   "care/breeding-ui.js": {
-    "version": "20260808a",
-    "sha256": "9000d9c5e8d88c2f"
+    "version": "20260808b",
+    "sha256": "06a0add632710ebe"
   },
   "care/breeding-workspace.css": {
     "version": "20260731h",
@@ -340,8 +340,8 @@
     "sha256": "e6e6ff62a4c7bb96"
   },
   "care/care-ui.js": {
-    "version": "20260808a",
-    "sha256": "f252fc163f30afd6"
+    "version": "20260808b",
+    "sha256": "752b8007181ce28c"
   },
   "care/care.css": {
     "version": "20260807c",
@@ -498,5 +498,9 @@
   "home-redesign.js": {
     "version": "20260728b",
     "sha256": "3d75ede255dd9811"
+  },
+  "pricing-i18n.js": {
+    "version": "20260808a",
+    "sha256": "fead8304cee404ed"
   }
 }

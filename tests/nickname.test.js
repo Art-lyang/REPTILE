@@ -190,7 +190,9 @@ test('Given an admin account, when they open their account page, then they can c
   /* 관리자 칸은 set_my_nickname 만 씁니다. save_consent 를 거치면 동의 기록이
      같이 건드려집니다. */
   const branch = LOGIN.slice(LOGIN.indexOf('async function renderAdminProfile'));
-  const body = branch.slice(0, branch.indexOf('\n}\n'));
+  /* 줄바꿈 글자로 함수 끝을 찾으면 파일이 CRLF 인 환경에서 못 찾습니다.
+     그러면 slice 가 파일 전체를 잡아, 엉뚱한 곳의 saveConsent 를 위반으로 셉니다. */
+  const body = branch.slice(0, branch.search(/\r?\n\}\r?\n/));
   assert.doesNotMatch(body, /saveConsent/);
 });
 

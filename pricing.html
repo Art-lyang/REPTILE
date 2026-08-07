@@ -17,7 +17,14 @@
 <meta property="og:locale" content="ko_KR">
 <!-- 요금이 아직 정해지지 않아 Offer 는 넣지 않습니다. 값 없이 넣으면
      검색엔진에 잘못된 가격이 잡힙니다. 결제를 열 때 함께 추가하세요. -->
+<script src="/pricing-i18n.js?v=20260808a"></script>
 <style>
+  /* 언어 선택기. 다른 화면과 같은 자리(오른쪽 위)에 둡니다. */
+  .langpick{position:absolute;right:14px;top:16px;display:inline-flex;align-items:center;gap:5px;
+    min-height:34px;padding:0 10px;border:1px solid var(--hair);border-radius:11px;
+    background:var(--card);color:var(--ink);font-size:12px;font-weight:700;box-shadow:var(--shadow)}
+  .langpick:focus-within{outline:2px solid var(--teal);outline-offset:2px}
+  .langpick select{border:0;background:transparent;color:inherit;font:inherit;cursor:pointer}
   :root{ --bg:#EDEAE1; --card:#FDFCF9; --card2:#F4F1E9; --ink:#26221D; --ink2:#8A8375;
     --hair:rgba(38,34,29,.1); --teal:#0E7C7B; --gold:#B8863B;
     --shadow:0 1px 2px rgba(38,34,29,.05),0 8px 24px rgba(38,34,29,.06); }
@@ -85,14 +92,28 @@
   .faq p{margin:0 0 13px;font-size:13px;color:var(--ink2)}
   .foot{margin-top:26px;text-align:center;font-size:12.5px;color:var(--ink2)}
   .foot a{color:var(--teal);text-decoration:none}
+  /* 좁은 화면에서는 언어 선택기가 가운데 정렬된 제목과 겹칩니다. 뒤로가기와
+     같은 줄에 두고 제목을 그 아래로 내립니다.
+     이 규칙은 style 블록 끝에 있어야 합니다 — 위쪽에 두면 뒤에 오는
+     header{padding:...} 이 같은 특이도로 이깁니다. */
+  @media (max-width:430px){
+    header{padding-top:58px}
+    .back{top:18px}
+    .langpick{top:14px}
+  }
 </style>
 </head>
 <body>
 
 <header>
-  <a class="back" href="/">← 스튜디오</a>
-  <h1>요금 안내</h1>
-  <div class="sub">크리처 케어로그를 무료로 어디까지 쓸 수 있고,<br>프리미엄에서 무엇이 열리는지 정리했습니다.</div>
+  <a class="back" href="/" data-pt="back">← 스튜디오</a>
+  <label class="langpick"><span aria-hidden="true">🌐</span>
+    <select id="langPick" aria-label="Language">
+      <option value="ko">한국어</option><option value="en">English</option>
+      <option value="ja">日本語</option><option value="zh">中文</option>
+    </select></label>
+  <h1 data-pt="h1">요금 안내</h1>
+  <div class="sub" data-ph="sub">크리처 케어로그를 무료로 어디까지 쓸 수 있고,<br>프리미엄에서 무엇이 열리는지 정리했습니다.</div>
 </header>
 
 <div class="wrap">
@@ -100,66 +121,66 @@
   <!-- 결제를 아직 열지 않았습니다. 이걸 맨 위에 두지 않으면 아래 표를 보고
        결제하러 갔다가 막힙니다. 지금 실제로 되는 길(코드 입력)을 함께 적습니다. -->
   <div class="notice">
-    <b>프리미엄 결제는 아직 준비 중입니다.</b>
-    <p>가맹점 계약과 심사가 끝난 뒤에 열립니다. 그때까지는 발급받은
+    <b data-pt="noticeTitle">프리미엄 결제는 아직 준비 중입니다.</b>
+    <p data-ph="noticeBody">가맹점 계약과 심사가 끝난 뒤에 열립니다. 그때까지는 발급받은
        <b>프리미엄 코드</b>로 이용하실 수 있고, 요금은 확정되는 대로 이 페이지에 올립니다.</p>
   </div>
 
   <div class="plans">
     <div class="plan">
-      <div class="name">무료 <span class="tag">지금 이용 가능</span></div>
-      <div class="price">0원</div>
-      <div class="who">반려 개체를 기록하는 분께 필요한 만큼</div>
+      <div class="name"><span data-pt="freeName">무료</span> <span class="tag" data-pt="freeTag">지금 이용 가능</span></div>
+      <div class="price" data-pt="freePrice">0원</div>
+      <div class="who" data-pt="freeWho">반려 개체를 기록하는 분께 필요한 만큼</div>
       <ul>
-        <li>개체 <b>10마리</b>까지 등록</li>
-        <li>급여·청소·영양제 주기 관리</li>
-        <li>체중 기록과 그래프</li>
-        <li>건강 관찰 기록</li>
-        <li>케어 신호 알림</li>
-        <li>모프 계산기 4종 전부</li>
-        <li class="no">브리딩 관리</li>
-        <li class="no">공개 브리더 프로필</li>
+        <li data-ph="f1">개체 <b>10마리</b>까지 등록</li>
+        <li data-pt="f2">급여·청소·영양제 주기 관리</li>
+        <li data-pt="f3">체중 기록과 그래프</li>
+        <li data-pt="f4">건강 관찰 기록</li>
+        <li data-pt="f5">케어 신호 알림</li>
+        <li data-pt="f6">모프 계산기 4종 전부</li>
+        <li class="no" data-pt="fNo1">브리딩 관리</li>
+        <li class="no" data-pt="fNo2">공개 브리더 프로필</li>
       </ul>
-      <a class="cta ghost" href="/care/">케어로그 시작하기</a>
+      <a class="cta ghost" href="/care/" data-pt="freeCta">케어로그 시작하기</a>
     </div>
 
     <div class="plan pro">
-      <div class="name">프리미엄 <span class="tag">준비 중</span></div>
-      <div class="price">준비 중<small>요금 확정 후 공개</small></div>
-      <div class="who">여러 개체를 번식까지 관리하는 분께</div>
+      <div class="name"><span data-pt="proName">프리미엄</span> <span class="tag" data-pt="proTag">준비 중</span></div>
+      <div class="price"><span data-pt="proPrice">준비 중</span><small data-pt="proPriceSub">요금 확정 후 공개</small></div>
+      <div class="who" data-pt="proWho">여러 개체를 번식까지 관리하는 분께</div>
       <ul>
-        <li>개체 <b>50마리</b>까지 등록</li>
-        <li>무료의 모든 기능</li>
-        <li><b>브리딩 관리</b> — 페어링·클러치·해칭</li>
-        <li><b>라인브리딩 플래너</b></li>
-        <li><b>공개 브리더 프로필</b></li>
-        <li><b>개체 카드 내보내기</b> — 분양용</li>
-        <li>캘린더 내보내기</li>
+        <li data-ph="p1">개체 <b>50마리</b>까지 등록</li>
+        <li data-pt="p2">무료의 모든 기능</li>
+        <li data-ph="p3"><b>브리딩 관리</b> — 페어링·클러치·해칭</li>
+        <li data-ph="p4"><b>라인브리딩 플래너</b></li>
+        <li data-ph="p5"><b>공개 브리더 프로필</b></li>
+        <li data-ph="p6"><b>개체 카드 내보내기</b> — 분양용</li>
+        <li data-pt="p7">캘린더 내보내기</li>
       </ul>
-      <a class="cta main" href="/gecko/login.html">프리미엄 코드 입력</a>
+      <a class="cta main" href="/gecko/login.html" data-pt="proCta">프리미엄 코드 입력</a>
     </div>
   </div>
 
-  <h2>기능 비교</h2>
+  <h2 data-pt="cmpTitle">기능 비교</h2>
   <div class="tablewrap">
     <table>
       <thead>
-        <tr><th>기능</th><th class="mark">무료</th><th class="mark">프리미엄</th></tr>
+        <tr><th data-pt="thFeature">기능</th><th class="mark" data-pt="thFree">무료</th><th class="mark" data-pt="thPro">프리미엄</th></tr>
       </thead>
       <tbody>
-        <tr><th>개체 등록</th><td class="mark">10마리</td><td class="mark">50마리</td></tr>
-        <tr><th>급여·청소·영양제 주기</th><td class="mark yes">✓</td><td class="mark yes">✓</td></tr>
-        <tr><th>체중 기록·그래프</th><td class="mark yes">✓</td><td class="mark yes">✓</td></tr>
-        <tr><th>건강 관찰 기록</th><td class="mark yes">✓</td><td class="mark yes">✓</td></tr>
-        <tr><th>케어 신호 알림</th><td class="mark yes">✓</td><td class="mark yes">✓</td></tr>
-        <tr><th>사진 등록</th><td class="mark yes">✓</td><td class="mark yes">✓</td></tr>
-        <tr><th>모프 계산기 (레오·크레·펫테일·볼파이톤)</th><td class="mark yes">✓</td><td class="mark yes">✓</td></tr>
-        <tr><th>브리딩 관리 (페어링·클러치·해칭)</th><td class="mark no">—</td><td class="mark yes">✓</td></tr>
-        <tr><th>메이팅 그룹</th><td class="mark no">—</td><td class="mark yes">✓</td></tr>
-        <tr><th>라인브리딩 플래너</th><td class="mark no">—</td><td class="mark yes">✓</td></tr>
-        <tr><th>공개 브리더 프로필</th><td class="mark no">—</td><td class="mark yes">✓</td></tr>
-        <tr><th>개체 카드 내보내기</th><td class="mark no">—</td><td class="mark yes">✓</td></tr>
-        <tr><th>캘린더 내보내기</th><td class="mark no">—</td><td class="mark yes">✓</td></tr>
+        <tr><th data-pt="r1">개체 등록</th><td class="mark" data-pt="r1free">10마리</td><td class="mark" data-pt="r1pro">50마리</td></tr>
+        <tr><th data-pt="r2">급여·청소·영양제 주기</th><td class="mark yes">✓</td><td class="mark yes">✓</td></tr>
+        <tr><th data-pt="r3">체중 기록·그래프</th><td class="mark yes">✓</td><td class="mark yes">✓</td></tr>
+        <tr><th data-pt="r4">건강 관찰 기록</th><td class="mark yes">✓</td><td class="mark yes">✓</td></tr>
+        <tr><th data-pt="r5">케어 신호 알림</th><td class="mark yes">✓</td><td class="mark yes">✓</td></tr>
+        <tr><th data-pt="r6">사진 등록</th><td class="mark yes">✓</td><td class="mark yes">✓</td></tr>
+        <tr><th data-pt="r7">모프 계산기 (레오·크레·펫테일·볼파이톤)</th><td class="mark yes">✓</td><td class="mark yes">✓</td></tr>
+        <tr><th data-pt="r8">브리딩 관리 (페어링·클러치·해칭)</th><td class="mark no">—</td><td class="mark yes">✓</td></tr>
+        <tr><th data-pt="r9">메이팅 그룹</th><td class="mark no">—</td><td class="mark yes">✓</td></tr>
+        <tr><th data-pt="r10">라인브리딩 플래너</th><td class="mark no">—</td><td class="mark yes">✓</td></tr>
+        <tr><th data-pt="r11">공개 브리더 프로필</th><td class="mark no">—</td><td class="mark yes">✓</td></tr>
+        <tr><th data-pt="r12">개체 카드 내보내기</th><td class="mark no">—</td><td class="mark yes">✓</td></tr>
+        <tr><th data-pt="r13">캘린더 내보내기</th><td class="mark no">—</td><td class="mark yes">✓</td></tr>
       </tbody>
     </table>
   </div>
@@ -167,42 +188,42 @@
   <!-- 대부분의 요금 페이지가 감추는 내용입니다. 먼저 적어 두는 편이 나중에
        "말이 다르다" 는 이야기를 듣는 것보다 낫습니다. -->
   <div class="em">
-    <p><b>결제를 멈추면 기록은 어떻게 되나요?</b></p>
-    <p>기록은 <b>지우지 않습니다.</b> 다만 무료 범위(10마리)를 넘는 개체는 잠깁니다.
+    <p data-ph="emQ"><b>결제를 멈추면 기록은 어떻게 되나요?</b></p>
+    <p data-ph="emA1">기록은 <b>지우지 않습니다.</b> 다만 무료 범위(10마리)를 넘는 개체는 잠깁니다.
        잠긴 개체는 <b>보기와 삭제만</b> 되고, 수정과 계획 지정은 막히며 알림도 멈춥니다.</p>
-    <p>어떤 10마리를 계속 쓸지는 <b>직접 고르실 수 있습니다.</b> 처음 등록한 순서가
+    <p data-ph="emA2">어떤 10마리를 계속 쓸지는 <b>직접 고르실 수 있습니다.</b> 처음 등록한 순서가
        기본이지만, 개체 목록에서 <b>활성으로</b> 를 눌러 바꾸면 됩니다.</p>
   </div>
 
-  <h2>자주 묻는 것</h2>
+  <h2 data-pt="faqTitle">자주 묻는 것</h2>
   <div class="faq">
     <details>
-      <summary>모프 계산기도 돈을 내야 하나요?</summary>
-      <p>아니요. 레오파드 게코·크레스티드 게코·펫테일 게코·볼파이톤 계산기는
+      <summary data-pt="q1">모프 계산기도 돈을 내야 하나요?</summary>
+      <p data-ph="a1">아니요. 레오파드 게코·크레스티드 게코·펫테일 게코·볼파이톤 계산기는
          로그인 없이 누구나 무료로 쓸 수 있고, 앞으로도 그럴 계획입니다.</p>
     </details>
     <details>
-      <summary>프리미엄 코드는 어떻게 받나요?</summary>
-      <p>지금은 테스트 기간이라 개별로 발급하고 있습니다.
+      <summary data-pt="q2">프리미엄 코드는 어떻게 받나요?</summary>
+      <p data-ph="a2">지금은 테스트 기간이라 개별로 발급하고 있습니다.
          <a href="mailto:kmc612000@gmail.com">문의</a>로 연락 주시면 안내드립니다.</p>
     </details>
     <details>
-      <summary>50마리보다 많이 키우는데요.</summary>
-      <p>우선 50마리로 두었습니다. 더 필요하신 분이 계시면 별도로 안내드릴 예정이니
+      <summary data-pt="q3">50마리보다 많이 키우는데요.</summary>
+      <p data-ph="a3">우선 50마리로 두었습니다. 더 필요하신 분이 계시면 별도로 안내드릴 예정이니
          <a href="mailto:kmc612000@gmail.com">문의</a>로 알려주세요.</p>
     </details>
     <details>
-      <summary>탈퇴하면 기록은 어떻게 되나요?</summary>
-      <p>탈퇴하시면 기록도 함께 지워집니다. 남은 이용 기간은 환불되지 않고
+      <summary data-pt="q4">탈퇴하면 기록은 어떻게 되나요?</summary>
+      <p data-ph="a4">탈퇴하시면 기록도 함께 지워집니다. 남은 이용 기간은 환불되지 않고
          사용한 코드는 다시 쓸 수 없으니, 잠시 쉬시는 경우에는 로그아웃을 권합니다.
          자세한 내용은 <a href="/terms.html#terms">이용약관</a>에 있습니다.</p>
     </details>
   </div>
 
   <div class="foot">
-    <a href="/terms.html#terms">이용약관</a> ·
-    <a href="/terms.html#privacy">개인정보처리방침</a> ·
-    <a href="mailto:kmc612000@gmail.com">문의하기</a>
+    <a href="/terms.html#terms" data-pt="footTerms">이용약관</a> ·
+    <a href="/terms.html#privacy" data-pt="footPrivacy">개인정보처리방침</a> ·
+    <a href="mailto:kmc612000@gmail.com" data-pt="footContact">문의하기</a>
   </div>
 
 </div>

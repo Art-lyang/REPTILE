@@ -172,9 +172,8 @@
     if (!A.user) { gate('bi-person-lock', I18n.t('loginTitle'), I18n.t('loginBody'), loginUrl(), I18n.t('loginAction')); return; }
     /* 무료 회원이 브리딩 관리를 눌렀을 때 닿는 자리입니다. 예전에는 로그인
        화면으로 보냈는데, 여기 온 사람은 이미 로그인한 상태라 눌러 봐야 자기
-       계정 화면만 나왔습니다. 무엇이 더 열리는지 알려면 요금 안내여야 합니다.
-       요금 안내는 한국어 전용이라 lang 을 붙이지 않습니다. */
-    if (!A.premium.active) { gate('bi-gem', I18n.t('premiumTitle'), I18n.t('premiumBody'), '/pricing.html', I18n.t('premiumAction')); return; }
+       계정 화면만 나왔습니다. 무엇이 더 열리는지 알려면 요금 안내여야 합니다. */
+    if (!A.premium.active) { gate('bi-gem', I18n.t('premiumTitle'), I18n.t('premiumBody'), I18n.url('/pricing.html'), I18n.t('premiumAction')); return; }
     try {
       // The adapter inspects the selected core, and the planner inspects the adapter.
       await loadScript(CORES[S.species].src + '?v=13');

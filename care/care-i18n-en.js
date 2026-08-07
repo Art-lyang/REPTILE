@@ -58,6 +58,8 @@
     freeQuotaOver: '{count} animal(s) are locked beyond the free limit.',
     freeSlotLocked: 'Locked', freeSlotLockedWhy: 'Beyond the free limit — view and delete only. Plan reminders are paused.',
     freeSlotActivate: 'Make active', freeSlotActivated: 'Moved into an active slot.',
+    quotaFull: 'All slots are used. Delete an animal to register a new one.',
+    quotaPremiumHint: 'You can register up to {limit} animals.',
     noPlanList: 'No plans yet.', noPlanListHint: 'Select <b>Species defaults</b> to add common routines at once.',
     wholeHome: '🏠 Shared care', disabled: 'Off', allDay: 'All day', type: 'Type', target: 'Animal',
     planNamePlaceholder: 'e.g. Calcium dusting', planDetail: 'Notes (food or supplement name)', linkedFeed: 'Linked food (optional)',

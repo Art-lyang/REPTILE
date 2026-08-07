@@ -163,18 +163,31 @@
     const q = quota();
     let h = '';
 
-    /* 무료 사용자에게 남은 자리를 먼저 알려 줍니다. 다 채우고 나서 "안 됩니다"
-       라고 하는 것보다, 채워 가는 동안 보이는 편이 낫습니다. */
-    if (q.known && !q.premium) {
-      const over = overLimit();
-      h += '<div class="quotabar' + (over ? ' over' : '') + '">'
+    /* 남은 자리를 미리 알려 줍니다. 다 채우고 나서 "안 됩니다" 라고 하는 것보다
+       채워 가는 동안 보이는 편이 낫습니다.
+
+       무료는 늘 보여 줍니다 — 10마리는 금방 차고, 결제를 권할 자리이기도 합니다.
+       유료(50마리)는 8할을 넘겼을 때만 띄웁니다. 3/50 을 매번 보여 주면
+       알려 주는 게 아니라 거슬리기만 합니다. */
+    const over = overLimit();
+    const nearFull = q.limit > 0 && S.animals.length >= Math.ceil(q.limit * 0.8);
+    if (q.known && (!q.premium || nearFull)) {
+      const full = q.limit > 0 && S.animals.length >= q.limit;
+      h += '<div class="quotabar' + (over || full ? ' over' : '') + '">'
         + '<div><b>' + esc(I.t('freeQuotaTitle', {
             used: I.formatNumber(S.animals.length), limit: I.formatNumber(q.limit),
           })) + '</b>'
-        + '<div class="quotahint">' + esc(over ? I.t('freeQuotaOver', { count: I.formatNumber(over) })
-                                              : I.t('freeQuotaHint')) + '</div></div>'
-        + '<a class="mini" href="' + esc(I.url('/gecko/login.html')) + '">'
-        + icon('bi-gem') + esc(I.t('premiumAction')) + '</a></div>';
+        + '<div class="quotahint">' + esc(
+            over ? I.t('freeQuotaOver', { count: I.formatNumber(over) })
+              : full ? I.t('quotaFull', { limit: I.formatNumber(q.limit) })
+                : q.premium ? I.t('quotaPremiumHint', { limit: I.formatNumber(q.limit) })
+                  : I.t('freeQuotaHint', { limit: I.formatNumber(q.limit) })
+          ) + '</div></div>'
+        /* 유료는 더 권할 것이 없으니 결제 안내를 붙이지 않습니다. */
+        + (q.premium ? ''
+          : '<a class="mini" href="' + esc(I.url('/gecko/login.html')) + '">'
+            + icon('bi-gem') + esc(I.t('premiumAction')) + '</a>')
+        + '</div>';
     }
 
     h += '<button class="btn wide" data-newanimal="1" style="margin-bottom:14px">'

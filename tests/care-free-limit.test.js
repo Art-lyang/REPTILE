@@ -87,8 +87,33 @@ test('Given a downgraded keeper, when slots are decided, then pinned animals win
   assert.doesNotMatch(sql, /before delete on public\.animals/i);
 });
 
+test('Given a paid keeper, when the cap is written, then it blocks new animals without locking existing ones', () => {
+  const sql = read('supabase_v55.sql');
+
+  assert.match(sql, /create or replace function public\.care_premium_limit/);
+  assert.match(sql, /select 50/);
+  assert.match(sql, /CARE_PREMIUM_LIMIT_REACHED/);
+
+  /* 유료는 고칠 때 활성 여부를 따지지 않습니다. 나중에 상한을 낮췄다고
+     이미 있는 기록이 잠기면 안 됩니다. */
+  assert.match(sql, /if premium then return; end if;/);
+  /* 그래서 활성 판정은 건드리지 않습니다 — v54 의 것이 그대로 쓰입니다. */
+  assert.doesNotMatch(sql, /create or replace function private\.care_active_animal_ids/);
+});
+
+test('Given a quota, when the screen decides whether to nag, then a roomy paid account stays quiet', () => {
+  const ui = read('care/care-ui.js');
+
+  /* 3/50 을 매번 띄우면 알려 주는 게 아니라 거슬리기만 합니다.
+     유료는 8할을 넘겼을 때만 보여 줍니다. */
+  assert.match(ui, /Math\.ceil\(q\.limit \* 0\.8\)/);
+  assert.match(ui, /q\.known && \(!q\.premium \|\| nearFull\)/);
+  /* 유료에게는 결제 안내를 붙이지 않습니다. */
+  assert.match(ui, /q\.premium \? ''/);
+});
+
 test('Given the free tier copy, when a language is missing a key, then the shared dictionaries disagree', () => {
-  const keys = ['freeQuotaTitle', 'freeQuotaHint', 'freeQuotaOver',
+  const keys = ['freeQuotaTitle', 'freeQuotaHint', 'freeQuotaOver', 'quotaFull', 'quotaPremiumHint',
     'freeSlotLocked', 'freeSlotLockedWhy', 'freeSlotActivate', 'freeSlotActivated'];
   ['ko', 'en', 'ja', 'zh'].forEach(function (lang) {
     const source = read('care/care-i18n-' + lang + '.js');

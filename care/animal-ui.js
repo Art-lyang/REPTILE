@@ -307,7 +307,7 @@
     const rng = speciesOf(S.animal).weightRange;
     h += '<div class="row2" style="margin-top:10px">'
       + '<input class="in" id="w_g" type="number" step="0.1" placeholder="' + esc(I.t('weightPlaceholder')) + '" inputmode="decimal">'
-      + '<input class="in" id="w_d" type="date" value="' + C.today() + '" aria-label="' + esc(I.t('measuredDate')) + '">'
+      + DateField.html({ id: 'w_d', value: C.today(), max: C.today(), aria: I.t('measuredDate') })
       + '</div>'
       + '<div class="hint">' + esc(I.t('speciesWeightHint', { species: I.speciesName(S.animal.species), min: rng[0], max: rng[1] })) + '</div>'
       + '<div class="err" id="w_err"></div>'

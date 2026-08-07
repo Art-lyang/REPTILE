@@ -9,8 +9,12 @@ const read = file => fs.readFileSync(path.join(root, file), 'utf8');
 
 function loadDialog() {
   const window = {};
-  const context = { window, document: {}, Date };
+  const context = { window, document: {}, Date, Math, Number, String, Object, Array, JSON };
   vm.createContext(context);
+  /* 날짜 칸은 공용 부품이 그립니다. 가짜로 대신하면 실제로 나가는 마크업과
+     달라져서, 이 시험이 통과해도 화면이 깨질 수 있습니다. 진짜를 같이 올립니다. */
+  vm.runInContext(read('care/date-field.js'), context, { filename: 'care/date-field.js' });
+  context.DateField = window.DateField;
   vm.runInContext(read('care/animal-feeding-dialog.js'), context, {
     filename: 'care/animal-feeding-dialog.js',
   });

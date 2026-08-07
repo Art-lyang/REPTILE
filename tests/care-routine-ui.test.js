@@ -13,7 +13,13 @@ function source(relative) {
 
 function loadUi(relative, exportName) {
   const window = {};
-  vm.runInNewContext(source(relative), { window }, { filename: relative });
+  const context = { window, Date, Math, Number, String, Object, Array, JSON };
+  vm.createContext(context);
+  /* 날짜 칸은 공용 부품이 그립니다(care/date-field.js). 가짜로 대신하면 실제로
+     나가는 마크업과 달라져서, 이 시험이 통과해도 화면이 깨질 수 있습니다. */
+  vm.runInContext(source('care/date-field.js'), context, { filename: 'care/date-field.js' });
+  context.DateField = window.DateField;
+  vm.runInContext(source(relative), context, { filename: relative });
   return window[exportName] || {};
 }
 

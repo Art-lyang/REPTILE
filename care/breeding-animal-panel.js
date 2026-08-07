@@ -98,7 +98,7 @@
         + '<select class="in" id="f_stage">' + stageOptions + '</select></div></div>'
         + '<div class="hint">' + esc(I18n.t('lifeStageHint')) + '</div>'
         + '<div class="lbl2"><label for="f_hatch">' + esc(I18n.t('animalHatchLabel')) + '</label></div>'
-        + '<input class="in" id="f_hatch" type="date" max="' + C.today() + '" value="' + esc(a.hatch_date || '') + '">'
+        + DateField.html({ id: 'f_hatch', value: a.hatch_date || '', max: C.today() })
         + '<div class="lbl2">' + esc(I18n.t('animalVisualLabel')) + '</div><div class="tokgrid">'
         + B.visualOptions().map(t => '<label class="tokchk"><input type="checkbox" class="v" value="'
             + esc(t[0]) + '"' + (sv.has(t[0]) ? ' checked' : '') + '>' + esc(t[1]) + '</label>').join('') + '</div>'

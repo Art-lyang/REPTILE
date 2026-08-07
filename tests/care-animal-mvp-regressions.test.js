@@ -152,8 +152,12 @@ test('Given an animal registration form, when hatch date is chosen, then future 
   const ui = read('care/care-animal-form.js');
   const sql = read('supabase_v34.sql');
 
-  assert.match(ui, /id="f_hatch"[^>]+max="[^"+]*'\s*\+\s*C\.today\(\)/,
-    'the native date picker must stop at today');
+  /* 예전에는 input[type=date] 의 max 였습니다. 기기마다 다르게 그려지는 문제로
+     년/월/일 선택기(care/date-field.js)로 바뀌면서, 오늘 이후를 막는 일은
+     DateField 의 max 가 맡습니다 — 고를 수 있는 해가 오늘까지로 끊기고,
+     그래도 넘는 값이 들어오면 오늘로 당깁니다. */
+  assert.match(ui, /DateField\.html\(\{[^}]*id:\s*'f_hatch'[^}]*max:\s*C\.today\(\)/,
+    'the date picker must stop at today');
   assert.match(ui, /futureHatchDate/,
     'save must reject a manually forged future date');
   assert.match(sql, /create or replace function public\.care_animal_hatch_date_guard\(\)/i);

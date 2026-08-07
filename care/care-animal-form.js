@@ -61,8 +61,8 @@
         + '<select class="in" id="f_stage">' + stageOptions(animal.life_stage) + '</select></div></div>'
         + '<div class="hint">' + esc(I.t('lifeStageHint')) + '</div>'
         + '<div class="lbl2"><label for="f_hatch">' + esc(I.t('hatchAdoptionDate')) + '</label></div>'
-        + '<input class="in" id="f_hatch" type="date" max="' + C.today() + '" value="'
-        + esc(animal.hatch_date || '') + '">' + weightFields(animal, isNew) + Photos.editorHtml(animal, A)
+        + DateField.html({ id: 'f_hatch', value: animal.hatch_date || '', max: C.today() })
+        + weightFields(animal, isNew) + Photos.editorHtml(animal, A)
         + '<div class="lbl2"><label for="f_clutch">' + esc(I.t('clutchLabel')) + '</label></div>'
         + '<input class="in" id="f_clutch" maxlength="80" value="' + esc(animal.clutch_label || '')
         + '" placeholder="' + esc(I.t('clutchPlaceholder')) + '"><div class="lbl2"><label for="f_note">'

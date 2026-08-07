@@ -119,8 +119,8 @@
       + repeatModes(mode, I) + intervalPanel(plan, mode, I) + weekdaysPanel(plan, mode, I)
       + targetPanel(plan, mode, I, esc)
       + '<div class="row2"><div><div class="lbl2">' + I.t('startDate')
-      + '</div><input class="in" id="p_start" type="date" value="'
-      + esc(plan.start_date || C.today()) + '"></div><div><div class="lbl2">' + I.t('reminderTime')
+      + '</div>' + DateField.html({ id: 'p_start', value: plan.start_date || C.today() })
+      + '</div><div><div class="lbl2">' + I.t('reminderTime')
       + '</div><input class="in" id="p_time" type="time" value="'
       + esc(plan.time_of_day ? String(plan.time_of_day).slice(0, 5) : '') + '"></div></div>'
       + '<div class="hint">' + I.t('reminderHint') + '</div><div class="lbl2">' + I.t('use')

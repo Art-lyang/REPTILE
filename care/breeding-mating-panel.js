@@ -106,9 +106,12 @@
           + '><option value="">' + esc(I18n.t('noSelection')) + '</option>' + maleOptions + '</select>')
         + '<fieldset class="mating-fieldset"><legend>' + esc(I18n.t('matingGroupFemalesLabel')) + '</legend><div class="mating-checks">'
         + females + '</div><p class="hint">' + esc(I18n.t('matingGroupFemaleHint')) + '</p></fieldset>'
-        + '<div class="row2">' + field('g_start', 'matingGroupStartLabel', '<input class="in" id="g_start" type="date" value="'
-          + esc(group.start_date || C.today()) + '">') + field('g_end', 'matingGroupEndLabel', '<input class="in" id="g_end" type="date" value="'
-          + esc(group.end_date || '') + '">') + '</div>'
+        + '<div class="row2">'
+        + field('g_start', 'matingGroupStartLabel',
+                DateField.html({ id: 'g_start', value: group.start_date || C.today() }))
+        + field('g_end', 'matingGroupEndLabel',
+                DateField.html({ id: 'g_end', value: group.end_date || '' }))
+        + '</div>'
         + '<div class="row2">' + field('g_status', 'matingGroupStatusLabel', '<select class="in" id="g_status">'
           + STATUSES.map(status => '<option value="' + status + '"' + selected(group.status || 'active', status) + '>'
             + esc(I18n.t(STATUS_KEYS[status])) + '</option>').join('') + '</select>')
@@ -130,8 +133,8 @@
       return '<div class="pad mating-form"><div class="lbl">' + esc(I18n.t(event.id ? 'matingEventEdit' : 'matingEventAdd'))
         + '</div><div class="note info">' + icon('bi-diagram-3') + '<span><b>' + esc(group ? group.name : '-')
         + '</b><br>' + esc(group ? nameById(group.male) : '-') + ' ♂</span></div>'
-        + field('e_date', 'matingEventDateLabel', '<input class="in" id="e_date" type="date" max="' + C.today()
-          + '" value="' + esc(event.occurred_on || C.today()) + '">')
+        + field('e_date', 'matingEventDateLabel',
+                DateField.html({ id: 'e_date', value: event.occurred_on || C.today(), max: C.today() }))
         + field('e_pair', 'matingEventFemaleLabel', '<select class="in" id="e_pair">'
           + members.map(member => '<option value="' + member.pairingId + '"' + selected(event.pairing_id, member.pairingId)
             + '>' + esc(member.femaleName || nameById(member.femaleId)) + '</option>').join('') + '</select>')

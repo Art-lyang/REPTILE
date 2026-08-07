@@ -64,7 +64,7 @@
       + '<input class="in" id="feedingEaten" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0.5">'
       + '<small>' + esc(i18n.t('feedingEatenHint')) + '</small></label>'
       + '<div class="feeding-meta-grid"><label><span>' + esc(i18n.t('feedingDate')) + '</span>'
-      + '<input class="in" id="feedingDate" type="date"></label><label><span>' + esc(i18n.t('optionalNote')) + '</span>'
+      + DateField.html({ id: 'feedingDate' }) + '</label><label><span>' + esc(i18n.t('optionalNote')) + '</span>'
       + '<input class="in" id="feedingNote" maxlength="500" placeholder="' + esc(i18n.t('feedingNotePlaceholder')) + '"></label></div></div>'
       + '<div class="err" id="feedingDialogError" role="alert"></div>'
       + '<div class="formbtns"><button type="button" class="btn" id="feedingDialogSave"><i class="bi bi-check-lg" aria-hidden="true"></i>'

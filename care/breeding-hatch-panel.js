@@ -110,8 +110,10 @@
         + '</div><div class="hatch-unknown"><span>' + esc(I18n.t('hatchUnknown')) + '</span><strong id="h_unknown">'
         + summary.unknownCount + '</strong><small>' + esc(I18n.t('hatchTotalEggs', { count: summary.eggCount }))
         + '</small></div><div class="lbl2"><label for="h_date">' + esc(I18n.t('hatchActualDate'))
-        + '</label></div><input class="in" id="h_date" data-hatch-preview type="date" max="' + C.today()
-        + '" value="' + esc(clutch.actual_hatch_date || '') + '"><label class="hatch-close"><input id="h_closed"'
+        + '</label></div>'
+        + DateField.html({ id: 'h_date', value: clutch.actual_hatch_date || '', max: C.today(),
+                           attrs: 'data-hatch-preview' })
+        + '<label class="hatch-close"><input id="h_closed"'
         + ' type="checkbox" data-hatch-preview' + (clutch.outcome_closed ? ' checked' : '') + '><span><b>'
         + esc(I18n.t('hatchClosed')) + '</b><small>' + esc(I18n.t('hatchClosedHint'))
         + '</small></span></label><div class="err" id="h_err"></div><div class="formbtns"><button class="btn" id="h_save">'

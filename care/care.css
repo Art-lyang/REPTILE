@@ -235,6 +235,29 @@ header .sub{
 textarea.in{min-height:76px;resize:vertical;line-height:1.6}
 .row2>*{min-width:0}
 input.in[type="date"]{min-width:0;max-width:100%}
+
+/* 날짜 고르기 — 년 / 월 / 일 세 칸 (care/date-field.js)
+   -----------------------------------------------------------------------------
+   input[type=date] 는 브라우저마다 다르게 그려집니다. iOS 사파리는 글씨를
+   가운데로 몰고 높이도 달라서, 바로 위 '무게' 칸과 눈에 띄게 어긋났습니다.
+   select 세 개로 바꾸면 폭·높이가 다른 입력칸과 같아지고, iOS 는 select 를
+   아래에서 올라오는 휠로 그려 주어 손으로 만든 것보다 익숙합니다.
+
+   년 칸이 조금 넓은 것은 네 자리라서입니다. 셋을 같은 폭으로 두면 '2026' 이
+   잘리거나 월·일 칸에 빈자리가 남습니다. */
+.datefield{display:grid;grid-template-columns:1.35fr 1fr 1fr;gap:8px;margin-bottom:8px}
+.datepart{position:relative;min-width:0}
+.datepart select.in{margin-bottom:0;padding-right:30px;
+  -webkit-appearance:none;appearance:none;text-align:left}
+/* 단위 글자. 값 위에 겹치지 않게 오른쪽 끝에 두고, 눌러도 통과시켜
+   그 자리를 눌러도 선택 창이 열리게 합니다. */
+.datepart i{position:absolute;right:11px;top:50%;transform:translateY(-50%);
+  font-style:normal;font-size:12px;font-weight:700;color:var(--ink2);pointer-events:none}
+@media (max-width:360px){
+  .datefield{gap:6px}
+  .datepart select.in{padding-left:10px;padding-right:24px;font-size:14px}
+  .datepart i{right:8px;font-size:11px}
+}
 .animal-weight-register{
   min-width:0;margin:17px 0 4px;padding:14px 15px 15px;
   border:1px solid var(--hair);border-radius:16px;background:var(--card2);

@@ -281,7 +281,7 @@
       + head + sparkline(w)
       + '<div class="row2" style="margin-top:8px">'
       + '<input class="in" id="w_g" type="number" step="0.1" min="' + rng[0] + '" max="' + rng[1] + '" placeholder="' + esc(I.t('weightPlaceholder')) + '" inputmode="decimal">'
-      + '<input class="in" id="w_d" type="date" value="' + C.today() + '">'
+      + DateField.html({ id: 'w_d', value: C.today(), max: C.today(), aria: I.t('measuredDate') })
       + '</div>'
       + '<div class="hint">' + I.t('weightSameDayHint') + '</div>'
       + '<div class="err" id="w_err"></div>'
@@ -457,9 +457,9 @@
 
       + '<div class="row2">'
       + '<div><div class="lbl2"><label for="fd_opened">' + I.t('openedDate') + '</label></div>'
-      + '<input class="in" id="fd_opened" type="date" value="' + esc(f.opened_on || '') + '"></div>'
+      + DateField.html({ id: 'fd_opened', value: f.opened_on || '' }) + '</div>'
       + '<div><div class="lbl2"><label for="fd_exp">' + I.t('expiryDate') + '</label></div>'
-      + '<input class="in" id="fd_exp" type="date" value="' + esc(f.expires_on || '') + '"></div>'
+      + DateField.html({ id: 'fd_exp', value: f.expires_on || '' }) + '</div>'
       + '</div>'
       + '<div class="hint">' + I.t('expiryHint') + '</div>'
 

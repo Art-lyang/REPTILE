@@ -70,7 +70,7 @@
         + S.pairs.map(p => '<option value="' + p.id + '"' + (c.pairing === p.id ? ' selected' : '') + '>'
             + esc(pairingLabel(p)) + '</option>').join('') + '</select>'
         + '<div class="row2"><div><div class="lbl2"><label for="c_laid">' + esc(I18n.t('clutchLaidLabel')) + '</label></div>'
-        + '<input class="in" id="c_laid" type="date" value="' + esc(c.laid_date || '') + '"></div>'
+        + DateField.html({ id: 'c_laid', value: c.laid_date || '' }) + '</div>'
         + '<div><div class="lbl2"><label for="c_n">' + esc(I18n.t('clutchEggsLabel')) + '</label></div>'
         + '<input class="in" id="c_n" type="number" min="0" max="99" inputmode="numeric" value="'
         + esc(c.egg_count == null ? '' : c.egg_count) + '"></div></div>'
@@ -81,7 +81,7 @@
           ? '<div class="hint">' + I18n.html('clutchAutoHint') + '</div>'
           : '<div class="hint">' + I18n.html('clutchManualHint', { species: I18n.speciesName(S.species) }) + '</div>')
         + '<div class="lbl2"><label for="c_exp">' + esc(I18n.t('clutchExpectedLabel')) + '</label></div>'
-        + '<input class="in" id="c_exp" type="date" value="' + esc(c.expected_hatch || '') + '">'
+        + DateField.html({ id: 'c_exp', value: c.expected_hatch || '' })
         + '<div class="lbl2"><label for="c_note">' + esc(I18n.t('clutchNoteLabel')) + '</label></div>'
         + '<input class="in" id="c_note" value="' + esc(c.note || '') + '">'
         + '<div class="err" id="c_err"></div><div class="formbtns"><button class="btn" id="c_save">'

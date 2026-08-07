@@ -1,104 +1,4 @@
 {
-  "_final/assets/base.css": {
-    "version": "014345",
-    "sha256": "7bdc012dd994b6c9"
-  },
-  "_final/crested/crested-boot.js": {
-    "version": "014345",
-    "sha256": "95f028b3133b865d"
-  },
-  "_final/crested/crested-core.js": {
-    "version": "014345",
-    "sha256": "007d97f3f0197ffe"
-  },
-  "_final/crested/crested-ui.js": {
-    "version": "014345",
-    "sha256": "b426ce535bcf5cd3"
-  },
-  "_final/crested/crested.css": {
-    "version": "014345",
-    "sha256": "0f42397271b38888"
-  },
-  "_final/gecko/gecko-app.js": {
-    "version": "014345",
-    "sha256": "984f470c31521d33"
-  },
-  "_final/gecko/gecko-boot.js": {
-    "version": "014345",
-    "sha256": "1d5e4e2e54be4b9e"
-  },
-  "_final/gecko/gecko-ui.js": {
-    "version": "014345",
-    "sha256": "cc0f523b3eece8f8"
-  },
-  "_final/gecko/gecko.css": {
-    "version": "014345",
-    "sha256": "1fd6b5cfebef10b3"
-  },
-  "_final/home-redesign.css": {
-    "version": "020025",
-    "sha256": "b7617b035d313d8e"
-  },
-  "_final/home-redesign.js": {
-    "version": "20260728b",
-    "sha256": "3d75ede255dd9811"
-  },
-  "_v2/assets/base.css": {
-    "version": "013036",
-    "sha256": "e0e5b571d9b22af5"
-  },
-  "_v2/crested/crested-boot.js": {
-    "version": "013036",
-    "sha256": "95f028b3133b865d"
-  },
-  "_v2/crested/crested-core.js": {
-    "version": "013036",
-    "sha256": "007d97f3f0197ffe"
-  },
-  "_v2/crested/crested-ui.js": {
-    "version": "013036",
-    "sha256": "b426ce535bcf5cd3"
-  },
-  "_v2/crested/crested.css": {
-    "version": "013036",
-    "sha256": "0f42397271b38888"
-  },
-  "_v2/gecko/gecko-app.js": {
-    "version": "013036",
-    "sha256": "984f470c31521d33"
-  },
-  "_v2/gecko/gecko-boot.js": {
-    "version": "013036",
-    "sha256": "1d5e4e2e54be4b9e"
-  },
-  "_v2/gecko/gecko-ui.js": {
-    "version": "013036",
-    "sha256": "cc0f523b3eece8f8"
-  },
-  "_v2/gecko/gecko.css": {
-    "version": "013036",
-    "sha256": "1d24713b752b350c"
-  },
-  "_v5/crested/crested-core.js": {
-    "version": "20260727c",
-    "sha256": "007d97f3f0197ffe"
-  },
-  "_v5/crested/crested-redesign.css": {
-    "version": "20260727c",
-    "sha256": "ee05f2208f538a52"
-  },
-  "_v5/gecko/gecko-redesign.css": {
-    "version": "20260727b",
-    "sha256": "96823127c0582381"
-  },
-  "_v5/home-redesign.css": {
-    "version": "20260728b",
-    "sha256": "8f6a41f4aa716731"
-  },
-  "_v5/home-redesign.js": {
-    "version": "20260728b",
-    "sha256": "3d75ede255dd9811"
-  },
   "admin/admin-business.css": {
     "version": "20260808a",
     "sha256": "a500f18c5f8469b8"
@@ -144,8 +44,8 @@
     "sha256": "56569f0244c3b750"
   },
   "assets/base.css": {
-    "version": "20260731a",
-    "sha256": "bfc56fc27ac783f5"
+    "version": "20260808b",
+    "sha256": "3684144ce723028a"
   },
   "assets/breeding-draft.js": {
     "version": "20260731a",
@@ -348,8 +248,8 @@
     "sha256": "d0d2d303499a5f7b"
   },
   "care/breeding-ui.js": {
-    "version": "20260803c",
-    "sha256": "e64955cf99baa128"
+    "version": "20260808a",
+    "sha256": "9000d9c5e8d88c2f"
   },
   "care/breeding-workspace.css": {
     "version": "20260731h",
@@ -440,8 +340,8 @@
     "sha256": "e6e6ff62a4c7bb96"
   },
   "care/care-ui.js": {
-    "version": "20260807d",
-    "sha256": "a75bb0687c57161e"
+    "version": "20260808a",
+    "sha256": "f252fc163f30afd6"
   },
   "care/care.css": {
     "version": "20260807c",
@@ -544,8 +444,8 @@
     "sha256": "9c2262f690a41f45"
   },
   "gecko/gecko-app.js": {
-    "version": "20260804a",
-    "sha256": "b8f10550183fea74"
+    "version": "20260808a",
+    "sha256": "7be404a09ce933e4"
   },
   "gecko/gecko-boot.js": {
     "version": "014345",
@@ -592,15 +492,11 @@
     "sha256": "9a9b3bc360c21555"
   },
   "home-redesign.css": {
-    "version": "20260806a",
-    "sha256": "50236591b4e83f85"
+    "version": "20260808a",
+    "sha256": "a3f9d986893a6759"
   },
   "home-redesign.js": {
     "version": "20260728b",
     "sha256": "3d75ede255dd9811"
-  },
-  "toss/hub.css": {
-    "version": "1",
-    "sha256": "69d6b42d68a722a0"
   }
 }

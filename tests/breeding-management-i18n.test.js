@@ -177,7 +177,13 @@ test('Given every management feature module, when visible copy is audited, then 
     'breeding-mating-panel.js', 'breeding-hatch-panel.js', 'breeding-clutch-panel.js',
     'breeding-genetic-goal.js', 'breeding-events.js'];
   modules.forEach((file) => {
-    const executable = read(`care/${file}`).replace(/^\s*\/\/.*$/gm, '');
+    /* 검사 대상은 화면에 나가는 문구지 주석이 아닙니다. 예전에는 한 줄 주석만
+       걷어내서, 블록 주석에 한국어를 적으면 위반으로 잡혔습니다. 그래서 이
+       파일들만 주석을 영어로 쓰는 규칙이 생겼는데, 저장소의 나머지는 한국어라
+       읽는 사람이 매번 갈아타야 했습니다. 두 종류 다 걷어냅니다. */
+    const executable = read(`care/${file}`)
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+      .replace(/^\s*\/\/.*$/gm, '');
     assert.doesNotMatch(executable, /[가-힣]/, `${file} visible copy must use BreedingI18n`);
     assert.match(executable, /(?:deps\.i18n|window\.BreedingI18n)/, `${file} must consume BreedingI18n`);
   });

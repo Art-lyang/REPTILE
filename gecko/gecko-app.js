@@ -107,7 +107,11 @@
       ab.style.display = SHOW_ACCOUNT_UI ? '' : 'none';
       ab.innerHTML = '<i class="bi bi-person" aria-hidden="true"></i><span>'+(USER?accountLabel('account'):accountLabel('login'))+'</span>';
     }
-    if(pro) pro.style.display = isPrem? '' : 'none';
+    /* 브리딩 관리 버튼은 무료 회원에게도 보여 줍니다. 감춰 두면 무엇이 더 있는지
+       알 수 없어서, 결제를 권할 자리 자체가 없어집니다. 눌러서 들어가면
+       breeding-ui.js 가 요금 안내로 안내합니다. 로그인 전(위 86행)에는 그대로
+       감춥니다 — 그 사람에게 먼저 필요한 것은 로그인입니다. */
+    if(pro) pro.style.display = '';
     const ad=document.getElementById('adSlot'); if(ad && isPrem) ad.style.display='none';   // 프리미엄 = 광고 제거
   }
   window.openPrem=async function(){

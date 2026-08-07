@@ -23,7 +23,10 @@ const test = require('node:test');
 
 const ROOT = path.resolve(__dirname, '..');
 const MANIFEST = path.join(__dirname, 'asset-versions.json');
-const SKIP = /^(dist|output|node_modules|\.git|\.omo|\.playwright-cli|scratchpad)/;
+/* _final·_v2·_v5 는 배포되지 않는 옛 스냅샷입니다(build.sh 가 안 담습니다).
+   거기 적힌 옛 ?v= 까지 세면 '한 파일을 여러 버전으로' 로 잡혀 검사가 늘
+   빨간불이 됩니다. toss 는 웹사이트가 아니라 토스 앱 안에서 도는 번들입니다. */
+const SKIP = /^(dist|output|node_modules|toss|_final|_v2|_v5|\.git|\.omo|\.playwright-cli|scratchpad)/;
 
 function htmlFiles(dir, out) {
   out = out || [];

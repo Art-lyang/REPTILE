@@ -308,7 +308,7 @@ test('Given security-sensitive browser code changes, when pages load, then they 
       `${page} must request RPC-based analytics with a new cache key`,
     );
   }
-  assert.match(read('gecko/index.html'), /gecko-app\.js\?v=20260804a/);
+  assert.match(read('gecko/index.html'), /gecko-app\.js\?v=20260808a/);
 });
 
 test('Given the crested calculator needs analytics and live morph data, when it boots, then both features share one Supabase client', () => {

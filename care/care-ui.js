@@ -187,9 +187,13 @@
                   : q.premium ? I.t('quotaPremiumHint', { limit: I.formatNumber(q.limit) })
                     : I.t('freeQuotaHint', { limit: I.formatNumber(q.limit) })
           ) + '</div></div>'
-        /* 유료는 더 권할 것이 없으니 결제 안내를 붙이지 않습니다. */
+        /* 유료는 더 권할 것이 없으니 결제 안내를 붙이지 않습니다.
+
+           예전에는 로그인 화면으로 보냈습니다. 여기까지 온 사람은 이미 로그인한
+           상태라, 눌러 봐야 자기 계정 화면만 나오고 무엇이 더 열리는지는 알 수
+           없었습니다. 요금 안내는 한국어 전용이라 lang 을 붙이지 않습니다. */
         + (q.premium ? ''
-          : '<a class="mini" href="' + esc(I.url('/gecko/login.html')) + '">'
+          : '<a class="mini" href="/pricing.html">'
             + icon('bi-gem') + esc(I.t('premiumAction')) + '</a>')
         + '</div>';
     }

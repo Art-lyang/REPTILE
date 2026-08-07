@@ -68,7 +68,11 @@
     -webkit-font-smoothing:antialiased}
   a{color:var(--teal)}
   .admin-root{display:none;min-height:100vh}
-  .admin-wrap{max-width:720px;margin:0 auto;padding:16px}
+  /* 720px 은 글을 읽는 폭입니다. 관리자 화면은 표를 보는 곳이라, 1440px 모니터
+   에서 좌우 360px 씩을 비워 두고 정작 표는 가로로 밀리는 상태였습니다.
+   넓은 화면에서만 넓혀 줍니다 — 좁은 화면은 지금 그대로입니다. */
+.admin-wrap{max-width:720px;margin:0 auto;padding:16px}
+@media (min-width:1100px){ .admin-wrap{max-width:1040px} }
   .admin-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
   .admin-top h1{font-size:20px;font-weight:800;margin:0}
   .admin-back{color:var(--teal);text-decoration:none;font-weight:700;font-size:13px}
@@ -77,7 +81,15 @@
      줄바꿈되는 순간 배지는 둘째 줄 왼쪽 끝, 로그아웃은 오른쪽 끝으로
      떨어져 가운데가 텅 빕니다. 이제 오른쪽 끝은 한 덩어리로 움직입니다. */
   .atabs{display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:12px}
-  .atablist{display:flex;gap:6px;flex-wrap:wrap;flex:1 1 auto;min-width:0}
+  /* 탭이 12개라 좁은 화면에서 네다섯 줄로 접혔습니다(375px 에서 탭바만 168px,
+   화면 세로의 20%). 접는 대신 한 줄로 두고 옆으로 밀리게 합니다 — 지금 어느
+   탭에 있는지 보이면서 나머지는 밀어서 찾는 편이, 화면을 통째로 먹는 것보다
+   낫습니다. 데스크톱에서는 어차피 다 들어가서 스크롤이 생기지 않습니다. */
+.atablist{display:flex;gap:6px;flex:1 1 auto;min-width:0;
+  overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;
+  scroll-snap-type:x proximity;padding-bottom:2px}
+.atablist::-webkit-scrollbar{display:none}
+.atablist .atab{scroll-snap-align:start}
   .atabend{display:flex;align-items:center;gap:8px;flex:0 0 auto;margin-left:auto}
   .atab{border:1px solid var(--hair);background:var(--card);color:var(--ink);border-radius:10px;padding:9px 14px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap}
   .atab.on{background:var(--teal);border-color:var(--teal);color:#fff}
@@ -98,6 +110,19 @@
   .arow-main .asub{font-size:11.5px;color:var(--ink2);margin-top:2px}
   .arow-act{display:flex;gap:6px;flex:0 0 auto}
   .mini{border:1px solid var(--hair);background:var(--card);color:var(--ink);border-radius:8px;padding:6px 10px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit}
+
+/* ── 손가락으로 쓰는 화면에서만 넓힙니다 ──────────────────────────────────
+   마우스는 1px 도 정확히 찍지만 손가락은 그렇지 않습니다. 그렇다고 데스크톱
+   까지 버튼을 키우면 표가 쓸데없이 길어져서, 포인터가 거친 기기에만 적용합니다.
+   측정값: 탭 37px, 표 안 mini 30px, 로그인 입력칸 42px — 모두 44px 미만이었습니다. */
+@media (pointer:coarse){
+  .atab{min-height:44px;padding:0 15px;display:inline-flex;align-items:center}
+  .mini{min-height:40px;padding:0 12px;display:inline-flex;align-items:center;justify-content:center}
+  /* iOS 사파리는 글씨가 16px 미만인 입력칸을 누르면 화면을 확대합니다.
+     한 번 확대되면 스스로 돌아오지 않아서 관리 작업 내내 옆으로 밀립니다. */
+  .ain{font-size:16px;min-height:44px}
+  .atbl th,.atbl td{padding:10px 10px}
+}
   .mini.del{color:var(--warn-hi-fg)}
   .atag{display:inline-block;font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:20px;background:rgba(120,120,128,.16);color:var(--ink2);margin-left:4px}
   .atag.used{background:var(--b-inc-bg);color:var(--b-inc-fg)}
@@ -161,6 +186,11 @@
   .acctbox{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--card2);border-radius:12px;padding:12px 13px;font-size:13.5px}
   /* 보안 탭 — 일별 막대. 라이브러리를 쓰지 않고 div 높이로만 그립니다.
      값이 0 인 날도 자리를 남겨야 '조용한 날' 과 '기록이 없는 날' 이 구분됩니다. */
+  /* 용량 막대. 숫자만 있으면 '아직 괜찮은지' 가 안 읽혀서 길이로 같이 보여줍니다. */
+  .quotameter{height:6px;border-radius:999px;background:var(--gtile);overflow:hidden;margin-top:8px}
+  .quotameter i{display:block;height:100%;background:var(--teal);border-radius:999px}
+  .quotameter.warn i{background:var(--butter)}
+  .quotameter.danger i{background:var(--warn-hi-fg)}
   .secbars{display:flex;align-items:flex-end;gap:4px;height:110px;padding:6px 2px 0;
     background:var(--card2);border-radius:12px;margin-bottom:4px;overflow-x:auto}
   .secbar{flex:1 1 0;min-width:16px;height:100%;display:flex;flex-direction:column;
@@ -400,6 +430,53 @@ async function seedCombos(){
   }
 
   /* ---------- 한눈에 보기 (대시보드) ---------- */
+  /* ── 저장 용량 ─────────────────────────────────────────────────────────
+     supabase_v56.sql 의 admin_storage_usage() 가 돌려주는 값을 그립니다.
+     적용 전이면 조용히 건너뜁니다 — 없다고 '한눈에' 화면 전체가 멈추면 안 됩니다. */
+  async function storageUsage(){
+    try{
+      const r=await SB.rpc('admin_storage_usage');
+      if(r.error||!r.data) return null;
+      return r.data;
+    }catch(e){ return null; }
+  }
+  function gb(bytes){
+    const n=Number(bytes)||0;
+    if(n>=1073741824) return (n/1073741824).toFixed(2)+'GB';
+    if(n>=1048576)    return (n/1048576).toFixed(1)+'MB';
+    if(n>=1024)       return Math.round(n/1024)+'KB';
+    return n+'B';
+  }
+  function storageSection(u){
+    if(!u) return '';
+    const bar=(used,quota)=>{
+      const pctv=quota? Math.min(100, used/quota*100) : 0;
+      /* 8할을 넘기면 색을 바꿉니다. 숫자만으로는 '아직 괜찮은지' 가 안 읽힙니다. */
+      const cls=pctv>=80? ' danger' : pctv>=60? ' warn' : '';
+      return '<div class="quotameter'+cls+'"><i style="width:'+pctv.toFixed(1)+'%"></i></div>'
+        +'<div class="statx">'+gb(used)+' / '+gb(quota)+' · '+pctv.toFixed(1)+'%</div>';
+    };
+    const s=u.storage||{}, d=u.database||{};
+    let h='<div class="alabel2">💾 저장 용량 (Supabase 무료 요금제)</div>'
+      +'<div class="statrow">'
+      +'<div class="statcard"><div class="statn">'+gb(s.bytes)+'</div>'
+      +'<div class="statl">사진 ('+(Number(s.files)||0).toLocaleString()+'개)</div>'
+      +bar(s.bytes,s.quota)+'</div>'
+      +'<div class="statcard"><div class="statn">'+gb(d.bytes)+'</div>'
+      +'<div class="statl">데이터베이스</div>'
+      +bar(d.bytes,d.quota)+'</div>'
+      +'</div>';
+    const top=(u.top||[]).filter(t=>Number(t.bytes)>0);
+    if(top.length){
+      h+='<div class="ahint">사진을 가장 많이 쓰는 회원. 한 사람 때문에 용량이 튀는지 여기서 보입니다.</div>'
+        +'<div class="atblwrap"><table class="atbl"><thead><tr><th>회원</th><th>파일</th><th>용량</th></tr></thead><tbody>'
+        +top.map(t=>'<tr><td>'+esc(String(t.owner||'-').slice(0,8))+'…</td>'
+          +'<td>'+(Number(t.files)||0).toLocaleString()+'</td><td>'+gb(t.bytes)+'</td></tr>').join('')
+        +'</tbody></table></div>';
+    }
+    return h;
+  }
+
   async function tabInfo(){
     const body=document.getElementById('adBody');
     body.innerHTML='<div class="asub">불러오는 중…</div>';
@@ -466,6 +543,12 @@ async function seedCombos(){
       +card(wkK.bot,'검색봇')
       +card(wkK.ai,'AI 수집기')
       +'</div>';
+
+    /* 무료 요금제 한도가 얼마나 찼는지. Supabase 대시보드에 들어가야만 알 수
+       있던 값이라, "언제 유료로 올려야 하나" 를 판단할 근거가 화면에 없었습니다.
+       먼저 차는 것은 사진(스토리지)입니다 — 사진은 서명 URL 로 Supabase 에서
+       바로 받아가서 Cloudflare 캐시를 타지 못합니다. */
+    h+=storageSection(await storageUsage());
 
     h+='<div class="alabel2">👥 회원</div><div class="statrow">'
       +card(P.length,'전체 회원', newMembers? '최근 7일 +'+newMembers : '최근 7일 신규 없음')

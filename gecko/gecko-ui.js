@@ -492,7 +492,7 @@ function applyLang(){
   setUpd('updDone',(t.updDoneList||[]).map(x=>'<li>'+x+'</li>').join(''));
   setUpd('updSoon',(t.updSoonList||[]).map(x=>'<li>'+x+'</li>').join(''));
   document.getElementById('lbl-langtitle').textContent=t.langLabel;
-  document.querySelectorAll('#langMenu button').forEach(b=>b.classList.toggle('on', b.dataset.lang===LANG));
+  document.querySelectorAll('#langMenu [data-lang]').forEach(b=>b.classList.toggle('on', b.dataset.lang===LANG));
   /* 헤더·하단의 고정 문구. HTML 에 한국어로 박혀 있어서 영어·일본어·중국어
      페이지에 그대로 남아 있었습니다 — 계산 결과는 번역되는데 그 주변만
      한국어라, 바깥에서 들어온 사람에게는 반쯤 깨진 화면으로 보입니다. */
@@ -767,7 +767,12 @@ langBtnEl.addEventListener('click',e=>{
   const open=langMenuEl.classList.toggle('open');
   if(open) placeLangMenu();
 });
-document.querySelectorAll('#langMenu button').forEach(b=>b.addEventListener('click',()=>{ setLang(b.dataset.lang); langMenuEl.classList.remove('open'); }));
+/* 언어 메뉴는 이제 진짜 링크입니다(<a href="/en/gecko/">).
+   예전에는 버튼을 눌러 그 자리에서 다시 그렸는데, 그러면 두 가지가 어긋납니다.
+     · 주소는 /gecko/ 인데 내용은 영어 — canonical 과 og:locale 이 한국어를 가리킵니다
+     · 언어별 페이지를 가리키는 링크가 사이트에 하나도 없어, 검색엔진이
+       사이트맵으로 주소만 알고 크롤링은 미룹니다(발견됨-색인 안 됨).
+   그래서 가로채지 않고 그냥 이동시킵니다. */
 document.addEventListener('click',e=>{ if(langMenuEl.classList.contains('open') && !langMenuEl.contains(e.target) && !langBtnEl.contains(e.target)) langMenuEl.classList.remove('open'); });
 window.addEventListener('resize',()=>{ if(langMenuEl.classList.contains('open')) placeLangMenu(); });
 window.addEventListener('scroll',()=>langMenuEl.classList.remove('open'), true);

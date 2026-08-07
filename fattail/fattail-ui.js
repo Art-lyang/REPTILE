@@ -584,7 +584,7 @@ function applyLang(){
   setH('updMail', t.updMail+'<a href="mailto:'+FT_CONTACT_MAIL+'">'+FT_CONTACT_MAIL+'</a>');
   set('lbl-today',t.today); set('lbl-mclose',t.mclose);
   document.getElementById('mailLink').href='mailto:'+FT_CONTACT_MAIL+'?subject='+encodeURIComponent(t.mailSubject);
-  document.querySelectorAll('#langMenu button').forEach(b=>b.classList.toggle('on', b.dataset.lang===LANG));
+  document.querySelectorAll('#langMenu [data-lang]').forEach(b=>b.classList.toggle('on', b.dataset.lang===LANG));
   buildParent('A'); buildParent('B');
   if(hasResult) calculate();
   else document.getElementById('results').innerHTML='<div class="empty">'+t.emptyStart+'</div>';
@@ -612,7 +612,12 @@ langBtnEl.addEventListener('click',e=>{
   const open=langMenuEl.classList.toggle('open');
   if(open) placeLangMenu();
 });
-document.querySelectorAll('#langMenu button').forEach(b=>b.addEventListener('click',()=>{ setLang(b.dataset.lang); langMenuEl.classList.remove('open'); }));
+/* 언어 메뉴는 이제 진짜 링크입니다(<a href="/en/gecko/">).
+   예전에는 버튼을 눌러 그 자리에서 다시 그렸는데, 그러면 두 가지가 어긋납니다.
+     · 주소는 /gecko/ 인데 내용은 영어 — canonical 과 og:locale 이 한국어를 가리킵니다
+     · 언어별 페이지를 가리키는 링크가 사이트에 하나도 없어, 검색엔진이
+       사이트맵으로 주소만 알고 크롤링은 미룹니다(발견됨-색인 안 됨).
+   그래서 가로채지 않고 그냥 이동시킵니다. */
 document.addEventListener('click',e=>{ if(langMenuEl.classList.contains('open') && !langMenuEl.contains(e.target) && !langBtnEl.contains(e.target)) langMenuEl.classList.remove('open'); });
 window.addEventListener('resize',()=>{ if(langMenuEl.classList.contains('open')) placeLangMenu(); });
 window.addEventListener('scroll',()=>langMenuEl.classList.remove('open'), true);

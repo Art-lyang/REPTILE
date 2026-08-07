@@ -20,6 +20,8 @@
 <script src="admin-member-actions.js?v=20260804c"></script>
 <script src="admin-members.js?v=20260808a"></script>
 <script src="admin-security.js?v=20260807a"></script>
+<link rel="stylesheet" href="admin-business.css?v=20260808a">
+<script src="admin-business.js?v=20260808a"></script>
 <style>
   :root{
     --bg:#EDEAE1;            /* Cloud Dancer 톤 그룹 배경 */
@@ -327,7 +329,7 @@ async function seedCombos(){
     // 서비스가 늘면 여기에 탭을 추가하세요 (docs/STUDIO.md)
     // 세 번째 값이 true 면 최고관리자 전용입니다. 부관리자에게는 안 보입니다.
     const ALL=[['info','한눈에',true],['member','회원',true],['stat','통계',true],
-               ['source','유입',true],['security','보안',true],['reset','비번',true],
+               ['source','유입',true],['security','보안',true],['biz','사업자',true],['reset','비번',true],
                ['code','코드',false],['morph','레오 모프',false],['combo','레오 콤보',false],
                ['crmorph','크레 모프',false],['text','문구',true],['admin','관리자',true]];
     const tabs=ALL.filter(t=>!t[2]||isOwner());
@@ -352,7 +354,7 @@ async function seedCombos(){
     }
     ({info:tabInfo,morph:tabMorph,combo:tabCombo,stat:tabStat,code:tabCode,
       member:tabMember,crmorph:tabCrMorph,text:tabText,admin:tabAdmins,
-      source:tabSource,security:tabSecurity,reset:tabReset}[adTab])();
+      source:tabSource,security:tabSecurity,biz:tabBusiness,reset:tabReset}[adTab])();
   }
 
   /* ---------- 보안 (최고관리자 전용) ----------
@@ -366,6 +368,19 @@ async function seedCombos(){
       return;
     }
     await window.AdminSecurity.render({SB, body, esc});
+  }
+
+  /* ---------- 사업자 인증 (최고관리자 전용) ----------
+     admin/admin-business.js 가 그립니다. 보안·회원 탭과 같은 방식이라
+     _harness-business.html 로 확인할 수 있습니다. */
+  async function tabBusiness(){
+    const body=document.getElementById('adBody');
+    if(!window.AdminBusiness){
+      body.innerHTML='<div class="aerr"><b>사업자 인증 모듈을 불러오지 못했습니다.</b><br><br>'
+        +'<code>admin-business.js</code> 가 로드됐는지 확인하세요.</div>';
+      return;
+    }
+    await window.AdminBusiness.render({SB, body, esc});
   }
 
   /* ---------- 관리자 명단 (최고관리자 전용) ---------- */

@@ -7,6 +7,12 @@
 .parent-card{align-items:center}
 .pbreeder{text-decoration:none;transition:border-color .14s,color .14s}
 .pbreeder:hover{border-color:var(--teal);color:var(--teal)}
+/* 인증된 업체 줄. 로고가 사람 아이콘 자리를 대신합니다 — 이름 뒤에 덧붙이면
+   줄이 길어져 좁은 화면에서 브리더명이 잘립니다. */
+.pbreeder.verified{color:var(--ink);border-color:rgba(14,124,123,.28);padding-left:4px}
+.pbizlogo{width:20px;height:20px;border-radius:50%;object-fit:contain;
+  background:var(--card);border:1px solid var(--hair);flex:0 0 auto}
+.pbizmark{color:var(--teal);font-size:12px;margin-left:-1px}
 .breeder-more{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:14px}
 .breeder-more .mini{text-decoration:none;white-space:nowrap}
 body.breeder-public .wrap{max-width:1040px}
@@ -14,6 +20,12 @@ body.breeder-public .wrap{max-width:1040px}
 .breeder-mark{width:62px;height:62px;border-radius:20px;display:flex;align-items:center;justify-content:center;background:var(--teal);color:#fff;font-size:27px}
 .breeder-eyebrow{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--teal)}
 .breeder-name{margin:4px 0 2px;font-size:28px;line-height:1.15;letter-spacing:-.045em}
+/* 인증된 업체는 위쪽 원 안이 사람 아이콘 대신 그 회사 로고입니다. 로고는 어떤
+   비율로 올라올지 모르니 contain 으로 담습니다 — cover 로 두면 가로로 긴 로고의
+   양끝이 잘려서 무슨 상표인지 알아볼 수 없습니다. */
+.breeder-mark.has-logo{background:var(--card,#fff);padding:6px}
+.breeder-mark.has-logo img{width:100%;height:100%;object-fit:contain;display:block}
+.breeder-mark-check{font-size:.5em;color:var(--teal);margin-left:.28em;vertical-align:.18em}
 /* 이름 자체가 이력을 여는 버튼입니다. 버튼처럼 보이면 제목이 아니라 조작으로
    읽혀서, 화살표만 작게 붙이고 나머지는 제목 그대로 둡니다. */
 .breeder-name button{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:6px;

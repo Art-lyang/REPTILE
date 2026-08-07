@@ -150,6 +150,7 @@
     breederPageTitle: 'ブリーダー公開個体 · Ryang Studio', breederProfile: 'ブリーダープロフィール', breederPublicAnimals: '公開個体 {count}匹',
     breederProfileHint: 'このブリーダーが公開一覧に載せた個体だけを表示します。', breederAllSpecies: 'すべての種', breederSpeciesFilter: '種別で個体を絞り込む',
     breederNoAnimals: 'この条件に該当する公開個体はありません。', breederPrivacy: '公開と一覧掲載の両方を許可した個体だけが表示されます。',
+    bizVerifiedTitle: '事業者認証 · {name}',
     nickHistory: '名前の変更履歴', nickHistoryEmpty: '名前を変更したことはありません。',
     nickHistoryError: '履歴を読み込めませんでした。',
     nickKindUser: '本人による変更', nickKindAdmin: '管理者による変更',

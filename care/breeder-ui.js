@@ -53,13 +53,18 @@
   function render() {
     document.title = profile.breeder + ' · ' + I.t('breederProfile');
     document.getElementById('body').innerHTML = '<section class="pad breeder-hero">'
-      + '<div class="breeder-mark">' + icon('bi-person-heart') + '</div><div>'
+      + '<div class="breeder-mark' + (badge ? ' has-logo' : '') + '">'
+      + (badge && badge.logo_url
+          ? '<img src="' + esc(badge.logo_url) + '" alt="">'
+          : icon('bi-person-heart')) + '</div><div>'
       + '<div class="breeder-eyebrow">' + esc(I.t('breederProfile')) + '</div>'
       /* 이름을 누르면 변경 이력이 열립니다. 분양받는 쪽이 '이 사람이 이름을
          자주 바꾸는지' 를 볼 수 있어야 해서 넣었습니다. 처음 누를 때만
          불러옵니다 — 대부분은 열어 보지 않습니다. */
       + '<h1 class="breeder-name"><button type="button" id="nickToggle"'
       + ' aria-expanded="false" aria-controls="nickHist">' + esc(profile.breeder)
+      + (badge ? '<i class="bi bi-patch-check-fill breeder-mark-check" title="'
+          + esc(I.t('bizVerifiedTitle', { name: badge.biz_name })) + '"></i>' : '')
       + icon('bi-chevron-down') + '</button></h1>'
       + '<div class="breeder-nick" id="nickHist" hidden></div>'
       + '<div class="breeder-meta">' + esc(I.t('breederPublicAnimals', { count: I.formatNumber(profile.total) }))
@@ -73,6 +78,7 @@
     renderGrid();
   }
 
+  let badge = null;
   let nickLoaded = false;
   async function toggleNickHistory() {
     const box = document.getElementById('nickHist');
@@ -127,6 +133,12 @@
       return;
     }
     if (!profile) { gate(I.t('breederUnavailableHint')); return; }
+    /* 사업자 인증 배지(supabase_v60). v60 적용 전에는 함수가 없는데, 그때는
+       배지 없이 그립니다 — 배지 때문에 브리더 페이지가 안 뜨면 안 됩니다. */
+    try {
+      const b = await SB.rpc('public_breeder_badge', { p_token: token });
+      if (!b.error && b.data && b.data.biz_name) badge = b.data;
+    } catch (error) { /* 배지는 없어도 됩니다 */ }
     render();
   }());
 }());

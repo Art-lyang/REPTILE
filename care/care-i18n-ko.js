@@ -176,6 +176,7 @@
     breederPageTitle: '브리더 공개 개체 · Ryang Studio', breederProfile: '브리더 프로필', breederPublicAnimals: '공개 개체 {count}마리',
     breederProfileHint: '브리더가 공개 목록에 올린 개체만 모아봅니다.', breederAllSpecies: '전체 종', breederSpeciesFilter: '종별 개체 필터',
     breederNoAnimals: '이 조건에 공개된 개체가 없습니다.', breederPrivacy: '브리더명과 공개 목록을 허용한 개체만 표시됩니다.',
+    bizVerifiedTitle: '사업자 인증 · {name}',
     nickHistory: '이름 변경 이력', nickHistoryEmpty: '이름을 바꾼 적이 없습니다.',
     nickHistoryError: '이력을 불러오지 못했습니다.',
     nickKindUser: '본인 변경', nickKindAdmin: '관리자 변경',

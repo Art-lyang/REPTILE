@@ -176,6 +176,7 @@
     breederPageTitle: 'Public Breeder Animals · Ryang Studio', breederProfile: 'Breeder profile', breederPublicAnimals: '{count} public animals',
     breederProfileHint: 'Browse animals this breeder chose to list publicly.', breederAllSpecies: 'All species', breederSpeciesFilter: 'Filter animals by species',
     breederNoAnimals: 'No public animals match this filter.', breederPrivacy: 'Only animals with both public access and public listing enabled appear here.',
+    bizVerifiedTitle: 'Verified business · {name}',
     nickHistory: 'Name change history', nickHistoryEmpty: 'This name has never changed.',
     nickHistoryError: 'Could not load the history.',
     nickKindUser: 'By the breeder', nickKindAdmin: 'By an admin',

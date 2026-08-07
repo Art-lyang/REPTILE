@@ -521,6 +521,114 @@ function applyNickResult(data){
   const note=$('nickNote'); if(note) note.textContent=nickNoteText(data);
 }
 
+/* ---------- 사업자 인증 (supabase_v60) ----------
+   프리미엄 계정만 신청합니다. 승인되면 공개 화면에서 브리더명 옆에 로고와
+   인증 표시가 붙습니다. 사업자등록번호는 관리자만 봅니다 — 공개 화면으로는
+   상호명과 로고만 나갑니다. */
+const BIZ_TYPES = ['image/png','image/jpeg','image/webp'];
+const BIZ_MAX   = 512*1024;
+
+async function bizStatus(){
+  try{ const r=await SB.rpc('my_business_status'); return r.error? null : r.data; }
+  catch(e){ return null; }
+}
+
+/* 로고는 줄이지 않고 그대로 올립니다. ImgTool.resize 는 JPEG 로 다시 굽는데,
+   투명한 배경의 PNG 로고가 들어오면 뒤가 까맣게 칠해집니다. 로고는 그 회사의
+   자산이라 우리가 말없이 바꿀 것이 아닙니다 — 크면 작은 파일을 달라고 합니다. */
+async function uploadLogo(file){
+  if(BIZ_TYPES.indexOf(file.type)<0) throw new Error('BIZ_LOGO_TYPE');
+  if(file.size>BIZ_MAX) throw new Error('BIZ_LOGO_SIZE');
+  const s=await SB.auth.getSession();
+  const uid=s.data.session && s.data.session.user && s.data.session.user.id;
+  if(!uid) throw new Error('AUTH_REQUIRED');
+  const ext={'image/png':'png','image/jpeg':'jpg','image/webp':'webp'}[file.type];
+  const path='b/u_'+uid+'_'+Date.now()+'.'+ext;
+  const up=await SB.storage.from('breeder-logos').upload(path,file,{contentType:file.type,upsert:true});
+  if(up.error) throw up.error;
+  return SB.storage.from('breeder-logos').getPublicUrl(path).data.publicUrl;
+}
+
+function bizErr(e){
+  const m=String((e&&e.message)||e||'');
+  if(/BIZ_LOGO_TYPE/.test(m))       return t('bizLogoType');
+  if(/BIZ_LOGO_SIZE/.test(m))       return t('bizLogoSize');
+  if(/BIZ_PREMIUM_REQUIRED/.test(m))return t('bizPremiumOnly');
+  if(/BIZ_NAME_REQUIRED/.test(m))   return t('bizNameNeeded');
+  if(/BIZ_NUMBER_INVALID/.test(m))  return t('bizNumberInvalid');
+  if(/BIZ_NUMBER_TAKEN/.test(m))    return t('bizNumberTaken');
+  if(/BIZ_LOGO_INVALID/.test(m))    return t('bizLogoInvalid');
+  if(/BIZ_NOT_APPROVED/.test(m))    return t('bizNotApproved');
+  return err(e);
+}
+
+function bizBoxHTML(b){
+  const st=(b&&b.status)||'none';
+  const badge={pending:'bizStatusPending',approved:'bizStatusApproved',
+               rejected:'bizStatusRejected',none:'bizStatusNone'}[st];
+  return '<div style="font-size:13px;font-weight:800;padding:2px 2px 8px">'+t('bizTitle')
+      +' <span class="opt">'+t(badge)+'</span></div>'
+    +(st==='rejected' && b.note ? '<div class="cNote" style="margin-top:0;border-top:0;padding-top:0">'
+      +esc(t('bizRejectedNote'))+' '+esc(b.note)+'</div>' : '')
+    +'<input class="in" id="bName" placeholder="'+esc(t('bizName'))+'" value="'+esc((b&&b.biz_name)||'')+'" style="margin-bottom:8px">'
+    +'<input class="in" id="bNum" inputmode="numeric" placeholder="'+esc(t('bizNumber'))+'" value="'+esc((b&&b.biz_number)||'')+'" style="margin-bottom:8px">'
+    +'<div id="bLogoBox" style="display:flex;align-items:center;gap:10px;margin-bottom:8px">'
+      +'<img id="bLogoImg" alt="" style="width:46px;height:46px;border-radius:11px;object-fit:contain;'
+        +'background:var(--card);border:1px solid var(--hair);padding:4px;'
+        +'display:'+((b&&b.logo_url)?'block':'none')+'" src="'+esc((b&&b.logo_url)||'')+'">'
+      +'<button class="btn ghost" id="bPick" style="margin:0;flex:1">'+t('bizLogoPick')+'</button>'
+      +'<input type="file" id="bFile" accept="image/png,image/jpeg,image/webp" hidden>'
+    +'</div>'
+    +'<button class="btn ghost" id="bSave" style="margin-top:2px">'
+      +t(st==='approved'?'bizSaveLogo':'bizApply')+'</button>'
+    +'<div class="cNote">'+t('bizHint')+'</div>';
+}
+
+async function renderBusinessBox(profilePane){
+  const first=await bizStatus();
+  /* v60 적용 전이거나 프리미엄이 아니면 아예 안 그립니다. 안 되는 칸을 회색으로
+     띄워 두면 '왜 안 되냐' 는 문의만 늘어납니다. */
+  if(!first || !first.premium) return;
+  const box=document.createElement('div');
+  box.className='consent'; box.style.marginTop='12px';
+  profilePane.appendChild(box);
+
+  function draw(b){
+    box.innerHTML=bizBoxHTML(b);
+    let logoUrl=b.logo_url||null;
+    $('bPick').onclick=()=>$('bFile').click();
+    $('bFile').onchange=async()=>{
+      const file=$('bFile').files[0]; if(!file) return;
+      $('bPick').disabled=true;
+      try{
+        logoUrl=await uploadLogo(file);
+        $('bLogoImg').src=logoUrl; $('bLogoImg').style.display='block';
+        say('o',t('bizLogoReady'));
+      }catch(e){ say('e',bizErr(e)); }
+      $('bPick').disabled=false; $('bFile').value='';
+    };
+    $('bSave').onclick=async()=>{
+      $('bSave').disabled=true;
+      /* 승인된 사람이 로고만 바꿀 때는 승인을 풀지 않습니다. 상호명이나 번호를
+         고치는 것은 다시 확인해야 하니 신청으로 돌아갑니다. */
+      const nameSame=($('bName').value.trim()===(b.biz_name||''));
+      const numSame=($('bNum').value.replace(/[^0-9]/g,'')===String(b.biz_number||''));
+      const r = (b.status==='approved' && nameSame && numSame)
+        ? await SB.rpc('set_my_breeder_logo',{p_logo:logoUrl})
+        : await SB.rpc('apply_business_verification',
+            {p_name:$('bName').value.trim(), p_number:$('bNum').value, p_logo:logoUrl});
+      $('bSave').disabled=false;
+      if(r.error) return say('e',bizErr(r.error));
+      say('o',t('saved'));
+      /* 상태가 바뀌었을 수 있습니다(승인 → 심사 중). 이 칸만 다시 그립니다 —
+         안 그러면 아직 승인된 것처럼 보입니다. */
+      const next=await bizStatus();
+      if(next && next.premium) draw(next);
+    };
+  }
+  draw(first);
+}
+
 /* 관리자 계정의 프로필 칸. 닉네임만 둡니다 — 동의 항목은 관리자에게 보여
    주지 않기로 한 기존 판단을 그대로 두고, 실제로 막혀 있던 것(본인 닉네임을
    바꿀 방법이 없던 것)만 엽니다. set_my_nickname 은 동의와 무관한 함수라
@@ -573,6 +681,11 @@ async function renderConsentSettings(run){
   const ex=document.createElement('div');
   ex.style.marginTop='12px'; ex.innerHTML=extraHTML(c);
   profilePane.appendChild(ex);
+
+  /* 사업자 인증은 기다리지 않고 붙입니다. 프리미엄이 아닌 대부분의 회원에게는
+     아무것도 안 그리는데, 그 판정을 기다리느라 아래 동의 설정이 늦게 뜨면
+     화면이 덜컥거립니다. */
+  renderBusinessBox(profilePane).catch(()=>{});
 
   const box=document.createElement('div');
   box.className='consent'; box.style.marginTop='12px';

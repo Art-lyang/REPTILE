@@ -80,7 +80,7 @@
       + Cards.grid(list.slice(0, 4)) + '</div>';
   }
 
-  function render(a, related, token) {
+  function render(a, related, token, badge) {
     const sp = C.SPECIES[a.species] || C.SPECIES.other;
     const age = I.ageText(a.hatch_date, C.today());
     const sex = a.sex === 'male' ? I.t('sexMale') + ' ♂' : a.sex === 'female' ? I.t('sexFemale') + ' ♀' : null;
@@ -101,8 +101,17 @@
     let h = '<div class="phead">' + photoStrip(a) + '</div>';
 
     h += '<div class="pad"><div class="ptitle">' + esc(a.name || I.t('unnamed')) + '</div>'
-      + (a.breeder ? '<a class="pbreeder" href="' + I.url('/care/breeder.html', { t: token }) + '">'
-        + icon('bi-person-badge') + esc(a.breeder) + ' ' + icon('bi-chevron-right') + '</a>' : '')
+      + (a.breeder ? '<a class="pbreeder' + (badge ? ' verified' : '') + '" href="'
+        + I.url('/care/breeder.html', { t: token }) + '">'
+        /* 인증된 업체면 로고가 사람 아이콘 자리를 대신합니다. 로고를 이름 뒤에
+           덧붙이면 줄이 길어져 좁은 화면에서 이름이 잘립니다. */
+        + (badge && badge.logo_url
+            ? '<img class="pbizlogo" src="' + esc(badge.logo_url) + '" alt="">'
+            : icon('bi-person-badge'))
+        + esc(a.breeder)
+        + (badge ? '<i class="bi bi-patch-check-fill pbizmark" title="'
+            + esc(I.t('bizVerifiedTitle', { name: badge.biz_name })) + '"></i>' : '')
+        + ' ' + icon('bi-chevron-right') + '</a>' : '')
       + '<div class="pfacts">' + facts.map(f =>
           '<div><span class="pk">' + esc(f[0]) + '</span><span class="pv">' + esc(f[1]) + '</span></div>').join('')
       + '</div>';
@@ -170,7 +179,15 @@
       return;
     }
     let related = [];
+    /* 사업자 인증 배지. 승인된 경우에만 상호명과 로고가 옵니다(supabase_v60).
+       v60 적용 전에는 함수가 없어 오류가 나는데, 그때는 배지 없이 그리면
+       됩니다 — 배지 하나 때문에 개체 카드 전체가 안 뜨면 안 됩니다. */
+    let badge = null;
     if (data.breeder) {
+      try {
+        const b = await SB.rpc('public_breeder_badge', { p_token: t });
+        if (!b.error && b.data && b.data.biz_name) badge = b.data;
+      } catch (e) { /* 배지는 없어도 됩니다 */ }
       try {
         const r = await SB.rpc('public_breeder_profile', {
           p_token: t, p_species: null, p_limit: 8, p_offset: 0
@@ -182,6 +199,6 @@
         console.warn('Related public animal cards could not be loaded.');
       }
     }
-    render(data, related, t);
+    render(data, related, t, badge);
   })();
 })();

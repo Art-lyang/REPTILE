@@ -944,6 +944,14 @@
     $('tabs').style.display = '';
     S.tab = tabFromHash();
     await reload();
+
+    /* 이용 기한이 얼마 안 남았으면 알려 줍니다. 기록을 실제로 만지는 화면이라
+       여기서 알려야 연장하든 정리하든 고를 수 있습니다.
+       모듈이 없으면(스크립트 미로드) 조용히 넘어갑니다 — 안내 하나 때문에
+       케어 화면이 안 뜨면 안 됩니다. */
+    if (window.PremiumExpiryNotice) {
+      window.PremiumExpiryNotice.show(A.premium, I.language());
+    }
   }
 
   boot();

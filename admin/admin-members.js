@@ -153,6 +153,11 @@
       <div class="mm-card-head"><div><b>${escape(member.email || t('unknown'))}</b>
         <p>${escape(member.name || t('unknown'))}${member.nickname ? ` · @${escape(member.nickname)}` : ''}</p></div>
         <div class="mm-badges">${badges(member)}</div></div>
+      <!-- 사업자 탭이 '회원 탭에서 복사하세요' 라고 안내하는데 정작 여기에
+           회원 ID 가 없었습니다. 전부 펼쳐 두면 카드가 UUID 로 어수선해지니
+           버튼만 두고 누를 때 복사합니다. -->
+      <button type="button" class="mm-uid" data-copy-uid="${member.user_id}"
+        title="${escape(member.user_id)}">${escape(t('copyId'))}</button>
       <dl class="mm-meta">
         <div><dt>${escape(t('contact'))}</dt><dd>${escape(member.phone || t('unknown'))}</dd></div>
         <div><dt>${escape(t('providers'))}</dt><dd>${escape(providers)}</dd></div>
@@ -251,12 +256,17 @@
     state.body.querySelectorAll('[data-nick-save]').forEach(button => {
       button.onclick = () => saveNickname(button.dataset.nickSave);
     });
+    state.body.querySelectorAll('[data-copy-uid]').forEach(button => {
+      button.onclick = () => copyId(button, button.dataset.copyUid);
+    });
   }
 
   function exportCsv() {
     const rows = filteredRows();
     const quote = value => `"${String(value == null ? '' : value).replace(/"/g, '""')}"`;
-    const fields = ['email', 'name', 'nickname', 'phone', 'account_status', 'tier', 'providers', 'created_at', 'last_sign_in_at', 'email_confirmed_at'];
+    /* user_id 가 맨 앞입니다. 사업자 등록이나 문의 대응에서 회원을 가리킬 때
+       쓰는 값이라, 내려받은 표에 없으면 화면을 다시 열어야 합니다. */
+    const fields = ['user_id', 'email', 'name', 'nickname', 'phone', 'account_status', 'tier', 'providers', 'created_at', 'last_sign_in_at', 'email_confirmed_at'];
     const lines = [fields.join(',')].concat(rows.map(member => fields.map(field =>
       quote(field === 'providers' ? (member.providers || []).join('|') : member[field])).join(',')));
     state.download('members.csv', `\ufeff${lines.join('\n')}`);
@@ -305,6 +315,25 @@
   /* 관리자가 직접 바꾸는 것은 회원의 2회 제한을 쓰지 않습니다(supabase_v59 의
      app.nickname_bypass). 문의로 들어온 추가 변경을 여기서 처리하기 때문입니다.
      비우고 저장하면 서버가 새로 지어 줍니다. */
+  /* 클립보드 API 는 브라우저가 막아 두면 실패합니다. 그때는 버튼 안에 ID 를
+     펼쳐 놓고 글자를 골라 둡니다 — 복사할 방법이 아예 없어지면 안 됩니다. */
+  async function copyId(button, userId) {
+    const before = button.textContent;
+    try {
+      await navigator.clipboard.writeText(userId);
+      button.textContent = t('copied');
+    } catch (error) {
+      button.textContent = userId;
+      const range = document.createRange();
+      range.selectNodeContents(button);
+      const selection = window.getSelection();
+      selection.removeAllRanges();
+      selection.addRange(range);
+      return;                       // 고른 채로 둡니다 — 되돌리면 다시 못 고릅니다
+    }
+    setTimeout(() => { button.textContent = before; }, 1400);
+  }
+
   async function saveNickname(userId) {
     const input = state.body.querySelector(`[data-nick-input="${userId}"]`);
     if (!input || state.busy) return;

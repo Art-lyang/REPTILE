@@ -33,6 +33,13 @@
 }
 /* 닉네임 이력은 접어 둡니다. 대부분의 회원은 볼 일이 없는데 펼쳐 두면
    카드가 길어져서 정작 자주 쓰는 조치 버튼이 화면 밖으로 밀립니다. */
+/* 회원 ID 복사. 평소에는 조용히 있다가 누를 때만 일합니다 — UUID 를 늘 펼쳐
+   두면 카드에서 정작 중요한 이메일·닉네임이 묻힙니다.
+   복사에 실패하면 버튼 안에 ID 가 펼쳐지므로 줄바꿈을 허용합니다. */
+.mm-uid{margin-top:8px;border:1px dashed var(--chipbd);border-radius:9px;background:transparent;
+  color:var(--ink2);font:inherit;font-size:11px;font-weight:700;padding:5px 9px;cursor:pointer;
+  word-break:break-all;text-align:left;max-width:100%}
+.mm-uid:hover{color:var(--ink);border-style:solid}
 .mm-nick{padding-top:10px;margin-top:10px;border-top:1px solid var(--hair)}
 .mm-nick summary{font-size:11.5px;font-weight:800;color:var(--ink2);cursor:pointer;list-style:none;
   display:flex;justify-content:space-between;align-items:center;gap:8px;padding:2px 0}

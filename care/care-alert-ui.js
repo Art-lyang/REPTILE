@@ -85,6 +85,8 @@
         today: options.day, core: options.core, animals: cache.animals,
         plans: cache.plans.length ? cache.plans : options.routinePlans || options.plans,
         records: cache.records.length ? cache.records : options.records, weights: cache.weights,
+        /* 무료 한도를 넘어 잠긴 개체의 알림은 멈춥니다(care-alerts.js 참고). */
+        activeAnimalIds: typeof app.activeAnimalIds === 'function' ? app.activeAnimalIds() : null,
       });
       return render({ alerts: alertRows, i18n: options.i18n, escapeHtml: options.escapeHtml }) + originalHtml;
     });

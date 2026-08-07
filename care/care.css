@@ -386,6 +386,18 @@ input.in[type="date"]{min-width:0;max-width:100%}
   padding:2px 9px; font-size:10.5px; font-weight:700; color:var(--ink2);
 }
 .chip.off{opacity:.7}
+/* 무료 한도 안내와, 한도를 넘어 잠긴 개체.
+   잠긴 것을 흐리게만 두면 고장으로 읽힙니다. 왜 잠겼고 무엇은 되는지
+   (보기·삭제) 카드 안에서 바로 알 수 있어야 합니다. */
+.quotabar{display:flex;align-items:center;justify-content:space-between;gap:12px;
+  margin:0 0 12px;padding:12px 14px;border:1px solid var(--sel-bd);border-radius:16px;
+  background:var(--sel-bg);color:var(--sel-fg);font-size:13px}
+.quotabar.over{border-color:var(--warn-bd);background:var(--warn-bg);color:var(--warn-fg)}
+.quotahint{margin-top:3px;font-size:11.5px;opacity:.85;line-height:1.5}
+.quotabar .mini{flex:0 0 auto;text-decoration:none}
+.card-locked{opacity:.72}
+.chip.chip-locked{background:var(--warn-bg);border-color:var(--warn-bd);color:var(--warn-fg)}
+.lockedwhy{color:var(--warn-fg)}
 /* 성별 기호 — ♀/♂(U+2640/2642)는 본문 한글 폰트에 없어 시스템 기호 폰트로
    대체됩니다. 대체 폰트는 베이스라인과 상하 여백이 달라서, 기호와 글자가 한
    텍스트 노드로 묶여 있으면 .chip 의 align-items:center 로도 어긋난 채 남습니다

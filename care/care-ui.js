@@ -58,6 +58,23 @@
     return '<i class="bi ' + name + '" aria-hidden="true"></i>';
   }
 
+  /* ── 무료 한도 ─────────────────────────────────────────────────────────
+     활성 = 수정·계획 지정·알림이 되는 개체입니다. 무료로 내려온 사람은 10마리만
+     활성이고, 나머지는 보기와 삭제만 됩니다.
+
+     quota.active 가 없으면(v54 적용 전, 또는 조회 실패) 전부 활성으로 봅니다.
+     화면이 잠기는 쪽으로 틀리면 멀쩡한 사람이 자기 기록을 못 고칩니다. */
+  function quota() { return S.quota || { premium: true, active: null, known: false }; }
+  function isActiveAnimal(id) {
+    const q = quota();
+    if (q.premium || !q.active) return true;
+    return q.active.indexOf(id) >= 0;
+  }
+  function overLimit() {
+    const q = quota();
+    return !q.premium && q.active ? Math.max(0, S.animals.length - q.active.length) : 0;
+  }
+
   function animalById(id) { return S.animals.filter(a => a.id === id)[0] || null; }
   function animalName(id) { const a = animalById(id); return a ? (a.name || I.t('unnamed')) : null; }
   function speciesOf(a) { return C.SPECIES[a && a.species] || C.SPECIES.other; }
@@ -75,12 +92,12 @@
      여유를 두려고 7일이 아니라 90일로 잡았습니다. */
   async function loadAll() {
     const from = C.addDays(C.today(), -90);
-    const [animals, plans, records, weights, feeds, streak] = await Promise.all([
+    const [animals, plans, records, weights, feeds, streak, quota] = await Promise.all([
       A.listAnimals(), A.listPlans(), A.listRecords(from), A.listWeights(null), A.listFeeds(),
-      A.routineStreak()
+      A.routineStreak(), A.careQuota()
     ]);
     S.animals = animals; S.plans = plans; S.records = records; S.weights = weights; S.feeds = feeds;
-    S.streak = streak;
+    S.streak = streak; S.quota = quota;
     window.CareAnimalEditRoute.activate(S, CarePhotos, A, location, history);
   }
 
@@ -143,8 +160,25 @@
   function tabAnimals() {
     if (S.editAnimal) return animalForm(S.editAnimal);
 
-    let h = '<button class="btn wide" data-newanimal="1" style="margin-bottom:14px">'
-          + icon('bi-plus-lg') + I.t('addAnimal') + '</button>';
+    const q = quota();
+    let h = '';
+
+    /* 무료 사용자에게 남은 자리를 먼저 알려 줍니다. 다 채우고 나서 "안 됩니다"
+       라고 하는 것보다, 채워 가는 동안 보이는 편이 낫습니다. */
+    if (q.known && !q.premium) {
+      const over = overLimit();
+      h += '<div class="quotabar' + (over ? ' over' : '') + '">'
+        + '<div><b>' + esc(I.t('freeQuotaTitle', {
+            used: I.formatNumber(S.animals.length), limit: I.formatNumber(q.limit),
+          })) + '</b>'
+        + '<div class="quotahint">' + esc(over ? I.t('freeQuotaOver', { count: I.formatNumber(over) })
+                                              : I.t('freeQuotaHint')) + '</div></div>'
+        + '<a class="mini" href="' + esc(I.url('/gecko/login.html')) + '">'
+        + icon('bi-gem') + esc(I.t('premiumAction')) + '</a></div>';
+    }
+
+    h += '<button class="btn wide" data-newanimal="1" style="margin-bottom:14px">'
+       + icon('bi-plus-lg') + I.t('addAnimal') + '</button>';
     if (!S.animals.length) {
       return h + '<div class="pad"><div class="empty">'
         + icon('bi-heart') + I.t('noAnimalsTitle') + '<br>' + I.t('noAnimalsBody') + '</div></div>';
@@ -179,15 +213,27 @@
               : a.sex === 'female' ? '<span class="chip">' + icon('bi-gender-female chip-sex') + I.t('sexFemale') + '</span>' : '';
     const stage = '<span class="chip">' + esc(I.t(LifeStage.labelKey(a.life_stage))) + '</span>';
 
-    return '<div class="card">'
+    /* 무료 한도를 넘어 잠긴 개체. 왜 잠겼는지 보이지 않으면 고장으로 읽힙니다.
+       삭제는 되고 수정만 막히므로, 수정 자리에 '활성으로 바꾸기' 를 둡니다. */
+    const locked = !isActiveAnimal(a.id);
+    const acts = locked
+      ? '<button class="mini" data-slotanimal="' + a.id + '">'
+        + icon('bi-arrow-up-circle') + esc(I.t('freeSlotActivate')) + '</button>'
+      : '<button class="mini" data-editanimal="' + a.id + '">' + icon('bi-pencil') + I.t('edit') + '</button>';
+
+    return '<div class="card' + (locked ? ' card-locked' : '') + '">'
       + '<div class="thumb">' + (a.photo_url ? Photo.tag(a.photo_url, a.name || '') : info.icon) + '</div>'
-      + '<div class="info"><div class="nm">' + esc(a.name || I.t('unnamed')) + sex + stage + '</div>'
-      + '<div class="ms">' + esc(bits.join(' · ')) + '</div></div>'
+      + '<div class="info"><div class="nm">' + esc(a.name || I.t('unnamed')) + sex + stage
+      + (locked ? '<span class="chip chip-locked">' + icon('bi-lock') + esc(I.t('freeSlotLocked')) + '</span>' : '')
+      + '</div>'
+      + '<div class="ms">' + esc(bits.join(' · '))
+      + (locked ? '<br><span class="lockedwhy">' + esc(I.t('freeSlotLockedWhy')) + '</span>' : '')
+      + '</div></div>'
       + '<div class="acts">'
       /* 개체 관리 화면으로. 주소에 id 가 들어가 즐겨찾기에 둘 수 있습니다. */
       + '<a class="mini" href="' + esc(I.url('animal.html?id=' + encodeURIComponent(a.id))) + '">'
       + icon('bi-graph-up') + I.t('manage') + '</a>'
-      + '<button class="mini" data-editanimal="' + a.id + '">' + icon('bi-pencil') + I.t('edit') + '</button>'
+      + acts
       + '</div></div>'
       + (S.focus === a.id ? weightPanel(a) : '');
   }
@@ -559,6 +605,12 @@
       CarePhotos.begin(S.editAnimal, A);
       return render();
     }
+    /* 잠긴 개체를 활성 자리로 올립니다. 자리가 다 찼으면 서버가 거절하고,
+       그때는 다른 개체를 먼저 내리라고 알려 줍니다. */
+    if (d.slotanimal) {
+      return act(function () { return A.setAnimalSlot(d.slotanimal, true); },
+        I.t('freeSlotActivated'));
+    }
     if (d.cancel === 'animal') {
       return CarePhotos.cancel().then(function () {
         S.editAnimal = null;
@@ -856,17 +908,10 @@
       return;
     }
 
-    if (!A.premium.active) {
-      $('body').innerHTML = '<div class="gate"><div class="pad">'
-        + '<div class="gicon">' + icon('bi-gem') + '</div>'
-        + '<div class="lbl">' + I.t('premiumTitle') + '</div>'
-        + '<div class="hint">' + I.t('premiumFullBody') + '</div>'
-        /* 코드 입력 창은 계정 화면에 있습니다. 계산기에는 #premium 앵커가 없어
-           그리로 보내면 아무 데도 도착하지 않습니다. */
-        + '<a class="btn wide" style="text-decoration:none;margin-top:16px" '
-        + 'href="' + I.url('/gecko/login.html') + '">' + icon('bi-gem') + I.t('premiumAction') + '</a></div></div>';
-      return;
-    }
+    /* 예전에는 여기서 프리미엄이 아니면 통째로 막았습니다. 그러면 써 보지도
+       못한 사람에게 결제를 권하는 셈이라, 무료도 들어오게 바꿨습니다.
+       무료는 개체 10마리까지 쓰고, 브리딩 관리 같은 브리더용 기능만 잠깁니다.
+       한도를 실제로 지키는 곳은 DB 입니다(supabase_v54.sql). */
 
     /* 헤더 부제를 계정 정보로 바꿉니다. 로그인 전에는 이 도구가 무엇인지
        설명하는 문구가 들어 있고, 들어온 뒤에는 그 설명이 필요 없습니다. */

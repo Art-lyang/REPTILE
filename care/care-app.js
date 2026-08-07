@@ -45,6 +45,9 @@ const CareApp = (function () {
 
   let USER = null;
   let PREM = { active: false, kind: null, expires_at: null };
+  /* 무료 한도. careQuota() 가 채웁니다. 받기 전에는 막지 않는 쪽으로 둡니다 —
+     화면이 잠기는 쪽으로 틀리면 멀쩡한 사람이 자기 기록을 못 고칩니다. */
+  let QUOTA = { premium: true, limit: 0, used: 0, active: null, known: false };
 
   /* 로그인 안 한 사람도 개체를 볼 수 있게 하는 기기 키.
      케어 기능 자체는 로그인이 필요하지만, my_rows 가 인자를 요구합니다. */
@@ -140,6 +143,41 @@ const CareApp = (function () {
       if (SB && window.StudioAnalytics) {
         try { window.StudioAnalytics.logVisit(SB, 'care', lang || 'ko'); } catch (e) {}
       }
+    },
+
+    /* ── 무료 한도 ─────────────────────────────────────────────────────────
+       무료는 개체 10마리까지 씁니다. 결제가 끊겨 한도를 넘긴 사람은 10마리만
+       '활성' 이 되고, 초과분은 보기와 삭제만 됩니다(supabase_v54.sql).
+
+       실제로 막는 곳은 DB 입니다. 여기서 받아 오는 값은 화면에 안내를 띄우고
+       버튼을 감추는 용도일 뿐입니다 — 이 값만 믿고 막으면 개발자도구로 넘어갑니다.
+
+       v54 를 적용하기 전에는 함수가 없어서 오류가 납니다. 그때는 한도가 없던
+       예전처럼(무제한·전부 활성) 다루어 화면이 멈추지 않게 합니다. */
+    async careQuota() {
+      try {
+        const q = await req(SB.rpc('my_care_quota'));
+        if (!q || typeof q !== 'object') throw new Error('CARE_QUOTA_SHAPE');
+        QUOTA = {
+          premium: !!q.premium,
+          limit: Number(q.limit) || 0,
+          used: Number(q.used) || 0,
+          active: Array.isArray(q.active) ? q.active : null,
+          known: true,
+        };
+      } catch (e) {
+        QUOTA = { premium: true, limit: 0, used: 0, active: null, known: false };
+      }
+      return QUOTA;
+    },
+
+    /* 알림 엔진처럼 화면 밖에 있는 곳도 활성 목록을 봐야 해서 열어 둡니다.
+       프리미엄이거나 아직 못 받았으면 null 이고, 그때는 아무것도 거르지 않습니다. */
+    activeAnimalIds() { return QUOTA.premium ? null : QUOTA.active; },
+
+    /* 초과분에 걸린 개체를 활성으로 올리거나 내립니다. */
+    async setAnimalSlot(animalId, pinned) {
+      return req(SB.rpc('set_animal_free_slot', { p_id: animalId, p_pinned: !!pinned }));
     },
 
     /* ── 개체 ──────────────────────────────────────────────────────────── */

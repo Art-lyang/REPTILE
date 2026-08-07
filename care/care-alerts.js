@@ -120,7 +120,29 @@
     });
   }
 
-  function build(input) {
+  /* 무료 한도를 넘어 잠긴 개체는 알림에서 뺍니다.
+     수정도 못 하고 완료 표시도 못 하는데 "오늘 급여할 시간입니다" 가 계속 뜨면,
+     그건 알림이 아니라 잔소리가 됩니다. 대신 개체 목록에서 왜 멈췄는지 보여
+     줍니다(care-ui.js 의 card-locked).
+
+     activeAnimalIds 를 넘기지 않으면 아무것도 거르지 않습니다 — 한도가 없던
+     시절과 프리미엄 사용자가 여기에 해당합니다. */
+  function onlyActive(input) {
+    const active = input.activeAnimalIds;
+    if (!Array.isArray(active)) return input;
+    const allowed = {};
+    active.forEach(function (id) { allowed[id] = true; });
+    const keep = function (row) { return !row || !row.animal_id || allowed[row.animal_id]; };
+    return Object.assign({}, input, {
+      animals: (input.animals || []).filter(function (a) { return !a || allowed[a.id]; }),
+      plans: (input.plans || []).filter(keep),
+      records: (input.records || []).filter(keep),
+      weights: (input.weights || []).filter(keep),
+    });
+  }
+
+  function build(rawInput) {
+    const input = onlyActive(rawInput || {});
     if (!input || !input.core || !input.today) return [];
     const index = animalIndex(input.animals);
     const alerts = [];

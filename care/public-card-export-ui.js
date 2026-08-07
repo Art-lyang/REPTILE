@@ -52,7 +52,10 @@
         model: cardModel,
         photoUrl: photo,
         qr: qr,
-        labels: { hatch: I.t('hatchFact'), clutch: I.t('clutchFact'), weight: I.t('latestWeightFact') }
+        labels: {
+          hatch: I.t('hatchFact'), clutch: I.t('clutchFact'),
+          weight: I.t('latestWeightFact'), age: I.t('ageFact')
+        }
       });
       const result = await Exporter.deliver(image, Exporter.filename(cardModel.name), cardModel.name, navigator, document);
       if (result === 'shared') toast(I.t('publicCardExportShared'));

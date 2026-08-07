@@ -18,8 +18,16 @@
       sex: i18n.t(sexKey),
       stage: data.life_stage ? i18n.t(lifeStage.labelKey(data.life_stage)) : '',
       hatch: data.hatch_date ? i18n.formatDate(data.hatch_date) : '',
+      /* 나이는 해칭일에서 계산합니다. 해칭일을 안 적었으면 비웁니다 —
+         모르는 것을 '0살' 로 보여주면 안 됩니다(care-core.js ageText 와 같은 규칙). */
+      age: data.hatch_date && i18n.ageText ? (i18n.ageText(data.hatch_date) || '') : '',
       clutch: clean(data.clutch),
       weight: data.latest_weight ? i18n.formatNumber(data.latest_weight.grams) + 'g' : '',
+      /* 체중은 언제 잰 값인지가 같이 있어야 뜻이 있습니다. 분양 글에 카드를
+         올렸을 때 "48g" 만 있으면 그게 오늘 값인지 반년 전 값인지 알 수 없습니다.
+         public_animal 이 measured_on 을 함께 돌려주는데 그동안 버리고 있었습니다. */
+      weightOn: data.latest_weight && data.latest_weight.measured_on
+        ? i18n.formatDate(data.latest_weight.measured_on) : '',
       morphs: (data.morphs || []).map(clean).filter(Boolean).slice(0, 4),
       breeder: clean(data.breeder),
       parents: parentText,
@@ -110,8 +118,10 @@
     }
   }
 
-  function fact(ctx, label, value, x, y, width) {
-    rounded(ctx, x, y, width, 92, 22);
+  /* sub 는 값 아래 작게 붙는 한 줄입니다. 체중을 언제 쟀는지처럼, 값만으로는
+     뜻이 반쪽인 경우에 씁니다. 없으면 예전과 똑같이 그립니다. */
+  function fact(ctx, label, value, x, y, width, sub) {
+    rounded(ctx, x, y, width, sub ? 106 : 92, 22);
     ctx.fillStyle = '#ebe5d8';
     ctx.fill();
     ctx.fillStyle = '#6c756e';
@@ -120,6 +130,11 @@
     ctx.fillStyle = '#123b31';
     ctx.font = '800 27px Pretendard, sans-serif';
     ctx.fillText(shorten(ctx, value, width - 44), x + 22, y + 67);
+    if (sub) {
+      ctx.fillStyle = '#6c756e';
+      ctx.font = '700 18px Pretendard, sans-serif';
+      ctx.fillText(shorten(ctx, sub, width - 44), x + 22, y + 92);
+    }
   }
 
   async function blob(options) {
@@ -180,12 +195,20 @@
       pillX += width + 12;
     });
 
+    /* 분양 글에 올라가는 카드라, 사는 쪽이 가장 먼저 확인하는 것부터 놓습니다.
+       나이는 해칭일보다 바로 읽히고, 체중은 언제 잰 값인지가 붙어야 뜻이 있습니다.
+       클러치는 있을 때만 뒤에 붙습니다 — 없는 개체가 더 많습니다. */
     const facts = [
-      [labels.hatch, data.hatch], [labels.clutch, data.clutch], [labels.weight, data.weight]
-    ].filter(function (item) { return item[1]; }).slice(0, 3);
+      [labels.hatch, data.hatch, ''],
+      [labels.age, data.age, ''],
+      [labels.weight, data.weight, data.weightOn],
+      [labels.clutch, data.clutch, '']
+    ].filter(function (item) { return item[1]; }).slice(0, 4);
     const gap = 14;
     const factWidth = facts.length ? (952 - gap * (facts.length - 1)) / facts.length : 0;
-    facts.forEach(function (item, index) { fact(ctx, item[0], item[1], 64 + index * (factWidth + gap), 892, factWidth); });
+    facts.forEach(function (item, index) {
+      fact(ctx, item[0], item[1], 64 + index * (factWidth + gap), 892, factWidth, item[2]);
+    });
 
     rounded(ctx, 64, 1014, 952, 278, 38); ctx.fillStyle = '#073f33'; ctx.fill();
     ctx.fillStyle = '#fff'; ctx.font = '850 35px Pretendard, sans-serif';

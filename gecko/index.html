@@ -108,7 +108,6 @@
       <div class="card-top">
         <div class="avatar"><img src="../assets/leo-face-a.png" alt="" aria-hidden="true"></div>
         <div class="card-name"><h2><span id="lbl-pa"></span></h2><div class="card-role" id="lbl-pa-role-leo">유전 형질 선택</div></div>
-        <button type="button" class="helpbtn" onclick="toggleLeoOptNote()"><i class="bi bi-info-circle" aria-hidden="true"></i><span id="lbl-help-leo">선택 도움말</span></button>
       </div>
       <div class="searchbar">
         <i class="bi bi-search sicon" aria-hidden="true"></i>
@@ -122,7 +121,6 @@
       <div class="card-top">
         <div class="avatar"><img src="../assets/leo-face-b.png" alt="" aria-hidden="true"></div>
         <div class="card-name"><h2><span id="lbl-pb"></span></h2><div class="card-role" id="lbl-pb-role-leo">유전 형질 선택</div></div>
-        <button type="button" class="helpbtn" onclick="toggleLeoOptNote()"><i class="bi bi-info-circle" aria-hidden="true"></i><span id="lbl-help2-leo">선택 도움말</span></button>
       </div>
       <div class="searchbar">
         <i class="bi bi-search sicon" aria-hidden="true"></i>
@@ -185,7 +183,7 @@
 <div class="modal-overlay" id="updModal">
   <div class="modal">
     <div class="modal-head">
-      <h3>📢 업데이트 노트</h3>
+      <h3 id="lbl-updtitle">📢 업데이트 노트</h3>
       <button class="modal-x" onclick="closeUpd()" aria-label="close">✕</button>
     </div>
     <div class="modal-body">
@@ -198,11 +196,11 @@
         <div class="upd-title soon" id="lbl-updsoon">🔜 업데이트 예정</div>
         <ul id="updSoon"></ul>
       </div>
-      <div class="modal-mail">문의 · 건의: <a href="mailto:kmc612000@gmail.com">kmc612000@gmail.com</a></div>
+      <div class="modal-mail"><span id="lbl-modalmail">문의 · 건의: </span><a href="mailto:kmc612000@gmail.com">kmc612000@gmail.com</a></div>
     </div>
     <div class="modal-foot">
-      <button class="btn-today" onclick="dismissToday()">오늘 하루 안 보기</button>
-      <button class="btn-close" onclick="closeUpd()">닫기</button>
+      <button class="btn-today" onclick="dismissToday()"><span id="lbl-updtoday">오늘 하루 안 보기</span></button>
+      <button class="btn-close" onclick="closeUpd()"><span id="lbl-updclose">닫기</span></button>
     </div>
   </div>
 </div>
@@ -249,7 +247,7 @@
 
 <script src="gecko-explain.js?v=20260731e"></script>
 <script src="/assets/calculation-history-store.js?v=20260731h"></script>
-<script src="gecko-ui.js?v=20260809a"></script>
+<script src="gecko-ui.js?v=20260809b"></script>
 
 <script src="gecko-app.js?v=20260809a"></script>
 </body>

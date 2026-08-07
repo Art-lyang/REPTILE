@@ -44,6 +44,7 @@ const I18N = {
     optDom:{nn:'정상', het:'비주얼', mm:'슈퍼폼'},
     note:'<b>참고</b> — 트램퍼·벨·레인워터 알비노는 서로 <b>다른 유전자</b>라서, 한쪽 알비노 het와 다른 알비노 het를 교배하면 알비노가 나오지 않습니다(더블 het). 맥스노우는 불완전우성(슈퍼폼 = 슈퍼 스노우, 건강함)이고, 에니그마·W&Y는 우성입니다. <b>일부 모프는 슈퍼폼이나 특정 조합에서 심각한 건강 문제·치사성이 나타납니다</b>(예: 슈퍼 레몬 프로스트의 종양, 에니그마의 신경 증상). 위험 조합은 결과 상단에 경고로 표시됩니다. <br><br><b>스노우</b> — 국내에 유통되는 스노우는 대부분 맥스노우라서, 보통 ‘스노우’라고 하면 맥스노우를 줄여 부르는 말입니다. <b>슈퍼폼(슈퍼 스노우)은 맥스노우가 있어야 나옵니다.</b> TUG·젬 스노우는 서로 붙이거나 같은 것끼리 붙여도 슈퍼폼이 나오지 않습니다. 이 계산기는 맥스노우만 다룹니다.',
     updDone:'업데이트 됨', updSoon:'업데이트 예정',
+    updTitle:'업데이트 노트', modalMail:'문의 · 건의:', btnToday:'오늘 하루 안 보기', btnClose:'닫기',
     updDoneList:['V1.0 테스트버전 출시'],
     updSoonList:['리스트 준비중'],
     mailNote:'정보수정, 버그 및 업데이트 건의는 <b>문의하기</b>로 보내주세요',
@@ -93,6 +94,7 @@ const I18N = {
     optDom:{nn:'Normal', het:'Visual', mm:'Super form'},
     note:'<b>Note</b> — Tremper, Bell and Rainwater albino are <b>separate genes</b>, so crossing a het of one with a het of another yields no albinos (double het). Mack Snow is incomplete dominant (homozygous = Super Snow, healthy); Enigma and W&Y are dominant. <b>Some morphs cause serious health issues or lethality in their super (homozygous) form or in certain pairings</b> (e.g. tumors in Super Lemon Frost, neurological symptoms in Enigma). Risky pairings are flagged at the top of the results. <br><br><b>Snow</b> — <b>This calculator follows Korean convention</b>, where nearly every snow in circulation is Mack Snow, so “Snow” is used as shorthand for it. Practice elsewhere may differ. The super form (Super Snow) <b>only appears with Mack Snow</b> — TUG and Gem snows produce none, paired with each other or among themselves. Only Mack Snow is modelled here.',
     updDone:'Shipped', updSoon:'Coming next',
+    updTitle:'Update notes', modalMail:'Questions or ideas:', btnToday:'Hide for today', btnClose:'Close',
     updDoneList:['V1.0 test release'],
     updSoonList:['List coming soon'],
     mailNote:'Corrections, bug reports and feature requests are welcome via <b>Contact</b>',
@@ -142,6 +144,7 @@ const I18N = {
     optDom:{nn:'普通', het:'表现型', mm:'超级形态'},
     note:'<b>注意</b> — 特伦伯、贝尔、雨水白化是<b>不同的基因</b>，因此一方白化 het 与另一方白化 het 交配不会产生白化（双 het）。麦克雪花为不完全显性（纯合 = 超级雪花，健康），Enigma 与 W&Y 为显性。<b>部分形态在超级（纯合）形式或特定配对中会出现严重健康问题或致死</b>（例如超级柠檬霜的肿瘤、Enigma 的神经症状）。有风险的配对会在结果顶部以警告显示。 <br><br><b>雪花</b> — <b>本计算器采用韩国的惯例</b>：市面流通的雪花几乎都是麦克雪花，因此「雪花」通常就是麦克雪花的简称。其他地区的用法可能不同。超级形态（超级雪花）<b>只有在含麦克雪花时才会出现</b> — TUG 与 Gem 雪花无论彼此配对还是同类配对都不会产生超级形态。本计算器仅处理麦克雪花。',
     updDone:'已更新', updSoon:'计划中',
+    updTitle:'更新记录', modalMail:'咨询与建议:', btnToday:'今天不再显示', btnClose:'关闭',
     updDoneList:['V1.0 测试版发布'],
     updSoonList:['列表准备中'],
     mailNote:'信息更正、错误报告与功能建议请通过<b>联系我们</b>发送',
@@ -191,6 +194,7 @@ const I18N = {
     optDom:{nn:'ノーマル', het:'ビジュアル', mm:'スーパーフォーム'},
     note:'<b>参考</b> — トレンパー・ベル・レインウォーターアルビノは<b>別々の遺伝子</b>のため、片方のアルビノ het と別のアルビノ het を交配してもアルビノは出ません（ダブル het）。マックスノーは不完全優性（ホモ = スーパースノー、健康）、エニグマ・W&Y は優性です。<b>一部のモルフはスーパー（ホモ）や特定の組み合わせで深刻な健康問題や致死性が生じます</b>（例：スーパーレモンフロストの腫瘍、エニグマの神経症状）。リスクのある組み合わせは結果上部に警告表示されます。 <br><br><b>スノー</b> — <b>本計算機は韓国での慣習に従っています</b>。国内で流通するスノーはほぼすべてマックスノーのため、「スノー」はマックスノーの略称として使われます。地域によって異なる場合があります。スーパーフォーム（スーパースノー）は<b>マックスノーがあって初めて出ます</b> — TUG・ジェムスノーは互いに、あるいは同士で交配してもスーパーフォームは出ません。本計算機はマックスノーのみを扱います。',
     updDone:'更新済み', updSoon:'更新予定',
+    updTitle:'更新履歴', modalMail:'お問い合わせ・ご提案:', btnToday:'今日は表示しない', btnClose:'閉じる',
     updDoneList:['V1.0 テスト版リリース'],
     updSoonList:['リスト準備中'],
     mailNote:'情報の修正・不具合のご報告・ご要望は<b>お問い合わせ</b>からお送りください',
@@ -452,8 +456,9 @@ function applyLang(){
   document.getElementById('lbl-pb').textContent=t.parentB;
   document.getElementById('lbl-pa-role-leo').textContent=t.parentRole;
   document.getElementById('lbl-pb-role-leo').textContent=t.parentRole;
-  document.getElementById('lbl-help-leo').textContent=t.helpBtn;
-  document.getElementById('lbl-help2-leo').textContent=t.helpBtn;
+  /* '선택 도움말' 버튼 두 개를 없앴습니다. 상단의 '표시 옵션 설명' 과 똑같은
+     #optNote 를 여는 버튼이라, 한 화면에 같은 것을 여는 버튼이 셋이었습니다.
+     버튼과 함께 toggleLeoOptNote 도 지웠습니다 — 부르는 곳이 없습니다. */
   document.getElementById('lbl-selected').textContent=t.selectedLabel;
   document.getElementById('lbl-sel-a').textContent=t.parentA;
   document.getElementById('lbl-sel-b').textContent=t.parentB;
@@ -474,6 +479,14 @@ function applyLang(){
      배포를 해야 했습니다. 이제 여기서 그리고, 관리자에서 고친 값이 있으면
      gecko-app.js 가 t.updDoneList / t.updSoonList 를 덮어씁니다. */
   const setUpd=(id,val)=>{ const el=document.getElementById(id); if(el) el.innerHTML=val; };
+  /* 모달 문구도 사전에서 가져옵니다. HTML 에 한국어로 박혀 있어서 영어·일본어·
+     중국어 화면에서 이 모달만 한국어로 남아 있었습니다. 크레·펫테일·볼파이톤은
+     이미 이렇게 하고 있었고, 레오파드만 빠져 있었습니다. */
+  [['lbl-updtitle','updTitle'],['lbl-modalmail','modalMail'],
+   ['lbl-updtoday','btnToday'],['lbl-updclose','btnClose']].forEach(function(pair){
+    const node=document.getElementById(pair[0]);
+    if(node && t[pair[1]]) node.textContent=t[pair[1]];
+  });
   setUpd('lbl-upddone','✅ '+escapeHtml(t.updDone));
   setUpd('lbl-updsoon','🔜 '+escapeHtml(t.updSoon));
   setUpd('updDone',(t.updDoneList||[]).map(x=>'<li>'+x+'</li>').join(''));
@@ -538,14 +551,6 @@ function renderLeoSelected(){
   });
 }
 
-function toggleLeoOptNote(){
-  const note=document.getElementById('optNote');
-  const button=document.getElementById('optInfoBtn');
-  const open=!note.classList.contains('show');
-  note.classList.toggle('show',open);
-  button.setAttribute('aria-expanded',open?'true':'false');
-  if(open) note.scrollIntoView({behavior:'smooth',block:'nearest'});
-}
 
 function resetAll(){
   GENES.forEach(g=>{STATE.A[g.id]='nn';STATE.B[g.id]='nn';});

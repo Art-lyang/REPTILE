@@ -64,6 +64,7 @@ const I18N = {
     seoIntro:'아프리칸 팻테일 게코의 부모 형질을 고르면 새끼 모프와 확률을 계산합니다. 화이트아웃, 패턴리스, 스팅어, 아마엘 알비노, 줄루, 오레오, 캐러멜 등 팻테일 계통의 유전 형질을 다루고 조합 명칭과 주의가 필요한 교배를 함께 표시합니다. 한국어·영어·중국어·일본어를 지원하며 회원가입 없이 무료로 쓸 수 있습니다.',
     footer:'확률은 멘델 유전 법칙에 따른 이론값입니다 · 라인브리딩(폴리제닉) 형질은 확률 계산 대상이 아닙니다',
     updH:'업데이트 노트', updDone:'업데이트 됨', updSoon:'업데이트 예정',
+    updTitle:'업데이트 노트', modalMail:'문의 · 건의:', btnToday:'오늘 하루 안 보기', btnClose:'닫기',
     updDoneList:[
       'V1.0 테스트버전 출시',
       '가능성 헷(66·33%) 표기 기본 켜짐',
@@ -132,6 +133,7 @@ const I18N = {
     seoIntro:'Pick each parent’s traits to see the offspring morphs and their odds for African fat-tailed geckos. It covers Whiteout, Patternless, Stinger, Amel albino, Zulu, Oreo and Caramel among others, names the combos and flags pairings that need care. Free, no sign-up, in Korean, English, Chinese and Japanese.',
     footer:'Probabilities are theoretical values from Mendelian inheritance · line-bred (polygenic) traits are not probability-based',
     updH:'Update notes', updDone:'Shipped', updSoon:'Coming next',
+    updTitle:'Update notes', modalMail:'Questions or ideas:', btnToday:'Hide for today', btnClose:'Close',
     updDoneList:[
       'V1.0 test release',
       'Possible-het (66 · 33%) display on by default',
@@ -200,6 +202,7 @@ const I18N = {
     seoIntro:'ニシアフリカトカゲモドキの両親の形質を選ぶと、仔のモルフと確率を計算します。ホワイトアウト、パターンレス、スティンガー、アメルアルビノ、ズールー、オレオ、キャラメルなどに対応し、コンボ名と注意が必要な組み合わせを表示します。会員登録なしで無料、4言語対応です。',
     footer:'確率はメンデル遺伝に基づく理論値です · ラインブリード（ポリジェニック）形質は確率計算の対象外です',
     updH:'アップデート情報', updDone:'更新済み', updSoon:'更新予定',
+    updTitle:'更新履歴', modalMail:'お問い合わせ・ご提案:', btnToday:'今日は表示しない', btnClose:'閉じる',
     updDoneList:[
       'V1.0 テスト版リリース',
       '可能性 het（66・33%）表示をデフォルトでオン',
@@ -268,6 +271,7 @@ const I18N = {
     seoIntro:'选择非洲肥尾守宫父母双方的性状，即可计算后代形态与概率。支持 Whiteout、无纹、Stinger、Amel 白化、Zulu、Oreo、Caramel 等性状，并显示组合名称与需要注意的配对。免注册免费使用，支持韩英中日四种语言。',
     footer:'概率为基于孟德尔遗传的理论值 · 线育（多基因）性状不在概率计算范围内',
     updH:'更新说明', updDone:'已更新', updSoon:'计划中',
+    updTitle:'更新记录', modalMail:'咨询与建议:', btnToday:'今天不再显示', btnClose:'关闭',
     updDoneList:[
       'V1.0 测试版发布',
       '默认开启可能 het（66 · 33%）显示',
@@ -547,7 +551,8 @@ function applyLang(){
   set('h-title',t.title); set('h-sub',t.sub);
   set('lbl-pa',t.parentA); set('lbl-pb',t.parentB);
   set('lbl-pa-role',t.parentRole); set('lbl-pb-role',t.parentRole);
-  set('lbl-help',t.helpBtn); set('lbl-help2',t.helpBtn);
+  /* '선택 도움말' 버튼 두 개를 없앴습니다. 상단의 '표시 옵션 설명' 과 똑같은
+     #optNote 를 여는 버튼이라, 한 화면에 같은 것을 여는 버튼이 셋이었습니다. */
   set('lbl-selected',t.selectedLabel);
   set('lbl-sel-a',t.parentA); set('lbl-sel-b',t.parentB);
   setH('btn-reset','<i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i><span>'+escapeHtml(t.reset)+'</span>');

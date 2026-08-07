@@ -74,6 +74,7 @@ const I18N = {
     seoIntro:'볼파이톤 부모의 형질을 고르면 새끼 모프와 확률을 계산합니다. 파스텔·모하비·파이볼드·클라운·알비노 등 60가지가 넘는 유전자를 검색으로 찾아 고를 수 있고, 스파이더 워블·데저트 암컷 불임·슈퍼 시나몬 기형 같은 유전 건강 이슈를 함께 알려줍니다. 회원가입 없이 무료입니다.',
     footer:'확률은 멘델 유전 법칙에 따른 이론값입니다 · 라인브리딩(폴리제닉) 형질은 확률 계산 대상이 아닙니다',
     updH:'업데이트 노트', updDone:'업데이트 됨', updSoon:'업데이트 예정',
+    updTitle:'업데이트 노트', modalMail:'문의 · 건의:', btnToday:'오늘 하루 안 보기', btnClose:'닫기',
     updDoneList:[
       'V1.0 테스트버전 출시',
       '부모 카드별 모프 검색 추가 (한·영·일·중 이름과 별칭 지원)',
@@ -149,6 +150,7 @@ const I18N = {
     seoIntro:'Pick each parent’s traits to see offspring morphs and odds for ball pythons. Search across 60+ genes — Pastel, Mojave, Piebald, Clown, Albino and more — and see genetic health issues such as Spider wobble, Desert female infertility and Super Cinnamon defects alongside the odds. Free, no sign-up.',
     footer:'Probabilities are theoretical values from Mendelian inheritance · line-bred (polygenic) traits are not probability-based',
     updH:'Update notes', updDone:'Shipped', updSoon:'Coming next',
+    updTitle:'Update notes', modalMail:'Questions or ideas:', btnToday:'Hide for today', btnClose:'Close',
     updDoneList:[
       'V1.0 test release',
       'Per-parent morph search (Korean, English, Japanese, Chinese names and aliases)',
@@ -224,6 +226,7 @@ const I18N = {
     seoIntro:'ボールパイソンの両親の形質を選ぶと、仔のモルフと確率を計算します。パステル・モハベ・パイボールド・クラウン・アルビノなど60以上の遺伝子を検索で探して選べ、スパイダーのウォブルやデザート雌の不妊、スーパーシナモンの奇形といった遺伝性の健康問題も併せて表示します。登録不要・無料です。',
     footer:'確率はメンデル遺伝に基づく理論値です · ラインブリード（ポリジェニック）形質は確率計算の対象外です',
     updH:'アップデート情報', updDone:'更新済み', updSoon:'更新予定',
+    updTitle:'更新履歴', modalMail:'お問い合わせ・ご提案:', btnToday:'今日は表示しない', btnClose:'閉じる',
     updDoneList:[
       'V1.0 テスト版リリース',
       '親カードごとのモルフ検索を追加（韓・英・日・中の名称と別名に対応）',
@@ -299,6 +302,7 @@ const I18N = {
     seoIntro:'选择球蟒父母双方的性状，即可计算后代形态与概率。可搜索 60 多种基因（Pastel、Mojave、Piebald、Clown、白化等）并直接选择，同时提示 Spider 摇头症、Desert 雌性不育、超级 Cinnamon 畸形等遗传健康问题。免注册免费使用。',
     footer:'概率为基于孟德尔遗传的理论值 · 线育（多基因）性状不在概率计算范围内',
     updH:'更新说明', updDone:'已更新', updSoon:'计划中',
+    updTitle:'更新记录', modalMail:'咨询与建议:', btnToday:'今天不再显示', btnClose:'关闭',
     updDoneList:[
       'V1.0 测试版发布',
       '新增亲本卡片内的形态搜索（支持韩英日中名称与别名）',
@@ -715,7 +719,8 @@ function applyLang(){
   set('h-title',t.title); set('h-sub',t.sub);
   set('lbl-pa',t.parentA); set('lbl-pb',t.parentB);
   set('lbl-pa-role',t.parentRole); set('lbl-pb-role',t.parentRole);
-  set('lbl-help',t.helpBtn); set('lbl-help2',t.helpBtn);
+  /* '선택 도움말' 버튼 두 개를 없앴습니다. 상단의 '표시 옵션 설명' 과 똑같은
+     #optNote 를 여는 버튼이라, 한 화면에 같은 것을 여는 버튼이 셋이었습니다. */
   set('lbl-selected',t.selectedLabel);
   set('lbl-sel-a',t.parentA); set('lbl-sel-b',t.parentB);
   ['A','B'].forEach(function(s){

@@ -30,6 +30,7 @@ const I18N = {
     normal:'노멀', comboTag:'콤보', deadTag:'비생존', healthTag:'건강주의',
     colProb:'확률', colVisual:'비주얼 (발현)', colMorph:'모프 (헷 포함)', colHet:'HET (보인자)', hetNone:'–',
     secGene:'유전 모프 (확률 계산)',
+    secCombo:'콤보 (탭하면 자동 세팅)',
     visualLbl:'비주얼', hetLbl:'헷', copy1:'1카피', copy2:'2카피',
     warnH:'주의가 필요한 유전 조합',
     viveNote:function(p){return '이 조합에는 <b>부화·생존이 어려운 결과</b>가 '+p+'% 포함되어 있습니다.';},
@@ -54,9 +55,10 @@ const I18N = {
       +'라인브리딩 형질의 슈퍼달마시안·슈퍼스트라이프·슈퍼하이포는 <b>표현이 강하다</b>는 뜻일 뿐 동형접합이 아닙니다.',
     terms:'이용약관', privacy:'개인정보처리방침',
     seoIntroH:'크레스티드 게코 모프 계산기',
-    seoIntro:'부모 개체의 형질을 고르면 새끼 모프와 확률을 계산합니다. 릴리화이트, 카푸치노·세이블(같은 자리의 3중 대립인자), 팬텀, 초초, 아잔틱, 엠티백, 달마시안, 파이드, 하이포를 다루며 루왁·프라푸치노·소락 같은 조합 명칭과 슈퍼릴리화이트 같은 치사 조합 경고를 함께 보여줍니다. 화이트 월을 포함한 구조형질과 라인브리딩 형질도 참고용으로 표시합니다. 한국어·영어·중국어·일본어를 지원하며 회원가입 없이 무료로 쓸 수 있습니다.',
+    seoIntro:'부모 개체의 형질을 고르면 새끼 모프와 확률을 계산합니다. 릴리화이트, 카푸치노·세이블(같은 자리의 3중 대립인자), 팬텀, 초초, 아잔틱, 엠티백, 달마시안, 파이드, 하이포를 다루며 루왁·프라푸치노·설악 같은 조합 명칭과 슈퍼릴리화이트 같은 치사 조합 경고를 함께 보여줍니다. 화이트 월을 포함한 구조형질과 라인브리딩 형질도 참고용으로 표시합니다. 한국어·영어·중국어·일본어를 지원하며 회원가입 없이 무료로 쓸 수 있습니다.',
     footer:'확률은 멘델 유전 법칙에 따른 이론값입니다 · 라인브리딩(폴리제닉) 형질은 확률 계산 대상이 아닙니다',
     updH:'업데이트 노트', updDone:'업데이트 됨', updSoon:'업데이트 예정',
+    updTitle:'업데이트 노트', modalMail:'문의 · 건의:', btnToday:'오늘 하루 안 보기', btnClose:'닫기',
     updDoneList:[
       'V1.0 테스트버전 출시'
     ],
@@ -93,6 +95,7 @@ const I18N = {
     normal:'Normal', comboTag:'COMBO', deadTag:'NON-VIABLE', healthTag:'HEALTH',
     colProb:'Prob.', colVisual:'Visual (expressed)', colMorph:'Morph (incl. het)', colHet:'Het (carrier)', hetNone:'–',
     secGene:'Genetic morphs (calculated)',
+    secCombo:'Combos (tap to set)',
     visualLbl:'Visual', hetLbl:'het', copy1:'1 copy', copy2:'2 copies',
     warnH:'Genetics that need caution',
     viveNote:function(p){return 'This pairing includes <b>'+p+'% outcomes that do not survive</b>.';},
@@ -120,6 +123,7 @@ const I18N = {
     seoIntro:'Pick each parent’s traits to see the offspring morphs and their odds. It covers Lilly White, Cappuccino and Sable — three alleles at one locus — along with Phantom, ChoCho, Axanthic, Empty Back, Dalmatian, Pied and Fire, naming combos such as Luwak, Frappuccino and Sorak and flagging lethal pairings like Super Lilly White. Structural traits such as White Wall and line-bred traits are listed for reference. Free, no sign-up, in Korean, English, Chinese and Japanese.',
     footer:'Probabilities are theoretical values from Mendelian inheritance · line-bred (polygenic) traits are not probability-based',
     updH:'Update notes', updDone:'Shipped', updSoon:'Coming next',
+    updTitle:'Update notes', modalMail:'Questions or ideas:', btnToday:'Hide for today', btnClose:'Close',
     updDoneList:[
       'V1.0 test release'
     ],
@@ -156,6 +160,7 @@ const I18N = {
     normal:'ノーマル', comboTag:'コンボ', deadTag:'生存困難', healthTag:'健康注意',
     colProb:'確率', colVisual:'ビジュアル（発現）', colMorph:'モルフ（het 含む）', colHet:'Het（保因）', hetNone:'–',
     secGene:'遺伝モルフ（確率計算）',
+    secCombo:'コンボ（タップで自動設定）',
     visualLbl:'ビジュアル', hetLbl:'ヘテロ', copy1:'1コピー', copy2:'2コピー',
     warnH:'注意が必要な遺伝の組み合わせ',
     viveNote:function(p){return 'この組み合わせには<b>孵化・生存が困難な結果が '+p+'%</b> 含まれています。';},
@@ -183,6 +188,7 @@ const I18N = {
     seoIntro:'両親の形質を選ぶと、仔のモルフと確率を計算します。リリーホワイト、カプチーノ・セーブル（同じ座の3対立遺伝子）、ファントム、チョチョ、アザンティック、エンプティバック、ダルメシアン、パイド、ファイアに対応し、ルアク・フラペチーノ・ソラクなどのコンボ名や、スーパーリリーホワイトのような致死組み合わせの警告も表示します。ホワイトウォールなどの構造形質とラインブリード形質は参考として表示。会員登録なしで無料、4言語対応です。',
     footer:'確率はメンデル遺伝に基づく理論値です · ラインブリード（ポリジェニック）形質は確率計算の対象外です',
     updH:'アップデート情報', updDone:'更新済み', updSoon:'更新予定',
+    updTitle:'更新履歴', modalMail:'お問い合わせ・ご提案:', btnToday:'今日は表示しない', btnClose:'閉じる',
     updDoneList:[
       'V1.0 テスト版リリース'
     ],
@@ -219,6 +225,7 @@ const I18N = {
     normal:'普通', comboTag:'组合', deadTag:'不存活', healthTag:'健康提示',
     colProb:'概率', colVisual:'表现型', colMorph:'形态（含 het）', colHet:'Het（携带）', hetNone:'–',
     secGene:'遗传形态（可计算）',
+    secCombo:'组合（点击自动设置）',
     visualLbl:'表现', hetLbl:'het', copy1:'1个拷贝', copy2:'2个拷贝',
     warnH:'需要注意的基因组合',
     viveNote:function(p){return '此配对包含 <b>'+p+'% 无法存活</b>的结果。';},
@@ -245,6 +252,7 @@ const I18N = {
     seoIntro:'选择父母双方的性状即可计算后代形态与概率。支持莉莉白、卡布奇诺与黑貂（同一基因座的三个等位基因）、幻影、ChoCho、无黄化、空背、大麦町、花斑与 Fire，并显示 Luwak、法布奇诺、Sorak 等组合名称，同时对超级莉莉白等致死组合发出警告。白墙等结构性状与线育性状仅作参考显示。免注册免费使用，支持韩英中日四种语言。',
     footer:'概率为基于孟德尔遗传的理论值 · 线育（多基因）性状不在概率计算范围内',
     updH:'更新说明', updDone:'已更新', updSoon:'计划中',
+    updTitle:'更新记录', modalMail:'咨询与建议:', btnToday:'今天不再显示', btnClose:'关闭',
     updDoneList:[
       'V1.0 测试版发布'
     ],
@@ -360,6 +368,26 @@ function famBlock(host, fam, genes, side){
   });
 }
 
+/* 콤보 칩 하나. 이미 그 콤보가 잡혀 있으면 다시 눌러 해제합니다 —
+   한 번 누르면 켜지고 다시 누르면 꺼지는 것이 칩의 기본 동작입니다. */
+function comboChip(combo, side, matched){
+  const on = (matched===combo);
+  const chip=document.createElement('button');
+  chip.className='chip combochip'+(side==='B'?' b':'')+(on?' on':'');
+  const mark = combo.proof && combo.proof!=='established'
+    ? ' <span class="chipproof">'+escapeHtml(L().proof[combo.proof]||'')+'</span>' : '';
+  chip.innerHTML='<i class="bi bi-stars combo-icon" aria-hidden="true"></i>'
+    +escapeHtml(tr(combo))+mark
+    +(combo.warn?' <i class="bi bi-exclamation-triangle-fill chiprisk" aria-hidden="true"></i>':'');
+  chip.onclick=()=>{
+    if(on){ CR_ALL_GENES().forEach(g=>CR_STATE[side][g.id]='nn'); }
+    else { crApplyCombo(side, combo); }
+    buildParent(side);
+    if(hasResult) calculate();
+  };
+  return chip;
+}
+
 function buildParent(side){
   const host=document.getElementById(side==='A'?'parentA':'parentB');
   host.innerHTML='';
@@ -368,6 +396,20 @@ function buildParent(side){
     const badge=document.createElement('div'); badge.className='parentcombo'+(side==='B'?' b':'');
     badge.textContent='= '+tr(matched); host.appendChild(badge);
   }
+  /* 콤보 칩. 데이터(CR_COMBOS)는 진작 있었는데 화면에 내놓지 않아서, 이름은
+     맞춰 주면서도 사용자가 그 조합을 고를 방법은 없었습니다. 레오파드와 같은
+     방식으로 노출합니다.
+
+     검증이 덜 된 콤보(proof)는 칩에 표시를 답니다 — 이름만 보고 확정된
+     조합으로 오해하면 안 됩니다. */
+  /* 크레는 아직 모프 검색이 없어서 거를 것이 없습니다. */
+  if(CR_COMBOS.length){
+    host.appendChild(secHeader(L().secCombo));
+    const cg=document.createElement('div'); cg.className='chipgrid';
+    CR_COMBOS.forEach(c=>cg.appendChild(comboChip(c, side, matched)));
+    host.appendChild(cg);
+  }
+
   host.appendChild(secHeader(L().secGene));
   const genes=activeGenes();
   famBlock(host, CR_FAMILIES[0], genes.filter(g=>g.kind==='multi'||g.type==='incdom'), side);
@@ -536,7 +578,8 @@ function applyLang(){
   set('h-title',t.title); set('h-sub',t.sub);
   set('lbl-pa',t.parentA); set('lbl-pb',t.parentB);
   set('lbl-pa-role',t.parentRole); set('lbl-pb-role',t.parentRole);
-  set('lbl-help',t.helpBtn); set('lbl-help2',t.helpBtn);
+  /* '선택 도움말' 버튼 두 개를 없앴습니다. 상단의 '표시 옵션 설명' 과 똑같은
+     #optNote 를 여는 버튼이라, 한 화면에 같은 것을 여는 버튼이 셋이었습니다. */
   set('lbl-selected',t.selectedLabel);
   set('lbl-sel-a',t.parentA); set('lbl-sel-b',t.parentB);
   setH('btn-reset','<i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i><span>'+escapeHtml(t.reset)+'</span>');

@@ -163,7 +163,7 @@ test('Given the Leopard calculator language changes, when its management entry i
   const page = read('gecko/index.html');
   assert.match(calculator, /pro\.href='\/care\/breeding\.html\?species=gecko&v=20260803m'.*LANG.*lang=/);
   assert.match(calculator, /proText\.textContent=t\.saveBreeding/);
-  assert.match(page, /gecko-ui\.js\?v=20260809a/);
+  assert.match(page, /gecko-ui\.js\?v=20260809b/);
 });
 
 test('Given the shared care backend changes, when production pages boot, then every consumer requests the same fresh version', () => {

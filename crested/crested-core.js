@@ -267,7 +267,7 @@ const CR_COMBOS = [
   { tokens:['lilly','axanthic'],
     ko:'릴잔틱', en:'Lilyxanthic', ja:'リリーアザンティック', zh:'莉莉无黄化', proof:'partial' },
   { tokens:['super_cappuccino','lilly'],
-    ko:'소락', en:'Sorak', ja:'ソラク', zh:'Sorak', proof:'contested', warn:'W3' },
+    ko:'설악', en:'Sorak', ja:'ソラク', zh:'Sorak', proof:'contested', warn:'W3' },
 ];
 
 /* ============================================================================
@@ -490,6 +490,36 @@ function crParentTokens(side){
   return s;
 }
 
+/* --- 콤보를 부모에 적용 (crParentTokens 의 역방향) ---
+   토큰 규칙은 위 crParentTokens 와 짝입니다. 한쪽만 고치면 칩을 눌러도
+   그 콤보로 안 잡히는, 설명하기 어려운 상태가 됩니다.
+
+   먼저 전부 비우고 시작합니다. 남겨 두면 이전 선택이 섞여서 누른 콤보와
+   다른 결과가 나옵니다 — 사용자는 칩을 눌렀는데 왜 다른지 알 수 없습니다. */
+function crApplyCombo(side, combo){
+  const genes = CR_ALL_GENES();
+  genes.forEach(g => { CR_STATE[side][g.id] = 'nn'; });
+
+  combo.tokens.forEach(function(token){
+    for (const g of genes){
+      if (g.kind === 'multi'){
+        /* 카푸치노·세이블처럼 한 자리를 여러 대립유전자가 나눠 쓰는 경우 */
+        const hit = Object.keys(g.genos || {}).find(k => (g.genos[k] || {}).token === token);
+        if (hit){ CR_STATE[side][g.id] = hit; return; }
+        continue;
+      }
+      if (g.type === 'rec'){
+        if (token === g.id){ CR_STATE[side][g.id] = 'mm'; return; }
+      } else if (g.type === 'incdom'){
+        if (token === g.id){ CR_STATE[side][g.id] = 'het'; return; }
+        if (token === 'super_' + g.id){ CR_STATE[side][g.id] = 'mm'; return; }
+      } else if (token === g.id){
+        CR_STATE[side][g.id] = 'yes'; return;
+      }
+    }
+  });
+}
+
 /* --- 모프 이름 조립 --- */
 function crJoin(parts){
   if(!parts.length) return null;
@@ -548,13 +578,13 @@ const CR_DANGER = {
     zh:'🛑 <b>莉莉白 × 莉莉白</b> — 约25%的后代为超级莉莉白（纯合）。超级莉莉白通常无法孵化，即使孵出也会出现呼吸困难、运动能力差、拒食等情况，一般在数天至一周内死亡。目前没有长期存活的记录。不建议进行此配对。' },
 
   W2:{ level:'high',
-    ko:'⚠️ 이 조합은 <b>슈퍼카푸치노</b>를 낼 수 있습니다. 약 100마리 표본 조사에서 슈퍼카푸치노·소락 개체의 약 11%가 콧구멍 이상(일부는 구조적 결손이 아니라 탈피 잔여물), 3% 미만이 스펙타클 아이를 보였다는 보고가 있습니다. 슈퍼 개체는 크레스트 감소·긴 꼬리·무른 비늘도 함께 나타나는 편입니다. 진행하실 경우 근친 교배를 피하고 20.5~21.7℃(69~71℉)의 저온 인큐베이팅과 구조 개선을 위한 아웃크로스를 권장합니다.',
+    ko:'⚠️ 이 조합은 <b>슈퍼카푸치노</b>를 낼 수 있습니다. 약 100마리 표본 조사에서 슈퍼카푸치노·설악 개체의 약 11%가 콧구멍 이상(일부는 구조적 결손이 아니라 탈피 잔여물), 3% 미만이 스펙타클 아이를 보였다는 보고가 있습니다. 슈퍼 개체는 크레스트 감소·긴 꼬리·무른 비늘도 함께 나타나는 편입니다. 진행하실 경우 근친 교배를 피하고 20.5~21.7℃(69~71℉)의 저온 인큐베이팅과 구조 개선을 위한 아웃크로스를 권장합니다.',
     en:'⚠️ This pairing can produce <b>Super Cappuccino</b>. In a survey of roughly 100 animals, about 11% of Super Cappuccino / Sorak individuals showed nostril abnormalities (some of which were stuck shed rather than structural occlusion) and under 3% showed spectacle eye. Supers also tend to show reduced crest, a longer tail and soft scale. If you proceed: avoid inbreeding, incubate cooler (69–71°F / 20.5–21.7°C), and outcross for structure.',
     ja:'⚠️ この組み合わせは<b>スーパーカプチーノ</b>を出す可能性があります。約100個体の調査では、スーパーカプチーノおよびソラクの約11%に鼻孔の異常（一部は構造的欠損ではなく脱皮不全の残留）、3%未満にスペクタクルアイが見られたと報告されています。スーパー個体はクレストの減少・尾の伸長・柔らかい鱗も伴う傾向があります。実施される場合は近親交配を避け、20.5〜21.7℃（69〜71℉）の低温インキュベートと、構造改善のためのアウトクロスを推奨します。',
     zh:'⚠️ 此配对可能产出<b>超级卡布奇诺</b>。在约100只个体的调查中，超级卡布奇诺及 Sorak 个体中约11%出现鼻孔异常（部分为蜕皮残留而非结构性闭塞），不足3%出现眼罩积液。超级个体还常伴有背嵴减少、尾部偏长、鳞片柔软等特征。若仍要进行：请避免近亲繁殖，采用较低温度孵化（20.5~21.7℃／69~71℉），并通过外血改善体型结构。' },
 
   W3:{ level:'high',
-    ko:'⚠️ <b>소락(슈퍼카푸치노 릴리)</b>은 슈퍼카푸치노의 콧구멍·안구 위험을 그대로 물려받습니다. 또한 ‘소락’은 브리더 사이의 통용어일 뿐 기초 유전 자료에 정리된 공식 명칭이 아닙니다. 윤리적 이유로 이 조합의 생산을 피하는 브리더가 많습니다.',
+    ko:'⚠️ <b>설악(슈퍼카푸치노 릴리)</b>은 슈퍼카푸치노의 콧구멍·안구 위험을 그대로 물려받습니다. 또한 ‘설악’은 브리더 사이의 통용어일 뿐 기초 유전 자료에 정리된 공식 명칭이 아닙니다. 윤리적 이유로 이 조합의 생산을 피하는 브리더가 많습니다.',
     en:'⚠️ <b>Sorak (Super Cappuccino Lilly White)</b> inherits the full nostril and eye risk profile of Super Cappuccino. "Sorak" is also breeder slang rather than a name settled in the foundation-genetics documentation. Many breeders decline to produce this combination on ethical grounds.',
     ja:'⚠️ <b>ソラク（スーパーカプチーノ・リリーホワイト）</b>は、スーパーカプチーノの鼻孔および眼のリスクをそのまま受け継ぎます。また「ソラク」はブリーダー間の通称であり、基礎遺伝資料に整理された正式名ではありません。倫理的理由からこの組み合わせを避けるブリーダーも多くいます。',
     zh:'⚠️ <b>Sorak（超级卡布奇诺莉莉白）</b>会完整继承超级卡布奇诺的鼻孔与眼部风险。此外，"Sorak" 只是繁育者之间的俗称，并未被基础遗传学资料正式收录。许多繁育者出于伦理考虑拒绝产出此组合。' },

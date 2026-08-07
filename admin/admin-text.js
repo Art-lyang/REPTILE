@@ -34,7 +34,16 @@
     ['credit',         '도움 주신 곳 표기'],
     ['footer',         '하단 면책 문구']
   ];
-  var SRC = { gecko: '../gecko/gecko-ui.js', crested: '../crested/crested-ui.js' };
+  /* 종을 여기 더하면 위쪽 버튼 줄에 자동으로 나옵니다(STUDIO_SERVICES 에서
+     이름을 가져옵니다). 계산기를 넷으로 늘리면서 이 목록만 둘로 남아 있어,
+     펫테일·볼파이톤 문구는 고칠 방법이 없었습니다 — 오타 하나에도 배포가
+     필요했던 예전 상태 그대로였습니다. */
+  var SRC = {
+    gecko:      '../gecko/gecko-ui.js',
+    crested:    '../crested/crested-ui.js',
+    fattail:    '../fattail/fattail-ui.js',
+    ballpython: '../ballpython/ball-ui.js'
+  };
   var LANGS = [['ko', '한국어'], ['en', 'English'], ['ja', '日本語'], ['zh', '中文']];
 
   var svc = 'gecko';

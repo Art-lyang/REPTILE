@@ -476,20 +476,20 @@
     "sha256": "5c4e6f3dd6012a05"
   },
   "gecko/login-i18n-en.js": {
-    "version": "20260808b",
-    "sha256": "19e32ac23d6b1d46"
+    "version": "20260808c",
+    "sha256": "9ffcb84d6537c274"
   },
   "gecko/login-i18n-ja.js": {
-    "version": "20260808b",
-    "sha256": "79ef018f1a90a6e5"
+    "version": "20260808c",
+    "sha256": "5c302932855a380f"
   },
   "gecko/login-i18n-ko.js": {
-    "version": "20260808b",
-    "sha256": "a6bcedc567cdb35a"
+    "version": "20260808c",
+    "sha256": "84463a5ab18e5ef6"
   },
   "gecko/login-i18n-zh.js": {
-    "version": "20260808b",
-    "sha256": "0c36d818cd10a6a9"
+    "version": "20260808c",
+    "sha256": "a6dfae3d0aa4327e"
   },
   "gecko/login-i18n.js": {
     "version": "20260808a",

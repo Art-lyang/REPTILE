@@ -14,10 +14,10 @@
 <script src="../assets/studio-config.js?v=20260731b"></script>
 <script src="/assets/imgtool.js?v=1"></script>
 <script src="gecko-core.js?v=20260804a"></script>
-<script src="login-i18n-ko.js?v=20260808b"></script>
-<script src="login-i18n-en.js?v=20260808b"></script>
-<script src="login-i18n-zh.js?v=20260808b"></script>
-<script src="login-i18n-ja.js?v=20260808b"></script>
+<script src="login-i18n-ko.js?v=20260808c"></script>
+<script src="login-i18n-en.js?v=20260808c"></script>
+<script src="login-i18n-zh.js?v=20260808c"></script>
+<script src="login-i18n-ja.js?v=20260808c"></script>
 <script src="login-i18n.js?v=20260808a"></script>
 <link rel="stylesheet" href="account-shell.css?v=20260803b">
 <script src="account-shell.js?v=20260808a"></script>
@@ -100,6 +100,13 @@ if (typeof TURNSTILE_SITE_KEY === 'string' && TURNSTILE_SITE_KEY.trim()) {
   .links{display:flex;flex-direction:column;gap:8px;margin-top:18px}
   .links a{display:block;text-align:center;background:var(--card2);color:var(--ink);text-decoration:none;
     border-radius:11px;padding:12px;font-size:14px;font-weight:700}
+  /* 가입 갈래. 로그인/가입 전환(.seg)과 같은 성격의 선택이라 비슷한 모양으로
+     두었습니다. 라디오 대신 버튼인 것은, 고른 쪽에 따라 아래 칸이 늘고 줄기
+     때문입니다 — 누르면 화면이 바뀐다는 것이 버튼 쪽이 더 잘 읽힙니다. */
+  .jkbar{display:flex;gap:7px;margin:0 0 10px}
+  .jkbar .jk{flex:1;background:var(--card2);border:1.5px solid transparent;border-radius:11px;
+    padding:11px 8px;font-size:13.5px;font-weight:700;color:var(--ink);cursor:pointer;font-family:inherit}
+  .jkbar .jk.on{border-color:var(--teal);color:var(--teal);background:var(--card)}
 .consent{background:var(--card2);border-radius:12px;padding:12px 13px;margin:6px 0 12px}
   .cAll{display:flex;align-items:center;gap:9px;font-size:14.5px;font-weight:800;padding:4px 2px 10px;border-bottom:1px solid var(--hair);margin-bottom:6px;cursor:pointer}
   .cRow{display:flex;align-items:flex-start;gap:9px;font-size:13px;padding:6px 2px;cursor:pointer}
@@ -264,6 +271,31 @@ function wireConsent(){
   items.forEach(i=>i.onchange=()=>{ all.checked=items.every(x=>x.checked); togglePhone(); });
   function togglePhone(){ const w=$('phoneWrap'); if(w) w.style.display=$('cSms').checked?'block':'none'; }
 }
+/* 가입 갈래. 사업자는 가입할 때부터 상호명과 등록번호를 냅니다.
+   계정은 바로 만들어지고 무료 회원으로 쓸 수 있으며, 관리자가 승인해야
+   인증 표시와 로고가 붙습니다(supabase_v61). 승인 전이라고 못 들어오게
+   막으면, 승인까지 며칠 걸리는 동안 아무것도 못 하게 됩니다. */
+let JOIN_KIND='personal';   // personal | business
+
+function joinKindHTML(){
+  const tab=(k,label)=>'<button type="button" class="jk'+(JOIN_KIND===k?' on':'')
+    +'" data-jk="'+k+'">'+esc(label)+'</button>';
+  return '<div class="jkbar" role="group" aria-label="'+esc(t('joinKind'))+'">'
+    + tab('personal', t('joinPersonal')) + tab('business', t('joinBusiness')) + '</div>'
+    + '<div class="hint" style="margin:-4px 0 12px 2px">'
+    + t(JOIN_KIND==='business'?'joinBusinessHint':'joinPersonalHint') + '</div>';
+}
+
+function bizSignupHTML(){
+  if(JOIN_KIND!=='business') return '';
+  return '<div class="consent" id="bizBox">'
+    +'<div style="font-size:13px;font-weight:800;padding:2px 2px 8px">'+t('bizTitle')
+      +' <span class="opt">'+t('required')+'</span></div>'
+    +'<input class="in" id="jName" placeholder="'+esc(t('bizName'))+'" style="margin-bottom:8px">'
+    +'<input class="in" id="jNum" inputmode="numeric" placeholder="'+esc(t('bizNumber'))+'" style="margin-bottom:0">'
+    +'<div class="cNote">'+t('joinBizNote')+'</div></div>';
+}
+
 // 기본정보 (선택 수집) — 동의 화면과 함께 노출
 function profileHTML(p){
   p=p||{};
@@ -281,8 +313,35 @@ function consentValues(){
            ai:!!($('cAi')&&$('cAi').checked),
            phone:($('cPhone')&&$('cPhone').value.trim())||null,
            name:g('pName')||null, nickname:g('pNick')||null,
+           joinKind:JOIN_KIND, bizName:g('jName')||null, bizNumber:g('jNum')||null,
            extra:extraValues() };
 }
+/* 화면에서 미리 거르는 것들. 서버(supabase_v61)가 최종 판단을 하지만, 가입은
+   되돌리기 번거로운 동작이라 보내기 전에 알려 주는 편이 낫습니다.
+
+   허용 글자는 서버와 같은 목록입니다. 두 곳이 갈라지면 화면은 통과시키고
+   서버가 막는, 설명할 수 없는 상태가 됩니다. */
+const PLAIN_NAME = /^[A-Za-z0-9가-힣ㄱ-ㅎㅏ-ㅣぁ-ゖァ-ヺー一-鿿 ._-]+$/;
+function joinProblem(c){
+  if(c.name && !PLAIN_NAME.test(c.name)) return t('nameCharset');
+  if(c.nickname && !PLAIN_NAME.test(c.nickname)) return t('nickCharset');
+  if(c.joinKind==='business'){
+    if(!c.bizName) return t('bizNameNeeded');
+    if(String(c.bizNumber||'').replace(/[^0-9]/g,'').length!==10) return t('bizNumberInvalid');
+  }
+  return null;
+}
+
+/* 가입 직후 사업자 신청을 함께 냅니다. 계정은 이미 만들어졌고 무료로 쓸 수
+   있으므로, 신청이 실패해도 가입 자체를 되돌리지는 않습니다 — 계정 화면에서
+   다시 낼 수 있습니다. */
+async function submitJoinBusiness(c){
+  if(c.joinKind!=='business' || !c.bizName) return;
+  try{ await SB.rpc('apply_business_verification',
+    {p_name:c.bizName, p_number:c.bizNumber, p_logo:null}); }
+  catch(e){ /* 계정 화면에서 다시 낼 수 있습니다 */ }
+}
+
 async function saveConsent(c){
   const base={ p_terms:c.terms, p_privacy:c.privacy, p_age14:c.age,
     p_third:c.third, p_mkt_email:c.mail, p_mkt_sms:c.sms, p_phone:c.phone,
@@ -298,6 +357,7 @@ async function saveConsent(c){
   if(r.error && /p_name|does not exist|function .*save_consent/i.test(r.error.message||''))
     r=await SB.rpc('save_consent', base);
   if(!r.error && c.extra) await saveExtra(c.extra);
+  if(!r.error) await submitJoinBusiness(c);
   return r;
 }
 /* 선택 정보는 profiles 를 직접 고칩니다. 본인 줄만 고칠 수 있게
@@ -327,6 +387,7 @@ function renderConsentGate(u){
     const c=consentValues(); clearMsg();
     if(!(c.terms&&c.privacy&&c.age)) return say('e',t('consentRequired'));
     if(!c.nickname) return say('e',t('nickNeeded'));
+    { const p=joinProblem(c); if(p) return say('e',p); }
     if(c.sms&&!c.phone) return say('e',t('phoneRequired'));
     $('go').disabled=true;
     const r=await saveConsent(c); $('go').disabled=false;
@@ -372,7 +433,7 @@ function render(){
     +(isUp? '<div class="hint" style="margin:-6px 0 12px 2px">'+t('signupEmailWarning')+'</div>' : '')
     +'<label class="fl">'+t('password')+'</label><input class="in" id="pw" type="password" autocomplete="'+(isUp?'new-password':'current-password')+'" placeholder="'+esc(t(isUp?'passwordRule':'password'))+'">'
     +(isUp? '<label class="fl">'+t('passwordConfirm')+'</label><input class="in" id="pw2" type="password" autocomplete="new-password" placeholder="'+esc(t('passwordAgain'))+'">' : '')
-    +(isUp? profileHTML()+extraHTML()+consentHTML() : '')
+    +(isUp? joinKindHTML()+profileHTML()+bizSignupHTML()+extraHTML()+consentHTML() : '')
     +capHTML()
     +'<button class="btn" id="go">'+t(isUp?'signupAction':'loginAction')+'</button>'
     +'<div class="msg" id="msg"></div>'
@@ -382,6 +443,9 @@ function render(){
   const signupTab=$('tSignup');
   if(signupTab) signupTab.onclick=()=>{ MODE='signup'; render(); };
   const rs=$('toReset'); if(rs) rs.onclick=()=>{ MODE='reset'; render(); };
+  document.querySelectorAll('[data-jk]').forEach(b=>{
+    b.onclick=()=>{ JOIN_KIND=b.dataset.jk; render(); };
+  });
   if(isUp) wireConsent();
   capMount();
   $('google').onclick=isUp? doGoogleSignup : doGoogle;
@@ -985,6 +1049,7 @@ async function doSignup(){
      허용인데, 그때는 서버가 새로 지어 줍니다. 여기서 통과시키면 이름 없는
      계정이 생기고, 공개 카드에 'undefined' 가 찍힙니다. */
   if(!c.nickname) return say('e',t('nickNeeded'));
+  { const p=joinProblem(c); if(p) return say('e',p); }
   if(c.sms&&!c.phone) return say('e',t('phoneRequired'));
   $('go').disabled=true; $('go').textContent=t('signupWorking');
   const r=await SB.auth.signUp(capOpts({email:em,password:pw,options:{emailRedirectTo:location.href.split('#')[0]}}));
@@ -1001,6 +1066,7 @@ async function doGoogleSignup(){
   const c=consentValues(); clearMsg();
   if(!(c.terms&&c.privacy&&c.age)) return say('e',t('consentRequired'));
   if(!c.nickname) return say('e',t('nickNeeded'));
+  { const p=joinProblem(c); if(p) return say('e',p); }
   try{ sessionStorage.setItem('leoConsent', JSON.stringify(c)); }catch(e){}
   doGoogle();
 }

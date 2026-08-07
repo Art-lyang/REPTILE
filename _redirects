@@ -9,5 +9,13 @@
 #
 # 서버가 넘기므로 브라우저가 페이지를 받아 script 를 돌릴 때까지 기다리지
 # 않습니다. 저장해 둔 주소와 즐겨찾기는 그대로 동작합니다.
+# 여기는 레오파드 전용 화면이었으므로 종을 미리 골라 보냅니다. 옛 즐겨찾기로
+# 들어온 사람이 종 선택부터 다시 하지 않아도 됩니다.
+#
+# .html 을 떼는 처리가 규칙보다 먼저 일어나서 /gecko/breeding.html 은
+# /gecko/breeding 으로 한 번 넘어옵니다. 그래서 두 주소를 모두 적어 둡니다.
+#
+# (배포 직후에는 규칙이 아직 안 퍼져서 잠깐 빈 200 이 나올 수 있습니다.
+#  목적지의 쿼리 때문이 아니니 그것을 지우지 마세요 — 한 번 그렇게 오해했습니다.)
 /gecko/breeding.html  /care/breeding.html?species=gecko   301
 /gecko/breeding       /care/breeding.html?species=gecko   301

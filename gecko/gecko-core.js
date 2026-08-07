@@ -695,7 +695,7 @@ function polyLabel(poly){
    두면 한쪽만 고쳐지므로 여기서는 넘기기만 합니다.
 
    ⚠️ 이 함수를 쓰는 페이지는 assets/imgtool.js 를 먼저 읽어야 합니다.
-      (gecko/index.html · gecko/breeding.html · gecko/login.html · admin/index.html) */
+      (gecko/index.html · gecko/login.html · admin/index.html) */
 async function resizeImage(file, max, opt){
   if(!window.ImgTool || !window.ImgTool.resize){
     throw new Error('사진 도구를 불러오지 못했습니다. 새로고침 후 다시 시도해 주세요.');

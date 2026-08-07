@@ -2,3 +2,12 @@
 /reptile/*            /gecko/:splat        301
 /gecko/crested.html   /crested/            301
 /gecko/crested        /crested/            301
+
+# 레오파드 전용이던 옛 브리딩 화면. 2026-07-30 에 /care/breeding.html 로
+# 합쳤고, 그동안은 그 파일 안의 script 가 넘겨주고 있었습니다. 넘겨주기만
+# 하려고 35KB 짜리 죽은 코드를 계속 배포할 이유가 없어서 여기로 옮깁니다.
+#
+# 서버가 넘기므로 브라우저가 페이지를 받아 script 를 돌릴 때까지 기다리지
+# 않습니다. 저장해 둔 주소와 즐겨찾기는 그대로 동작합니다.
+/gecko/breeding.html  /care/breeding.html?species=gecko   301
+/gecko/breeding       /care/breeding.html?species=gecko   301

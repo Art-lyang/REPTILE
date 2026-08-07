@@ -116,6 +116,27 @@
     </div>`;
   }
 
+  /* 닉네임 변경 이력과 횟수 초기화 (supabase_v59)
+     -------------------------------------------------------------------------
+     이력을 '지우기' 가 아니라 기준 시각을 옮기는 방식으로 초기화합니다. 지우면
+     왜 초기화했는지도 같이 사라지고, 분양받는 쪽이 보는 공개 이력에도 구멍이
+     납니다. */
+  function nicknameBox(member) {
+    const entry = state.nicknames[member.user_id];
+    const used = (entry && entry.used) || 0;
+    const items = (entry && entry.items) || [];
+    const rows = items.length
+      ? items.map(item => `<li><span>${escape(date(item.at, true))}</span>
+          <b>${escape(item.from || '—')} → ${escape(item.to || '—')}</b>
+          <em>${escape(t('nickKind' + (item.kind === 'user' ? 'User' : item.kind === 'admin' ? 'Admin' : 'Auto')))}</em></li>`).join('')
+      : `<li class="mm-nick-empty">${escape(t('nickHistoryEmpty'))}</li>`;
+    return `<details class="mm-nick">
+      <summary>${escape(t('nickHistory'))} <span>${escape(t('nickUsed', { used: used, limit: 2 }))}</span></summary>
+      <ul>${rows}</ul>
+      <button type="button" class="mini" data-nick-reset="${member.user_id}"${used ? '' : ' disabled'}>${escape(t('nickReset'))}</button>
+    </details>`;
+  }
+
   function memberCard(member) {
     const providers = (member.providers || []).join(' · ') || t('unknown');
     const premiumMeta = member.tier === 'premium'
@@ -136,6 +157,7 @@
       </dl>
       ${actions(member)}
       ${limitBox(member)}
+      ${nicknameBox(member)}
     </article>`;
   }
 
@@ -203,11 +225,21 @@
     const list = state.body.querySelector('.mm-list');
     if (count) count.textContent = `${rows.length} / ${state.rows.length}`;
     if (list) list.innerHTML = rows.length ? rows.map(memberCard).join('') : `<div class="mm-empty">${escape(t('empty'))}</div>`;
+    bindCards();
+  }
+
+  /* 카드 안 버튼 배선. 목록은 두 곳에서 다시 그려집니다(전체 렌더 / 검색 결과).
+     양쪽에 같은 배선을 적어 두면 한쪽만 고치는 일이 생기고, 그러면 검색한
+     뒤에는 버튼이 죽습니다. */
+  function bindCards() {
     state.body.querySelectorAll('[data-member-action]').forEach(button => {
       button.onclick = () => actionController.open(button);
     });
     state.body.querySelectorAll('[data-limit-save]').forEach(button => {
       button.onclick = () => saveLimit(button.dataset.limitSave);
+    });
+    state.body.querySelectorAll('[data-nick-reset]').forEach(button => {
+      button.onclick = () => resetNickname(button.dataset.nickReset);
     });
   }
 
@@ -229,12 +261,7 @@
     document.getElementById('mmTier').onchange = event => { state.tier = event.target.value; renderResults(); };
     document.getElementById('mmRefresh').onclick = load;
     document.getElementById('mmExport').onclick = exportCsv;
-    state.body.querySelectorAll('[data-member-action]').forEach(button => {
-      button.onclick = () => actionController.open(button);
-    });
-    state.body.querySelectorAll('[data-limit-save]').forEach(button => {
-      button.onclick = () => saveLimit(button.dataset.limitSave);
-    });
+    bindCards();
     state.body.querySelectorAll('[data-dialog-close]').forEach(button => {
       button.onclick = () => document.getElementById('mmDialog').close();
     });
@@ -246,9 +273,10 @@
     /* 조정된 상한은 따로 받아 옵니다. admin_list_members 의 반환 모양을 바꾸려면
        함수를 지웠다 다시 만들어야 해서, 짧은 목록 하나를 더 받는 편이 낫습니다
        (대부분의 회원은 조정이 없습니다). */
-    const [result, limits] = await Promise.all([
+    const [result, limits, nicknames] = await Promise.all([
       state.SB.rpc('admin_list_members'),
       state.SB.rpc('admin_animal_limits'),
+      state.SB.rpc('admin_nickname_changes'),
     ]);
     if (result.error) {
       state.body.innerHTML = `<div class="aerr mm-error"><b>${escape(t('loadError'))}</b><p>${escape(result.error.code || '')}</p></div>`;
@@ -258,7 +286,26 @@
     /* v58 을 적용하기 전이면 함수가 없습니다. 그때는 조정이 없는 것으로 두고
        화면은 그대로 뜹니다 — 상한 칸만 기본값으로 보입니다. */
     state.limits = (!limits.error && limits.data) || {};
+    /* v59 를 적용하기 전이면 함수가 없습니다. 이력이 비어 보일 뿐 회원 목록은
+       그대로 떠야 합니다 — 안내 한 칸 때문에 관리 화면 전체가 막히면 안 됩니다. */
+    state.nicknames = (!nicknames.error && nicknames.data) || {};
     renderContent();
+  }
+
+  async function resetNickname(userId) {
+    if (state.busy) return;
+    const member = findMember(userId);
+    if (!window.confirm(t('nickResetConfirm', { name: (member && (member.nickname || member.email)) || '' }))) return;
+    state.busy = true;
+    try {
+      const result = await state.SB.rpc('admin_reset_nickname_changes', { p_target: userId });
+      if (result.error) throw result.error;
+      await load();
+    } catch (error) {
+      window.alert(t('nickResetFailed') + '\n' + (error.message || error.code || ''));
+    } finally {
+      state.busy = false;
+    }
   }
 
   async function saveLimit(userId) {

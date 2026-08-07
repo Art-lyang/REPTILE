@@ -122,6 +122,11 @@
     if (/Email not confirmed/i.test(message)) return t('errUnconfirmed');
     if (/rate limit|too many/i.test(message)) return t('errRateLimit');
     if (/provider is not enabled|Unsupported provider/i.test(message)) return t('errProviderDisabled');
+    /* 닉네임 규칙은 데이터베이스 트리거가 지킵니다. 화면에서만 막으면
+       개발자도구로 넘어가고, 반대로 서버 문구를 그대로 보여 주면
+       'NICKNAME_TAKEN' 같은 영어 코드가 사용자에게 노출됩니다. */
+    if (/NICKNAME_TAKEN/.test(message)) return t('errNickTaken');
+    if (/NICKNAME_CHANGE_LIMIT/.test(message)) return t('errNickLimit');
     return t('errUnknown');
   }
 

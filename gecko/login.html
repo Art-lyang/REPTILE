@@ -269,7 +269,7 @@ function profileHTML(p){
   return '<div class="consent" id="profBox">'
     +'<div style="font-size:13px;font-weight:800;padding:2px 2px 8px">'+t('profileTitle')+' <span class="opt">'+t('optional')+'</span></div>'
     +'<input class="in" id="pName" placeholder="'+esc(t('nameOptional'))+'" value="'+esc(p.name||'')+'" style="margin-bottom:8px">'
-    +'<input class="in" id="pNick" placeholder="'+esc(t('nicknameOptional'))+'" value="'+esc(p.nickname||'')+'" style="margin-bottom:0">'
+    +'<input class="in" id="pNick" placeholder="'+esc(t('nicknameRequired'))+'" value="'+esc(p.nickname||'')+'" style="margin-bottom:0">'
     +'<div class="cNote">'+t('profileSignupNote')+'</div>'
     +'</div>';
 }
@@ -288,6 +288,8 @@ async function saveConsent(c){
     p_nickname:c.nickname||null };
   // 인자가 많은 것부터 시도하고, 서버가 아직 그 인자를 모르면 줄여서 다시 부릅니다.
   // supabase_v14.sql 적용 전에도 가입이 막히지 않게 하기 위한 것입니다.
+  /* null 은 '건드리지 않음' 입니다. 계정 화면에서 닉네임을 지운 경우는
+     set_my_nickname 이 따로 처리하므로 여기로는 null 이 옵니다. */
   const full=Object.assign({p_name:c.name||null, p_ai_train:!!c.ai}, base);
   let r=await SB.rpc('save_consent', full);
   if(r.error && /p_ai_train|does not exist|function .*save_consent/i.test(r.error.message||''))
@@ -323,6 +325,7 @@ function renderConsentGate(u){
   $('go').onclick=async()=>{
     const c=consentValues(); clearMsg();
     if(!(c.terms&&c.privacy&&c.age)) return say('e',t('consentRequired'));
+    if(!c.nickname) return say('e',t('nickNeeded'));
     if(c.sms&&!c.phone) return say('e',t('phoneRequired'));
     $('go').disabled=true;
     const r=await saveConsent(c); $('go').disabled=false;
@@ -490,9 +493,23 @@ async function finishLogin(user){
   return renderMe(user,isAdmin);
 }
 
+/* 남은 닉네임 변경 횟수. v59 적용 전에는 함수가 없으므로 조용히 비웁니다 —
+   안내 한 줄 때문에 계정 화면 전체가 멈추면 안 됩니다. */
+async function nickStatus(){
+  try{ const r=await SB.rpc('my_nickname_status'); return r.error? null : r.data; }
+  catch(e){ return null; }
+}
+function nickNoteText(s){
+  if(!s) return '';
+  const left=Math.max(0, (s.limit||2) - (s.used||0));
+  return left>0 ? t('nickChangesLeft').replace('{n}', String(left)) : t('nickChangesNone');
+}
+
 async function renderConsentSettings(run){
   let c=null; try{ const r=await SB.rpc('my_consent'); c=r.data; }catch(e){}
   if(!c || run!==ACCOUNT_RENDER) return;
+  const nick=await nickStatus();
+  if(run!==ACCOUNT_RENDER) return;
   const profilePane=AccountShell.pane($('root'),'profile');
   const privacyPane=AccountShell.pane($('root'),'privacy');
   const securityPane=AccountShell.pane($('root'),'security');
@@ -504,6 +521,7 @@ async function renderConsentSettings(run){
   info.innerHTML='<div style="font-size:13px;font-weight:800;padding:2px 2px 8px">'+t('profileTitle')+' <span class="opt">'+t('optional')+'</span></div>'
     +'<input class="in" id="iName" placeholder="'+esc(t('name'))+'" value="'+esc(c.name||'')+'" style="margin-bottom:8px">'
     +'<input class="in" id="iNick" placeholder="'+esc(t('nickname'))+'" value="'+esc(c.nickname||'')+'" style="margin-bottom:0">'
+    +(nick? '<div class="cNote" id="nickNote">'+esc(nickNoteText(nick))+'</div>' : '')
     +'<div class="cNote">'+t('profileExistingNote')+'</div>';
   profilePane.appendChild(info);
 
@@ -541,14 +559,29 @@ async function renderConsentSettings(run){
 
   $('sSave').onclick=async()=>{
     if($('sSms').checked && !$('sPhone').value.trim()) return say('e',t('phoneRequired'));
+    const wanted=$('iNick').value.trim();
     $('sSave').disabled=true;
+    /* 닉네임만 따로 보냅니다. save_consent 는 빈 값을 '건드리지 않음' 으로 읽어서
+       '지우고 저장하면 새로 지어 준다' 를 표현할 수 없습니다.
+       v59 적용 전이면 함수가 없으므로 예전처럼 같이 실어 보냅니다. */
+    const n=await SB.rpc('set_my_nickname',{p_nickname:wanted});
+    const legacy=!!(n.error && /set_my_nickname|does not exist|PGRST202/i
+      .test(String(n.error.message||'')+' '+String(n.error.code||'')));
     const r=await saveConsent({terms:true,privacy:true,age:true,third:$('sThird').checked,
       mail:$('sMail').checked, sms:$('sSms').checked, ai:$('sAi').checked,
       phone:$('sPhone').value.trim()||null,
-      name:$('iName').value.trim()||null, nickname:$('iNick').value.trim()||null,
+      name:$('iName').value.trim()||null, nickname:legacy?(wanted||null):null,
       extra:extraValues()});
     $('sSave').disabled=false;
-    if(r.error) say('e',err(r.error)); else say('o',t('saved'));
+    if(n.error && !legacy) return say('e',err(n.error));
+    if(r.error) return say('e',err(r.error));
+    /* 서버가 지어 준 이름을 화면에 되돌려 줍니다. 안 하면 지운 칸이 빈 채로
+       남아 사용자는 저장이 안 된 줄 압니다. */
+    if(!legacy && n.data){
+      $('iNick').value=n.data.nickname||'';
+      const note=$('nickNote'); if(note) note.textContent=nickNoteText(n.data);
+    }
+    say('o',t('saved'));
   };
 
   // 비밀번호 변경 — 지금 로그인한 본인만 바꿀 수 있습니다.
@@ -759,6 +792,10 @@ async function doSignup(){
   { const p=pwProblem(pw); if(p) return say('e',p); }
   if(pw!==pw2) return say('e',t('passwordMismatch'));
   if(!(c.terms&&c.privacy&&c.age)) return say('e',t('consentRequired'));
+  /* 닉네임은 가입 시 필수입니다. 계정 화면에서 비우고 저장하는 것은 반대로
+     허용인데, 그때는 서버가 새로 지어 줍니다. 여기서 통과시키면 이름 없는
+     계정이 생기고, 공개 카드에 'undefined' 가 찍힙니다. */
+  if(!c.nickname) return say('e',t('nickNeeded'));
   if(c.sms&&!c.phone) return say('e',t('phoneRequired'));
   $('go').disabled=true; $('go').textContent=t('signupWorking');
   const r=await SB.auth.signUp(capOpts({email:em,password:pw,options:{emailRedirectTo:location.href.split('#')[0]}}));
@@ -774,6 +811,7 @@ async function doGoogleSignup(){
   if (!SIGNUPS_ENABLED) return signupPaused();
   const c=consentValues(); clearMsg();
   if(!(c.terms&&c.privacy&&c.age)) return say('e',t('consentRequired'));
+  if(!c.nickname) return say('e',t('nickNeeded'));
   try{ sessionStorage.setItem('leoConsent', JSON.stringify(c)); }catch(e){}
   doGoogle();
 }

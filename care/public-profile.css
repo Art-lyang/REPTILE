@@ -14,6 +14,19 @@ body.breeder-public .wrap{max-width:1040px}
 .breeder-mark{width:62px;height:62px;border-radius:20px;display:flex;align-items:center;justify-content:center;background:var(--teal);color:#fff;font-size:27px}
 .breeder-eyebrow{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--teal)}
 .breeder-name{margin:4px 0 2px;font-size:28px;line-height:1.15;letter-spacing:-.045em}
+/* 이름 자체가 이력을 여는 버튼입니다. 버튼처럼 보이면 제목이 아니라 조작으로
+   읽혀서, 화살표만 작게 붙이고 나머지는 제목 그대로 둡니다. */
+.breeder-name button{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:6px;
+  font:inherit;letter-spacing:inherit;color:inherit}
+.breeder-name button i{font-size:.62em;opacity:.5;transition:transform .18s}
+.breeder-name button[aria-expanded="true"] i{transform:rotate(180deg)}
+.breeder-name button:focus-visible{outline:2px solid currentColor;outline-offset:3px;border-radius:6px}
+.breeder-nick{margin:8px 0 2px}
+.breeder-nick .lbl{margin-bottom:6px}
+.breeder-nick ul{list-style:none;margin:0;padding:0;display:grid;gap:5px}
+.breeder-nick li{display:flex;flex-wrap:wrap;gap:2px 10px;align-items:baseline;font-size:12px;
+  opacity:.85}
+.breeder-nick li b{font-size:12.5px;word-break:break-all}
 .breeder-meta{color:var(--ink2);font-size:13px;font-weight:650}
 .breeder-filter{display:flex;gap:7px;overflow-x:auto;padding:4px 0 12px;scrollbar-width:none}
 .breeder-filter::-webkit-scrollbar{display:none}

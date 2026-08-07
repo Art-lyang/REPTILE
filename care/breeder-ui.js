@@ -55,7 +55,13 @@
     document.getElementById('body').innerHTML = '<section class="pad breeder-hero">'
       + '<div class="breeder-mark">' + icon('bi-person-heart') + '</div><div>'
       + '<div class="breeder-eyebrow">' + esc(I.t('breederProfile')) + '</div>'
-      + '<h1 class="breeder-name">' + esc(profile.breeder) + '</h1>'
+      /* 이름을 누르면 변경 이력이 열립니다. 분양받는 쪽이 '이 사람이 이름을
+         자주 바꾸는지' 를 볼 수 있어야 해서 넣었습니다. 처음 누를 때만
+         불러옵니다 — 대부분은 열어 보지 않습니다. */
+      + '<h1 class="breeder-name"><button type="button" id="nickToggle"'
+      + ' aria-expanded="false" aria-controls="nickHist">' + esc(profile.breeder)
+      + icon('bi-chevron-down') + '</button></h1>'
+      + '<div class="breeder-nick" id="nickHist" hidden></div>'
       + '<div class="breeder-meta">' + esc(I.t('breederPublicAnimals', { count: I.formatNumber(profile.total) }))
       + '</div></div></section><section class="pad"><div class="psection-head"><div>'
       + '<div class="lbl">' + esc(I.t('breederAnimals')) + '</div><div class="hint">'
@@ -67,7 +73,38 @@
     renderGrid();
   }
 
+  let nickLoaded = false;
+  async function toggleNickHistory() {
+    const box = document.getElementById('nickHist');
+    const button = document.getElementById('nickToggle');
+    if (!box || !button) return;
+    const open = box.hidden;
+    box.hidden = !open;
+    button.setAttribute('aria-expanded', open ? 'true' : 'false');
+    if (!open || nickLoaded) return;
+    nickLoaded = true;
+    let items = null;
+    try {
+      const response = await SB.rpc('public_nickname_history', { p_token: token });
+      /* v59 적용 전이면 함수가 없습니다. 그때는 '이력 없음' 이 아니라 오류로
+         보여 줍니다 — 없는 것과 못 읽은 것은 다른 이야기입니다. */
+      if (response.error) throw response.error;
+      items = response.data || [];
+    } catch (error) {
+      box.innerHTML = '<div class="hint">' + esc(I.t('nickHistoryError')) + '</div>';
+      nickLoaded = false;
+      return;
+    }
+    box.innerHTML = items.length
+      ? '<div class="lbl">' + esc(I.t('nickHistory')) + '</div><ul>' + items.map(function (item) {
+        return '<li><span>' + esc(I.formatDate(item.at)) + '</span><b>'
+          + esc(item.from || '—') + ' → ' + esc(item.to || '—') + '</b></li>';
+      }).join('') + '</ul>'
+      : '<div class="hint">' + esc(I.t('nickHistoryEmpty')) + '</div>';
+  }
+
   document.addEventListener('click', function (event) {
+    if (event.target.closest('#nickToggle')) { toggleNickHistory(); return; }
     const button = event.target.closest('[data-species]');
     if (!button || !profile) return;
     species = button.dataset.species || '';

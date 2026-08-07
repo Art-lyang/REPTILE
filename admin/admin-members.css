@@ -31,6 +31,23 @@
 @media(max-width:430px){
   .mm-limit{grid-template-columns:1fr 88px auto}
 }
+/* 닉네임 이력은 접어 둡니다. 대부분의 회원은 볼 일이 없는데 펼쳐 두면
+   카드가 길어져서 정작 자주 쓰는 조치 버튼이 화면 밖으로 밀립니다. */
+.mm-nick{padding-top:10px;margin-top:10px;border-top:1px solid var(--hair)}
+.mm-nick summary{font-size:11.5px;font-weight:800;color:var(--ink2);cursor:pointer;list-style:none;
+  display:flex;justify-content:space-between;align-items:center;gap:8px;padding:2px 0}
+.mm-nick summary::-webkit-details-marker{display:none}
+.mm-nick summary span{font-weight:700;color:var(--teal)}
+.mm-nick ul{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:6px}
+.mm-nick li{display:grid;grid-template-columns:auto 1fr auto;gap:4px 8px;align-items:baseline;
+  font-size:11px;color:var(--ink2);background:var(--card2);border-radius:9px;padding:7px 9px}
+.mm-nick li b{color:var(--ink);font-size:11.5px;word-break:break-all}
+.mm-nick li em{font-style:normal;font-weight:800}
+.mm-nick .mm-nick-empty{grid-template-columns:1fr;text-align:center}
+.mm-nick button{margin-top:8px}
+@media(max-width:430px){
+  .mm-nick li{grid-template-columns:1fr}
+}
 .mm-protected b{color:var(--eggplant)}.mm-empty,.mm-loading{background:var(--card2);border-radius:12px;padding:28px 14px;text-align:center;color:var(--ink2);font-size:13px}
 .mm-error{padding:18px}.mm-dialog{width:min(480px,calc(100vw - 28px));border:0;border-radius:16px;background:var(--card);color:var(--ink);padding:0;box-shadow:0 24px 80px rgba(0,0,0,.28)}
 .mm-dialog::backdrop{background:rgba(20,19,16,.48);backdrop-filter:blur(2px)}.mm-dialog form{padding:18px}

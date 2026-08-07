@@ -27,7 +27,10 @@ const i18n = {
   },
   speciesName() { return '레오파드 게코'; },
   formatDate(value) { return value.replaceAll('-', '.'); },
-  formatNumber(value) { return String(value); }
+  formatNumber(value) { return String(value); },
+  /* 카드는 나이를 여기서 받아옵니다(care-core 의 ageText 와 같은 것).
+     오늘 날짜에 따라 값이 흔들리면 시험이 날마다 다른 답을 내므로 고정합니다. */
+  ageText() { return '9개월'; }
 };
 
 const lifeStage = { labelKey() { return 'stageAdult'; } };
@@ -42,9 +45,14 @@ test('Given the public RPC payload, when a share-card model is made, then it con
     note: '공개 소개', photo_url: 'photo', private_note: '절대 노출 금지'
   }, 'https://ryangstudio.com/care/p.html?t=token', i18n, lifeStage);
 
+  /* 이 시험의 값은 '카드에 나가도 되는 것' 의 목록입니다. 여기에 없는 필드를
+     모델에 더하면 시험이 깨지고, 그때 그것이 공개해도 되는 값인지 한 번 더
+     생각하게 됩니다. age·weightOn 은 이미 공개인 hatch_date·measured_on 에서
+     나온 값이라 새로 나가는 정보가 아닙니다. */
   assert.deepEqual(JSON.parse(JSON.stringify(model)), {
     name: '라봉이', species: '레오파드 게코', sex: '암컷', stage: '성체',
-    hatch: '2025.11.13', clutch: '2025-A', weight: '61.4g',
+    hatch: '2025.11.13', age: '9개월', clutch: '2025-A',
+    weight: '61.4g', weightOn: '2026.08.03',
     morphs: ['이클립스', '탠저린'], breeder: '량 스튜디오', parents: '부 리봉이 · 모 도도',
     note: '공개 소개', photo: 'photo',
     url: 'https://ryangstudio.com/care/p.html?t=token', eyebrow: 'CREATURE PROFILE',

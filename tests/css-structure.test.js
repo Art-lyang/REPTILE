@@ -95,15 +95,18 @@ test('Given braces are unbalanced, when a block leaks, then unrelated rules chan
   assert.deepEqual(bad, [], '중괄호 짝이 맞지 않습니다:\n  ' + bad.join('\n  '));
 });
 
-test('Given the mobile login rule exists, when a phone loads a calculator, then the button is pinned top-right', () => {
-  /* 이 규칙이 사라지면 계정 버튼이 다시 제목 아래 아이콘 셋 중 하나가 됩니다.
-     화면으로 확인해야 알 수 있는 종류라, 규칙 자체가 있는지만 지킵니다. */
+test('Given a phone loads a calculator, when the header is drawn, then the login button is readable', () => {
+  /* 계정 버튼이 이름 없는 44px 정사각 아이콘이면, 똑같이 생긴 아이콘 셋 중
+     하나가 되어 하나씩 눌러 봐야 합니다. 글자가 보여야 합니다. */
   const base = fs.readFileSync(path.join(ROOT, 'assets/base.css'), 'utf8');
-  assert.match(base, /header \.hd-btns\{position:static\}/);
-  assert.match(base, /\.hd-btns #acctBtn,\s*\n\s*\.hd-btns \[data-account-btn\]\{[^}]*position:absolute/);
   assert.match(base, /\.hd-btns \[data-account-btn\] span\{display:inline\}/);
   /* 44px 은 터치 표적 최소 크기입니다. */
   assert.match(base, /min-height:44px/);
+  /* 절대배치는 쓰지 않습니다. 한 번 그렇게 했다가 430px 에서 제목이 47px 폭에
+     여섯 줄로 짓눌리고 언어 버튼과 겹쳤습니다 — 헤더가 줄바꿈되는 폭과 안 되는
+     폭이 갈리는데, 절대배치는 그중 한쪽에서만 맞습니다. */
+  assert.doesNotMatch(base, /position:absolute;top:16px;right:16px/);
+  assert.doesNotMatch(base, /header \.hd-txt\{padding-right/);
 
   const home = fs.readFileSync(path.join(ROOT, 'home-redesign.css'), 'utf8');
   assert.match(home, /\.nav-inner \.nav-account\{display:inline-flex/);

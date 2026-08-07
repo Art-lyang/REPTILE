@@ -54,35 +54,20 @@
 
   /* 좁은 화면의 로그인 버튼.
      -----------------------------------------------------------------------
-     620px 아래에서는 .hd 가 줄바꿈되어 버튼 줄(.hd-btns)이 제목 아래로
-     내려갑니다. 게다가 계산기 CSS 가 좁은 화면에서 .topnav .blink 의 글자를
-     감춰 44px 정사각 아이콘만 남깁니다. 그래서 계정 버튼이 똑같이 생긴 아이콘
-     셋 중 하나가 되고, 로그인하려면 하나씩 눌러 봐야 했습니다.
+     계산기 CSS 가 좁은 화면에서 .topnav .blink 의 글자를 감춰 44px 정사각
+     아이콘만 남깁니다. 그래서 계정 버튼이 똑같이 생긴 아이콘 셋 중 하나가
+     되고, 로그인하려면 하나씩 눌러 봐야 했습니다. 글자만 되살립니다.
 
-     계정만 떼어 헤더 오른쪽 위로 올리고 글자를 되살립니다. 기준 상자는
-     .hd 입니다(position:relative). 그 사이의 .hd-btns/.topnav 가 positioned
-     이면 그쪽에 붙어 버리므로 static 으로 돌려 놓습니다 — .hd-btns 는 flex
-     아이템이라 static 이어도 z-index 는 그대로 듣습니다.
+     한 번은 계정 버튼을 헤더 오른쪽 위로 절대배치하고 제목에 오른쪽 여백을
+     줬다가, 430px 에서 제목이 47px 폭에 여섯 줄로 짓눌리고 언어 버튼과
+     겹쳤습니다. 헤더가 줄바꿈되는 폭(≤375 근처)과 안 되는 폭이 갈리는데,
+     절대배치는 그중 한쪽에서만 맞습니다.
 
-     계산기 네 곳이 마크업이 조금씩 다릅니다. 레오파드는 .hd-btns > .topnav
-     안에 #acctBtn 이 있고, 나머지 셋은 .hd-btns 바로 아래에 [data-account-btn]
-     이 있습니다. 그래서 .topnav 를 거치지 않고 .hd-btns 를 기준으로 잡습니다.
-
-     선택자에 header 를 붙인 것은 특이도 때문입니다. 크레·팻테일·볼파이톤 CSS 가
-     base.css 뒤에 실리면서 .hd-btns 를 position:absolute 로 잡습니다. 그러면
-     계정 버튼이 그 상자(제목 아래 버튼 줄)를 기준으로 붙어 버립니다.
-
-     제목은 오른쪽을 비워 두느라 두 줄이 될 수 있습니다. 그 편이 낫습니다 —
-     계정이 어디 있는지 모르는 것보다 제목이 한 줄 늘어나는 쪽이 낫습니다. */
+     버튼 줄은 이미 헤더 오른쪽에 있습니다. 자리를 옮기지 말고 이름만
+     보이게 하는 편이 두 폭 모두에서 맞습니다. */
   @media (max-width:620px){
-    header .hd-btns{position:static}
-    header .hd-btns .topnav{position:static}
-    header .hd-txt{padding-right:96px}
     .hd-btns #acctBtn,
-    .hd-btns [data-account-btn]{
-      position:absolute;top:16px;right:16px;z-index:6;
-      width:auto;min-height:44px;padding:0 13px;justify-content:center;
-    }
+    .hd-btns [data-account-btn]{width:auto;min-height:44px;padding:0 12px}
     .hd-btns #acctBtn span,
     .hd-btns [data-account-btn] span{display:inline}
   }

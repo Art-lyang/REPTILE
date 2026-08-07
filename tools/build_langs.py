@@ -23,6 +23,9 @@ import io, os, re, subprocess, sys
 SITE = 'https://ryangstudio.com'
 LANGS = ['ko', 'en', 'ja', 'zh']
 HTML_LANG = {'ko': 'ko', 'en': 'en', 'ja': 'ja', 'zh': 'zh-Hans'}
+# og:locale 은 html lang 과 형식이 다릅니다(언어_지역). 같은 값을 쓰면
+# 공유 미리보기가 언어를 못 알아봅니다.
+OG_LOCALE = {'ko': 'ko_KR', 'en': 'en_US', 'ja': 'ja_JP', 'zh': 'zh_CN'}
 CALCS = [('gecko', 'gecko/gecko-ui.js'),
          ('crested', 'crested/crested-ui.js'),
          ('fattail', 'fattail/fattail-ui.js'),
@@ -100,6 +103,11 @@ def alt_links(calc, cur):
         href = url_of(calc, L)
         rows.append('  <link rel="alternate" hreflang="%s" href="%s">' % (HTML_LANG[L], href))
     rows.append('  <link rel="alternate" hreflang="x-default" href="%s">' % url_of(calc, 'ko'))
+    # 검색엔진은 hreflang 을 보지만, 카카오·페이스북 같은 공유 미리보기는
+    # og 만 봅니다. 둘 다 있어야 어느 쪽으로 퍼져도 그 언어로 보입니다.
+    for L in LANGS:
+        if L != cur:
+            rows.append('  <meta property="og:locale:alternate" content="%s">' % OG_LOCALE[L])
     return '\n'.join(rows)
 
 
@@ -196,6 +204,9 @@ def build(calc, ui_path, dist):
                    lambda m: m.group(1) + url_of(calc, lang) + m.group(2), h, count=1)
         h = re.sub(r'(<meta property="og:title" content=")[^"]*(">)',
                    lambda m: m.group(1) + t.get('title', '') + m.group(2), h, count=1)
+        # 이 줄이 빠져 있어서 영어·일본어·중국어 페이지가 전부 ko_KR 이었습니다.
+        h = re.sub(r'(<meta property="og:locale" content=")[^"]*(">)',
+                   lambda m: m.group(1) + OG_LOCALE[lang] + m.group(2), h, count=1)
 
         # 언어 교차 링크
         h = h.replace('<link rel="canonical"', alt_links(calc, lang) + '\n  <link rel="canonical"', 1)

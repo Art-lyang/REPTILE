@@ -151,6 +151,14 @@
     "version": "20260807c",
     "sha256": "6b761c2fe8b2cab4"
   },
+  "care/animal-legal-ui.js": {
+    "version": "20260809a",
+    "sha256": "2ae65bda1d2a3bf8"
+  },
+  "care/animal-legal.js": {
+    "version": "20260809a",
+    "sha256": "d8c39598f4d4b586"
+  },
   "care/animal-life-stage.js": {
     "version": "20260803a",
     "sha256": "fb641fde97edfbc5"
@@ -164,8 +172,8 @@
     "sha256": "862bb6a1690ea2a3"
   },
   "care/animal-ui.js": {
-    "version": "20260808b",
-    "sha256": "ebddb2d42c4ea29e"
+    "version": "20260809a",
+    "sha256": "8bfdcb9a171caf6e"
   },
   "care/animal-weight-date.css": {
     "version": "20260804a",
@@ -296,20 +304,20 @@
     "sha256": "f15eae5f32b28484"
   },
   "care/care-i18n-en.js": {
-    "version": "20260809a",
-    "sha256": "9dc15390a2ad096a"
+    "version": "20260809b",
+    "sha256": "d42fe994af58348c"
   },
   "care/care-i18n-ja.js": {
-    "version": "20260809a",
-    "sha256": "32a42abf2c993c8c"
+    "version": "20260809b",
+    "sha256": "87aef11d6f23d376"
   },
   "care/care-i18n-ko.js": {
-    "version": "20260809a",
-    "sha256": "1c553b89fac9e691"
+    "version": "20260809b",
+    "sha256": "19db87201a114e77"
   },
   "care/care-i18n-zh.js": {
-    "version": "20260809a",
-    "sha256": "fe2b7b5ddd4aa73f"
+    "version": "20260809b",
+    "sha256": "f99532edb60edcb3"
   },
   "care/care-i18n.js": {
     "version": "20260803m",
@@ -352,8 +360,8 @@
     "sha256": "64416a6097ccd042"
   },
   "care/care.css": {
-    "version": "20260809a",
-    "sha256": "2868ca8e56374ba3"
+    "version": "20260809b",
+    "sha256": "2604bf7dbf963319"
   },
   "care/date-field.js": {
     "version": "20260807c",

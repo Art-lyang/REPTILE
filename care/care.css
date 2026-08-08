@@ -1110,3 +1110,24 @@ body.pub .wrap{max-width:560px}
   .bulkbar{padding:10px 11px 12px}
   .bulkbar .quick{grid-template-columns:repeat(4,1fr);gap:6px}
 }
+
+/* ── 법적 지위와 서류 (CITES) ─────────────────────────────────────────────
+   v64 가 DB 를 만들어 두고 화면이 없어 방치돼 있던 자리입니다. */
+.lgdocs{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+.lgdoc{
+  display:flex;align-items:center;gap:10px;padding:10px 12px;
+  background:var(--card2);border:1px solid var(--hair);border-radius:12px;
+}
+.lgdoc.expired{border-color:var(--warn-bd,#f0c3b2);background:var(--warn-bg)}
+.lgdoc-main{flex:1;min-width:0}
+.lgdoc-kind{font-weight:750;font-size:13.5px}
+.lgdoc-meta{color:var(--ink2);font-size:12px;margin-top:2px}
+.lgdoc-extra,.lgdoc-expired{
+  font-size:10.5px;font-weight:800;padding:1px 6px;border-radius:6px;vertical-align:1px;
+}
+.lgdoc-extra{background:var(--hair);color:var(--ink2)}
+.lgdoc-expired{background:var(--warn-bg);color:var(--warn-fg)}
+.lgdoc-acts{display:flex;gap:6px;flex:0 0 auto}
+.lgadd{margin-top:12px}
+.lgadd summary{cursor:pointer;font-weight:750;font-size:13.5px;padding:8px 0}
+.note.ok{background:var(--gtile,#eef5f0);color:var(--teal)}

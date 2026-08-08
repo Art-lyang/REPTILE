@@ -46,7 +46,7 @@
   function icon(n) { return '<i class="bi ' + n + '" aria-hidden="true"></i>'; }
 
   const S = { id: null, animal: null, animals: [], plans: [], records: [], weights: [], feeds: [],
-              busy: false, range: 90, upGen: 2 };
+              busy: false, range: 90, upGen: 2, legal: null };
 
   function toast(m) {
     const t = $('toast'); t.textContent = m; t.classList.add('on');
@@ -66,6 +66,7 @@
     S.records = records.filter(r => r.animal_id === S.id);
     S.weights = weights;
     S.feeds = feeds;
+    await loadLegal();
   }
 
   async function act(fn, ok) {
@@ -175,6 +176,19 @@
   /* 혈통서. 분양할 때 개체와 함께 넘기는 문서입니다.
      값을 고르는 일은 pedigree-certificate.js, 문서 모양은 그 -ui.js 가 합니다.
      여기서는 지금 화면이 가진 것을 넘겨줄 뿐입니다. */
+  /* 법적 지위·서류. my_animal_legal 이 판정을 다 해서 주므로 그대로 그립니다. */
+  function legalBlock() {
+    const Ui = window.AnimalLegalUi;
+    if (!Ui || !S.legal) return '';
+    return Ui.html(S.legal, I, esc);
+  }
+
+  async function loadLegal() {
+    if (!window.AnimalLegal || !A.sb || !A.user) { S.legal = null; return; }
+    try { S.legal = await window.AnimalLegal.load(A.sb, S.id); }
+    catch (e) { S.legal = null; }      /* v64 미적용이면 조용히 빠집니다 */
+  }
+
   function certificateBlock() {
     const Ui = window.PedigreeCertificateUi;
     if (!Ui) return '';
@@ -602,6 +616,7 @@
       + timeline()
       + planList()
       + shareBlock()
+      + legalBlock()
       + certificateBlock()
       + '<div class="hint no-print" style="text-align:center;margin-top:18px">'
       + I.t('recordDisclaimer') + '</div>';
@@ -641,6 +656,41 @@
       result.payload.animal_id = S.id;
       return act(() => A.addRecord(result.payload), I.t('recorded', { name: I.kindName('feed') }));
     }
+    /* 법적 지위·서류 */
+    if (d.legalview) {
+      /* 비공개 버킷이라 서명 주소를 받아야 열립니다. 주소가 짧게만 살아
+         있으므로 새 탭으로 바로 넘깁니다. */
+      return window.AnimalLegal.signedUrl(A.sb, d.legalview, 120)
+        .then(function (url) { if (url) window.open(url, '_blank', 'noopener'); })
+        .catch(function (e) { toast(I.friendly(e)); });
+    }
+    if (t.id === 'lg_save') {
+      const status = $('lg_status').value;
+      /* 되돌릴 수 없는 선택입니다. 누르기 전에 한 번 더 묻습니다. */
+      if (window.AnimalLegal.isCites(status) && !window.AnimalLegal.isCites(S.legal.legal_status)
+          && !confirm(I.t('legalOneWayHint'))) return;
+      return act(() => A.saveRow('animals', {
+        id: S.id, legal_status: status, legal_ref: $('lg_ref').value.trim() || null
+      }), I.t('legalSaved'));
+    }
+    if (d.legalarchive) {
+      if (!confirm(I.t('legalArchiveConfirm'))) return;
+      return act(() => window.AnimalLegal.archiveDocument(A.sb, d.legalarchive), I.t('legalSaved'));
+    }
+    if (t.id === 'lg_add') {
+      const file = $('lg_file').files[0];
+      if (!file) { $('lg_err').textContent = I.t('legalFileRequired'); return; }
+      return act(async function () {
+        const path = await window.AnimalLegal.upload(A.sb, A.user.id, file);
+        await window.AnimalLegal.saveDocument(A.sb, {
+          animal_id: S.id, doc_kind: $('lg_kind').value,
+          doc_number: $('lg_num').value, issuer: $('lg_issuer').value,
+          issued_on: $('lg_issued').value, expires_on: $('lg_expires').value,
+          file_path: path
+        });
+      }, I.t('legalSaved'));
+    }
+
     /* 혈통서 — 인쇄와 추신 */
     if (t.id === 'pc_print') return window.print();
     if (t.id === 'pc_post_save') {

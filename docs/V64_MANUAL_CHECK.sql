@@ -13,7 +13,9 @@
 --     지워지지도 않습니다. 되돌릴 수 없는 것을 검증용으로 만들면 안 됩니다.)
 --
 -- 쓰는 법
---    아래 v_animal 한 곳만 개체 id 로 바꾸고, 파일 전체를 한 번에 실행하세요.
+--    파일 전체를 그대로 실행하세요. 고칠 것이 없습니다 — 아직 CITES 가 아닌
+--    개체 중 가장 최근 것을 알아서 고릅니다. 어느 개체를 썼는지는 결과 0번
+--    줄에 나옵니다. 특정 개체로 하고 싶으면 아래 v_raw 에 id 를 넣으세요.
 --    결과가 표 하나로 나옵니다. 판정에 ★ 가 없으면 통과입니다.
 --
 -- 확인하는 것
@@ -21,9 +23,6 @@
 --    ② 개체 줄을 지웠다 넣어도 서류와 잠금이 남는가   ← v65 를 막고 있는 것
 -- =============================================================================
 
--- 개체 id 를 모르시면 이것만 먼저 돌려 보세요.
---   select id, name, species, legal_status from public.animals
---    order by created_at desc limit 10;
 
 begin;
 
@@ -31,29 +30,46 @@ create temp table _r (순 int, 검사 text, 기대 text, 판정 text) on commit 
 
 do $check$
 declare
-  -- ▼▼▼ 여기 한 곳만 바꾸세요 ▼▼▼
-  v_raw  text := '여기에-개체-id';
-  -- ▲▲▲ ------------------- ▲▲▲
+  /* 비워 두면 알아서 고릅니다 — 아직 CITES 가 아닌 개체 중 가장 최근 것.
+     어차피 끝에서 전부 되돌리므로 어느 개체를 써도 흔적이 남지 않습니다.
+     특정 개체로 하고 싶으면 여기에 id 를 넣으세요. */
+  v_raw  text := '';
   v_animal uuid;
   v_owner  uuid;
+  v_name   text;
   n int;
 begin
-  /* 자리표시자를 안 바꾸고 돌린 경우를 먼저 잡습니다. 캐스트 에러가 그대로
-     나면 무엇을 하라는 것인지 알기 어렵습니다. */
-  begin
-    v_animal := v_raw::uuid;
-  exception when others then
-    insert into _r values (0, '개체 id', '실제 id',
-      '★ 위 v_raw 를 개체 id 로 바꾸고 다시 실행하세요');
-    return;
-  end;
-
-  select user_id into v_owner from public.animals where id = v_animal;
-  if not found then
-    insert into _r values (0, '개체 id', '존재하는 개체', '★ 그런 개체가 없습니다');
-    return;
+  if btrim(coalesce(v_raw, '')) = '' then
+    select id, user_id, name into v_animal, v_owner, v_name
+      from public.animals
+     where coalesce(legal_status, 'none') = 'none'
+     order by created_at desc nulls last
+     limit 1;
+    if not found then
+      insert into _r values (0, '시험 개체', '아무거나',
+        '★ 쓸 만한 개체가 없습니다 — 개체를 하나 등록한 뒤 다시 실행하세요');
+      return;
+    end if;
+  else
+    /* 직접 넣은 값이 id 가 아닌 경우를 잡습니다. 캐스트 에러가 그대로 나면
+       무엇을 하라는 것인지 알기 어렵습니다. */
+    begin
+      v_animal := btrim(v_raw)::uuid;
+    exception when others then
+      insert into _r values (0, '시험 개체', '개체 id',
+        '★ v_raw 가 개체 id 가 아닙니다 — 비워 두면 알아서 고릅니다');
+      return;
+    end;
+    select user_id, name into v_owner, v_name
+      from public.animals where id = v_animal;
+    if not found then
+      insert into _r values (0, '시험 개체', '존재하는 개체', '★ 그런 개체가 없습니다');
+      return;
+    end if;
   end if;
-  insert into _r values (0, '시험 개체', v_raw, 'OK');
+
+  insert into _r values (0, '시험 개체',
+    coalesce(v_name, '이름 없음'), 'OK — ' || v_animal::text);
 
   -- ① ------------------------------------------------------------------------
   -- 1-1. CITES 로 표시. 표시 자체는 막지 않습니다 — 막는 것은 '남에게 보이는 것'.

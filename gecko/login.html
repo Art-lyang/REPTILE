@@ -11,7 +11,7 @@
      주소만 검색결과에 남을 수 있습니다. noindex 는 색인 자체를 막습니다. -->
 <meta name="robots" content="noindex, nofollow">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.8/dist/umd/supabase.js"></script>
-<script src="../assets/studio-config.js?v=20260809b"></script>
+<script src="../assets/studio-config.js?v=20260809c"></script>
 <script src="/assets/imgtool.js?v=1"></script>
 <script src="gecko-core.js?v=20260804a"></script>
 <script src="login-i18n-ko.js?v=20260809b"></script>
@@ -117,7 +117,14 @@ if (typeof TURNSTILE_SITE_KEY === 'string' && TURNSTILE_SITE_KEY.trim()) {
   .cRow input,.cAll input{width:18px;height:18px;accent-color:var(--teal);flex:0 0 auto;margin-top:1px}
   .cRow .req{color:var(--teal);font-weight:800;font-size:11.5px;margin-right:3px}
   .cRow .opt{color:var(--ink2);font-weight:700;font-size:11.5px;margin-right:3px}
-  .cRow a{color:var(--ink2);text-decoration:underline;font-size:11.5px;margin-left:4px}
+  .cRow a{color:var(--ink2);text-decoration:underline;font-size:11.5px;margin-left:4px;
+    white-space:nowrap}
+  /* 한국어는 어절 중간에서 끊으면 안 됩니다. keep-all 이 없으면
+     '보기' 가 '보 / 기' 로, '제9조' 가 '제9 / 조' 로 갈라집니다.
+     줄 간격도 함께 잡아 줍니다 — 판 칩과 링크가 섞이면 줄마다 높이가
+     달라져 목록이 들쭉날쭉해 보입니다. */
+  .cRow > span{flex:1;min-width:0;word-break:keep-all;overflow-wrap:anywhere;line-height:1.75}
+  .cRow .cver{white-space:nowrap}
   .cNote{font-size:11px;color:var(--ink2);line-height:1.6;margin-top:8px;padding-top:8px;border-top:1px solid var(--hair)}
   .why{background:var(--card2);border-radius:12px;padding:13px;font-size:12.5px;color:var(--ink2);line-height:1.65;margin-top:16px}
   .why b{color:var(--ink)}
@@ -178,8 +185,23 @@ function say(kind,text){ const m=$('msg'); if(!m) return; m.className='msg show 
 function clearMsg(){ const m=$('msg'); if(m){ m.className='msg'; m.textContent=''; } }
 function err(e){ return esc(LoginLocale.friendly(e)); }
 const returnTarget = LoginLocale.safeNextPath();
-$('backLink').href = returnTarget || LoginLocale.calculatorUrl();
-$('backLink').querySelector('span').textContent = t(returnTarget ? 'back' : 'calculator');
+/* 뒤로가기가 늘 레오파드 계산기로 갔습니다. 크레스티드에서 들어온 사람도,
+   케어로그에서 들어온 사람도 마찬가지였습니다. ?next= 가 없으면 실제로
+   직전에 있던 화면으로 보냅니다.
+   주소는 같은 사이트 안의 것만 씁니다 — 남의 사이트에서 들어왔을 때
+   그쪽으로 돌려보내면 안 되고, 로그인 화면 자기 자신도 제외합니다. */
+function previousPage(){
+  try{
+    if(!document.referrer) return null;
+    const u = new URL(document.referrer, location.href);
+    if(u.origin !== location.origin) return null;
+    if(u.pathname === location.pathname) return null;
+    return u.pathname + u.search + u.hash;
+  }catch(e){ return null; }
+}
+const backTo = returnTarget || previousPage();
+$('backLink').href = backTo || LoginLocale.calculatorUrl();
+$('backLink').querySelector('span').textContent = t(backTo ? 'back' : 'calculator');
 /* ---------- 가입 봇 차단 (Cloudflare Turnstile) ----------
    키가 없으면 모든 함수가 조용히 통과합니다. 지금은 꺼진 상태이고,
    assets/studio-config.js 에 사이트 키를 넣는 순간 켜집니다.
@@ -298,8 +320,14 @@ function wireConsent(){
    인증 표시와 로고가 붙습니다(supabase_v61). 승인 전이라고 못 들어오게
    막으면, 승인까지 며칠 걸리는 동안 아무것도 못 하게 됩니다. */
 let JOIN_KIND='personal';   // personal | business
+/* 스위치가 꺼져 있으면 갈래 자체가 없습니다. 화면만 감추고 JOIN_KIND 를
+   그대로 두면, 예전에 사업자를 골라 둔 상태가 남아 상호명 없이 사업자로
+   가입 요청이 나갈 수 있습니다. */
+const JOIN_KIND_ON = (typeof BUSINESS_SIGNUP_ENABLED === 'undefined') || !!BUSINESS_SIGNUP_ENABLED;
+if(!JOIN_KIND_ON) JOIN_KIND='personal';
 
 function joinKindHTML(){
+  if(!JOIN_KIND_ON) return '';
   const tab=(k,label)=>'<button type="button" class="jk'+(JOIN_KIND===k?' on':'')
     +'" data-jk="'+k+'">'+esc(label)+'</button>';
   return '<div class="jkbar" role="group" aria-label="'+esc(t('joinKind'))+'">'
@@ -309,7 +337,7 @@ function joinKindHTML(){
 }
 
 function bizSignupHTML(){
-  if(JOIN_KIND!=='business') return '';
+  if(!JOIN_KIND_ON || JOIN_KIND!=='business') return '';
   return '<div class="consent" id="bizBox">'
     +'<div style="font-size:13px;font-weight:800;padding:2px 2px 8px">'+t('bizTitle')
       +' <span class="opt">'+t('required')+'</span></div>'
@@ -438,6 +466,9 @@ async function boot(){
   if(!SB){ $('root').innerHTML=t('backendMissing'); return; }
   // 비밀번호 재설정 메일로 들어온 경우
   const h=location.hash||''; if(h.indexOf('type=recovery')>=0){ MODE='newpw'; render(); return; }
+  /* 다른 화면의 '회원가입' 버튼이 바로 가입 탭으로 보낼 수 있게 합니다.
+     이게 없으면 눌러도 로그인 탭이 떠서 한 번 더 눌러야 합니다. */
+  try{ if(SIGNUPS_ENABLED && new URLSearchParams(location.search).get('mode')==='signup') MODE='signup'; }catch(e){}
   const s=await SB.auth.getSession();
   if(s.data.session){
     const u=s.data.session.user;

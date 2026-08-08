@@ -47,7 +47,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.8/dist/umd/supabase.js"></script>
-<script src="../assets/studio-config.js?v=20260809b"></script>
+<script src="../assets/studio-config.js?v=20260809c"></script>
 <script src="../assets/breeding-draft.js?v=20260731a"></script>
 <script src="/assets/imgtool.js?v=1"></script>
 <script src="gecko-core.js?v=20260804a"></script>
@@ -75,6 +75,7 @@
              좁은 화면에서는 base.css 가 글자를 숨기고 아이콘만 남깁니다. -->
         <a class="blink home" href="/" title="량 스튜디오"><i class="bi bi-house" aria-hidden="true"></i><span>스튜디오</span></a>
         <a class="blink" id="acctBtn" href="login.html" style="display:none"><i class="bi bi-person" aria-hidden="true"></i><span>내 정보</span></a>
+        <a class="blink" data-signup-btn hidden></a>
         <a class="blink" id="proBtn" href="/care/breeding.html?species=gecko&amp;v=20260803m" style="display:none"><i class="bi bi-journal-check" aria-hidden="true"></i><span>브리딩 관리</span></a>
         <button class="blink prem" id="premBtn" onclick="openPrem()" style="display:none"><i class="bi bi-gem" aria-hidden="true"></i><span>프리미엄 코드</span></button>
         <button class="blink update-btn" onclick="openUpd()"><i class="bi bi-file-earmark-text" aria-hidden="true"></i><span>업데이트 노트</span></button>
@@ -250,5 +251,6 @@
 <script src="gecko-ui.js?v=20260809e"></script>
 
 <script src="gecko-app.js?v=20260809a"></script>
+<script src="/assets/signup-cta.js?v=20260809a" data-nudge></script>
 </body>
 </html>

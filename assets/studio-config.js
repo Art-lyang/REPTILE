@@ -39,6 +39,12 @@ var SIGNUPS_ENABLED = true;
    그냥 떠납니다. */
 var PASSWORD_RESET_REQUESTS_ENABLED = true;
 
+/* 사업자 회원가입 갈래.
+   false 면 가입 화면에서 '일반 / 사업자' 탭이 사라지고 모두 일반으로
+   가입합니다. 이미 가입한 회원은 계정 화면에서 사업자 인증을 따로 낼 수
+   있으므로(supabase_v61), 이걸 꺼도 사업자 인증 자체는 막히지 않습니다. */
+var BUSINESS_SIGNUP_ENABLED = false;
+
 /* 가입 봇 차단 (Cloudflare Turnstile)
    ---------------------------------------------------------------------------
    비워 두면 아무 일도 하지 않습니다. 키를 넣는 순간부터 가입·로그인 화면에

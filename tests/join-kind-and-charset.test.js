@@ -58,9 +58,15 @@ test('Given rows already hold emoji, when the migration runs, then they are clea
   assert.match(SQL, /\$cleanup\$[\s\S]{0,400}set_config\('app\.nickname_bypass', '1', true\)/);
 });
 
-test('Given signup is split, when someone picks business, then the extra fields appear', () => {
+test('Given the business path is switched off, when signup renders, then it is gone from both places', () => {
+  /* 화면만 감추고 JOIN_KIND 를 그대로 두면, 예전에 사업자를 골라 둔 상태가
+     남아 상호명 없이 사업자로 가입 요청이 나갈 수 있습니다. 감추기와
+     되돌리기를 한 쌍으로 봅니다. */
   assert.match(LOGIN, /let JOIN_KIND='personal';/);
-  assert.match(LOGIN, /function bizSignupHTML\(\)\{\s*\n\s*if\(JOIN_KIND!=='business'\) return '';/);
+  assert.match(LOGIN, /if\(!JOIN_KIND_ON\) JOIN_KIND='personal';/);
+  assert.match(LOGIN, /function joinKindHTML\(\)\{\s*\n\s*if\(!JOIN_KIND_ON\) return '';/);
+  assert.match(LOGIN, /function bizSignupHTML\(\)\{\s*\n\s*if\(!JOIN_KIND_ON \|\| JOIN_KIND!=='business'\) return '';/);
+  /* 다시 켤 때 자리가 남아 있어야 합니다 — 지우면 되살리는 것이 일이 됩니다. */
   assert.match(LOGIN, /joinKindHTML\(\)\+profileHTML\(\)\+bizSignupHTML\(\)/);
 });
 

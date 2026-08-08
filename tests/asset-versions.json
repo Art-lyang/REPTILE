@@ -115,9 +115,13 @@
     "version": "20260808a",
     "sha256": "6b0802b270d37b7b"
   },
+  "assets/signup-cta.js": {
+    "version": "20260809a",
+    "sha256": "31b79de533830b13"
+  },
   "assets/studio-config.js": {
-    "version": "20260809b",
-    "sha256": "8c94d4ca75fb4921"
+    "version": "20260809c",
+    "sha256": "6f8cfdc5eadd4663"
   },
   "assets/theme.css": {
     "version": "20260806a",

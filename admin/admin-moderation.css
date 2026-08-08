@@ -77,3 +77,15 @@
 .mdtable th{width:34%;text-align:left;padding:5px 8px 5px 0;color:var(--ink2);font-weight:750;
   vertical-align:top}
 .mdtable td{padding:5px 0;border-bottom:1px solid var(--hair);word-break:break-word}
+
+/* 계정 단위로 먼저 봅니다. 개체를 쭉 늘어놓으면 회원이 늘수록 누구 것을
+   보고 있는지가 사라집니다. */
+.mdowner{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:14px;
+  background:var(--card2);cursor:pointer}
+.mdowner:hover{background:var(--hair)}
+.mdcrumb{display:flex;align-items:center;gap:10px;padding:4px 2px 10px;flex-wrap:wrap}
+
+/* 처리 기록은 쪽으로 나눕니다 — 목록 열람이 하루에 수십 줄씩 쌓여서
+   정작 찾아야 할 조치 한 줄이 묻힙니다. */
+.mdpager{display:flex;align-items:center;gap:10px;padding:6px 2px 10px}
+.mdpager .mini[disabled]{opacity:.4;cursor:default}

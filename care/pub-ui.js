@@ -74,10 +74,20 @@
   function breederCards(list, token) {
     if (!list || !list.length) return '';
     return '<div class="pad"><div class="breeder-more"><div><div class="lbl">' + I.t('breederAnimals')
-      + '</div><div class="hint">' + I.t('breederPreviewHint') + '</div></div>'
-      + '<a class="mini" href="' + I.url('/care/breeder.html', { t: token }) + '">'
-      + I.t('breederProfileLink') + ' ' + icon('bi-arrow-right') + '</a></div>'
+      + '</div><div class="hint">' + I.t('breederPreviewHint') + '</div></div></div>'
       + Cards.grid(list.slice(0, 4)) + '</div>';
+  }
+
+  /* QR 을 찍고 들어온 사람이 다음에 할 일은 그 브리더를 더 보는 것입니다.
+     예전에는 위쪽 브리더명과, 카드 묶음 옆의 작은 글씨 두 곳뿐이었습니다.
+     둘 다 눈에 안 띄는 데다, 공개된 개체가 이 한 마리뿐이면 카드 묶음 자체가
+     안 그려져서 작은 글씨마저 사라졌습니다. 브리더명이 공개되어 있으면
+     늘 같은 자리에 버튼 하나를 둡니다. */
+  function breederButton(breeder, token) {
+    if (!breeder) return '';
+    return '<a class="btn ghost wide" style="text-decoration:none;margin-top:12px" href="'
+      + I.url('/care/breeder.html', { t: token }) + '">'
+      + icon('bi-collection') + I.t('breederMoreCta') + '</a>';
   }
 
   function render(a, related, token, badge) {
@@ -137,7 +147,10 @@
     h += WeightChart.html(a.weight_history, I, esc);
     h += breederCards(related, token);
     h += '<div class="pad" style="text-align:center">'
-      + '<div class="hint">' + I.t('publicOwnerNotice') + '</div>'
+      /* 브리더 버튼이 먼저입니다 — 이 개체를 보고 온 사람에게 가장 가까운
+         다음 걸음이라서, 케어로그 권유보다 위에 둡니다. */
+      + breederButton(a.breeder, token)
+      + '<div class="hint" style="margin-top:16px">' + I.t('publicOwnerNotice') + '</div>'
       + '<a class="btn ghost wide" style="text-decoration:none;margin-top:12px" href="' + I.url('/care/') + '">'
       + icon('bi-clipboard-heart') + I.t('startCare') + '</a>'
       + '<a class="btn ghost wide" style="text-decoration:none;margin-top:8px" href="' + I.url('/') + '">'

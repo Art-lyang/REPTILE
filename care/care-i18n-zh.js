@@ -144,6 +144,7 @@
     nickKindUser: '本人修改', nickKindAdmin: '管理员修改',
     breederBackAnimal: '返回最初的个体', breederUnavailable: '无法查看繁育者主页',
     breederUnavailableHint: '繁育者名称公开已关闭，或此地址已失效。', breederProfileLink: '查看全部个体',
+    breederMoreCta: '查看该繁育者的更多个体',
     breederPreviewHint: '同一繁育者公开的其他个体。',
     shareBackendMissing: '后端未配置。', shareTokenMissing: '地址中没有个体信息。', shareLoadError: '加载失败，请稍后重试。', shareClosed: '地址无效或饲主已停止公开。',
     backendTitle: '后端未配置', backendBody: '请检查 assets/studio-config.js。', back: '返回', loginTitle: '需要登录', loginBody: '照护记录保存在账号中。',

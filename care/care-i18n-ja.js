@@ -156,6 +156,7 @@
     nickKindUser: '本人による変更', nickKindAdmin: '管理者による変更',
     breederBackAnimal: '最初の個体に戻る', breederUnavailable: 'ブリーダープロフィールを表示できません',
     breederUnavailableHint: 'ブリーダー名の公開がオフか、このURLは無効です。', breederProfileLink: 'すべての個体を見る',
+    breederMoreCta: 'このブリーダーの個体をもっと見る',
     breederPreviewHint: '同じブリーダーが公開している個体です。',
     shareBackendMissing: 'バックエンドが設定されていません。', shareTokenMissing: 'URLに個体情報がありません。',
     shareLoadError: '読み込めませんでした。少し待ってからもう一度お試しください。', shareClosed: 'URLが正しくないか、飼育者が公開を終了しました。',

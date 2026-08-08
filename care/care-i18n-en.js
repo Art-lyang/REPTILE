@@ -182,6 +182,7 @@
     nickKindUser: 'By the breeder', nickKindAdmin: 'By an admin',
     breederBackAnimal: 'Back to the first animal', breederUnavailable: 'Breeder profile unavailable',
     breederUnavailableHint: 'Breeder name sharing is off or this address is no longer valid.', breederProfileLink: 'View all animals',
+    breederMoreCta: 'See more from this breeder',
     breederPreviewHint: 'More animals publicly shared by this breeder.',
     shareBackendMissing: 'Backend is not configured.', shareTokenMissing: 'The animal token is missing from this link.',
     shareLoadError: 'Could not load the profile. Please try again shortly.', shareClosed: 'The link is invalid or the keeper has stopped sharing.',

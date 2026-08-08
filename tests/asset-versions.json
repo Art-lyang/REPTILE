@@ -292,20 +292,20 @@
     "sha256": "f15eae5f32b28484"
   },
   "care/care-i18n-en.js": {
-    "version": "20260808a",
-    "sha256": "5422d59628483f19"
+    "version": "20260808b",
+    "sha256": "6a01b1bbc4ff2bae"
   },
   "care/care-i18n-ja.js": {
-    "version": "20260808a",
-    "sha256": "f98cd337c0286e7c"
+    "version": "20260808b",
+    "sha256": "c41fc87340931bc2"
   },
   "care/care-i18n-ko.js": {
-    "version": "20260808a",
-    "sha256": "c622f78e3c0c42d1"
+    "version": "20260808b",
+    "sha256": "fec2c0cc307a7538"
   },
   "care/care-i18n-zh.js": {
-    "version": "20260808a",
-    "sha256": "cb56571b7b1182b3"
+    "version": "20260808b",
+    "sha256": "9be3842524d21621"
   },
   "care/care-i18n.js": {
     "version": "20260803m",
@@ -372,8 +372,8 @@
     "sha256": "9fac99f7ccdb4649"
   },
   "care/pub-ui.js": {
-    "version": "20260808b",
-    "sha256": "fa6d23015212be94"
+    "version": "20260808c",
+    "sha256": "c7f0ad31a4ccddf6"
   },
   "care/public-animal-cards.js": {
     "version": "20260803a",

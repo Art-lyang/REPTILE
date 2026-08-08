@@ -182,6 +182,7 @@
     nickKindUser: '본인 변경', nickKindAdmin: '관리자 변경',
     breederBackAnimal: '처음 개체로 돌아가기', breederUnavailable: '브리더 페이지를 볼 수 없습니다',
     breederUnavailableHint: '브리더명 공개가 꺼졌거나 주소가 더 이상 유효하지 않습니다.', breederProfileLink: '전체 개체 보기',
+    breederMoreCta: '이 브리더의 개체 더보기',
     breederPreviewHint: '같은 브리더가 공개한 개체입니다.',
     startCare: '나도 크리처 케어로그 시작하기', shareBackendMissing: '백엔드가 설정되지 않았습니다.',
     shareTokenMissing: '주소에 개체 정보가 없습니다.', shareLoadError: '불러오지 못했습니다. 잠시 뒤 다시 시도해 주세요.',

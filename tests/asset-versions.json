@@ -164,8 +164,8 @@
     "sha256": "862bb6a1690ea2a3"
   },
   "care/animal-ui.js": {
-    "version": "20260808a",
-    "sha256": "030e2e3fb426af2a"
+    "version": "20260808b",
+    "sha256": "ebddb2d42c4ea29e"
   },
   "care/animal-weight-date.css": {
     "version": "20260804a",
@@ -296,20 +296,20 @@
     "sha256": "f15eae5f32b28484"
   },
   "care/care-i18n-en.js": {
-    "version": "20260808c",
-    "sha256": "804047da6575a608"
+    "version": "20260808d",
+    "sha256": "3bee7f8d6455dbbf"
   },
   "care/care-i18n-ja.js": {
-    "version": "20260808c",
-    "sha256": "0a6e33cb5653f270"
+    "version": "20260808d",
+    "sha256": "18b14dbe2d94ace4"
   },
   "care/care-i18n-ko.js": {
-    "version": "20260808c",
-    "sha256": "38f03e788694901e"
+    "version": "20260808d",
+    "sha256": "67a4534674a02314"
   },
   "care/care-i18n-zh.js": {
-    "version": "20260808c",
-    "sha256": "4411406bda72359a"
+    "version": "20260808d",
+    "sha256": "3da3c046b8254f59"
   },
   "care/care-i18n.js": {
     "version": "20260803m",
@@ -362,6 +362,18 @@
   "care/gallery-ui.js": {
     "version": "20260802d",
     "sha256": "723db9bcd2e2587f"
+  },
+  "care/pedigree-certificate-ui.js": {
+    "version": "20260808a",
+    "sha256": "eb4a51ecc3e4d456"
+  },
+  "care/pedigree-certificate.css": {
+    "version": "20260808a",
+    "sha256": "20f1203abc98934d"
+  },
+  "care/pedigree-certificate.js": {
+    "version": "20260808a",
+    "sha256": "ff95f8667f46c5b1"
   },
   "care/photo-cropper-geometry.js": {
     "version": "20260731d",

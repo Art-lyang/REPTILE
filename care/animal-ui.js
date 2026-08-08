@@ -172,6 +172,19 @@
      ⚠️ 세대가 늘면 폭이 두 배씩 커집니다. 3세대면 조부모 4칸이라 폰에서
         넘칩니다. 가로 스크롤을 허용하되, 화면 밖으로 나가는 것이 아니라
         스크롤되는 상자 안에 가둡니다. */
+  /* 혈통서. 분양할 때 개체와 함께 넘기는 문서입니다.
+     값을 고르는 일은 pedigree-certificate.js, 문서 모양은 그 -ui.js 가 합니다.
+     여기서는 지금 화면이 가진 것을 넘겨줄 뿐입니다. */
+  function certificateBlock() {
+    const Ui = window.PedigreeCertificateUi;
+    if (!Ui) return '';
+    return Ui.html({
+      core: C, i18n: I, esc: esc, lifeStage: LifeStage,
+      animal: S.animal, animals: S.animals,
+      records: S.records, plans: S.plans, weights: S.weights
+    });
+  }
+
   function pedigreeBlock() {
     const up = S.upGen || 2;
     const p = C.buildPedigree(S.animals, S.id, up);
@@ -589,7 +602,8 @@
       + timeline()
       + planList()
       + shareBlock()
-      + '<div class="hint" style="text-align:center;margin-top:18px">'
+      + certificateBlock()
+      + '<div class="hint no-print" style="text-align:center;margin-top:18px">'
       + I.t('recordDisclaimer') + '</div>';
 
     /* 사진은 비공개 버킷이라 서명 주소를 받아야 보입니다 (assets/photo.js) */
@@ -626,6 +640,19 @@
       FeedingDialog.close();
       result.payload.animal_id = S.id;
       return act(() => A.addRecord(result.payload), I.t('recorded', { name: I.kindName('feed') }));
+    }
+    /* 혈통서 — 인쇄와 추신 */
+    if (t.id === 'pc_print') return window.print();
+    if (t.id === 'pc_post_save') {
+      const box = $('pc_post');
+      if (!box) return;
+      const text = box.value;
+      /* 빈 글은 저장하지 않습니다 — 눌렀다는 이유로 빈 메모가 쌓입니다.
+         이미 쓴 추신을 지우려는 경우와 구분이 안 되지만, 케어 기록에서
+         지우면 되므로 여기서는 조용히 넘깁니다. */
+      if (!String(text || '').trim()) return;
+      return act(() => window.PedigreeCertificate.savePostscript(A, S.id, text),
+        I.t('saved'));
     }
     if (d.delrec) return act(() => A.deleteRecord(d.delrec), I.t('removed'));
     if (d.delweight) return act(() => A.deleteWeight(d.delweight), I.t('removed'));

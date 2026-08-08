@@ -85,6 +85,12 @@
     return '<div class="mdhead">'
       + '<div><b>이미지 검수</b>'
       + '<div class="asub">공개된 개체의 사진만 목록에 옵니다. 비공개는 ‘자세히’ 로 열 때만 보이고, 열람 기록이 남습니다.</div></div>'
+      /* 목록은 공개된 것만 옵니다. 비공개 개체를 봐야 할 때 — 신고가 들어왔거나
+         회원이 문의했을 때 — 여기로 직접 엽니다. 목록에 안 뜨는 것을 열 방법이
+         없으면 '비공개는 사유가 있을 때 본다' 는 규칙이 그냥 '못 본다' 가 됩니다. */
+      + '<div class="mdlookup">'
+      + '<input class="ain" id="mdFind" placeholder="개체 id 로 직접 열기 (비공개 포함)">'
+      + '<button class="mini" data-mdfind="1">열기</button></div>'
       + '<div class="mdfilter">'
       + '<button class="mini' + (state.onlyHeld ? '' : ' on') + '" data-mdfilter="all">전체</button>'
       + '<button class="mini' + (state.onlyHeld ? ' on' : '') + '" data-mdfilter="held">보류 중</button>'
@@ -154,6 +160,13 @@
 
     if (d.mdfilter) { state.onlyHeld = (d.mdfilter === 'held'); return load(); }
 
+    if (d.mdfind) {
+      const box = document.getElementById('mdFind');
+      const id = (box.value || '').trim();
+      if (!id) return;
+      return openDetail(id);
+    }
+
     if (d.mdhold) {
       const row = state.rows.filter(x => x.id === d.mdhold)[0];
       const wrap = document.createElement('div');
@@ -193,21 +206,26 @@
       });
     }
 
-    if (d.mddetail) {
-      const why = prompt('열람 사유를 남깁니다 (기록됩니다)', '검수');
-      if (why === null) return;
-      return act(async function () {
-        const r = await state.SB.rpc('admin_animal_detail', { p_animal: d.mddetail, p_reason: why });
-        if (r.error) throw r.error;
-        const a = r.data || {};
-        const urls = [];
-        for (const p of [a.photo_url].concat(a.photos || []).filter(Boolean)) {
-          const u = await signed(p);
-          if (u) urls.push(u);
-        }
-        urls.forEach(u => window.open(u, '_blank', 'noopener'));
-      });
-    }
+    if (d.mddetail) return openDetail(d.mddetail);
+  }
+
+  /* 한 건 열기. 목록의 '자세히' 와 위 조회창이 같은 길을 씁니다 — 어느 쪽으로
+     열든 열람 사유를 묻고 기록에 남깁니다. */
+  function openDetail(id) {
+    const why = prompt('열람 사유를 남깁니다 (기록됩니다)', '검수');
+    if (why === null) return;
+    return act(async function () {
+      const r = await state.SB.rpc('admin_animal_detail', { p_animal: id, p_reason: why });
+      if (r.error) throw r.error;
+      const a = r.data || {};
+      const urls = [];
+      for (const p of [a.photo_url].concat(a.photos || []).filter(Boolean)) {
+        const u = await signed(p);
+        if (u) urls.push(u);
+      }
+      if (!urls.length) { alert((a.name || '개체') + ' — 사진이 없습니다.'); return; }
+      urls.forEach(u => window.open(u, '_blank', 'noopener'));
+    });
   }
 
   async function render_(deps) {

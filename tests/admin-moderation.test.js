@@ -52,7 +52,7 @@ test('Given a private animal is opened, when it is, then a reason is asked and r
   /* 목록으로 훑는 것과 사유를 남기고 한 건 보는 것은 다릅니다. */
   const src = read('admin/admin-moderation.js');
   assert.match(src, /prompt\('열람 사유를 남깁니다/);
-  assert.match(src, /rpc\('admin_animal_detail', \{ p_animal: d\.mddetail, p_reason: why \}\)/);
+  assert.match(src, /rpc\('admin_animal_detail', \{ p_animal: id, p_reason: why \}\)/);
   assert.match(read('supabase_v70.sql'), /values \(p_animal, a\.user_id, auth\.uid\(\), 'view', p_reason\)/);
 });
 
@@ -79,4 +79,17 @@ test('Given the admin page, when it loads, then the tab is registered in all thr
   assert.match(html, /async function tabModeration\(\)/);
   assert.match(html, /admin-moderation\.js\?v=/);
   assert.match(html, /admin-moderation\.css\?v=/);
+});
+
+test('Given the list only shows published animals, when one is private, then it can still be opened', () => {
+  /* '자세히' 는 카드 위에만 있습니다. 목록에 안 뜨는 비공개 개체를 열 방법이
+     없으면 '비공개는 사유가 있을 때 본다' 는 규칙이 실제로는 '못 본다' 가
+     됩니다. 직접 여는 자리를 둡니다 — 같은 길이라 열람 기록도 똑같이 남습니다. */
+  const src = read('admin/admin-moderation.js');
+  assert.match(src, /id="mdFind"/);
+  assert.match(src, /if \(d\.mdfind\)/);
+  assert.match(src, /function openDetail\(id\)/);
+  /* 목록의 '자세히' 와 조회창이 같은 함수를 씁니다 — 한쪽만 기록을 남기면 안 됩니다. */
+  assert.match(src, /if \(d\.mddetail\) return openDetail\(d\.mddetail\);/);
+  assert.match(src, /prompt\('열람 사유를 남깁니다/);
 });

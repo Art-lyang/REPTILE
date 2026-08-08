@@ -40,3 +40,8 @@
   max-height:90vh;overflow:auto}
 .mddlg-in .ain{width:100%;margin-top:4px}
 .mddlg-acts{display:flex;gap:8px;margin-top:14px}
+
+/* 목록에 안 뜨는 비공개 개체를 직접 여는 자리. 이게 없으면 '비공개는 사유가
+   있을 때 본다' 는 규칙이 실제로는 '못 본다' 가 됩니다. */
+.mdlookup{display:flex;gap:6px;flex:1 1 260px;max-width:420px}
+.mdlookup .ain{flex:1;min-width:0}

@@ -181,9 +181,16 @@ select 4, '깔때기 함수',
        case when to_regprocedure('public.admin_funnel(integer)') is null
             then '★ MISSING' else 'OK' end
 union all
-select 5, '지금 깔때기',
-       (public.admin_funnel(30) - 'daily')::text
+select 5, '보관 기간 청소 함수',
+       case when to_regprocedure('public.purge_funnel_events()') is null
+            then '★ MISSING' else 'OK' end
 order by 순;
 
--- ⚠️ 5번이 ADMIN_ONLY 로 떨어지면 정상입니다 — SQL 편집기에는 관리자 JWT 가
---    없습니다. 화면(관리자 → 유입)에서 보세요.
+-- 다섯 줄이 전부 OK 면 끝입니다.
+--
+-- 실제 깔때기 숫자는 여기서 볼 수 없습니다 — admin_funnel 은 관리자만 부를 수
+-- 있고 SQL 편집기에는 관리자 JWT 가 없어서 ADMIN_ONLY 로 떨어집니다.
+-- 관리자 화면 → 유입 탭 맨 위에서 보세요.
+--
+-- ⚠️ 안내 노출·클릭은 지금부터 쌓입니다. 오늘 이전 기간을 보면 그 두 칸은
+--    0 으로 나오는데 고장이 아닙니다.

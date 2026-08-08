@@ -7,7 +7,11 @@ const root = path.resolve(__dirname, '..');
 const read = (relativePath) =>
   fs.readFileSync(path.join(root, relativePath), 'utf8');
 
-test('Given public pages, when rendered, then account entry points stay hidden', () => {
+/* 2026-08-09 가입을 열었습니다. 이 파일은 이제 '잠겨 있는가' 가 아니라
+   '열린 채로 있는가' 를 지킵니다. 숨김은 hidden 한 글자로 되돌아가고,
+   그렇게 되돌아간 것을 알아차릴 방법이 이것 말고는 없습니다. */
+
+test('Given signups are open, when public pages render, then the way in is visible', () => {
   const galleryPages = [
     'gecko/index.html',
     'crested/index.html',
@@ -16,22 +20,22 @@ test('Given public pages, when rendered, then account entry points stay hidden',
   ];
 
   for (const page of galleryPages) {
-    assert.match(
+    assert.doesNotMatch(
       read(page),
       /<a[^>]+href="\/care\/gallery\.html"[^>]+hidden/,
-      `${page} must hide the public gallery link`,
+      `${page} must show the public gallery link`,
     );
   }
 
-  assert.match(
+  assert.doesNotMatch(
     read('index.html'),
     /<a[^>]+href="\.\/care\/"[^>]+hidden/,
-    'studio home must hide the care log card',
+    'studio home must show the care log card',
   );
-  assert.match(
+  assert.doesNotMatch(
     read('care/gallery.html'),
     /<a[^>]+href="\/care\/"[^>]+hidden/,
-    'gallery must not expose the care log entry point',
+    'gallery must lead back into the care log',
   );
 });
 
@@ -48,7 +52,7 @@ test('Given the public gallery is empty, when its empty state renders, then it d
   );
 });
 
-test('Given legal links are paused, when public pages render, then legal blocks stay hidden', () => {
+test('Given members can sign up, when public pages render, then the terms are reachable', () => {
   const pages = [
     'gecko/index.html',
     'crested/index.html',
@@ -61,18 +65,20 @@ test('Given legal links are paused, when public pages render, then legal blocks 
     'care/p.html',
   ];
 
+  /* 가입을 받으면서 약관 링크를 숨겨 두면, 동의 화면에서 한 번 본 뒤로는
+     찾을 길이 없다는 뜻이 됩니다. */
   for (const page of pages) {
-    assert.match(
+    assert.doesNotMatch(
       read(page),
       /<div class="legal"[^>]*hidden/,
-      `${page} must hide its legal links`,
+      `${page} must show its legal links`,
     );
   }
 
-  assert.match(
+  assert.doesNotMatch(
     read('gecko/index.html'),
     /<div class="cookiebar"[^>]*hidden/,
-    'the privacy notice bar must stay hidden',
+    'the privacy notice bar must be reachable',
   );
 });
 
@@ -86,11 +92,13 @@ test('Given component styles set display, when an element is hidden, then hidden
   }
 });
 
-test('Given signups are paused, when the login page renders, then signup stays unavailable', () => {
+test('Given signups are open, when the login page renders, then the switch and its guard both stay', () => {
   const config = read('assets/studio-config.js');
   const login = read('gecko/login.html');
 
-  assert.match(config, /var SIGNUPS_ENABLED\s*=\s*false\s*;/);
+  assert.match(config, /var SIGNUPS_ENABLED\s*=\s*true\s*;/);
+  /* 스위치를 켰다고 해서 다시 잠글 길을 지우면 안 됩니다 — 사고가 나면
+     한 글자로 닫을 수 있어야 합니다. */
   assert.match(login, /SIGNUPS_ENABLED\s*\?\s*'<button id="tSignup"/);
   assert.match(login, /if\s*\(!SIGNUPS_ENABLED\)\s*return signupPaused\(\);/);
 });
@@ -106,12 +114,17 @@ test('Given ads are paused, when the leopard calculator renders, then the ad slo
   );
 });
 
-test('Given Supabase Auth still allows signups, when a new auth user is inserted, then SQL rejects it', () => {
-  const migration = read('supabase_v26.sql');
+test('Given the screen switch is on, when a new member signs up, then the DB lock is gone too', () => {
+  /* 자물쇠가 셋입니다 — 화면 스위치, 이 트리거, 그리고 Supabase 대시보드.
+     화면만 켜면 가입 버튼은 보이는데 누르는 순간 떨어집니다. 대시보드는
+     여기서 확인할 수 없어 v75 의 주석이 그 사실을 적어 둡니다. */
+  const open = read('supabase_v75.sql');
 
-  assert.match(migration, /before insert on auth\.users/i);
-  assert.match(migration, /raise exception 'signups temporarily disabled'/i);
-  assert.match(migration, /drop trigger if exists block_new_auth_users on auth\.users/i);
+  assert.match(open, /drop trigger if exists block_new_auth_users on auth\.users/i);
+  assert.match(open, /Allow new users to sign up/i);
+  /* 되돌릴 함수는 남겨 둡니다. 지우면 v26 을 통째로 다시 읽어야 합니다. */
+  assert.doesNotMatch(open, /drop function[^;]*block_new_auth_users/i);
+  assert.match(read('supabase_v26.sql'), /raise exception 'signups temporarily disabled'/i);
 });
 
 test('Given the public morph bucket, when storage hardening is applied, then anonymous uploads and listing stay blocked', () => {
@@ -151,20 +164,18 @@ test('Given a fresh Supabase setup, when storage policies are created, then the 
   }
 });
 
-test('Given legal documents are paused, when crawlers read the terms page, then indexing is disabled', () => {
-  assert.match(
-    read('terms.html'),
-    /<meta name="robots" content="noindex, nofollow">/,
-  );
+test('Given signups are open, when crawlers read the terms page, then it can be found', () => {
+  /* 가입 전에 약관을 읽어 보려는 사람이 검색으로 닿을 수 있어야 합니다. */
+  assert.doesNotMatch(read('terms.html'), /content="noindex/);
 });
 
-test('Given legal documents are paused, when the sitemap is built, then the terms page is omitted', () => {
+test('Given the terms are public, when the sitemap is built, then it lists them', () => {
   const generator = read('tools/build_langs.py');
   const writerStart = generator.indexOf('def write_sitemap');
   const writerEnd = generator.indexOf("if __name__ == '__main__'");
   const sitemapWriter = generator.slice(writerStart, writerEnd);
 
-  assert.doesNotMatch(sitemapWriter, /terms/);
+  assert.match(sitemapWriter, /terms\.html/);
 });
 
 test('Given account features are private, when API grants are applied, then anonymous callers only keep public gallery access', () => {
@@ -205,11 +216,13 @@ test('Given account features are private, when API grants are applied, then anon
   }
 });
 
-test('Given account recovery is paused, when the login page renders, then it cannot submit a reset request', () => {
+test('Given signups are open, when a member forgets their password, then they have a way back', () => {
+  /* 새로 들어온 회원이 비밀번호를 잊었을 때 돌아올 길이 없으면, 계정을
+     하나 더 만들거나 그냥 떠납니다. */
   const config = read('assets/studio-config.js');
   const login = read('gecko/login.html');
 
-  assert.match(config, /var PASSWORD_RESET_REQUESTS_ENABLED\s*=\s*false\s*;/);
+  assert.match(config, /var PASSWORD_RESET_REQUESTS_ENABLED\s*=\s*true\s*;/);
   assert.match(login, /PASSWORD_RESET_REQUESTS_ENABLED\s*\?\s*'<div class="sub">/);
   assert.match(login, /if\s*\(!PASSWORD_RESET_REQUESTS_ENABLED\)\s*return renderResetPaused\(\);/);
 });
@@ -297,7 +310,7 @@ test('Given security-sensitive browser code changes, when pages load, then they 
   for (const page of configuredPages) {
     assert.match(
       read(page),
-      /assets\/studio-config\.js\?v=20260731b/,
+      /assets\/studio-config\.js\?v=[0-9a-z]+/,
       `${page} must request the paused-account configuration with a new cache key`,
     );
   }

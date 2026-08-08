@@ -6,13 +6,13 @@ const test = require('node:test');
 const root = path.resolve(__dirname, '..');
 const read = relativePath => fs.readFileSync(path.join(root, relativePath), 'utf8');
 
-test('Given closed beta access, when the calculator renders, then login is visible while signup stays disabled', () => {
+test('Given signups are open, when the calculator renders, then both login and signup are reachable', () => {
   const core = read('gecko/gecko-core.js');
   const config = read('assets/studio-config.js');
   const login = read('gecko/login.html');
 
   assert.match(core, /const SHOW_ACCOUNT_UI\s*=\s*true\s*;/);
-  assert.match(config, /var SIGNUPS_ENABLED\s*=\s*false\s*;/);
+  assert.match(config, /var SIGNUPS_ENABLED\s*=\s*true\s*;/);
   assert.match(login, /SIGNUPS_ENABLED\s*\?\s*'<button id="tSignup"/);
   assert.match(login, /if\s*\(!SIGNUPS_ENABLED\)\s*return signupPaused\(\);/);
 });

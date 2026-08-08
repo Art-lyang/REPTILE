@@ -4,7 +4,7 @@
   locales.en = Object.freeze(Object.assign({}, locales.ko, {
     pageTitle: 'Account · Ryang Studio', account: 'Account', calculator: 'Calculator', language: 'Language', loading: 'Loading…',
     login: 'Log in', signup: 'Sign up', googleLogin: 'Continue with Google', googleSignup: 'Sign up with Google', emailDivider: 'or use email',
-    closedBetaTitle: 'Closed beta testing is in progress', closedBetaBody: 'Only issued test accounts and existing accounts can log in. New sign-ups are not open yet.',
+    closedBetaTitle: 'This service has just opened', closedBetaBody: 'Your animals and care records are visible only to you. Publishing starts only when you turn it on for a specific animal. Tell us if anything looks wrong.',
     email: 'Email', joinedEmail: 'Account email', password: 'Password', passwordConfirm: 'Confirm password',
     passwordRule: '8+ characters · include a symbol', passwordAgain: 'Enter it again', signupAction: 'Create account', loginAction: 'Log in',
     forgotPassword: 'Forgot your password?', whyLoginTitle: 'Why do I need an account?',

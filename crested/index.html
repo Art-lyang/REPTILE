@@ -49,7 +49,7 @@
 <!-- ?v=014345 는 캐시 무효화용입니다. crested-core.js 를 고쳐 올릴 때마다 숫자를 바꿔주세요.
      (안 바꾸면 이미 방문했던 사람의 브라우저가 예전 파일을 계속 씁니다) -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.8/dist/umd/supabase.js"></script>
-<script src="../assets/studio-config.js?v=20260731b"></script>
+<script src="../assets/studio-config.js?v=20260809a"></script>
 <script src="crested-core.js?v=20260809c"></script>
 <script src="../assets/analytics.js?v=20260731b"></script>
 <script src="../assets/uitext.js?v=20260806b"></script>
@@ -144,14 +144,14 @@
   <div class="results" id="results"></div>
 
   <div class="bottom-links">
-    <a class="blink" href="/care/gallery.html" hidden><i class="bi bi-binoculars" aria-hidden="true"></i><span>다른 집사들의 개체 구경하기</span></a>
+    <a class="blink" href="/care/gallery.html"><i class="bi bi-binoculars" aria-hidden="true"></i><span>다른 집사들의 개체 구경하기</span></a>
     <a class="blink" id="mailLink" href="#"><i class="bi bi-envelope" aria-hidden="true"></i><span id="lbl-contact"></span></a>
   </div>
   <div class="mailnote" id="mailNote">정보 수정 요청 · 업데이트 건의는 <b>문의하기</b>로 보내주세요</div>
 
   <div class="note" id="note"><b>이 계산기가 다루는 것</b> — 릴리화이트, 카푸치노·세이블(같은 자리), 팬텀, 초초, 아잔틱을 멘델 유전으로 계산합니다. </div>
   <div class="note" id="piedNote"><b>파이드는 불완전우성으로 계산합니다.</b> 유전자 한 개는 파이드, 두 개는 슈퍼 파이드로 표시합니다. 계통에 따라 발현 차이가 있을 수 있으므로 실제 교배 계획에서는 혈통과 번식 기록도 함께 확인해 주세요.</div>
-  <div class="legal" hidden>
+  <div class="legal">
     <a href="../terms.html#terms" id="lbl-terms">이용약관</a> · <a href="../terms.html#privacy" id="lbl-privacy">개인정보처리방침</a>
   </div>
   <!-- 검색 노출용 소개. 화면에는 보이지 않지만 크롤러가 읽습니다.

@@ -4,7 +4,7 @@
   locales.zh = Object.freeze(Object.assign({}, locales.ko, {
     pageTitle: '账户 · Ryang Studio', account: '账户', calculator: '计算器', language: '语言', loading: '加载中…',
     login: '登录', signup: '注册', googleLogin: '使用 Google 登录', googleSignup: '使用 Google 注册', emailDivider: '或使用邮箱',
-    closedBetaTitle: '目前正在进行封闭测试', closedBetaBody: '仅限已发放的测试账号和现有账号登录，暂未开放新用户注册。',
+    closedBetaTitle: '本服务刚刚开放', closedBetaBody: '个体与护理记录仅您本人可见，只有您为某个个体手动开启后才会公开。使用中如发现异常请告诉我们。',
     email: '邮箱', joinedEmail: '注册邮箱', password: '密码', passwordConfirm: '确认密码',
     passwordRule: '至少 8 位并包含特殊字符', passwordAgain: '再次输入', signupAction: '注册', loginAction: '登录',
     forgotPassword: '忘记密码？', whyLoginTitle: '为什么需要登录？',

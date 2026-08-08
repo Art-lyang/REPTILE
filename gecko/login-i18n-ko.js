@@ -4,7 +4,7 @@
   locales.ko = Object.freeze({
     pageTitle: '계정 · 량 스튜디오', account: '계정', calculator: '계산기', language: '언어', loading: '불러오는 중…',
     login: '로그인', signup: '회원가입', googleLogin: 'Google로 로그인', googleSignup: 'Google로 가입', emailDivider: '또는 이메일로',
-    closedBetaTitle: '현재 폐쇄 테스트 중입니다', closedBetaBody: '발급받은 테스트 계정과 기존 계정만 로그인할 수 있습니다. 신규 회원가입은 아직 열려 있지 않습니다.',
+    closedBetaTitle: '이제 막 문을 연 서비스입니다', closedBetaBody: '개체·케어 기록은 회원 본인에게만 보이며, 공개는 개체별로 직접 켜야 시작됩니다. 쓰다가 이상한 점이 있으면 알려주세요.',
     email: '이메일', joinedEmail: '가입한 이메일', password: '비밀번호', passwordConfirm: '비밀번호 확인',
     passwordRule: '8자 이상 · 특수문자 포함', passwordAgain: '한 번 더 입력', signupAction: '가입하기', loginAction: '로그인',
     forgotPassword: '비밀번호를 잊으셨나요?', whyLoginTitle: '왜 로그인이 필요한가요?',

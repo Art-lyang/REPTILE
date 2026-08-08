@@ -25,12 +25,19 @@ var STUDIO_SERVICES = {
 
 /* 계정 기능 공개 스위치.
    false 인 동안 기존 회원 로그인은 유지하되 새 회원가입 UI와 요청을 막습니다.
-   Supabase Auth의 신규 가입 차단 설정과 함께 사용해야 서버에서도 완전히 막힙니다. */
-var SIGNUPS_ENABLED = false;
 
-/* 운영자가 직접 처리하는 비밀번호 재설정 접수도 계정 기능 공개 전까지 닫습니다.
-   기존 회원의 로그인과 이미 발급된 복구 링크를 통한 비밀번호 변경은 유지됩니다. */
-var PASSWORD_RESET_REQUESTS_ENABLED = false;
+   2026-08-09 열었습니다. 여기만 켜서는 열리지 않습니다 — 자물쇠가 셋입니다.
+     1. 이 스위치 (화면)
+     2. supabase_v75.sql — auth.users 의 block_new_auth_users 트리거 (DB)
+     3. Supabase 대시보드 → Authentication → Allow new users to sign up
+   다시 잠글 때도 셋을 함께 되돌려야 합니다. 하나만 잠그면 가입 버튼은
+   보이는데 눌리지 않는 상태가 됩니다. */
+var SIGNUPS_ENABLED = true;
+
+/* 비밀번호 재설정 접수. 가입을 열면 이것도 함께 열어야 합니다 — 새로 들어온
+   회원이 비밀번호를 잊었을 때 돌아올 길이 없으면, 계정을 하나 더 만들거나
+   그냥 떠납니다. */
+var PASSWORD_RESET_REQUESTS_ENABLED = true;
 
 /* 가입 봇 차단 (Cloudflare Turnstile)
    ---------------------------------------------------------------------------

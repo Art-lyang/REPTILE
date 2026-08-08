@@ -282,6 +282,13 @@ def write_sitemap(dist, today):
         for lang in LANGS:
             rows.append('  <url><loc>%s</loc><lastmod>%s</lastmod><changefreq>weekly</changefreq><priority>%s</priority></url>'
                         % (url_of(calc, lang), mod, '0.9' if lang == 'ko' else '0.7'))
+    # 약관·처리방침. 가입을 열면서 함께 넣습니다 — 가입 전에 읽어 보려는
+    # 사람이 검색으로 닿을 수 있어야 합니다. 언어 사본이 없는 한 장짜리라
+    # 계산기들과 달리 주소가 하나입니다.
+    rows.append('  <url><loc>%s/terms.html</loc><lastmod>%s</lastmod>'
+                '<changefreq>monthly</changefreq><priority>0.3</priority></url>'
+                % (SITE, git_lastmod(['terms.html'], today)))
+
     io.open(os.path.join(dist, 'sitemap.xml'), 'w', encoding='utf-8', newline='\n').write(
         '<?xml version="1.0" encoding="UTF-8"?>\n'
         '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' + '\n'.join(rows) + '\n</urlset>\n')

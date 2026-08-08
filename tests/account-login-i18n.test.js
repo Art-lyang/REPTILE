@@ -147,12 +147,12 @@ test('Given an unexpected account backend error, when it is shown, then raw serv
   assert.notEqual(korean.friendly(new Error(raw)), raw);
 });
 
-test('Given signups and recovery requests are paused, when account I18n is added, then both server-facing guards remain intact', () => {
+test('Given signups are open, when account I18n is added, then both server-facing guards still exist', () => {
   const config = read('assets/studio-config.js');
   const login = read('gecko/login.html');
 
-  assert.match(config, /var SIGNUPS_ENABLED\s*=\s*false\s*;/);
-  assert.match(config, /var PASSWORD_RESET_REQUESTS_ENABLED\s*=\s*false\s*;/);
+  assert.match(config, /var SIGNUPS_ENABLED\s*=\s*true\s*;/);
+  assert.match(config, /var PASSWORD_RESET_REQUESTS_ENABLED\s*=\s*true\s*;/);
   assert.match(login, /if\s*\(!SIGNUPS_ENABLED\)\s*return signupPaused\(\);/);
   assert.match(login, /if\s*\(!PASSWORD_RESET_REQUESTS_ENABLED\)\s*return renderResetPaused\(\);/);
 });

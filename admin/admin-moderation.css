@@ -49,3 +49,22 @@
 /* 목록에 비공개가 섞이면 어느 것이 비공개인지 보여야 합니다. */
 .mdprivtag{display:inline-block;margin-left:6px;padding:1px 6px;border-radius:6px;
   background:var(--hair);color:var(--ink2);font-size:10.5px;font-weight:800}
+
+/* 처리 기록. 조치와 열람이 한눈에 갈려 보여야 합니다 — 열람이 훨씬 잦아서
+   같은 색이면 조치가 묻힙니다. */
+.mdlog{margin:12px 0;border:1px solid var(--hair);border-radius:12px;overflow:hidden}
+.mdlogrow{display:grid;grid-template-columns:84px 1fr 2fr auto;gap:8px;align-items:center;
+  padding:8px 12px;font-size:12.5px;border-bottom:1px solid var(--hair)}
+.mdlogrow:last-child{border-bottom:0}
+.mdlogact{font-weight:800;padding:1px 7px;border-radius:6px;text-align:center;
+  background:var(--hair);color:var(--ink2)}
+.mdlogact.a-hold,.mdlogact.a-delete_photos,.mdlogact.a-delete_animal,.mdlogact.a-expire{
+  background:var(--warn-hi-bg);color:var(--warn-hi-fg)}
+.mdlogact.a-release{background:var(--gtile,#eef5f0);color:var(--teal)}
+.mdlogwho{color:var(--ink2);overflow:hidden;text-overflow:ellipsis}
+.mdlogwhy{overflow:hidden;text-overflow:ellipsis}
+.mdlogat{color:var(--ink2);white-space:nowrap}
+@media (max-width:640px){
+  .mdlogrow{grid-template-columns:72px 1fr;grid-auto-rows:auto}
+  .mdlogwhy,.mdlogat{grid-column:1/-1}
+}

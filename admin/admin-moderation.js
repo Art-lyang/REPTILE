@@ -18,7 +18,7 @@
 (function () {
   'use strict';
 
-  const state = { SB: null, body: null, esc: null, rows: [], onlyHeld: false, withPrivate: false, busy: false };
+  const state = { SB: null, body: null, esc: null, rows: [], log: null, onlyHeld: false, withPrivate: false, busy: false };
 
   /* supabase_v68 의 animals_held_category_ck 와 같아야 합니다.
      severe 인 것은 보류가 아니라 즉시 삭제로 갑니다. */
@@ -32,6 +32,12 @@
     { id: 'other',     label: '기타 약관 위반',     severe: false }
   ];
 
+  const ACTIONS = {
+    view: '열람', hold: '보류', release: '해제',
+    delete_photos: '사진 삭제', delete_animal: '개체 삭제',
+    ai_block: '학습 제외', ai_unblock: '학습 제외 해제', expire: '기한 만료 삭제'
+  };
+
   const esc = v => state.esc(v == null ? '' : v);
   const date = v => (v ? String(v).slice(0, 10) : '—');
 
@@ -44,12 +50,29 @@
     return (row.photo_url ? 1 : 0) + ((row.photos || []).length);
   }
 
+  const BUCKET = 'animal-photos';
+
+  /* 저장된 값이 옛 판의 전체 공개 URL 인 경우가 있습니다. 그대로 열면
+     404 Bucket not found 가 납니다 — 버킷이 비공개로 바뀌었기 때문입니다.
+     assets/photo.js 와 같은 방식으로 경로만 뽑아 다시 서명받습니다. */
+  function pathOf(value) {
+    if (!value || typeof value !== 'string') return null;
+    const mark = '/' + BUCKET + '/';
+    const i = value.indexOf(mark);
+    if (i < 0) return /^https?:\/\//.test(value) ? null : value;
+    let out = value.slice(i + mark.length);
+    const q = out.indexOf('?');
+    if (q >= 0) out = out.slice(0, q);
+    if (!out) return null;
+    try { return decodeURIComponent(out); } catch (e) { return out; }
+  }
+
   /* 사진은 비공개 버킷에 있습니다. 서명 주소를 받아야 열립니다. */
-  async function signed(path) {
-    if (!path) return null;
-    /* 저장된 값이 전체 URL 인 경우가 있습니다(옛 판). 그대로 씁니다. */
-    if (/^https?:\/\//.test(path)) return path;
-    const r = await state.SB.storage.from('animal-photos').createSignedUrl(path, 300);
+  async function signed(value) {
+    const path = pathOf(value);
+    /* 우리 버킷 것이 아니면(외부 주소) 그대로 씁니다. */
+    if (!path) return /^https?:\/\//.test(value || '') ? value : null;
+    const r = await state.SB.storage.from(BUCKET).createSignedUrl(path, 300);
     return r.error ? null : (r.data && r.data.signedUrl);
   }
 
@@ -100,7 +123,9 @@
          '비공개 포함 열람' 이 기록에 한 줄 남습니다(supabase_v72). */
       + '<button class="mini' + (state.withPrivate ? ' on' : '') + '" data-mdprivate="1">'
       + (state.withPrivate ? '비공개 포함 · 켬' : '비공개 포함') + '</button>'
+      + '<button class="mini' + (state.log ? ' on' : '') + '" data-mdlog="1">처리 기록</button>'
       + '</div></div>'
+      + (state.log ? logHtml() : '')
       + (rows.length
           ? '<div class="mdlist">' + rows.map(card).join('') + '</div>'
           : '<div class="asub" style="padding:24px 0">검수할 사진이 없습니다.</div>');
@@ -124,6 +149,30 @@
       + '<button class="abtn" data-mdconfirm="' + esc(id) + '">적용</button>'
       + '<button class="abtn ghost" data-mdcancel="1">취소</button>'
       + '</div></div></div>';
+  }
+
+  /* 처리 기록. 남기기만 하고 볼 수 없으면 기록이 아니라 그냥 표입니다 —
+     '누가 언제 무엇을 왜' 에 답할 수 있어야 이 권한을 가질 근거가 됩니다. */
+  function logHtml() {
+    const rows = state.log || [];
+    if (!rows.length) return '<div class="asub" style="padding:16px 0">아직 기록이 없습니다.</div>';
+    return '<div class="mdlog">' + rows.map(function (r) {
+      return '<div class="mdlogrow">'
+        + '<span class="mdlogact a-' + esc(r.action) + '">'
+        + esc(ACTIONS[r.action] || r.action) + '</span>'
+        + '<span class="mdlogwho">' + esc(r.owner_email || '—') + '</span>'
+        + '<span class="mdlogwhy">'
+        + (r.category ? esc(categoryLabel(r.category)) + ' · ' : '')
+        + esc(r.reason || '') + '</span>'
+        + '<span class="mdlogat">' + esc(String(r.created_at || '').slice(0, 16).replace('T', ' ')) + '</span>'
+        + '</div>';
+    }).join('') + '</div>';
+  }
+
+  async function loadLog() {
+    const r = await state.SB.rpc('admin_moderation_log', { p_limit: 100 });
+    if (r.error) throw r.error;
+    state.log = r.data || [];
   }
 
   async function load() {
@@ -166,6 +215,11 @@
     const d = t.dataset;
 
     if (d.mdfilter) { state.onlyHeld = (d.mdfilter === 'held'); return load(); }
+
+    if (d.mdlog) {
+      if (state.log) { state.log = null; state.body.innerHTML = html(); hydrate(); return; }
+      return act(async function () { await loadLog(); });
+    }
 
     if (d.mdprivate) {
       if (!state.withPrivate

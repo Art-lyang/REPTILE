@@ -82,7 +82,8 @@ test('Given a private animal is opened, when it is, then a reason is asked and r
 test('Given photos are private, when a thumbnail shows, then it goes through a signed URL', () => {
   const src = read('admin/admin-moderation.js');
   assert.match(src, /createSignedUrl/);
-  assert.match(src, /from\('animal-photos'\)/);
+  assert.match(src, /const BUCKET = 'animal-photos'/);
+  assert.match(src, /storage\.from\(BUCKET\)\.createSignedUrl/);
   /* 서명을 기다리며 빈 화면을 보여 주지 않습니다 — 먼저 그리고 나중에 채웁니다. */
   assert.match(src, /function hydrate\(\)/);
 });
@@ -115,4 +116,28 @@ test('Given the list only shows published animals, when one is private, then it 
   /* 목록의 '자세히' 와 조회창이 같은 함수를 씁니다 — 한쪽만 기록을 남기면 안 됩니다. */
   assert.match(src, /if \(d\.mddetail\) return openDetail\(d\.mddetail\);/);
   assert.match(src, /prompt\('열람 사유를 남깁니다/);
+});
+
+test('Given an old public URL was stored, when a thumbnail loads, then the path is re-signed', () => {
+  /* 옛 판은 전체 공개 URL 을 저장했습니다. 버킷이 비공개로 바뀐 뒤로 그 주소를
+     그대로 열면 404 Bucket not found 가 납니다. 경로만 뽑아 다시 서명받습니다
+     — assets/photo.js 가 같은 일을 합니다. */
+  const src = read('admin/admin-moderation.js');
+  assert.match(src, /function pathOf\(value\)/);
+  assert.match(src, /const mark = '\/' \+ BUCKET \+ '\/'/);
+  /* 옛 방식 — 전체 URL 을 그대로 돌려주던 줄이 남아 있으면 안 됩니다. */
+  assert.ok(!src.includes('.test(path)) return path;'),
+    '전체 URL 을 그대로 여는 코드가 남아 있습니다');
+});
+
+test('Given the log exists, when an admin wants to check it, then a screen shows it', () => {
+  /* 남기기만 하고 볼 수 없으면 기록이 아니라 그냥 표입니다. 부관리자를 두면
+     '누가 언제 무엇을 왜' 에 답할 수 있어야 합니다. */
+  const src = read('admin/admin-moderation.js');
+  assert.match(src, /data-mdlog/);
+  assert.match(src, /rpc\('admin_moderation_log'/);
+  assert.match(src, /function logHtml\(\)/);
+  /* 코드가 아니라 사람 말로 보여야 읽힙니다. */
+  assert.match(src, /const ACTIONS = \{/);
+  assert.match(src, /delete_photos: '사진 삭제'/);
 });

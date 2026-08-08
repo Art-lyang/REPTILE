@@ -55,4 +55,4 @@ var PASSWORD_RESET_REQUESTS_ENABLED = true;
    왜 Turnstile 인가 — 이미 Cloudflare 를 쓰고 있어 추가 업체가 늘지 않고,
    대부분의 사람에게 풀 문제를 내지 않습니다. reCAPTCHA 와 달리 방문자
    데이터가 광고 사업자로 넘어가지 않습니다. */
-var TURNSTILE_SITE_KEY = '';
+var TURNSTILE_SITE_KEY = '0x4AAAAAAEKeqnG0tjlhIZHo';

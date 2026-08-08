@@ -114,7 +114,7 @@
       lineTraitScores: LineTraitScores, photo: window.Photo, element: $, esc: esc, icon: icon,
       cores: CORES, i18n: I18n, lifeStage: window.AnimalLifeStage,
       hatchOutcomes: HatchOutcomes, act: act, render: render, breedSpec: () => B };
-    bulkRecord = window.createBreedingBulkRecord(base);
+    bulkRecord = window.createBulkCareRecord(base);
     animalPanel = window.createBreedingAnimalPanel(Object.assign({}, base, {
       nameById: nameById, otherNote: otherNote, bulk: bulkRecord
     }));

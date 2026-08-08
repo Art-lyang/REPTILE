@@ -35,6 +35,14 @@
     editAnimal: null, editPlan: null, editFeed: null,
     busy: false
   };
+  /* 일괄 빠른 기록. 브리딩 개체 탭과 같은 조각을 씁니다 — 케어 기록이 쌓이는
+     곳이 여기라 이쪽이 본 자리이고, 브리딩에서도 같은 것을 부릅니다. */
+  const Bulk = window.createBulkCareRecord({
+    state: S, app: A, core: C, i18n: I, esc: esc,
+    icon: function (n) { return icon(n); },
+    act: function (fn, msg) { return act(fn, msg); },
+    render: function () { render(); }
+  });
   const AnimalForm = window.createCareAnimalForm({
     state: S, app: A, core: C, i18n: I, photos: CarePhotos, lifeStage: LifeStage,
     element: $, escapeHtml: esc, icon: icon, act: act
@@ -207,6 +215,8 @@
 
     /* 종별로 묶어 보여줍니다. 여러 종을 키우면 한 줄로 늘어놓았을 때
        어느 것이 무엇인지 알아보기 어렵습니다. */
+    h += Bulk.toggleButton() + Bulk.barHtml();
+
     const bySp = {};
     S.animals.forEach(a => { (bySp[a.species] = bySp[a.species] || []).push(a); });
 
@@ -242,7 +252,8 @@
         + icon('bi-arrow-up-circle') + esc(I.t('freeSlotActivate')) + '</button>'
       : '<button class="mini" data-editanimal="' + a.id + '">' + icon('bi-pencil') + I.t('edit') + '</button>';
 
-    return '<div class="card' + (locked ? ' card-locked' : '') + '">'
+    return '<div class="card' + (locked ? ' card-locked' : '') + Bulk.cardClass(a) + '">'
+      + Bulk.cardBox(a)
       + '<div class="thumb">' + (a.photo_url ? Photo.tag(a.photo_url, a.name || '') : info.icon) + '</div>'
       + '<div class="info"><div class="nm">' + esc(a.name || I.t('unnamed')) + sex + stage
       + (locked ? '<span class="chip chip-locked">' + icon('bi-lock') + esc(I.t('freeSlotLocked')) + '</span>' : '')
@@ -598,6 +609,19 @@
   /* 화면을 다시 그릴 때마다 요소가 새로 만들어지므로, 각 버튼에 리스너를 달지
      않고 문서 하나에서 받아 처리합니다. */
   document.addEventListener('click', function (ev) {
+    /* 체크상자는 button 이 아니라 input 이라 아래 closest('button') 보다
+       먼저 받아야 합니다. */
+    const pick = ev.target.closest('[data-bulkpick]');
+    if (pick) return Bulk.toggle(pick.getAttribute('data-bulkpick'), pick.checked);
+
+    const bulkBtn = ev.target.closest('button');
+    if (bulkBtn) {
+      const bd = bulkBtn.dataset;
+      if (bd.bulktoggle) return Bulk.mode();
+      if (bd.bulkall) return Bulk.all();
+      if (bd.bulkclear) return Bulk.clear();
+      if (bd.bulkkind) return Bulk.record(bd.bulkkind);
+    }
     const t = ev.target.closest('button, [data-go]');
     if (!t) return;
     const d = t.dataset;

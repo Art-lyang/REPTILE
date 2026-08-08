@@ -39,22 +39,30 @@ test('Given an animal is linked as a parent, when its children are looked up, th
   assert.equal(C.childrenOf(null, 'mom').length, 0);
 });
 
-test('Given an animal has children, when the edit form renders, then species sex and stage are locked', () => {
+test('Given an animal has children, when the edit form renders, then only valid values are offered', () => {
   const form = read('care/care-animal-form.js');
   assert.match(form, /function parentLock\(animal, kids\)/);
   assert.match(form, /if \(!animal\.id \|\| !kids \|\| !kids\.length\) return null;/);
-  /* 세 칸 모두에 걸려야 합니다 — 종만 막으면 어미를 수컷으로 바꿀 수 있습니다. */
-  ['f_species', 'f_sex', 'f_stage'].forEach(function (id) {
-    assert.match(form, new RegExp('id="' + id + '"\'? \\+ lockAttr'), id);
-  });
-  /* 이름·메모는 잠그지 않습니다. 부모 자격과 무관하고, 이름을 못 고치면
-     잠금이 벌처럼 읽힙니다. */
-  assert.doesNotMatch(form, /id="f_name"[^>]*lockAttr/);
+  /* 세 칸 모두에 걸려야 합니다 — 종만 좁히면 어미를 수컷으로 바꿀 수 있습니다. */
+  assert.match(form, /speciesList = lockedOptions\(speciesList, animal\.species, lock\.species\)/);
+  assert.match(form, /sexList = lockedOptions\(sexList, animal\.sex \|\| 'unknown', lock\.sex\)/);
+  assert.match(form, /stageList = lockedOptions\(stageList, LifeStage\.normalize\(animal\.life_stage\), lock\.stage\)/);
+  /* ⚠️ disabled 로 막지 않습니다. 그러면 이미 틀어진 값을 바로잡을 수도 없어집니다 —
+     레오파드 새끼의 어미가 '기타' 로 앉아 있는데 종 칸이 잠겨 있던 것이 그 경우입니다.
+     서버(supabase_v63.sql)는 '자식과 안 맞는 값' 만 거절하지 되돌리기는 통과시킵니다.
+     화면이 서버보다 엄격하면 고칠 길이 사라집니다. */
+  assert.doesNotMatch(form, /lockAttr/);
+  /* 지금 값과 자식이 요구하는 값, 둘만 남깁니다. */
+  assert.match(form, /o\.value === current \|\| o\.value === required/);
 });
 
-test('Given a lock is shown, when the keeper reads it, then it says which child caused it', () => {
+test('Given a lock is shown, when the keeper reads it, then it says what the value must be', () => {
   const form = read('care/care-animal-form.js');
-  assert.match(form, /parentLockedHint', \{ names: lock\.names \}/);
+  assert.match(form, /parentLockedHint'/);
+  assert.match(form, /names: lock\.names/);
+  /* 이름만 적으면 무엇으로 바꿔야 하는지 알 수 없습니다. */
+  assert.match(form, /species: I\.speciesName\(lock\.species\)/);
+  assert.match(form, /sex: I\.t\(lock\.sex === 'male'/);
   assert.match(form, /kids\.map\(k => k\.name \|\| I\.t\('unnamed'\)\)\.join\(', '\)/);
 });
 

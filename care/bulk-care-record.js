@@ -17,7 +17,7 @@
 (function () {
   'use strict';
 
-  window.createBreedingBulkRecord = function (deps) {
+  window.createBulkCareRecord = function (deps) {
     const S = deps.state;
     const A = deps.app;
     const C = deps.core;

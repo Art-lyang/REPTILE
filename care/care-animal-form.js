@@ -43,41 +43,79 @@
        잠그기만 하고 이유를 안 적으면 고장으로 읽히므로 자식 이름을 함께 적습니다. */
     function parentLock(animal, kids) {
       if (!animal.id || !kids || !kids.length) return null;
+      /* 자식이 요구하는 값. 종은 자식의 종이고, 부로 걸렸으면 성체 수컷,
+         모로 걸렸으면 성체 암컷입니다(supabase_v37.sql). */
+      const asSire = kids.some(k => k.parent_a === animal.id);
       return {
-        attr: ' disabled aria-describedby="f_parentlock"',
-        names: kids.map(k => k.name || I.t('unnamed')).join(', ')
+        names: kids.map(k => k.name || I.t('unnamed')).join(', '),
+        species: kids[0].species || animal.species,
+        sex: asSire ? 'male' : 'female',
+        stage: 'adult'
       };
+    }
+
+    /* 잠그되, 맞는 값으로 바꾸는 길은 열어 둡니다.
+       -------------------------------------------------------------------------
+       처음에는 세 칸을 통째로 disabled 로 두었습니다. 그랬더니 이미 틀어져 있던
+       개체를 바로잡을 수도 없게 됐습니다 — 레오파드 새끼의 어미가 '기타' 로
+       앉아 있었는데, 그걸 고치려고 열면 종 칸이 잠겨 있었습니다.
+
+       서버는 그렇게까지 막지 않습니다. supabase_v63.sql 은 '자식과 안 맞는
+       값' 만 거절하지, 맞는 값으로 되돌리는 것은 통과시킵니다. 화면이 서버보다
+       엄격하면 고칠 방법이 사라집니다.
+
+       그래서 지금 값과 '자식이 요구하는 값' 둘만 남깁니다. 드리프트는 여전히
+       막히고, 되돌리기는 한 번에 됩니다. */
+    function lockedOptions(all, current, required) {
+      return all.filter(o => o.value === current || o.value === required);
     }
 
     function html(animal, kids) {
       const isNew = !animal.id;
       const lock = parentLock(animal, kids);
-      const lockAttr = lock ? lock.attr : '';
-      const speciesOptions = Object.keys(C.SPECIES).map(function (key) {
-        return '<option value="' + key + '"' + (animal.species === key ? ' selected' : '') + '>'
-          + C.SPECIES[key].icon + ' ' + esc(I.speciesName(key)) + '</option>';
-      }).join('');
-      const sexOptions = [['unknown', 'sexUnknown'], ['male', 'sexMale'], ['female', 'sexFemale']]
-        .map(function (option) {
-          return '<option value="' + option[0] + '"'
-            + ((animal.sex || 'unknown') === option[0] ? ' selected' : '') + '>'
-            + esc(I.t(option[1])) + '</option>';
-        }).join('');
+      const opt = function (value, label, selected) {
+        return '<option value="' + value + '"' + (selected ? ' selected' : '') + '>' + label + '</option>';
+      };
+
+      let speciesList = Object.keys(C.SPECIES).map(function (key) {
+        return { value: key, label: C.SPECIES[key].icon + ' ' + esc(I.speciesName(key)) };
+      });
+      let sexList = [['unknown', 'sexUnknown'], ['male', 'sexMale'], ['female', 'sexFemale']]
+        .map(function (o) { return { value: o[0], label: esc(I.t(o[1])) }; });
+      let stageList = LifeStage.STAGES.map(function (s) {
+        return { value: s, label: esc(I.t(LifeStage.labelKey(s))) };
+      });
+
+      if (lock) {
+        speciesList = lockedOptions(speciesList, animal.species, lock.species);
+        sexList = lockedOptions(sexList, animal.sex || 'unknown', lock.sex);
+        stageList = lockedOptions(stageList, LifeStage.normalize(animal.life_stage), lock.stage);
+      }
+
+      const speciesOptions = speciesList
+        .map(o => opt(o.value, o.label, animal.species === o.value)).join('');
+      const sexOptions = sexList
+        .map(o => opt(o.value, o.label, (animal.sex || 'unknown') === o.value)).join('');
+      const stageOpts = stageList
+        .map(o => opt(o.value, o.label, LifeStage.normalize(animal.life_stage) === o.value)).join('');
       return '<div class="pad"><div class="lbl">' + esc(I.t(isNew ? 'addAnimal' : 'editAnimal')) + '</div>'
         + '<div class="lbl2"><label for="f_name">' + esc(I.t('name')) + '</label></div>'
         + '<input class="in" id="f_name" value="' + esc(animal.name || '') + '" placeholder="'
         + esc(I.t('animalNamePlaceholder')) + '"><div class="lbl2"><label for="f_species">'
-        + esc(I.t('species')) + '</label></div><select class="in" id="f_species"' + lockAttr + '>'
+        + esc(I.t('species')) + '</label></div><select class="in" id="f_species">'
         + speciesOptions + '</select>'
         + '<div class="hint">' + esc(I.t('speciesPlanHint')) + '</div><div class="row2">'
         + '<div><div class="lbl2"><label for="f_sex">' + esc(I.t('sex')) + '</label></div>'
-        + '<select class="in" id="f_sex"' + lockAttr + '>' + sexOptions + '</select></div>'
+        + '<select class="in" id="f_sex">' + sexOptions + '</select></div>'
         + '<div><div class="lbl2"><label for="f_stage">' + esc(I.t('lifeStage')) + '</label></div>'
-        + '<select class="in" id="f_stage"' + lockAttr + '>' + stageOptions(animal.life_stage)
-        + '</select></div></div>'
+        + '<select class="in" id="f_stage">' + stageOpts + '</select></div></div>'
         + (lock
             ? '<div class="note warn" id="f_parentlock"><i class="bi bi-diagram-3" aria-hidden="true"></i>'
-              + '<span>' + esc(I.t('parentLockedHint', { names: lock.names })) + '</span></div>'
+              + '<span>' + esc(I.t('parentLockedHint', {
+                  names: lock.names,
+                  species: I.speciesName(lock.species),
+                  sex: I.t(lock.sex === 'male' ? 'sexMale' : 'sexFemale')
+                })) + '</span></div>'
             : '<div class="hint">' + esc(I.t('lifeStageHint')) + '</div>')
         + '<div class="lbl2"><label for="f_hatch">' + esc(I.t('hatchAdoptionDate')) + '</label></div>'
         + DateField.html({ id: 'f_hatch', value: animal.hatch_date || '', max: C.today() })

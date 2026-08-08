@@ -32,7 +32,7 @@
     consentAll: 'すべて同意', termsConsent: '利用規約に同意します', privacyConsent: '個人情報の収集・利用に同意します',
     ageConsent: '14歳以上です', thirdConsent: '個人情報の第三者提供に同意します', mailConsent: 'メールでイベント・特典情報を受け取る',
     smsConsent: 'SMSでイベント・特典情報を受け取る', aiConsent: '登録した写真・個体情報を<b>AIモデル学習</b>に利用することに同意します',
-    aiTerms: '規約 第9条③', aiConsentNote: '同意しなくても全機能を利用できます。撤回後は今後の学習対象から外し原本を削除しますが、完了済みの学習は元に戻せません。',
+    aiTerms: '規約 第9条③', aiConsentNote: '同意しなくても全機能を利用できます。<b>同意前に登録した写真も対象</b>で、学習したモデルは他の会員の画面に出る予想画像にも使われます。撤回すると今後の学習から外し原本を削除しますが、完了済みの学習は元に戻せません。',
     phonePlaceholder: '携帯電話番号（任意）', optionalConsentNote: '任意項目に同意しなくても利用できます。アカウント画面からいつでも撤回できます。',
     profileTitle: '基本情報', nameOptional: '名前（任意）', nicknameOptional: 'ニックネーム（任意・コミュニティ表示名）',
     bizTitle: '事業者認証', bizStatusNone: '［未申請］', bizStatusPending: '［審査中］',

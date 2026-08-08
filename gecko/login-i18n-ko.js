@@ -32,7 +32,7 @@
     consentAll: '전체 동의', termsConsent: '이용약관에 동의합니다', privacyConsent: '개인정보 수집·이용에 동의합니다',
     ageConsent: '만 14세 이상입니다', thirdConsent: '개인정보 제3자 제공에 동의합니다', mailConsent: '이메일로 이벤트·혜택 정보를 받겠습니다',
     smsConsent: '문자로 이벤트·혜택 정보를 받겠습니다', aiConsent: '등록한 사진·개체 정보를 <b>AI 모델 학습</b>에 이용하는 것에 동의합니다',
-    aiTerms: '약관 제9조 ③', aiConsentNote: '동의하지 않아도 모든 기능을 쓸 수 있습니다. 해제 후 원본은 삭제하지만 이미 학습이 끝난 모델은 되돌릴 수 없습니다.',
+    aiTerms: '약관 제9조 ③', aiConsentNote: '동의하지 않아도 모든 기능을 쓸 수 있습니다. <b>동의 전에 올린 사진도 포함</b>되며, 학습된 모델은 다른 회원 화면의 예상 이미지에도 쓰입니다. 해제하면 이후 학습에서 빼고 원본은 삭제하지만, 이미 학습이 끝난 모델은 되돌릴 수 없습니다.',
     phonePlaceholder: '휴대전화번호 (예: 010-1234-5678)', optionalConsentNote: '선택 항목에 동의하지 않아도 서비스를 이용할 수 있습니다. 계정 화면에서 언제든 철회할 수 있습니다.',
     profileTitle: '기본 정보', nameOptional: '이름 (선택)', nicknameOptional: '닉네임 (선택 · 커뮤니티 표시명)',
     bizTitle: '사업자 인증', bizStatusNone: '[미신청]', bizStatusPending: '[심사 중]',

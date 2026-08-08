@@ -31,7 +31,7 @@
     consentAll: '全部同意', termsConsent: '同意服务条款', privacyConsent: '同意收集和使用个人信息',
     ageConsent: '本人已满 14 周岁', thirdConsent: '同意向第三方提供个人信息', mailConsent: '通过邮箱接收活动与优惠',
     smsConsent: '通过短信接收活动与优惠', aiConsent: '同意将上传的照片和动物信息用于<b>AI 模型训练</b>',
-    aiTerms: '条款第 9 条第 3 款', aiConsentNote: '不同意也能使用全部功能。撤回后原始资料不再用于后续训练并会删除，但已完成的模型训练无法撤销。',
+    aiTerms: '条款第 9 条第 3 款', aiConsentNote: '不同意也能使用全部功能。<b>同意前上传的照片同样包含在内</b>，训练后的模型也会用于生成其他会员看到的预览图。撤回后原始资料不再用于后续训练并会删除，但已完成的模型训练无法撤销。',
     phonePlaceholder: '手机号码（选填）', optionalConsentNote: '不同意选填项目也可使用服务，并可随时在账户页面撤回。',
     profileTitle: '基本信息', nameOptional: '姓名（选填）', nicknameOptional: '昵称（选填 · 社区显示名称）',
     bizTitle: '商家认证', bizStatusNone: '［未申请］', bizStatusPending: '［审核中］',

@@ -32,7 +32,7 @@
     consentAll: 'Agree to all', termsConsent: 'I agree to the Terms of Service', privacyConsent: 'I agree to the collection and use of personal data',
     ageConsent: 'I am at least 14 years old', thirdConsent: 'I agree to sharing personal data with third parties', mailConsent: 'Send me events and benefits by email',
     smsConsent: 'Send me events and benefits by text message', aiConsent: 'I agree to use my uploaded photos and animal data for <b>AI model training</b>',
-    aiTerms: 'Terms §9(3)', aiConsentNote: 'All features work without consent. After withdrawal, originals are deleted from future training, but completed model training cannot be reversed.',
+    aiTerms: 'Terms §9(3)', aiConsentNote: 'All features work without consent. <b>Photos uploaded before you agree are included</b>, and the trained model also produces preview images shown to other members. Withdrawing excludes future training and deletes the originals, but completed model training cannot be reversed.',
     phonePlaceholder: 'Mobile number (optional)', optionalConsentNote: 'Optional consent is not required to use the service and can be withdrawn from your account.',
     profileTitle: 'Basic information', nameOptional: 'Name (optional)', nicknameOptional: 'Nickname (optional · community display name)',
     bizTitle: 'Business verification', bizStatusNone: '[Not applied]', bizStatusPending: '[Under review]',

@@ -65,11 +65,23 @@ commit;
 
 
 -- 확인 -----------------------------------------------------------------------
--- postgres 만 남아야 정상입니다(소유자는 못 막습니다).
+/* 표마다 걷는 범위가 다르므로 판정도 달라야 합니다. 처음 판은 anon·
+   authenticated·service_role 중 하나라도 보이면 무조건 ★ 를 찍었는데, 그러면
+   animal_documents 의 INSERT·UPDATE — 일부러 남긴 것 — 까지 빨간불이 됩니다.
+   거짓 경보를 두면 ★ 를 무시하는 습관이 생깁니다. */
 select table_name as 표, privilege_type as 권한,
        string_agg(grantee, ', ' order by grantee) as 가진_역할,
-       case when bool_or(grantee in ('anon','authenticated','service_role'))
-            then '★ 아직 열려 있습니다' else 'OK' end as 판정
+       case
+         /* 서류의 쓰기는 남기는 것이 맞습니다 — save_animal_document 가
+            security invoker 입니다(v64). */
+         when table_name = 'animal_documents' and privilege_type in ('INSERT','UPDATE')
+           then case when bool_or(grantee = 'anon')
+                     then '★ anon 에게 열려 있습니다'
+                     else 'OK — 일부러 남긴 권한' end
+         when bool_or(grantee in ('anon','authenticated','service_role'))
+           then '★ 아직 열려 있습니다'
+         else 'OK'
+       end as 판정
   from information_schema.role_table_grants
  where table_schema = 'public'
    and table_name in ('animal_transfers', 'animal_documents', 'animal_legal_locks')

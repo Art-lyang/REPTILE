@@ -1,0 +1,42 @@
+/* 이미지 검수 (supabase_v68~v70)
+   사업자 인증 탭과 같은 모양을 씁니다 — 관리자 화면 안에서 탭마다 다른 언어를
+   쓰면 어느 화면인지 매번 다시 읽어야 합니다. */
+.mdhead{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.mdfilter{display:flex;gap:6px;flex:0 0 auto}
+.mdfilter .mini.on{background:var(--teal);color:#fff}
+
+.mdlist{display:flex;flex-direction:column;gap:10px;margin-top:14px}
+.mdcard{
+  display:flex;align-items:center;gap:12px;padding:10px;
+  background:var(--card2);border:1px solid var(--hair);border-radius:12px;
+}
+/* 보류된 것은 목록에서 바로 눈에 띄어야 합니다 — 되돌아와 확인할 것들입니다. */
+.mdcard.held{border-color:var(--warn-hi-bd);background:var(--warn-hi-bg)}
+
+/* 썸네일은 서명 주소를 받은 뒤에 채워집니다. 그전에는 빈 칸이 보입니다. */
+.mdthumb{
+  width:64px;height:64px;flex:0 0 auto;border-radius:10px;cursor:pointer;
+  background:var(--hair) center/cover no-repeat;position:relative;
+}
+.mdcount{
+  position:absolute;right:3px;bottom:3px;padding:0 5px;border-radius:6px;
+  background:rgba(0,0,0,.6);color:#fff;font-size:10.5px;font-weight:800;
+}
+.mdinfo{flex:1;min-width:0}
+.mdname{font-weight:750;font-size:14px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.mdbadge{
+  font-size:10.5px;font-weight:800;padding:1px 7px;border-radius:6px;
+  background:var(--warn-hi-fg);color:#fff;
+}
+.mdbadge.wait{background:var(--teal)}
+.mdmeta{font-size:12px;color:var(--ink2);margin-top:2px;overflow:hidden;text-overflow:ellipsis}
+.mdreason{font-size:12.5px;margin-top:4px;color:var(--warn-hi-fg)}
+.mdacts{display:flex;gap:6px;flex:0 0 auto}
+
+/* 조치 대화상자 */
+.mddlg{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.4);display:flex;
+  align-items:center;justify-content:center;padding:16px}
+.mddlg-in{background:var(--card);border-radius:16px;padding:18px;width:min(460px,100%);
+  max-height:90vh;overflow:auto}
+.mddlg-in .ain{width:100%;margin-top:4px}
+.mddlg-acts{display:flex;gap:8px;margin-top:14px}

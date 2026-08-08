@@ -21,7 +21,9 @@
 <script src="admin-members.js?v=20260808b"></script>
 <script src="admin-security.js?v=20260807a"></script>
 <link rel="stylesheet" href="admin-business.css?v=20260808a">
+<link rel="stylesheet" href="admin-moderation.css?v=20260809a">
 <script src="admin-business.js?v=20260808a"></script>
+<script src="admin-moderation.js?v=20260809a"></script>
 <style>
   :root{
     --bg:#EDEAE1;            /* Cloud Dancer 톤 그룹 배경 */
@@ -329,7 +331,7 @@ async function seedCombos(){
     // 서비스가 늘면 여기에 탭을 추가하세요 (docs/STUDIO.md)
     // 세 번째 값이 true 면 최고관리자 전용입니다. 부관리자에게는 안 보입니다.
     const ALL=[['info','한눈에',true],['member','회원',true],['stat','통계',true],
-               ['source','유입',true],['security','보안',true],['biz','사업자',true],['reset','비번',true],
+               ['source','유입',true],['security','보안',true],['biz','사업자',true],['mod','검수',true],['reset','비번',true],
                ['code','코드',false],['morph','레오 모프',false],['combo','레오 콤보',false],
                ['crmorph','크레 모프',false],['text','문구',true],['admin','관리자',true]];
     const tabs=ALL.filter(t=>!t[2]||isOwner());
@@ -354,7 +356,7 @@ async function seedCombos(){
     }
     ({info:tabInfo,morph:tabMorph,combo:tabCombo,stat:tabStat,code:tabCode,
       member:tabMember,crmorph:tabCrMorph,text:tabText,admin:tabAdmins,
-      source:tabSource,security:tabSecurity,biz:tabBusiness,reset:tabReset}[adTab])();
+      source:tabSource,security:tabSecurity,biz:tabBusiness,mod:tabModeration,reset:tabReset}[adTab])();
   }
 
   /* ---------- 보안 (최고관리자 전용) ----------
@@ -373,6 +375,19 @@ async function seedCombos(){
   /* ---------- 사업자 인증 (최고관리자 전용) ----------
      admin/admin-business.js 가 그립니다. 보안·회원 탭과 같은 방식이라
      _harness-business.html 로 확인할 수 있습니다. */
+  /* ---------- 이미지 검수 (supabase_v68~v70) ----------
+     회원이 올린 사진 중 공개된 것을 훑고, 약관에 어긋나면 보류하거나 지웁니다.
+     비공개는 '자세히' 로 한 건씩 열 때만 보이고 그때마다 열람 기록이 남습니다. */
+  async function tabModeration(){
+    const body=document.getElementById('adBody');
+    if(!window.AdminModeration){
+      body.innerHTML='<div class="aerr"><b>검수 모듈을 불러오지 못했습니다.</b><br><br>'
+        +'<code>admin-moderation.js</code> 가 로드됐는지 확인하세요.</div>';
+      return;
+    }
+    await window.AdminModeration.render({SB, body, esc});
+  }
+
   async function tabBusiness(){
     const body=document.getElementById('adBody');
     if(!window.AdminBusiness){

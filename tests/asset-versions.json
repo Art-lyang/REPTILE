@@ -27,6 +27,14 @@
     "version": "20260808b",
     "sha256": "d8957bec1f2a3f72"
   },
+  "admin/admin-moderation.css": {
+    "version": "20260809a",
+    "sha256": "9e5dc9bc7a4148f7"
+  },
+  "admin/admin-moderation.js": {
+    "version": "20260809a",
+    "sha256": "b942ebc81d9bac41"
+  },
   "admin/admin-security.js": {
     "version": "20260807a",
     "sha256": "8d40dd11136f601e"

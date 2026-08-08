@@ -126,12 +126,16 @@ test('Given a keeper writes a postscript, when it is saved, then it becomes a da
   assert.equal(calls.length, 1);
 });
 
-test('Given the certificate ships, when the source is read, then it adds no migration', () => {
-  /* v64 가 스테이징 검증을 마치기 전에는 그 위에 아무것도 쌓지 않기로 했습니다.
-     혈통서는 읽기만 하므로 지킬 수 있습니다. */
-  const files = fs.readdirSync(ROOT).filter(f => /^supabase_v\d+\.sql$/.test(f));
-  const highest = Math.max(...files.map(f => parseInt(f.match(/\d+/)[0], 10)));
-  assert.equal(highest, 64, '혈통서는 새 마이그레이션을 만들지 않습니다');
+test('Given the certificate ships, when the source is read, then it needs no new table', () => {
+  /* 처음에는 '가장 큰 마이그레이션 번호가 64' 로 확인했습니다. 그건 그때의
+     상황이었지 혈통서의 성질이 아닙니다 — v64 검증이 끝나 v65 가 생기자
+     혈통서와 무관하게 빨간불이 켜졌습니다. 보려던 것은 '혈통서가 서버를 새로
+     건드리지 않는가' 이므로 그것을 직접 봅니다. */
+  const both = read('care/pedigree-certificate.js') + read('care/pedigree-certificate-ui.js');
+  assert.doesNotMatch(both, /\brpc\s*\(/, '혈통서는 RPC 를 부르지 않습니다');
+  assert.doesNotMatch(both, /\.from\s*\(/, '혈통서는 표를 직접 읽지 않습니다');
+  /* 쓰는 곳은 한 군데뿐이고, 그것도 이미 있는 케어 메모입니다. */
+  assert.match(read('care/pedigree-certificate.js'), /app\.addRecord\(\{/);
 
   /* 소유권·거래가격은 혈통서가 아니라 양도 기록입니다. 주석에는 '여기 없다'
      고 적혀 있으므로, 주석을 걷어낸 코드만 봅니다 — 안 그러면 설명 자체가

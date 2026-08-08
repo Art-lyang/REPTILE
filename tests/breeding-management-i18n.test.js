@@ -168,7 +168,7 @@ test('Given the Leopard calculator language changes, when its management entry i
 
 test('Given the shared care backend changes, when production pages boot, then every consumer requests the same fresh version', () => {
   ['care/index.html', 'care/animal.html', 'care/breeding.html'].forEach((page) => {
-    assert.match(read(page), /care-app\.js\?v=20260808a/, page);
+    assert.match(read(page), /care-app\.js\?v=20260809a/, page);
   });
 });
 

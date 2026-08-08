@@ -217,10 +217,26 @@ const CareApp = (function () {
       });
     },
 
+    /* ⚠️ animals 의 not null 칸은 하나도 빠짐없이 여기 있어야 합니다.
+       save_row 는 insert 를 이렇게 합니다(supabase_v54.sql).
+
+         insert into animals select * from jsonb_populate_record(null::animals, p_row)
+
+       select * 라서 컬럼 기본값이 안 먹습니다 — 우리가 안 보낸 칸은 그냥 NULL 로
+       들어갑니다. not null 이면 23502 로 거절되고, 화면에는 '입력한 정보를 저장할
+       수 없습니다' 라는 뭉뚱그린 문구만 뜹니다.
+
+       고칠 때는 잘 드러나지 않습니다. save_row 가 기존 줄(cur)을 먼저 병합하니
+       빠진 칸이 옛 값으로 채워지기 때문입니다. 새로 만들 때만 깨집니다.
+       실제로 v54 가 free_pinned 를 not null 로 더한 뒤로 개체 등록이 막혀
+       있었고, 수정은 멀쩡해서 한동안 드러나지 않았습니다.
+
+       tests/animal-save-payload.test.js 가 마이그레이션을 훑어서 이 목록과
+       대조합니다. 새 not null 칸을 더하면 거기서 빨간불이 켜집니다. */
     async saveAnimal(row, initialWeight) {
       const payload = Object.assign({
         is_public: false, is_listed: false, public_breeder: false, public_weight: false,
-        line_trait_scores: {}, life_stage: 'baby_unknown'
+        line_trait_scores: {}, life_stage: 'baby_unknown', free_pinned: false
       }, row || {});
       if (initialWeight !== null && initialWeight !== undefined && initialWeight !== '') {
         return req(SB.rpc('save_animal_with_initial_weight', {

@@ -34,6 +34,9 @@ begin
   payload := jsonb_build_object(
     'id', gen_random_uuid(),
     'user_id', u,
+    'device', 'u_' || u::text,          -- save_row 가 채우는 값
+    'created_at', now(),
+    -- 여기부터가 화면이 실제로 보내는 것 (care-app.js saveAnimal)
     'name', '진단용-지워짐',
     'species', 'other',
     'sex', 'unknown',
@@ -41,7 +44,11 @@ begin
     'hatch_date', null,
     'clutch_label', null,
     'note', null,
-    'created_at', now());
+    'is_public', false,
+    'is_listed', false,
+    'public_breeder', false,
+    'public_weight', false,
+    'line_trait_scores', '{}'::jsonb);
 
   -- 1) save_row 가 하는 insert 를 그대로
   begin
@@ -69,6 +76,9 @@ begin
   exception when others then
     insert into _d values (3, 'null 상태에서 공개', '★ ' || sqlstate || ' · ' || sqlerrm);
   end;
+
+  -- 3-b) 화면이 안 보내는 NOT NULL 칸을 하나씩 더해 보며 어디서 통과하는지
+  --      (1번이 실패했을 때만 뜻이 있습니다)
 
   -- 4) 수정 경로(save_row 는 delete 후 재insert)
   begin

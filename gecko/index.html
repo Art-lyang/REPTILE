@@ -208,18 +208,18 @@
 <!-- 프리미엄 코드 모달 -->
 <div class="modal-overlay" id="premModal">
   <div class="modal" style="max-width:400px">
-    <div class="modal-head"><h3>💎 프리미엄 코드</h3><button class="modal-x" onclick="closePrem()">✕</button></div>
+    <div class="modal-head"><h3 id="pmTitle">💎 프리미엄 코드</h3><button class="modal-x" onclick="closePrem()">✕</button></div>
     <div class="modal-body">
       <div id="premAccount"></div>
 
       <div class="perkbox" id="perkBox">
-        <div class="perkhead">프리미엄으로 열리는 기능</div>
-        <div class="perk"><span class="pk">🦎</span><div><b>브리딩 관리</b><span>내 개체·혈통 등록, 사진 저장, 페어링·클러치 기록 관리</span></div></div>
-        <div class="perk"><span class="pk">🎯</span><div><b>목표 모프 역산</b><span>등록한 개체 기준으로 목표까지 가능한 페어링과 부족한 조건을 찾아줍니다</span></div></div>
-        <div class="perk"><span class="pk">🖼️</span><div><b>결과 이미지 저장</b><span>계산 결과를 이미지로 내려받아 기록·공유</span></div></div>
-        <div class="perk"><span class="pk">🚫</span><div><b>광고 제거</b><span>모든 화면에서 광고가 표시되지 않습니다</span></div></div>
-        <div class="perk"><span class="pk">☁️</span><div><b>계정 동기화</b><span>휴대폰·PC 어디서든 같은 기록을 이어서 사용</span></div></div>
-        <div class="perkfoot">무료로도 <b>모프 확률 계산·콤보 명칭·위험 조합 경고</b>는 계속 이용할 수 있어요.</div>
+        <div class="perkhead" id="pmPerkHead">프리미엄으로 열리는 기능</div>
+        <div class="perk"><span class="pk">🦎</span><div><b id="pmPerk1T">브리딩 관리</b><span id="pmPerk1B">내 개체·혈통 등록, 사진 저장, 페어링·클러치 기록 관리</span></div></div>
+        <div class="perk"><span class="pk">🎯</span><div><b id="pmPerk2T">목표 모프 역산</b><span id="pmPerk2B">등록한 개체 기준으로 목표까지 가능한 페어링과 부족한 조건을 찾아줍니다</span></div></div>
+        <div class="perk"><span class="pk">🖼️</span><div><b id="pmPerk3T">결과 이미지 저장</b><span id="pmPerk3B">계산 결과를 이미지로 내려받아 기록·공유</span></div></div>
+        <div class="perk"><span class="pk">🚫</span><div><b id="pmPerk4T">광고 제거</b><span id="pmPerk4B">모든 화면에서 광고가 표시되지 않습니다</span></div></div>
+        <div class="perk"><span class="pk">☁️</span><div><b id="pmPerk5T">계정 동기화</b><span id="pmPerk5B">휴대폰·PC 어디서든 같은 기록을 이어서 사용</span></div></div>
+        <div class="perkfoot" id="pmPerkFoot">무료로도 <b>모프 확률 계산·콤보 명칭·위험 조합 경고</b>는 계속 이용할 수 있어요.</div>
       </div>
 
       <div id="premStatus" style="font-size:13px;margin:12px 0 8px;color:var(--ink2)"></div>
@@ -228,16 +228,16 @@
       <div id="premMsg" style="font-size:12.5px;margin-top:8px;min-height:16px"></div>
 
       <div class="donatebox" id="donateBox">
-        <div class="dhead">☕ 개발자 후원하기</div>
-        <div class="dsub">이 계산기는 개인이 무료로 만들어 운영하고 있어요. 후원해 주시면 서버 비용과 모프 데이터 업데이트에 사용됩니다.</div>
+        <div class="dhead" id="pmDonHead">☕ 개발자 후원하기</div>
+        <div class="dsub" id="pmDonSub">이 계산기는 개인이 무료로 만들어 운영하고 있어요. 후원해 주시면 서버 비용과 모프 데이터 업데이트에 사용됩니다.</div>
         <div class="dacct"><span class="dbank" id="donBank">카카오뱅크</span><b id="donAcct">3333-17-6613203</b>
           <button class="mini" id="donCopy">복사</button></div>
-        <div class="dnote">후원은 자율이며, 후원하지 않아도 모든 무료 기능을 그대로 이용하실 수 있습니다. 후원금은 프리미엄 이용권과 무관합니다.</div>
+        <div class="dnote" id="pmDonNote">후원은 자율이며, 후원하지 않아도 모든 무료 기능을 그대로 이용하실 수 있습니다. 후원금은 프리미엄 이용권과 무관합니다.</div>
       </div>
     </div>
     <div class="modal-foot">
-      <button class="btn-today" onclick="closePrem()">닫기</button>
-      <button class="btn-close" onclick="redeemPrem()">활성화</button>
+      <button class="btn-today" id="pmClose" onclick="closePrem()">닫기</button>
+      <button class="btn-close" id="pmRedeem" onclick="redeemPrem()">활성화</button>
     </div>
   </div>
 </div>
@@ -247,7 +247,7 @@
 
 <script src="gecko-explain.js?v=20260731e"></script>
 <script src="/assets/calculation-history-store.js?v=20260731h"></script>
-<script src="gecko-ui.js?v=20260809d"></script>
+<script src="gecko-ui.js?v=20260809e"></script>
 
 <script src="gecko-app.js?v=20260809a"></script>
 </body>

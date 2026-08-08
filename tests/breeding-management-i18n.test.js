@@ -163,7 +163,10 @@ test('Given the Leopard calculator language changes, when its management entry i
   const page = read('gecko/index.html');
   assert.match(calculator, /pro\.href='\/care\/breeding\.html\?species=gecko&v=20260803m'.*LANG.*lang=/);
   assert.match(calculator, /proText\.textContent=t\.saveBreeding/);
-  assert.match(page, /gecko-ui\.js\?v=20260809d/);
+  /* 판을 여기에 박아 두면 정당한 갱신마다 이 테스트가 깨집니다. 내용이
+     바뀌었는데 ?v= 가 그대로인 경우는 asset-versions.test.js 가 이미
+     잡습니다. 여기서는 캐시 무력화가 붙어 있는지만 봅니다. */
+  assert.match(page, /gecko-ui\.js\?v=[0-9a-z]+/);
 });
 
 test('Given the shared care backend changes, when production pages boot, then every consumer requests the same fresh version', () => {

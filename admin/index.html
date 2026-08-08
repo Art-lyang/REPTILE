@@ -211,6 +211,13 @@
   .ordbtns button{border:none;background:rgba(120,120,128,.15);color:var(--ink);border-radius:5px;width:24px;height:17px;font-size:9px;cursor:pointer;line-height:1;padding:0}
   /* 도구 선택 (전체 / 레오파드 / 크레스티드) */
   .asvcbar{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 12px}
+  /* 계산기 하위 탭. 아래 화면이 자기 버튼 줄을 바로 이어 그려서, 간격이
+     없으면 두 줄이 한 덩어리로 붙어 보입니다. */
+  .acalcbar{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 16px;padding:0 0 14px;
+    border-bottom:1px solid var(--hair,#e3ded2)}
+  .acalcbar .asub{display:inline-block;margin-left:5px;padding:1px 6px;border-radius:6px;
+    background:var(--hair,#e3ded2);font-size:10.5px;font-weight:800;vertical-align:1px}
+  .acalcbar .asvc.on .asub{background:rgba(255,255,255,.22);color:#fff}
   .asvc{min-height:34px;padding:0 13px;border:1px solid var(--hair,#e3ded2);border-radius:999px;
         background:#fff;color:#4a4437;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit}
   .asvc.on{background:#075a48;border-color:#075a48;color:#fff}

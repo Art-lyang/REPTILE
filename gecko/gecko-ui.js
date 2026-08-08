@@ -25,6 +25,27 @@ const I18N = {
     partialToggle:'가능성 헷 표시 (66·33%)', partialHint:'확률적 보인자(66·33% 등)까지 표로 표시',
     vintageToggle:'추억의 모프 보기', vintageHint:'요즘 보기 힘든 과거 모프·콤보까지 표시', optInfo:'표시 옵션 설명',
     comboLoad:'콤보 개체 불러오기…', donate:'개발자 후원하기', adLabel:'광고', adHint:'이 자리에 광고 코드를 넣을 수 있어요',
+    /* 프리미엄 코드 모달. 화면 전체가 4개 국어인데 이 모달만 한국어로 남아 있었습니다. */
+    pmTitle:'💎 프리미엄 코드',
+    pmPerkHead:'프리미엄으로 열리는 기능',
+    pmPerk1T:'브리딩 관리',
+    pmPerk1B:'내 개체·혈통 등록, 사진 저장, 페어링·클러치 기록 관리',
+    pmPerk2T:'목표 모프 역산',
+    pmPerk2B:'등록한 개체 기준으로 목표까지 가능한 페어링과 부족한 조건을 찾아줍니다',
+    pmPerk3T:'결과 이미지 저장',
+    pmPerk3B:'계산 결과를 이미지로 내려받아 기록·공유',
+    pmPerk4T:'광고 제거',
+    pmPerk4B:'모든 화면에서 광고가 표시되지 않습니다',
+    pmPerk5T:'계정 동기화',
+    pmPerk5B:'휴대폰·PC 어디서든 같은 기록을 이어서 사용',
+    pmPerkFoot:'무료로도 <b>모프 확률 계산·콤보 명칭·위험 조합 경고</b>는 계속 이용할 수 있어요.',
+    pmCodePh:'발급받은 코드 입력',
+    pmDonHead:'☕ 개발자 후원하기',
+    pmDonSub:'이 계산기는 개인이 무료로 만들어 운영하고 있어요. 후원해 주시면 서버 비용과 모프 데이터 업데이트에 사용됩니다.',
+    pmDonCopy:'복사',
+    pmDonNote:'후원은 자율이며, 후원하지 않아도 모든 무료 기능을 그대로 이용하실 수 있습니다. 후원금은 프리미엄 이용권과 무관합니다.',
+    pmClose:'닫기',
+    pmRedeem:'활성화',
     secCombo:'콤보 (탭하면 자동 세팅)', secGene:'유전 모프 (확률 계산)',
     searchPh:'모프 검색 (예: 블랙나이트, eclipse, 스노우)', searchClear:'검색 지우기',
     searchNone:'검색 결과가 없습니다. 다른 이름이나 영문 철자로 찾아보세요.',
@@ -75,6 +96,27 @@ const I18N = {
     partialToggle:'Show possible hets (66·33%)', partialHint:'Include probabilistic carriers (66·33%, etc.) in the table',
     vintageToggle:'Show vintage morphs', vintageHint:'Include older, rarely-seen morphs and combos', optInfo:'About these options',
     comboLoad:'Load a combo animal…', donate:'Support the developer', adLabel:'Advertisement', adHint:'Place your ad code here',
+    /* 프리미엄 코드 모달. 화면 전체가 4개 국어인데 이 모달만 한국어로 남아 있었습니다. */
+    pmTitle:'💎 Premium code',
+    pmPerkHead:'What premium unlocks',
+    pmPerk1T:'Breeding manager',
+    pmPerk1B:'Register your animals and lineage, store photos, track pairings and clutches',
+    pmPerk2T:'Work back from a target morph',
+    pmPerk2B:'From the animals you own, find the pairings that reach your target and what you are still missing',
+    pmPerk3T:'Save results as an image',
+    pmPerk3B:'Download a calculation to keep or share',
+    pmPerk4T:'No ads',
+    pmPerk4B:'Ads are hidden on every screen',
+    pmPerk5T:'Account sync',
+    pmPerk5B:'Pick up the same records on your phone or your computer',
+    pmPerkFoot:'The free version keeps <b>morph probability, combo names and risky-pairing warnings</b>.',
+    pmCodePh:'Enter your code',
+    pmDonHead:'☕ Support the developer',
+    pmDonSub:'This calculator is built and run for free by one person. Donations go to server costs and morph data updates.',
+    pmDonCopy:'Copy',
+    pmDonNote:'Donating is entirely optional — every free feature stays available either way, and a donation is not a premium pass.',
+    pmClose:'Close',
+    pmRedeem:'Activate',
     secCombo:'Combos (tap to auto-set)', secGene:'Genetic morphs (calculated)',
     searchPh:'Search morphs (e.g. Black Night, eclipse, snow)', searchClear:'Clear search',
     searchNone:'No matches. Try another spelling or a translated name.',
@@ -125,6 +167,27 @@ const I18N = {
     partialToggle:'显示可能 het（66·33%）', partialHint:'在表格中包含概率性携带（66·33% 等）',
     vintageToggle:'显示怀旧形态', vintageHint:'包含现在少见的旧形态与组合', optInfo:'选项说明',
     comboLoad:'载入组合个体…', donate:'支持开发者', adLabel:'广告', adHint:'可在此处放置广告代码',
+    /* 프리미엄 코드 모달. 화면 전체가 4개 국어인데 이 모달만 한국어로 남아 있었습니다. */
+    pmTitle:'💎 高级会员代码',
+    pmPerkHead:'高级会员可用功能',
+    pmPerk1T:'繁育管理',
+    pmPerk1B:'登记个体与血统、保存照片、管理配对与产卵记录',
+    pmPerk2T:'目标形态反推',
+    pmPerk2B:'以已登记的个体为准，找出通往目标的配对方案以及还缺少的条件',
+    pmPerk3T:'保存结果图片',
+    pmPerk3B:'把计算结果下载为图片，便于记录与分享',
+    pmPerk4T:'去除广告',
+    pmPerk4B:'所有页面均不显示广告',
+    pmPerk5T:'账号同步',
+    pmPerk5B:'手机与电脑随时接着用同一份记录',
+    pmPerkFoot:'免费版仍可继续使用<b>形态概率计算、组合名称与风险配对提醒</b>。',
+    pmCodePh:'输入已获得的代码',
+    pmDonHead:'☕ 支持开发者',
+    pmDonSub:'这个计算器由个人免费制作与运营。您的支持将用于服务器费用与形态数据更新。',
+    pmDonCopy:'复制',
+    pmDonNote:'支持完全自愿，不支持也可照常使用全部免费功能。捐款与高级会员资格无关。',
+    pmClose:'关闭',
+    pmRedeem:'激活',
     secCombo:'组合（点击自动设置）', secGene:'遗传形态（可计算）',
     searchPh:'搜索形态（例如 Black Night、eclipse、snow）', searchClear:'清除搜索',
     searchNone:'没有匹配的形态，请换个写法或语言名称试试。',
@@ -175,6 +238,27 @@ const I18N = {
     partialToggle:'可能性 het を表示（66・33%）', partialHint:'66・33% など確率的な保因も表に表示',
     vintageToggle:'懐かしのモルフを表示', vintageHint:'今では見かけない古いモルフ・コンボも表示', optInfo:'表示オプションの説明',
     comboLoad:'コンボ個体を読み込む…', donate:'開発者を支援', adLabel:'広告', adHint:'ここに広告コードを配置できます',
+    /* 프리미엄 코드 모달. 화면 전체가 4개 국어인데 이 모달만 한국어로 남아 있었습니다. */
+    pmTitle:'💎 プレミアムコード',
+    pmPerkHead:'プレミアムで使える機能',
+    pmPerk1T:'ブリーディング管理',
+    pmPerk1B:'個体と血統の登録、写真の保存、ペアリング・クラッチ記録の管理',
+    pmPerk2T:'目標モルフから逆算',
+    pmPerk2B:'登録した個体をもとに、目標に届くペアリングと足りない条件を探します',
+    pmPerk3T:'結果を画像で保存',
+    pmPerk3B:'計算結果を画像として保存し、記録・共有できます',
+    pmPerk4T:'広告の非表示',
+    pmPerk4B:'すべての画面で広告が表示されません',
+    pmPerk5T:'アカウント同期',
+    pmPerk5B:'スマホでもPCでも同じ記録の続きから使えます',
+    pmPerkFoot:'無料でも<b>モルフ確率の計算・コンボ名称・危険な組み合わせの警告</b>はそのまま使えます。',
+    pmCodePh:'発行されたコードを入力',
+    pmDonHead:'☕ 開発者を支援する',
+    pmDonSub:'この計算機は個人が無料で作って運営しています。ご支援はサーバー費用とモルフデータの更新に使われます。',
+    pmDonCopy:'コピー',
+    pmDonNote:'支援は任意です。支援しなくても無料機能はすべてそのまま使えます。支援金はプレミアム利用権とは無関係です。',
+    pmClose:'閉じる',
+    pmRedeem:'有効化',
     secCombo:'コンボ（タップで自動設定）', secGene:'遺伝モルフ（確率計算）',
     searchPh:'モルフ検索（例: Black Night、eclipse、snow）', searchClear:'検索を消去',
     searchNone:'該当するモルフがありません。別の表記や言語名でお試しください。',
@@ -510,8 +594,27 @@ function applyLang(){
      같은 사전을 쓸 수 있게 내줍니다 — 문구를 두 벌 두면 한쪽만 번역됩니다. */
   window.__navText = t;
 
+  /* 프리미엄 모달은 열릴 때가 아니라 언어를 그릴 때 채웁니다 — 열고 나서
+     채우면 한국어가 한 번 스쳤다가 바뀝니다. */
+  function paintPremModal(t){
+    const set=(id,key,html)=>{ const el=document.getElementById(id);
+      if(!el || !t[key]) return;
+      if(html) el.innerHTML=t[key]; else el.textContent=t[key]; };
+    set('pmTitle','pmTitle'); set('pmPerkHead','pmPerkHead');
+    for(let i=1;i<=5;i++){ set('pmPerk'+i+'T','pmPerk'+i+'T');
+      set('pmPerk'+i+'B','pmPerk'+i+'B'); }
+    set('pmPerkFoot','pmPerkFoot', true);
+    set('pmDonHead','pmDonHead'); set('pmDonSub','pmDonSub');
+    set('donCopy','pmDonCopy'); set('pmDonNote','pmDonNote');
+    set('pmClose','pmClose'); set('pmRedeem','pmRedeem');
+    const inp=document.getElementById('premInput');
+    if(inp && t.pmCodePh) inp.placeholder=t.pmCodePh;
+  }
+
   const premLabel = document.querySelector('#premBtn span');
   if (premLabel && !window.__isPrem && t.navPremium) premLabel.textContent = t.navPremium;
+
+  paintPremModal(t);
 
   const pro=document.getElementById('proBtn');
   if(pro){

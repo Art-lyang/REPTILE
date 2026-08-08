@@ -3,6 +3,9 @@ const path = require('node:path');
 
 const root = path.resolve(__dirname, '..', '..');
 const BREEDING_FACTORIES = Object.freeze([
+  /* 일괄 빠른 기록은 개체 패널보다 먼저 만들어져야 합니다 — 패널이 이것을
+     받아서 체크상자와 막대를 그립니다. 목록 순서가 곧 <script> 순서입니다. */
+  ['breeding-bulk-record.js', 'createBreedingBulkRecord'],
   ['breeding-animal-panel.js', 'createBreedingAnimalPanel'],
   ['breeding-pairing-panel.js', 'createBreedingPairingPanel'],
   ['breeding-mating-panel.js', 'createBreedingMatingPanel'],

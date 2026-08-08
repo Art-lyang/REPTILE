@@ -15,11 +15,21 @@
     const clutchPanel = deps.clutchPanel;
     const geneticGoal = deps.geneticGoal;
     const I18n = deps.i18n;
+    const Bulk = deps.bulk;
 
     function onClick(ev) {
+      /* 일괄 기록의 체크상자는 button 이 아니라 input 입니다. 아래 closest
+         ('button') 보다 먼저 받아야 합니다. */
+      const pick = ev.target.closest('[data-bulkpick]');
+      if (pick) return Bulk.toggle(pick.getAttribute('data-bulkpick'), pick.checked);
+
       const t = ev.target.closest('button');
       if (!t) return;
       const d = t.dataset;
+      if (d.bulktoggle) return Bulk.mode();
+      if (d.bulkall) return Bulk.all();
+      if (d.bulkclear) return Bulk.clear();
+      if (d.bulkkind) return Bulk.record(d.bulkkind);
       if (t.classList.contains('tab')) {
         const nextTab = t.getAttribute('data-t');
         const leave = S.edit && S.edit.what === 'animal' ? CarePhotos.cancel() : Promise.resolve();

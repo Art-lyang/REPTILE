@@ -21,7 +21,7 @@
   const S = { species: 'gecko', tab: 'animals', goalMode: 'genetic', animals: [], pairs: [],
     clutches: [], projects: [], groups: [], matingEvents: [], edit: null, busy: false };
   let B = null;
-  let animalPanel, pairingPanel, matingPanel, hatchPanel, clutchPanel, geneticGoal;
+  let animalPanel, pairingPanel, matingPanel, hatchPanel, clutchPanel, geneticGoal, bulkRecord;
 
   function esc(s) {
     return String(s == null ? '' : s).replace(/[&<>"']/g, function (x) {
@@ -114,8 +114,9 @@
       lineTraitScores: LineTraitScores, photo: window.Photo, element: $, esc: esc, icon: icon,
       cores: CORES, i18n: I18n, lifeStage: window.AnimalLifeStage,
       hatchOutcomes: HatchOutcomes, act: act, render: render, breedSpec: () => B };
+    bulkRecord = window.createBreedingBulkRecord(base);
     animalPanel = window.createBreedingAnimalPanel(Object.assign({}, base, {
-      nameById: nameById, otherNote: otherNote
+      nameById: nameById, otherNote: otherNote, bulk: bulkRecord
     }));
     pairingPanel = window.createBreedingPairingPanel(Object.assign({}, base, {
       nameById: nameById, projectById: projectById, goalText: goalText
@@ -133,7 +134,8 @@
     geneticGoal = window.createBreedingGeneticGoal(Object.assign({}, base, { otherNote: otherNote }));
     window.createBreedingEvents(Object.assign({}, base, {
       toast: toast, animalPanel: animalPanel, pairingPanel: pairingPanel,
-      matingPanel: matingPanel, hatchPanel: hatchPanel, clutchPanel: clutchPanel, geneticGoal: geneticGoal
+      matingPanel: matingPanel, hatchPanel: hatchPanel, clutchPanel: clutchPanel,
+      geneticGoal: geneticGoal, bulk: bulkRecord
     })).bind();
   }
 

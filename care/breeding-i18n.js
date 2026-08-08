@@ -87,6 +87,17 @@
     return translated === key ? raw : translated;
   }
 
+  /* 케어 기록 종류 이름. 케어 화면의 사전(care-i18n-*.js)은 브리딩 페이지에
+     올라가 있지 않아서, 일괄 기록에 쓰는 종류만 여기에 따로 둡니다.
+     모르는 종류는 키 이름 대신 원래 값을 돌려줍니다 — 화면에 'careKindShed'
+     같은 글자가 뜨는 것보다 낫습니다. */
+  function kindName(kind) {
+    const raw = String(kind || '');
+    const key = 'careKind' + raw.charAt(0).toUpperCase() + raw.slice(1);
+    const translated = t(key);
+    return translated === key ? raw : translated;
+  }
+
   function groupName(group) {
     const suffix = { base: 'Base', pattern: 'Pattern', color: 'Color', struct: 'Struct',
       tangerine: 'Tangerine', melanistic: 'Melanistic' }[group];
@@ -114,5 +125,5 @@
   }
 
   w.BreedingI18n = Object.freeze({ language, t, html, apply, initialize, formatDate,
-    speciesName, groupName, calculatorUrl, managementUrl, friendly });
+    speciesName, groupName, kindName, calculatorUrl, managementUrl, friendly });
 }(window));

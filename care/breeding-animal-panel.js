@@ -20,6 +20,7 @@
     const breedSpec = deps.breedSpec;
     const I18n = deps.i18n;
     const LifeStage = deps.lifeStage;
+    const Bulk = deps.bulk;
 
     function legacyNote() { return ''; }
 
@@ -31,6 +32,7 @@
         return h + '<div class="pad"><div class="empty">' + icon('bi-heart')
           + I18n.html('animalEmpty', { species: I18n.speciesName(S.species) }) + '</div></div>';
       }
+      h += Bulk.toggleButton() + Bulk.barHtml();
       return h + S.animals.map(animalCard).join('');
     }
 
@@ -49,7 +51,8 @@
       const photo = a.photo_url
         ? '<div class="thumb">' + Photo.tag(a.photo_url, a.name || '') + '</div>'
         : '<div class="thumb thumb-empty" aria-hidden="true"></div>';
-      return '<div class="card">'
+      return '<div class="card' + Bulk.cardClass(a) + '">'
+        + Bulk.cardBox(a)
         + photo + '<div class="info"><div class="animal-card-heading"><span class="animal-card-name">'
         + esc(a.name || I18n.t('unnamed')) + '</span></div><div class="animal-card-meta">' + sex + stage
         + (combo ? '<span class="chip animal-card-combo">' + esc(combo) + '</span>' : '')

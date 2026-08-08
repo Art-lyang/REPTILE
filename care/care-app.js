@@ -109,6 +109,29 @@ const CareApp = (function () {
     return r ? r.data : null;
   }
 
+  /* 케어 기록 한 줄을 표 모양으로 맞춥니다. addRecord 와 addRecords 가 같은
+     것을 써야 합니다 — 한쪽에만 칸을 더하면 일괄 기록으로 넣은 줄만 그 칸이
+     비어서, 나중에 왜 다른지 찾느라 시간을 씁니다. */
+  function recordRow(r) {
+    return {
+      animal_id: r.animal_id || null,
+      plan_id: r.plan_id || null,
+      kind: r.kind,
+      done_date: r.done_date || CareCore.today(),
+      title: r.title || null,
+      detail: r.detail || null,
+      note: r.note || null,
+      feed_item_id: r.feed_item_id || null,
+      feed_name: r.feed_name || null,
+      feed_category: r.feed_category || null,
+      feed_state: r.feed_state || null,
+      offered_amount: r.offered_amount == null ? null : Number(r.offered_amount),
+      eaten_amount: r.eaten_amount == null ? null : Number(r.eaten_amount),
+      feed_unit: r.feed_unit || null,
+      feeding_result: r.feeding_result || null
+    };
+  }
+
   return {
     ready: !!SB,
     /* 사진 서명에 쓰라고 내보냅니다. 화면 쪽에서 Supabase 를 다시 만들면
@@ -405,24 +428,20 @@ const CareApp = (function () {
       return Math.max(0, parseInt(value, 10) || 0);
     },
 
+    /* 여러 마리에 같은 기록을 한 번에.
+       -------------------------------------------------------------------------
+       100마리를 키우는 사람이 물 교체를 남기려면, 개체를 하나씩 눌러 들어갔다
+       나오기를 100번 해야 했습니다. addRecord 를 100번 부르면 요청도 100번
+       나갑니다 — 느린 것을 넘어, 중간에 하나가 실패하면 어디까지 들어갔는지
+       알 수 없게 됩니다. 한 번의 insert 로 넣어 전부 되거나 전부 안 되게 합니다. */
+    async addRecords(rows) {
+      const list = (rows || []).filter(Boolean);
+      if (!list.length) return [];
+      return req(SB.from('care_records').insert(list.map(recordRow)).select());
+    },
+
     async addRecord(r) {
-      return req(SB.from('care_records').insert({
-        animal_id: r.animal_id || null,
-        plan_id: r.plan_id || null,
-        kind: r.kind,
-        done_date: r.done_date || CareCore.today(),
-        title: r.title || null,
-        detail: r.detail || null,
-        note: r.note || null,
-        feed_item_id: r.feed_item_id || null,
-        feed_name: r.feed_name || null,
-        feed_category: r.feed_category || null,
-        feed_state: r.feed_state || null,
-        offered_amount: r.offered_amount == null ? null : Number(r.offered_amount),
-        eaten_amount: r.eaten_amount == null ? null : Number(r.eaten_amount),
-        feed_unit: r.feed_unit || null,
-        feeding_result: r.feeding_result || null
-      }).select().single());
+      return req(SB.from('care_records').insert(recordRow(r)).select().single());
     },
 
     async deleteRecord(id) {

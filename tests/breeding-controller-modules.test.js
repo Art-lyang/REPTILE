@@ -80,13 +80,18 @@ test('Given every feature factory, when the controller boots, then modules are c
     html(key) { return key; },
     friendly(error) { return String(error || ''); },
     speciesName(species) { return species; },
+    kindName(kind) { return kind; },
     groupName(group) { return group; },
     calculatorUrl(url) { return url; },
     managementUrl(species, tab) { return `breeding.html?species=${species}#${tab}`; },
     language() { return 'ko'; }
   };
 
-  const slots = ['animalPanel', 'pairingPanel', 'matingPanel', 'hatchPanel', 'clutchPanel', 'geneticGoal', 'events'];
+  /* 자리 이름은 BREEDING_FACTORIES 의 순서와 짝입니다. 목록 앞에 하나를 끼우면
+     여기도 같이 밀어야 합니다 — 안 그러면 개체 패널 자리에 다른 것이 앉아
+     아래 strictEqual 이 엉뚱한 곳에서 터집니다. */
+  const slots = ['bulkRecord', 'animalPanel', 'pairingPanel', 'matingPanel',
+    'hatchPanel', 'clutchPanel', 'geneticGoal', 'events'];
   modules.forEach(([file, factory], index) => {
     context[factory] = (deps) => {
       calls.push(file);

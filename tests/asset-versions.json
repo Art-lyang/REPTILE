@@ -176,16 +176,20 @@
     "sha256": "4eb7cffe82ff9e4c"
   },
   "care/breeding-animal-panel.js": {
-    "version": "20260807c",
-    "sha256": "320081ab10f1a1a6"
+    "version": "20260808a",
+    "sha256": "adbdc3ce4b72666b"
+  },
+  "care/breeding-bulk-record.js": {
+    "version": "20260808a",
+    "sha256": "7d0eb9032eca97d9"
   },
   "care/breeding-clutch-panel.js": {
     "version": "20260807c",
     "sha256": "e1f73c9545c7452f"
   },
   "care/breeding-events.js": {
-    "version": "20260803d",
-    "sha256": "e4f8204c3c855d45"
+    "version": "20260808a",
+    "sha256": "f05921372484f0a8"
   },
   "care/breeding-genetic-goal.js": {
     "version": "20260802b",
@@ -212,24 +216,24 @@
     "sha256": "be29469b8eb68de3"
   },
   "care/breeding-i18n-en.js": {
-    "version": "20260803h",
-    "sha256": "347a843f432c0293"
+    "version": "20260808a",
+    "sha256": "8bbe8b28c57cf078"
   },
   "care/breeding-i18n-ja.js": {
-    "version": "20260803h",
-    "sha256": "d7cd1dc215afcd70"
+    "version": "20260808a",
+    "sha256": "9eeeeebcb83e745a"
   },
   "care/breeding-i18n-ko.js": {
-    "version": "20260803h",
-    "sha256": "b5f564be97d4cf6a"
+    "version": "20260808a",
+    "sha256": "51e0769cf5dbfade"
   },
   "care/breeding-i18n-zh.js": {
-    "version": "20260803h",
-    "sha256": "99f208ee7e0e6d01"
+    "version": "20260808a",
+    "sha256": "09a0241830161ab8"
   },
   "care/breeding-i18n.js": {
-    "version": "20260803i",
-    "sha256": "d7eceff5c5d73c7a"
+    "version": "20260808a",
+    "sha256": "d7a866560689b5fe"
   },
   "care/breeding-mating-groups.css": {
     "version": "20260803a",
@@ -252,12 +256,12 @@
     "sha256": "d0d2d303499a5f7b"
   },
   "care/breeding-ui.js": {
-    "version": "20260808b",
-    "sha256": "06a0add632710ebe"
+    "version": "20260808c",
+    "sha256": "3d5c2579dc5e214f"
   },
   "care/breeding-workspace.css": {
-    "version": "20260731h",
-    "sha256": "ea5edd27ba586190"
+    "version": "20260808a",
+    "sha256": "137ebc09f24bdfde"
   },
   "care/care-alert-ui.js": {
     "version": "20260807a",
@@ -280,8 +284,8 @@
     "sha256": "78fe212bc9bfb87d"
   },
   "care/care-app.js": {
-    "version": "20260807d",
-    "sha256": "3091c4a64d255d11"
+    "version": "20260808a",
+    "sha256": "ca29df4187675b28"
   },
   "care/care-core.js": {
     "version": "18",

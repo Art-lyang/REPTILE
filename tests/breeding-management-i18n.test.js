@@ -140,8 +140,8 @@ test('Given production and harness pages, when scripts load, then all management
     assert.ok(scripts.indexOf(expectedI18n.at(-1)) < scripts.indexOf(firstPanel), `${page} I18n must precede panels`);
   });
   const production = read('care/breeding.html');
-  assert.ok(production.indexOf('breeding-i18n.js?v=20260803i') >= 0);
-  assert.ok(production.indexOf('breeding-i18n.js?v=20260803i') < production.indexOf('</head>'));
+  assert.ok(production.indexOf('breeding-i18n.js?v=20260808a') >= 0);
+  assert.ok(production.indexOf('breeding-i18n.js?v=20260808a') < production.indexOf('</head>'));
   assert.ok(production.indexOf('BreedingI18n.apply(document)') < production.indexOf('supabase-js@'));
 });
 
@@ -168,7 +168,7 @@ test('Given the Leopard calculator language changes, when its management entry i
 
 test('Given the shared care backend changes, when production pages boot, then every consumer requests the same fresh version', () => {
   ['care/index.html', 'care/animal.html', 'care/breeding.html'].forEach((page) => {
-    assert.match(read(page), /care-app\.js\?v=20260807d/, page);
+    assert.match(read(page), /care-app\.js\?v=20260808a/, page);
   });
 });
 

@@ -18,7 +18,7 @@
 (function () {
   'use strict';
 
-  const state = { SB: null, body: null, esc: null, rows: [], onlyHeld: false, busy: false };
+  const state = { SB: null, body: null, esc: null, rows: [], onlyHeld: false, withPrivate: false, busy: false };
 
   /* supabase_v68 의 animals_held_category_ck 와 같아야 합니다.
      severe 인 것은 보류가 아니라 즉시 삭제로 갑니다. */
@@ -69,6 +69,8 @@
       + '</div>'
       + '<div class="mdmeta">' + esc(row.owner_email || row.owner_nickname || '—')
       + ' · ' + esc(row.species || '') + ' · ' + date(row.created_at) + '</div>'
+      + (!row.is_public && !row.is_listed
+          ? '<span class="mdprivtag">비공개</span>' : '')
       + (held ? '<div class="mdreason">' + esc(categoryLabel(row.held_category)) + ' — '
                 + esc(row.held_reason || '') + '</div>' : '')
       + '</div>'
@@ -84,7 +86,7 @@
     const rows = state.rows;
     return '<div class="mdhead">'
       + '<div><b>이미지 검수</b>'
-      + '<div class="asub">공개된 개체의 사진만 목록에 옵니다. 비공개는 ‘자세히’ 로 열 때만 보이고, 열람 기록이 남습니다.</div></div>'
+      + '<div class="asub">기본은 공개된 개체만 봅니다. ‘비공개 포함’ 을 켜면 등록된 사진 전부를 훑고, 그 사실이 기록에 남습니다.</div></div>'
       /* 목록은 공개된 것만 옵니다. 비공개 개체를 봐야 할 때 — 신고가 들어왔거나
          회원이 문의했을 때 — 여기로 직접 엽니다. 목록에 안 뜨는 것을 열 방법이
          없으면 '비공개는 사유가 있을 때 본다' 는 규칙이 그냥 '못 본다' 가 됩니다. */
@@ -94,6 +96,10 @@
       + '<div class="mdfilter">'
       + '<button class="mini' + (state.onlyHeld ? '' : ' on') + '" data-mdfilter="all">전체</button>'
       + '<button class="mini' + (state.onlyHeld ? ' on' : '') + '" data-mdfilter="held">보류 중</button>'
+      /* 비공개까지 보는 것은 명시적으로 켭니다. 켜면 목록을 불러올 때마다
+         '비공개 포함 열람' 이 기록에 한 줄 남습니다(supabase_v72). */
+      + '<button class="mini' + (state.withPrivate ? ' on' : '') + '" data-mdprivate="1">'
+      + (state.withPrivate ? '비공개 포함 · 켬' : '비공개 포함') + '</button>'
       + '</div></div>'
       + (rows.length
           ? '<div class="mdlist">' + rows.map(card).join('') + '</div>'
@@ -123,7 +129,8 @@
   async function load() {
     state.body.innerHTML = '<div class="asub">불러오는 중…</div>';
     const r = await state.SB.rpc('admin_photo_queue', {
-      p_only_held: state.onlyHeld, p_limit: 60, p_offset: 0
+      p_only_held: state.onlyHeld, p_limit: 60, p_offset: 0,
+      p_include_private: state.withPrivate
     });
     if (r.error) {
       state.body.innerHTML = '<div class="aerr"><b>검수 목록을 불러오지 못했습니다.</b><br><br>'
@@ -159,6 +166,13 @@
     const d = t.dataset;
 
     if (d.mdfilter) { state.onlyHeld = (d.mdfilter === 'held'); return load(); }
+
+    if (d.mdprivate) {
+      if (!state.withPrivate
+          && !confirm('비공개 개체까지 목록에 올립니다. 열람 기록이 남습니다. 계속할까요?')) return;
+      state.withPrivate = !state.withPrivate;
+      return load();
+    }
 
     if (d.mdfind) {
       const box = document.getElementById('mdFind');

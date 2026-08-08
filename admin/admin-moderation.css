@@ -45,3 +45,7 @@
    있을 때 본다' 는 규칙이 실제로는 '못 본다' 가 됩니다. */
 .mdlookup{display:flex;gap:6px;flex:1 1 260px;max-width:420px}
 .mdlookup .ain{flex:1;min-width:0}
+
+/* 목록에 비공개가 섞이면 어느 것이 비공개인지 보여야 합니다. */
+.mdprivtag{display:inline-block;margin-left:6px;padding:1px 6px;border-radius:6px;
+  background:var(--hair);color:var(--ink2);font-size:10.5px;font-weight:800}

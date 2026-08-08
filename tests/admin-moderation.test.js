@@ -40,12 +40,35 @@ test('Given the categories, when the server checks them, then both lists agree',
   load().CATEGORIES.forEach(c => assert.match(sql, new RegExp("'" + c.id + "'"), c.id));
 });
 
-test('Given the queue, when it is fetched, then only published animals are listed', () => {
-  /* 비공개까지 목록으로 훑는 것은 공개 페이지를 책임진다는 목적을 넘습니다. */
+test('Given the queue, when nothing is asked for, then private animals stay out', () => {
   const src = read('admin/admin-moderation.js');
   assert.match(src, /rpc\('admin_photo_queue'/);
-  const sql = read('supabase_v70.sql');
-  assert.match(sql, /coalesce\(a\.is_public, false\) or coalesce\(a\.is_listed, false\) or a\.held_at is not null/);
+  /* 기본값은 공개된 것만입니다. */
+  assert.match(src, /withPrivate: false/);
+  assert.match(read('supabase_v72.sql'), /p_include_private boolean default false/);
+});
+
+test('Given a report only comes after harm, when nothing is reported, then private can still be swept', () => {
+  /* v70 은 공개된 것만 목록에 올렸습니다. 비공개는 개체 id 를 알아야 열 수
+     있었는데, id 를 알려면 누군가 신고를 해야 합니다 — 신고 전에는 아무것도
+     확인할 수 없는 구조였고, 그건 검수가 아니라 민원 처리입니다. */
+  const src = read('admin/admin-moderation.js');
+  assert.match(src, /data-mdprivate/);
+  assert.match(src, /state\.withPrivate = !state\.withPrivate/);
+  /* 켜기 전에 한 번 묻습니다 — 기록이 남는 행동입니다. */
+  assert.match(src, /!confirm\('비공개 개체까지 목록에 올립니다/);
+  /* 목록에 섞이면 어느 것이 비공개인지 보여야 합니다. */
+  assert.match(src, /mdprivtag/);
+});
+
+test('Given private animals are swept, when the list loads, then one log row records it', () => {
+  /* 한 장마다 남기면 목록을 한 번 열 때 수십 줄이 쌓여 조치 기록이 묻힙니다.
+     남겨야 할 사실은 '누가 언제 비공개까지 훑었는가' 입니다. */
+  const sql = read('supabase_v72.sql');
+  assert.match(sql, /if p_include_private then/);
+  assert.match(sql, /'비공개 포함 검수 목록 열람'/);
+  /* 옛 서명을 남기면 화면이 어느 쪽을 부를지 모호해집니다. */
+  assert.match(sql, /drop function if exists public\.admin_photo_queue\(boolean, int, int\);/);
 });
 
 test('Given a private animal is opened, when it is, then a reason is asked and recorded', () => {

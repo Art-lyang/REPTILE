@@ -36,7 +36,7 @@ test('Given pages are fetched, when they are stitched, then an order column is r
   const calls = html.split(/\r?\n/).filter(l => l.includes('fetchAll(()=>'));
   assert.ok(calls.length >= 7, 'fetchAll 호출이 ' + calls.length + '개뿐입니다');
   calls.forEach(function (line) {
-    assert.match(line.trim(), /,\s*'[a-z_]+'\)[,;]?$/,
+    assert.match(line, /,\s*'[a-z_]+'\)/,
       '정렬 칼럼 없는 호출: ' + line.trim().slice(0, 90));
   });
 });
@@ -52,4 +52,16 @@ test('Given the runaway case, when a query never ends, then there is a stop', ()
   /* 상한이 없으면 데이터가 많아졌을 때 브라우저가 멈춥니다. 여기 닿으면
      집계 함수로 옮겨야 한다는 신호입니다. */
   assert.match(html, /if\(out\.length>=200000\) break;/);
+});
+
+test('Given the helper replaces a supabase call, when a caller reads it, then the shape matches', () => {
+  /* 부르는 쪽이 전부 r.data / r.error 를 읽습니다. 배열을 그냥 돌려주면
+     r.data 가 undefined 가 되어 화면이 조용히 비어 보입니다 — 실제로 유입과
+     한눈에 탭이 그렇게 비었습니다. 에러가 안 나서 더 늦게 드러납니다. */
+  assert.match(html, /return \{ data: out, error: null \};/);
+  /* 배열로 받던 자리도 .data 로 맞춰야 합니다. */
+  const bare = html.split(/\r?\n/).filter(function (l) {
+    return /=\s*await fetchAll\(/.test(l) && !/\)\)\.data/.test(l);
+  });
+  assert.deepEqual(bare, [], '배열로 받는 자리가 남아 있습니다: ' + bare.join(' | '));
 });

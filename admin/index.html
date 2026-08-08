@@ -21,9 +21,9 @@
 <script src="admin-members.js?v=20260808b"></script>
 <script src="admin-security.js?v=20260807a"></script>
 <link rel="stylesheet" href="admin-business.css?v=20260808a">
-<link rel="stylesheet" href="admin-moderation.css?v=20260809b">
+<link rel="stylesheet" href="admin-moderation.css?v=20260809c">
 <script src="admin-business.js?v=20260808a"></script>
-<script src="admin-moderation.js?v=20260809b"></script>
+<script src="admin-moderation.js?v=20260809c"></script>
 <style>
   :root{
     --bg:#EDEAE1;            /* Cloud Dancer 톤 그룹 배경 */
@@ -337,7 +337,10 @@ async function seedCombos(){
       if(got.length<PAGE) break;
       if(out.length>=200000) break;   /* 여기까지 오면 집계 함수로 옮겨야 합니다 */
     }
-    return out;
+    /* supabase 응답과 같은 모양으로 돌려줍니다. 부르는 쪽이 전부
+       r.data / r.error 를 읽고 있어서, 배열을 그냥 주면 undefined 가 되어
+       화면이 조용히 비어 보입니다. 실제로 그렇게 냈었습니다. */
+    return { data: out, error: null };
   }
 
   function svcFilter(q){
@@ -821,7 +824,7 @@ async function seedCombos(){
       const R=RANGES.filter(r=>r[0]===adRange)[0]||RANGES[1];
       const days=R[2], unit=R[3];
       const since=new Date(Date.now()-days*864e5).toISOString();
-      const rows=await fetchAll(()=>svcFilter(SB.from('visits').select('ts,device,client,service')).gte('ts',since),'ts');
+      const rows=(await fetchAll(()=>svcFilter(SB.from('visits').select('ts,device,client,service')).gte('ts',since),'ts')).data;
 
       const cntK={human:0,bot:0,ai:0}, uniqK={human:new Set(),bot:new Set(),ai:new Set()};
       const byB={}; const today=new Date().toDateString(); let todayN=0;

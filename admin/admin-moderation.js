@@ -18,7 +18,7 @@
 (function () {
   'use strict';
 
-  const state = { SB: null, body: null, esc: null, rows: [], log: null, onlyHeld: false, withPrivate: false, busy: false };
+  const state = { SB: null, body: null, esc: null, rows: [], log: null, detail: null, onlyHeld: false, withPrivate: false, busy: false };
 
   /* supabase_v68 의 animals_held_category_ck 와 같아야 합니다.
      severe 인 것은 보류가 아니라 즉시 삭제로 갑니다. */
@@ -33,7 +33,7 @@
   ];
 
   const ACTIONS = {
-    view: '열람', hold: '보류', release: '해제',
+    view: '목록 열람', detail: '세부조회', hold: '보류', release: '해제',
     delete_photos: '사진 삭제', delete_animal: '개체 삭제',
     ai_block: '학습 제외', ai_unblock: '학습 제외 해제', expire: '기한 만료 삭제'
   };
@@ -175,6 +175,51 @@
     state.log = r.data || [];
   }
 
+  /* 세부조회. 사진만 보고는 '개체와 무관한 사진' 인지 알 수 없습니다 —
+     레오파드로 등록해 놓고 전혀 다른 동물 사진을 올린 경우가 그렇습니다.
+     등록된 데이터를 나란히 놓고 봐야 판단이 됩니다. */
+  function detailHtml() {
+    const a = state.detail;
+    if (!a) return '';
+    const row = (k, v) => v == null || v === '' || (Array.isArray(v) && !v.length)
+      ? '' : '<tr><th>' + esc(k) + '</th><td>' + esc(Array.isArray(v) ? v.join(', ') : v) + '</td></tr>';
+    return '<div class="mddlg" id="mdDetail"><div class="mddlg-in">'
+      + '<div class="lbl">' + esc(a.name || '이름 없음') + ' — 세부조회</div>'
+      + '<div class="mdshots" id="mdShots"></div>'
+      + '<table class="mdtable">'
+      + row('소유자', a.owner_email || a.owner_nickname)
+      + row('종', a.species) + row('성별', a.sex) + row('성장 단계', a.life_stage)
+      + row('해칭일', a.hatch_date) + row('클러치', a.clutch_label)
+      + row('모프', a.morphs) + row('헷', a.hets)
+      + row('법적 지위', a.legal_status && a.legal_status !== 'none' ? a.legal_status : null)
+      + row('공개', (a.is_public ? '공개 ' : '') + (a.is_listed ? '갤러리' : '') || '비공개')
+      + row('메모', a.note)
+      + '</table>'
+      + (a.held_at ? '<div class="mdreason">보류 중 — '
+          + esc(categoryLabel(a.held_category)) + ' · ' + esc(a.held_reason || '') + '</div>' : '')
+      + '<div class="mddlg-acts">'
+      + (a.held_at
+          ? '<button class="abtn" data-mdrelease="' + esc(a.id) + '">해제</button>'
+          : '<button class="abtn" data-mdhold="' + esc(a.id) + '">조치</button>')
+      + '<button class="abtn ghost" data-mddclose="1">닫기</button>'
+      + '</div></div></div>';
+  }
+
+  async function showShots(a) {
+    const box = document.getElementById('mdShots');
+    if (!box) return;
+    const paths = [a.photo_url].concat(a.photos || []).filter(Boolean);
+    if (!paths.length) { box.innerHTML = '<div class="asub">사진이 없습니다.</div>'; return; }
+    for (const path of paths) {
+      const url = await signed(path);
+      if (!url) continue;
+      const img = document.createElement('img');
+      img.src = url; img.loading = 'lazy';
+      img.addEventListener('click', () => window.open(url, '_blank', 'noopener'));
+      box.appendChild(img);
+    }
+  }
+
   async function load() {
     state.body.innerHTML = '<div class="asub">불러오는 중…</div>';
     const r = await state.SB.rpc('admin_photo_queue', {
@@ -201,10 +246,12 @@
     });
   }
 
-  async function act(fn, okMsg) {
+  async function act(fn, okMsg, keep) {
     if (state.busy) return;
     state.busy = true;
-    try { await fn(); await load(); }
+    /* keep 이면 다시 그리지 않습니다 — 세부조회 패널을 띄운 뒤 목록을
+       다시 그리면 방금 연 패널이 사라집니다. */
+    try { await fn(); if (!keep) await load(); }
     catch (e) { alert((e && e.message) || String(e)); }
     finally { state.busy = false; }
   }
@@ -242,6 +289,13 @@
       state.body.appendChild(wrap.firstChild);
       return;
     }
+    if (d.mddclose) {
+      const dlg = document.getElementById('mdDetail');
+      if (dlg) dlg.remove();
+      state.detail = null;
+      return;
+    }
+
     if (d.mdcancel) { const dlg = document.getElementById('mdDlg'); if (dlg) dlg.remove(); return; }
 
     if (d.mdconfirm) {
@@ -286,14 +340,12 @@
       const r = await state.SB.rpc('admin_animal_detail', { p_animal: id, p_reason: why });
       if (r.error) throw r.error;
       const a = r.data || {};
-      const urls = [];
-      for (const p of [a.photo_url].concat(a.photos || []).filter(Boolean)) {
-        const u = await signed(p);
-        if (u) urls.push(u);
-      }
-      if (!urls.length) { alert((a.name || '개체') + ' — 사진이 없습니다.'); return; }
-      urls.forEach(u => window.open(u, '_blank', 'noopener'));
-    });
+      state.detail = a;
+      const wrap = document.createElement('div');
+      wrap.innerHTML = detailHtml();
+      state.body.appendChild(wrap.firstChild);
+      await showShots(a);
+    }, null, true);
   }
 
   async function render_(deps) {

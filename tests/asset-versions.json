@@ -28,12 +28,12 @@
     "sha256": "d8957bec1f2a3f72"
   },
   "admin/admin-moderation.css": {
-    "version": "20260809d",
-    "sha256": "f7dc30b1fe38a3fe"
+    "version": "20260809e",
+    "sha256": "5fccf0a4f3a2ab03"
   },
   "admin/admin-moderation.js": {
-    "version": "20260809d",
-    "sha256": "fa41bcfa180f0893"
+    "version": "20260809e",
+    "sha256": "d4e62946304e0e8d"
   },
   "admin/admin-security.js": {
     "version": "20260807a",

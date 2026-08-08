@@ -141,3 +141,26 @@ test('Given the log exists, when an admin wants to check it, then a screen shows
   assert.match(src, /const ACTIONS = \{/);
   assert.match(src, /delete_photos: '사진 삭제'/);
 });
+
+test('Given a photo alone is not enough, when one animal is opened, then its data shows beside it', () => {
+  /* 레오파드로 등록해 놓고 전혀 다른 동물 사진을 올린 경우는 사진만 봐서는
+     모릅니다. 등록된 값을 나란히 놓아야 판단이 됩니다. */
+  const src = read('admin/admin-moderation.js');
+  assert.match(src, /function detailHtml\(\)/);
+  ['species', 'sex', 'morphs', 'hets', 'note'].forEach(function (k) {
+    assert.match(src, new RegExp('a\.' + k), k);
+  });
+  const sql = read('supabase_v73.sql');
+  ['morphs', 'hets', 'life_stage', 'clutch_label', 'note'].forEach(function (k) {
+    assert.match(sql, new RegExp("'" + k + "'"), k);
+  });
+});
+
+test('Given a sweep and a detail differ, when either happens, then the log tells them apart', () => {
+  /* 목록을 스친 것과 한 건을 열어 데이터까지 본 것은 무게가 다릅니다. 같은
+     이름으로 쌓이면 '이 개체를 실제로 들여다본 적이 있는가' 에 답할 수 없습니다. */
+  const sql = read('supabase_v73.sql');
+  assert.match(sql, /'detail',\s*--/);
+  assert.match(sql, /auth\.uid\(\), 'detail', p_reason/);
+  assert.match(read('admin/admin-moderation.js'), /detail: '세부조회'/);
+});

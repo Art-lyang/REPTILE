@@ -78,6 +78,9 @@
       <a class="blink home" href="/" title="량 스튜디오"><i class="bi bi-house" aria-hidden="true"></i><span>스튜디오</span></a>
       <!-- 로그인 / 내 정보. 라벨과 아이콘은 assets/account-btn.js 가 채웁니다. -->
       <a class="blink" data-account-btn hidden></a>
+      <!-- 브리딩 관리로 가는 길. 네 종 모두 브리딩 관리가 되는데
+           레오파드에만 이 버튼이 있었습니다. assets/breeding-btn.js 참고. -->
+      <a class="blink" data-breeding-btn data-species="fattail" hidden></a>
       <button class="blink" id="btn-upd" onclick="openUpd()"><i class="bi bi-file-earmark-text" aria-hidden="true"></i></button>
       <button class="langbtn" id="langBtn" aria-label="Language" title="Language">
         <i class="bi bi-globe2" aria-hidden="true"></i>
@@ -195,5 +198,6 @@
 <script src="fattail-ui.js?v=20260809d"></script>
 <script src="fattail-app.js?v=20260806c"></script>
 <script src="../assets/account-btn.js?v=20260806c"></script>
+<script src="../assets/breeding-btn.js?v=20260809a"></script>
 </body>
 </html>

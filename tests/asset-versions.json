@@ -20,20 +20,20 @@
     "sha256": "b087e8845251aa55"
   },
   "admin/admin-members.css": {
-    "version": "20260808b",
-    "sha256": "d1f2bdd530692f68"
+    "version": "20260809a",
+    "sha256": "c96e33db17bdd209"
   },
   "admin/admin-members.js": {
-    "version": "20260808b",
-    "sha256": "d8957bec1f2a3f72"
+    "version": "20260809a",
+    "sha256": "2754b0a2185caa4f"
   },
   "admin/admin-moderation.css": {
-    "version": "20260809e",
-    "sha256": "5fccf0a4f3a2ab03"
+    "version": "20260809f",
+    "sha256": "5334ae93ef4466d0"
   },
   "admin/admin-moderation.js": {
-    "version": "20260809e",
-    "sha256": "d4e62946304e0e8d"
+    "version": "20260809f",
+    "sha256": "5e0afd30b58fc1a4"
   },
   "admin/admin-security.js": {
     "version": "20260807a",
@@ -54,6 +54,10 @@
   "assets/base.css": {
     "version": "20260808c",
     "sha256": "58111f1e26f9c3ae"
+  },
+  "assets/breeding-btn.js": {
+    "version": "20260809a",
+    "sha256": "040fb56346b7d31c"
   },
   "assets/breeding-draft.js": {
     "version": "20260731a",
@@ -512,20 +516,20 @@
     "sha256": "5c4e6f3dd6012a05"
   },
   "gecko/login-i18n-en.js": {
-    "version": "20260808d",
-    "sha256": "2a2c011d4b831ac9"
+    "version": "20260809a",
+    "sha256": "ca686a5b17491220"
   },
   "gecko/login-i18n-ja.js": {
-    "version": "20260808d",
-    "sha256": "168baeddb46fa39d"
+    "version": "20260809a",
+    "sha256": "b345dee2c0885ad0"
   },
   "gecko/login-i18n-ko.js": {
-    "version": "20260808d",
-    "sha256": "8e73e3e2939d9d67"
+    "version": "20260809a",
+    "sha256": "a1dd5c6dffc79259"
   },
   "gecko/login-i18n-zh.js": {
-    "version": "20260808d",
-    "sha256": "95481e4b7630d268"
+    "version": "20260809a",
+    "sha256": "3423fdb1562fe0ec"
   },
   "gecko/login-i18n.js": {
     "version": "20260808a",

@@ -1131,3 +1131,17 @@ body.pub .wrap{max-width:560px}
 .lgadd{margin-top:12px}
 .lgadd summary{cursor:pointer;font-weight:750;font-size:13.5px;padding:8px 0}
 .note.ok{background:var(--gtile,#eef5f0);color:var(--teal)}
+
+/* ── 보류 안내 ─────────────────────────────────────────────────────────────
+   관리자가 사진을 비공개로 돌렸을 때 회원에게 왜 그런지 알립니다.
+   조치만 하고 안 알리면 회원에게 남는 것은 '내 사진이 왜 사라졌지' 뿐입니다. */
+.holdbanner{
+  margin:0 0 14px;padding:14px 16px;border-radius:14px;
+  background:var(--warn-bg);border:1px solid var(--warn-bd,#f0c3b2);
+}
+.hold-top{display:flex;align-items:center;gap:7px;color:var(--warn-fg);font-size:14px}
+.hold-why{margin:8px 0 0;font-size:13.5px;line-height:1.55}
+.hold-what{margin:6px 0 0;font-size:12.5px;color:var(--ink2)}
+.hold-acts{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+.hold-acts .mini{text-decoration:none}
+.chip-held{background:var(--warn-bg);color:var(--warn-fg)}

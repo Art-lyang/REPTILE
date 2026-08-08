@@ -46,7 +46,7 @@
   function icon(n) { return '<i class="bi ' + n + '" aria-hidden="true"></i>'; }
 
   const S = { id: null, animal: null, animals: [], plans: [], records: [], weights: [], feeds: [],
-              busy: false, range: 90, upGen: 2, legal: null };
+              busy: false, range: 90, upGen: 2, legal: null, hold: null };
 
   function toast(m) {
     const t = $('toast'); t.textContent = m; t.classList.add('on');
@@ -67,6 +67,7 @@
     S.weights = weights;
     S.feeds = feeds;
     await loadLegal();
+    await loadHold();
   }
 
   async function act(fn, ok) {
@@ -177,6 +178,19 @@
      값을 고르는 일은 pedigree-certificate.js, 문서 모양은 그 -ui.js 가 합니다.
      여기서는 지금 화면이 가진 것을 넘겨줄 뿐입니다. */
   /* 법적 지위·서류. my_animal_legal 이 판정을 다 해서 주므로 그대로 그립니다. */
+  /* 보류 안내. 조치했으면 왜 그렇게 됐는지 회원이 알아야 합니다. */
+  function holdBlock() {
+    const H = window.AnimalHold;
+    if (!H || !S.hold) return '';
+    return H.html(S.hold, { i18n: I, esc: esc, today: C.today() });
+  }
+
+  async function loadHold() {
+    if (!window.AnimalHold || !A.sb || !A.user) { S.hold = null; return; }
+    try { S.hold = await window.AnimalHold.load(A.sb, S.id); }
+    catch (e) { S.hold = null; }
+  }
+
   function legalBlock() {
     const Ui = window.AnimalLegalUi;
     if (!Ui || !S.legal) return '';
@@ -605,7 +619,8 @@
       + (a.note ? ' · ' + esc(a.note) : '');
 
     $('body').innerHTML =
-        window.CarePhotos.galleryHtml(a, sp.icon)
+        holdBlock()
+      + window.CarePhotos.galleryHtml(a, sp.icon)
       + statCards()
       + openSigns()
       + quickBar()

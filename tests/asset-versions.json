@@ -151,6 +151,10 @@
     "version": "20260807c",
     "sha256": "6b761c2fe8b2cab4"
   },
+  "care/animal-hold.js": {
+    "version": "20260809a",
+    "sha256": "5b4f1a474c0144d7"
+  },
   "care/animal-legal-ui.js": {
     "version": "20260809a",
     "sha256": "2ae65bda1d2a3bf8"
@@ -172,8 +176,8 @@
     "sha256": "862bb6a1690ea2a3"
   },
   "care/animal-ui.js": {
-    "version": "20260809a",
-    "sha256": "8bfdcb9a171caf6e"
+    "version": "20260809b",
+    "sha256": "a6b5b1519a245140"
   },
   "care/animal-weight-date.css": {
     "version": "20260804a",
@@ -304,20 +308,20 @@
     "sha256": "f15eae5f32b28484"
   },
   "care/care-i18n-en.js": {
-    "version": "20260809b",
-    "sha256": "d42fe994af58348c"
+    "version": "20260809c",
+    "sha256": "f6770a916d01d8ca"
   },
   "care/care-i18n-ja.js": {
-    "version": "20260809b",
-    "sha256": "87aef11d6f23d376"
+    "version": "20260809c",
+    "sha256": "fb19083c25343b75"
   },
   "care/care-i18n-ko.js": {
-    "version": "20260809b",
-    "sha256": "19db87201a114e77"
+    "version": "20260809c",
+    "sha256": "ca21104939e06634"
   },
   "care/care-i18n-zh.js": {
-    "version": "20260809b",
-    "sha256": "f99532edb60edcb3"
+    "version": "20260809c",
+    "sha256": "68462d6b37606b44"
   },
   "care/care-i18n.js": {
     "version": "20260803m",
@@ -356,12 +360,12 @@
     "sha256": "e6e6ff62a4c7bb96"
   },
   "care/care-ui.js": {
-    "version": "20260809a",
-    "sha256": "64416a6097ccd042"
+    "version": "20260809b",
+    "sha256": "77b05e4362efb6b0"
   },
   "care/care.css": {
-    "version": "20260809b",
-    "sha256": "2604bf7dbf963319"
+    "version": "20260809c",
+    "sha256": "76121e7ae624c70d"
   },
   "care/date-field.js": {
     "version": "20260807c",

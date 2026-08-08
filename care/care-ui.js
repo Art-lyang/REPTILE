@@ -257,6 +257,9 @@
       + '<div class="thumb">' + (a.photo_url ? Photo.tag(a.photo_url, a.name || '') : info.icon) + '</div>'
       + '<div class="info"><div class="nm">' + esc(a.name || I.t('unnamed')) + sex + stage
       + (locked ? '<span class="chip chip-locked">' + icon('bi-lock') + esc(I.t('freeSlotLocked')) + '</span>' : '')
+      /* 100마리를 키우면 어느 개체가 조치됐는지 목록에서 못 찾습니다. */
+      + (a.held_at ? '<span class="chip chip-held">' + icon('bi-exclamation-octagon')
+          + esc(I.t('holdBadge')) + '</span>' : '')
       + '</div>'
       + '<div class="ms">' + esc(bits.join(' · '))
       + (locked ? '<br><span class="lockedwhy">' + esc(I.t('freeSlotLockedWhy')) + '</span>' : '')

@@ -20,7 +20,7 @@ var STUDIO_SERVICES = {
   crested: '크레스티드 게코',
   fattail: '펫테일 게코',
   ballpython: '볼파이톤',
-  care:    '크리처 케어로그'
+  care:    '생물 케어 스케쥴 관리'
 };
 
 /* 계정 기능 공개 스위치.

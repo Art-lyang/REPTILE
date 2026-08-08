@@ -190,6 +190,19 @@
         p_ckey: ckey,
         p_label: label
       });
+    },
+
+    /* 깔때기 한 칸 (supabase_v76). 사람이 아닌 접속은 세지 않습니다 —
+       수집기가 안내를 '본' 것으로 잡히면 노출 수가 부풀고, 그러면 전환율이
+       실제보다 낮게 보입니다.
+       실패해도 조용히 넘어갑니다. 통계 한 줄 때문에 화면이 멈추면 안 됩니다. */
+    logFunnel: function (sb, event, service) {
+      if (!sb || clientKind() !== 'human') return Promise.resolve();
+      return sb.rpc('log_funnel', {
+        p_device: deviceId(),
+        p_event: event,
+        p_service: service || null
+      }).catch(function () {});
     }
   };
 

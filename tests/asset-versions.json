@@ -48,16 +48,16 @@
     "sha256": "dfb3bce269536019"
   },
   "assets/analytics.js": {
-    "version": "20260731b",
-    "sha256": "56569f0244c3b750"
+    "version": "20260809x",
+    "sha256": "92f9a1b7c1e49690"
   },
   "assets/base.css": {
     "version": "20260808c",
     "sha256": "58111f1e26f9c3ae"
   },
   "assets/breeding-btn.js": {
-    "version": "20260809a",
-    "sha256": "040fb56346b7d31c"
+    "version": "20260809x",
+    "sha256": "21237326e4fef5cb"
   },
   "assets/breeding-draft.js": {
     "version": "20260731a",
@@ -87,13 +87,9 @@
     "version": "20260731h",
     "sha256": "feaa5c6c141addaf"
   },
-  "assets/gate.js": {
-    "version": "2",
-    "sha256": "a4a408e2e5ad7add"
-  },
   "assets/imgtool.js": {
-    "version": "1",
-    "sha256": "6aaaad5d945f9cd5"
+    "version": "20260809x",
+    "sha256": "e5d14f24b6a5a25b"
   },
   "assets/line-trait-scores.js": {
     "version": "20260731a",
@@ -116,16 +112,16 @@
     "sha256": "6b0802b270d37b7b"
   },
   "assets/signup-cta.js": {
-    "version": "20260809a",
-    "sha256": "31b79de533830b13"
+    "version": "20260809x",
+    "sha256": "4e508244deffece4"
   },
   "assets/studio-config.js": {
-    "version": "20260809c",
-    "sha256": "6f8cfdc5eadd4663"
+    "version": "20260809x",
+    "sha256": "4958057b9ea17120"
   },
   "assets/theme.css": {
-    "version": "20260806a",
-    "sha256": "412617606bb1c5f6"
+    "version": "20260809x",
+    "sha256": "70149ba9e531e9af"
   },
   "assets/uitext.js": {
     "version": "20260806b",
@@ -248,8 +244,8 @@
     "sha256": "9eeeeebcb83e745a"
   },
   "care/breeding-i18n-ko.js": {
-    "version": "20260808a",
-    "sha256": "51e0769cf5dbfade"
+    "version": "20260809x",
+    "sha256": "a92cd91ea1df99df"
   },
   "care/breeding-i18n-zh.js": {
     "version": "20260808a",
@@ -316,8 +312,8 @@
     "sha256": "2349c7ca575245f3"
   },
   "care/care-core.js": {
-    "version": "18",
-    "sha256": "dd666202be5e7868"
+    "version": "20260809x",
+    "sha256": "2837d39c4136d103"
   },
   "care/care-health-ui.js": {
     "version": "20260803a",
@@ -332,8 +328,8 @@
     "sha256": "fb19083c25343b75"
   },
   "care/care-i18n-ko.js": {
-    "version": "20260809c",
-    "sha256": "ca21104939e06634"
+    "version": "20260809x",
+    "sha256": "b6985e420edef068"
   },
   "care/care-i18n-zh.js": {
     "version": "20260809c",
@@ -380,8 +376,8 @@
     "sha256": "77b05e4362efb6b0"
   },
   "care/care.css": {
-    "version": "20260809c",
-    "sha256": "76121e7ae624c70d"
+    "version": "20260809x",
+    "sha256": "38b8a5f708965923"
   },
   "care/date-field.js": {
     "version": "20260807c",
@@ -472,12 +468,12 @@
     "sha256": "9b2ef99dc781a221"
   },
   "fattail/fattail-core.js": {
-    "version": "072920",
-    "sha256": "9fdc60b663bce93c"
+    "version": "20260809x",
+    "sha256": "17a914abd7acc38b"
   },
   "fattail/fattail-ui.js": {
-    "version": "20260809d",
-    "sha256": "db9474e15f94ed68"
+    "version": "20260809x",
+    "sha256": "03c4328084504aec"
   },
   "fattail/fattail.css": {
     "version": "07302330",
@@ -500,8 +496,8 @@
     "sha256": "1d5e4e2e54be4b9e"
   },
   "gecko/gecko-core.js": {
-    "version": "20260804a",
-    "sha256": "febd1f1a43953bac"
+    "version": "20260809x",
+    "sha256": "23401b51bc2d312c"
   },
   "gecko/gecko-explain.css": {
     "version": "20260731e",
@@ -528,8 +524,8 @@
     "sha256": "7446ce959ab7a3ee"
   },
   "gecko/login-i18n-ko.js": {
-    "version": "20260809b",
-    "sha256": "a1cb0d423c5af333"
+    "version": "20260809x",
+    "sha256": "e273238142571112"
   },
   "gecko/login-i18n-zh.js": {
     "version": "20260809b",
@@ -548,7 +544,7 @@
     "sha256": "3d75ede255dd9811"
   },
   "pricing-i18n.js": {
-    "version": "20260808a",
-    "sha256": "fead8304cee404ed"
+    "version": "20260809x",
+    "sha256": "158d6d1d308f74f7"
   }
 }

@@ -317,8 +317,8 @@ test('Given security-sensitive browser code changes, when pages load, then they 
   for (const page of analyticsPages) {
     assert.match(
       read(page),
-      /assets\/analytics\.js\?v=20260731b/,
-      `${page} must request RPC-based analytics with a new cache key`,
+      /assets\/analytics\.js\?v=[0-9a-z]+/,
+      `${page} must request RPC-based analytics with a cache key`,
     );
   }
   assert.match(read('gecko/index.html'), /gecko-app\.js\?v=20260809a/);

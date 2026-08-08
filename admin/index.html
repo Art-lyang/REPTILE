@@ -10,9 +10,9 @@
 <meta name="robots" content="noindex, nofollow">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.8/dist/umd/supabase.js"></script>
 <!-- GENES / POLY / COMBOS / tokenOptions 를 쓰기 위해 게코 코어를 그대로 불러옵니다 -->
-<script src="../assets/studio-config.js?v=20260809c"></script>
-<script src="../assets/imgtool.js?v=1"></script>
-<script src="../gecko/gecko-core.js?v=20260804a"></script>
+<script src="../assets/studio-config.js?v=20260809x"></script>
+<script src="../assets/imgtool.js?v=20260809x"></script>
+<script src="../gecko/gecko-core.js?v=20260809x"></script>
 <script src="admin-crested.js?v=232324"></script>
 <script src="admin-text.js?v=20260808a"></script>
 <link rel="stylesheet" href="admin-members.css?v=20260809a">
@@ -213,6 +213,14 @@
   .asvcbar{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 12px}
   /* 계산기 하위 탭. 아래 화면이 자기 버튼 줄을 바로 이어 그려서, 간격이
      없으면 두 줄이 한 덩어리로 붙어 보입니다. */
+  /* 깔때기. 칸마다 앞 칸 대비 비율을 함께 적습니다 — 숫자만 늘어놓으면
+     어디서 새는지가 안 보입니다. */
+  .afrow{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+  .afstep{background:var(--card2,#f6f3ec);border-radius:12px;padding:11px 10px;min-width:0}
+  .afn{font-size:21px;font-weight:850;line-height:1.2}
+  .aflb{font-size:11.5px;font-weight:750;color:var(--ink2,#6b655c);margin-top:2px;word-break:keep-all}
+  .afpc{font-size:12px;font-weight:800;color:#075a48;margin-top:3px;min-height:16px}
+  @media(max-width:640px){ .afrow{grid-template-columns:repeat(2,1fr)} }
   .acalcbar{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 16px;padding:0 0 14px;
     border-bottom:1px solid var(--hair,#e3ded2)}
   .acalcbar .asub{display:inline-block;margin-left:5px;padding:1px 6px;border-radius:6px;
@@ -402,7 +410,7 @@ async function seedCombos(){
   }
 
   /* ---------- 모프 계산기 ----------
-     레오·크레·볼파이톤·팻테일 계산기가 각각 따로 있는데, 관리 탭은 레오 둘과
+     레오·크레·볼파이톤·펫테일 계산기가 각각 따로 있는데, 관리 탭은 레오 둘과
      크레 하나만 위쪽 줄에 흩어져 있었습니다. 계산기가 늘 때마다 탭이 하나씩
      늘어나면 회원·통계 같은 탭이 밀려나고, 어느 것이 어느 계산기 것인지도
      이름으로만 구분해야 합니다. 계산기는 계산기끼리 한 자리에 모읍니다.
@@ -417,15 +425,15 @@ async function seedCombos(){
     ['combo',  '레오파드 · 콤보',  ()=>tabCombo()],
     ['crmorph','크레스티드 · 모프',()=>tabCrMorph()],
     ['bp',     '볼파이톤',        null],
-    ['ft',     '팻테일',          null]
+    ['ft',     '펫테일',          null]
   ];
 
-  /* 계산기별 데이터가 어디 있는지. 볼파이톤·팻테일은 DB 가 아니라 코드에
+  /* 계산기별 데이터가 어디 있는지. 볼파이톤·펫테일은 DB 가 아니라 코드에
      들어 있어서 관리 화면으로 고칠 것이 없습니다. 빈 화면을 띄우고 끝내면
      "아직 안 만든 것" 인지 "고장" 인지 알 수 없으니 적어 둡니다. */
   const CALC_NOTE={
     bp:['볼파이톤','ballpython/ball-core.js','볼파이톤 모프·콤보는 코드에 들어 있습니다. 아직 DB 로 옮기지 않아 여기서 고칠 것이 없습니다.'],
-    ft:['팻테일','fattail/fattail-core.js','팻테일 모프·콤보는 코드에 들어 있습니다. 아직 DB 로 옮기지 않아 여기서 고칠 것이 없습니다.']
+    ft:['펫테일','fattail/fattail-core.js','펫테일 모프·콤보는 코드에 들어 있습니다. 아직 DB 로 옮기지 않아 여기서 고칠 것이 없습니다.']
   };
 
   function tabCalc(){
@@ -1097,6 +1105,41 @@ async function seedCombos(){
     IN:'인도',RU:'러시아',BR:'브라질',NL:'네덜란드',IT:'이탈리아',ES:'스페인',
     PL:'폴란드',SE:'스웨덴',MX:'멕시코','??':'알 수 없음'};
 
+  /* 깔때기 (supabase_v76). '몇 명이 왔나' 만으로는 이 서비스의 값을 말할 수
+     없습니다. 어디서 새는지가 보여야 다음에 무엇을 고칠지가 정해집니다.
+
+     ⚠️ 방문은 기기 수, 가입 뒤는 회원 수입니다. 단위가 바뀌는 자리를
+        화면에도 적어 둡니다 — 안 적으면 '가입 전환율' 을 잘못 읽습니다. */
+  function funnelHtml(f){
+    if(!f) return '';
+    const pct=(a,b)=> b>0 ? Math.round(a/b*1000)/10+'%' : '—';
+    const step=(label,n,base,note)=>
+      '<div class="afstep"><div class="afn">'+num(n)+'</div>'
+      +'<div class="aflb">'+esc(label)+'</div>'
+      +'<div class="afpc">'+(base==null?'':pct(n,base))+'</div>'
+      +(note?'<div class="asub">'+esc(note)+'</div>':'')+'</div>';
+
+    return '<div class="acard" style="margin-bottom:14px">'
+      +'<b>깔때기 — 계산기에서 정착까지</b>'
+      +'<div class="asub" style="margin:4px 0 12px">최근 '+f.days+'일 · 서울 시각 기준. '
+      +'앞의 넷은 <b>기기 수</b>, 가입부터는 <b>회원 수</b>입니다.</div>'
+      +'<div class="afrow">'
+      + step('계산기 방문', f.visitors, null, '기기')
+      + step('안내 노출', f.nudge_shown, f.visitors)
+      + step('안내 클릭', f.nudge_click, f.nudge_shown)
+      + step('가입 버튼', f.signup_click, f.visitors)
+      +'</div>'
+      +'<div class="afrow" style="margin-top:10px">'
+      + step('가입', f.signups, null, '회원')
+      + step('개체 1마리+', f.with_animal, f.signups)
+      + step('케어 기록 시작', f.care_started, f.signups)
+      + step('7일 이상 지속', f.care_kept_7d, f.signups)
+      +'</div>'
+      +'<div class="asub" style="margin-top:10px">'
+      +'안내·클릭은 supabase_v76 을 올린 뒤부터 쌓입니다. 그 전 기간은 0 으로 나옵니다.</div>'
+      +'</div>';
+  }
+
   async function tabSource(){
     const body=panelBody(); body.innerHTML='불러오는 중…';
     try{
@@ -1136,7 +1179,13 @@ async function seedCombos(){
       const rest=cList.slice(7).reduce((s,x)=>s+x.n,0);
       if(rest) cItems.push({label:'기타', n:rest, color:'#8a8375'});
 
+      /* 없어도 유입 화면은 봐야 합니다 — v76 을 아직 안 올렸으면 이 칸만 빕니다. */
+      let funnel=null;
+      try{ const fr=await SB.rpc('admin_funnel',{p_days:R[2]});
+           if(!fr.error) funnel=fr.data; }catch(e){}
+
       let h=svcBar();
+      h+=funnelHtml(funnel);
       h+='<div class="asvcbar">'+RANGES.map(r=>
           '<button class="asvc'+(adRange===r[0]?' on':'')+'" data-rg="'+r[0]+'">'+r[1]+'</button>').join('')+'</div>';
 

@@ -130,8 +130,11 @@ test('Given the closed beta gate, when a non-Korean care URL opens, then every g
   assert.match(gate, /window\.location\.search/);
   assert.match(gate, /copy\('title'\)/);
   assert.match(gate, /copy\('password'\)/);
+  /* 2026-08-09 케어 화면의 임시 잠금을 뗐습니다. 파일은 남겨 둡니다 — 다시
+     가려야 할 화면이 생기면 그때 스크립트 한 줄만 넣으면 됩니다. 문구가
+     4개 국어로 남아 있는지는 위에서 계속 봅니다. */
   for (const page of ['care/index.html', 'care/animal.html', 'care/breeding.html']) {
-    assert.match(read(page), /gate\.js\?v=2/, `${page} must invalidate the old gate cache`);
+    assert.doesNotMatch(read(page), /gate\.js\?/, `${page} must not sit behind the gate`);
   }
 });
 

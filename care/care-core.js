@@ -107,7 +107,7 @@ const SPECIES = {
     ]
   },
   fattail: {
-    ko: '아프리카 팻테일 게코', icon: '🦎', calc: '/fattail/',
+    ko: '아프리카 펫테일 게코', icon: '🦎', calc: '/fattail/',
     weightRange: [8, 120],
     plans: [
       { kind: 'feed',       title: '급여',          interval_days: 3 },

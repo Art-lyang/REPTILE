@@ -23,7 +23,7 @@
     ko: {
       btn: '회원가입',
       title: '계산기는 로그인 없이 계속 무료입니다',
-      body: '회원가입하면 <b>크리처 케어로그</b>와 <b>브리딩 관리</b>를 함께 쓸 수 있어요.',
+      body: '회원가입하면 <b>생물 케어 스케쥴 관리</b>와 <b>브리딩 관리</b>를 함께 쓸 수 있어요.',
       f1: '급여·물·청소·영양제 주기를 정해두면 오늘 할 일로 뜨고, 캘린더로 내보내 폰에서 알림을 받습니다.',
       f2: '개체와 혈통을 등록해 페어링·클러치·체중을 기록하고, 계산기 결과를 그대로 개체로 남깁니다.',
       note: '등록한 기록은 본인에게만 보입니다. 공개는 개체별로 직접 켜야 시작됩니다.',
@@ -87,6 +87,17 @@
 
   function client() { return w.__studioSB || null; }
 
+  /* 깔때기 계측(supabase_v76). '몇 명이 왔나' 만 알면 이 서비스의 값을
+     말할 수 없습니다. 안내를 본 사람 → 누른 사람 → 실제로 가입한 사람이
+     이어져야 어디서 새는지가 보입니다.
+     기기 식별값만 갑니다 — 이메일도 IP 도 보내지 않습니다. */
+  function track(event) {
+    try {
+      var a = w.StudioAnalytics;
+      if (a && a.logFunnel) a.logFunnel(client(), event, w.SERVICE_ID || null);
+    } catch (e) { /* 통계 한 줄 때문에 화면이 멈추면 안 됩니다. */ }
+  }
+
   function storedSession() {
     try {
       for (var i = 0; i < w.localStorage.length; i++) {
@@ -124,6 +135,10 @@
       b.title = text;
       b.innerHTML = '<i class="bi bi-person-plus" aria-hidden="true"></i><span>' + text + '</span>';
       b.hidden = false;
+      if (!b.__tracked) {
+        b.__tracked = true;
+        b.addEventListener('click', function () { track('signup_click'); });
+      }
     });
   }
 
@@ -180,8 +195,11 @@
     wrap.addEventListener('click', function (e) { if (e.target === wrap) close(); });
     d.addEventListener('keydown', onKey);
 
+    wrap.querySelector('.sgn-go').addEventListener('click', function () { track('nudge_click'); });
+
     d.body.appendChild(wrap);
     markSeen();
+    track('nudge_shown');
   }
 
   function wantsNudge() {

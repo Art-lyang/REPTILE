@@ -913,7 +913,7 @@ body.cres .avatar img{position:static; width:100%; height:100%; object-fit:cover
 /* 사진이 서로 다르므로 부모 B 색조 변조는 필요 없습니다.
    두면 어두운 개체가 한 번 더 탁해집니다. */
 body.cres .card.b .avatar img{filter:none}
-/* 펫테일(아프리카 팻테일) — 전용 사진 사용 중.
+/* 펫테일(아프리카 펫테일) — 전용 사진 사용 중.
    히어로·부모A = fattail-profile-normal-v1.jpg, 부모B = fattail-profile-oreo-v1.jpg */
 /* 펫테일도 부모 A·B 각각 얼굴 사진을 씁니다. 정사각으로 잘려 있어
    히어로 사진처럼 확대·이동할 필요가 없습니다. */

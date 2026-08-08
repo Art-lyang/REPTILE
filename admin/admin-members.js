@@ -5,7 +5,7 @@
 
   const state = {
     SB: null, body: null, adminUser: null, esc: null, download: null,
-    lang: 'ko', rows: [], query: '', status: 'all', tier: 'all', busy: false, limits: {},
+    lang: 'ko', rows: [], query: '', status: 'all', tier: 'all', busy: false, limits: {}, page: 0,
   };
   let actionController = null;
   /* {count} 같은 자리를 값으로 바꿔 줍니다. 넘기지 않으면 예전과 똑같이
@@ -144,15 +144,38 @@
     </details>`;
   }
 
+  const PAGE = 20;
+
+  /* 목록이 길어지면 스크롤로만 찾게 됩니다. 검색·필터가 있어도 '몇 명인지'
+     와 '어디까지 봤는지' 는 쪽 번호가 있어야 잡힙니다. */
+  function pageOf(rows) {
+    const pages = Math.max(1, Math.ceil(rows.length / PAGE));
+    const page = Math.min(Math.max(state.page, 0), pages - 1);
+    return { pages: pages, page: page, rows: rows.slice(page * PAGE, page * PAGE + PAGE) };
+  }
+
+  function listHtml(rows) {
+    if (!rows.length) return `<div class="mm-empty">${escape(t('empty'))}</div>`;
+    const p = pageOf(rows);
+    return p.rows.map(memberCard).join('')
+      + (p.pages > 1 ? `<div class="mm-pager">
+        <button type="button" class="abtn sm ghost" data-mm-page="${p.page - 1}"${p.page <= 0 ? ' disabled' : ''}>◀</button>
+        <span>${p.page + 1} / ${p.pages}</span>
+        <button type="button" class="abtn sm ghost" data-mm-page="${p.page + 1}"${p.page >= p.pages - 1 ? ' disabled' : ''}>▶</button>
+      </div>` : '');
+  }
+
   function memberCard(member) {
     const providers = (member.providers || []).join(' · ') || t('unknown');
     const premiumMeta = member.tier === 'premium'
       ? `<div><dt>${escape(t('premiumUntil'))}</dt><dd>${escape(member.premium_until ? date(member.premium_until) : t('unlimited'))}</dd></div>
          <div><dt>${escape(t('source'))}</dt><dd>${escape(sourceLabel(member.premium_source))}</dd></div>` : '';
     return `<article class="mm-card" data-member-id="${member.user_id}">
+      <details class="mm-fold"><summary>
       <div class="mm-card-head"><div><b>${escape(member.email || t('unknown'))}</b>
         <p>${escape(member.name || t('unknown'))}${member.nickname ? ` · @${escape(member.nickname)}` : ''}</p></div>
         <div class="mm-badges">${badges(member)}</div></div>
+      </summary>
       <!-- 사업자 탭이 '회원 탭에서 복사하세요' 라고 안내하는데 정작 여기에
            회원 ID 가 없었습니다. 전부 펼쳐 두면 카드가 UUID 로 어수선해지니
            버튼만 두고 누를 때 복사합니다. -->
@@ -170,6 +193,7 @@
       ${actions(member)}
       ${limitBox(member)}
       ${nicknameBox(member)}
+      </details>
     </article>`;
   }
 
@@ -201,7 +225,7 @@
         <button class="abtn sm ghost" type="button" id="mmExport">${escape(t('export'))}</button>
       </div>
       <p class="mm-count">${rows.length} / ${state.rows.length}</p>
-      <div class="mm-list">${rows.length ? rows.map(memberCard).join('') : `<div class="mm-empty">${escape(t('empty'))}</div>`}</div>
+      <div class="mm-list">${listHtml(rows)}</div>
       <dialog class="mm-dialog" id="mmDialog"><form method="dialog" id="mmActionForm">
         <input type="hidden" name="memberId"><input type="hidden" name="action"><input type="hidden" name="tier">
         <div class="mm-dialog-head"><h3>${escape(t('actionTitle'))}</h3><button type="button" data-dialog-close aria-label="${escape(t('cancel'))}">×</button></div>
@@ -231,12 +255,15 @@
 
   function findMember(id) { return state.rows.find(member => member.user_id === id); }
 
-  function renderResults() {
+  /* 3쪽을 보다가 검색어를 넣으면 결과가 한 쪽뿐인데 3쪽에 머물러 빈 화면이
+     됩니다. 조건이 바뀌면 첫 쪽으로 돌립니다. */
+  function renderResults(keepPage) {
+    if (!keepPage) state.page = 0;
     const rows = filteredRows();
     const count = state.body.querySelector('.mm-count');
     const list = state.body.querySelector('.mm-list');
     if (count) count.textContent = `${rows.length} / ${state.rows.length}`;
-    if (list) list.innerHTML = rows.length ? rows.map(memberCard).join('') : `<div class="mm-empty">${escape(t('empty'))}</div>`;
+    if (list) list.innerHTML = listHtml(rows);
     bindCards();
   }
 
@@ -244,6 +271,15 @@
      양쪽에 같은 배선을 적어 두면 한쪽만 고치는 일이 생기고, 그러면 검색한
      뒤에는 버튼이 죽습니다. */
   function bindCards() {
+    state.body.querySelectorAll('[data-mm-page]').forEach(button => {
+      button.onclick = () => {
+        state.page = parseInt(button.getAttribute('data-mm-page'), 10) || 0;
+        /* true 를 넘겨야 합니다 — 안 넘기면 방금 고른 쪽을 0 으로 되돌립니다. */
+        renderResults(true);
+        const list = state.body.querySelector('.mm-list');
+        if (list) list.scrollIntoView({ block: 'start' });
+      };
+    });
     state.body.querySelectorAll('[data-member-action]').forEach(button => {
       button.onclick = () => actionController.open(button);
     });

@@ -72,3 +72,15 @@
 .mm-dialog textarea{min-height:100px;resize:vertical}.mm-dialog-actions{display:flex;justify-content:flex-end;gap:7px;margin-top:12px}.mm-note{font-size:11px;color:var(--ink2);margin:6px 0}
 @media(max-width:680px){.mm-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.mm-tools{grid-template-columns:1fr 1fr}.mm-tools #mmSearch{grid-column:1/-1}.mm-meta{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:430px){.mm-titlebar{flex-direction:column}.mm-lang{align-self:flex-end}.mm-card-head{flex-direction:column}.mm-badges{justify-content:flex-start}.mm-meta{grid-template-columns:1fr}.mm-actions .mini{flex:1 1 130px}.mm-tools{grid-template-columns:1fr}.mm-tools #mmSearch{grid-column:auto}.mm-premium-fields{grid-template-columns:1fr}}
+
+/* 회원 카드는 접어 둡니다. 회원이 늘면 카드 하나가 화면을 다 먹어서,
+   목록이 '누가 있는지' 를 보는 화면 구실을 못 합니다. */
+.mm-fold > summary{list-style:none;cursor:pointer;border-radius:12px;padding:2px}
+.mm-fold > summary::-webkit-details-marker{display:none}
+.mm-fold > summary:hover{background:var(--hair)}
+.mm-fold > summary::after{content:'펼치기';float:right;margin:-26px 4px 0 0;
+  font-size:11px;font-weight:800;color:var(--ink2)}
+.mm-fold[open] > summary::after{content:'접기'}
+
+.mm-pager{display:flex;align-items:center;justify-content:center;gap:12px;padding:12px 0 2px}
+.mm-pager span{font-size:12.5px;font-weight:800;color:var(--ink2)}

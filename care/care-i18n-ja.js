@@ -12,6 +12,7 @@
     loading: '読み込み中…', terms: '利用規約', privacy: 'プライバシーポリシー', backToList: '一覧', all: 'すべて', allAnimals: 'すべての個体',
     lifeStage: '成長段階', stageBabyUnknown: 'ベビー（性別未判定）', stageJuvenile: '亜成体', stageSubadult: '若成体', stageAdult: '成体',
     lifeStageHint: '成長段階は親候補とブリーディング分析に使用されます。',
+    parentLockedHint: '{names}の親として登録されているため、種・性別・成長段階は変更できません。変更するには先に仔の親リンクを解除してください。',
     unnamed: '名前なし', save: '保存', saved: '保存しました', cancel: 'キャンセル', delete: '削除', deleted: '削除しました', edit: '編集',
     manage: '管理', close: '閉じる', add: '追加', view: '見る', today: '今日', common: '共通', on: 'オン', off: 'オフ', optional: '任意',
     sexUnknown: '不明', sexMale: 'オス', sexFemale: 'メス', parentFather: '父', parentMother: '母',

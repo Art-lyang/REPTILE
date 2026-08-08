@@ -260,7 +260,10 @@
   }
 
   function animalForm(a) {
-    return AnimalForm.html(a);
+    /* 이 개체를 부모로 걸어 둔 자식이 있으면 종·성별·성장 단계를 잠급니다.
+       바꾸면 자식 쪽 혈통이 어긋납니다 — 레오파드 새끼의 어미가 '기타' 가 되는
+       식으로요. 서버도 같은 것을 막습니다(supabase_v63.sql). */
+    return AnimalForm.html(a, C.childrenOf(S.animals, a.id));
   }
 
   /* ── 체중 ─────────────────────────────────────────────────────────── */

@@ -13,6 +13,7 @@
     all: '전체', allAnimals: '전체 개체', unnamed: '이름 없음', save: '저장', saved: '저장했습니다',
     lifeStage: '성장 단계', stageBabyUnknown: '베이비(미구분)', stageJuvenile: '아성체', stageSubadult: '준성체', stageAdult: '성체',
     lifeStageHint: '성장 단계는 부모 후보와 브리딩 분석에 사용됩니다.',
+    parentLockedHint: '{names}의 부모로 연결되어 있어 종·성별·성장 단계를 바꿀 수 없습니다. 바꾸려면 먼저 자식의 부모 연결을 해제하세요.',
     cancel: '취소', delete: '삭제', deleted: '삭제했습니다', edit: '수정', manage: '관리', close: '닫기',
     add: '추가', view: '보기', today: '오늘', common: '공통', on: '켜짐', off: '꺼짐', optional: '선택',
     sexUnknown: '미상', sexMale: '수컷', sexFemale: '암컷', parentFather: '부', parentMother: '모',

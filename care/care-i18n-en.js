@@ -13,6 +13,7 @@
     all: 'All', allAnimals: 'All animals', unnamed: 'Unnamed', save: 'Save', saved: 'Saved', cancel: 'Cancel',
     lifeStage: 'Life stage', stageBabyUnknown: 'Baby (unsexed)', stageJuvenile: 'Juvenile', stageSubadult: 'Subadult', stageAdult: 'Adult',
     lifeStageHint: 'Life stage determines parent eligibility and breeding analysis.',
+    parentLockedHint: 'Listed as a parent of {names}, so species, sex and life stage are locked. Clear that parent link first if you need to change them.',
     delete: 'Delete', deleted: 'Deleted', edit: 'Edit', manage: 'Manage', close: 'Close', add: 'Add', view: 'View',
     today: 'Today', common: 'Shared', on: 'On', off: 'Off', optional: 'Optional',
     sexUnknown: 'Unknown', sexMale: 'Male', sexFemale: 'Female', parentFather: 'Sire', parentMother: 'Dam',

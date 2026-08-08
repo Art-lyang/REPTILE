@@ -37,8 +37,22 @@
         + esc(I.t('publicWeightHint')) + '</small></span></label></fieldset>';
     }
 
-    function html(animal) {
+    /* 자식이 걸려 있으면 종·성별·성장 단계를 잠급니다.
+       셋 다 부모 자격을 이루는 값이라, 하나만 바꿔도 자식과의 연결이 어긋납니다
+       (레오파드 새끼의 어미가 '기타' 가 되거나, 어미가 수컷이 되는 식으로).
+       잠그기만 하고 이유를 안 적으면 고장으로 읽히므로 자식 이름을 함께 적습니다. */
+    function parentLock(animal, kids) {
+      if (!animal.id || !kids || !kids.length) return null;
+      return {
+        attr: ' disabled aria-describedby="f_parentlock"',
+        names: kids.map(k => k.name || I.t('unnamed')).join(', ')
+      };
+    }
+
+    function html(animal, kids) {
       const isNew = !animal.id;
+      const lock = parentLock(animal, kids);
+      const lockAttr = lock ? lock.attr : '';
       const speciesOptions = Object.keys(C.SPECIES).map(function (key) {
         return '<option value="' + key + '"' + (animal.species === key ? ' selected' : '') + '>'
           + C.SPECIES[key].icon + ' ' + esc(I.speciesName(key)) + '</option>';
@@ -53,13 +67,18 @@
         + '<div class="lbl2"><label for="f_name">' + esc(I.t('name')) + '</label></div>'
         + '<input class="in" id="f_name" value="' + esc(animal.name || '') + '" placeholder="'
         + esc(I.t('animalNamePlaceholder')) + '"><div class="lbl2"><label for="f_species">'
-        + esc(I.t('species')) + '</label></div><select class="in" id="f_species">' + speciesOptions + '</select>'
+        + esc(I.t('species')) + '</label></div><select class="in" id="f_species"' + lockAttr + '>'
+        + speciesOptions + '</select>'
         + '<div class="hint">' + esc(I.t('speciesPlanHint')) + '</div><div class="row2">'
         + '<div><div class="lbl2"><label for="f_sex">' + esc(I.t('sex')) + '</label></div>'
-        + '<select class="in" id="f_sex">' + sexOptions + '</select></div>'
+        + '<select class="in" id="f_sex"' + lockAttr + '>' + sexOptions + '</select></div>'
         + '<div><div class="lbl2"><label for="f_stage">' + esc(I.t('lifeStage')) + '</label></div>'
-        + '<select class="in" id="f_stage">' + stageOptions(animal.life_stage) + '</select></div></div>'
-        + '<div class="hint">' + esc(I.t('lifeStageHint')) + '</div>'
+        + '<select class="in" id="f_stage"' + lockAttr + '>' + stageOptions(animal.life_stage)
+        + '</select></div></div>'
+        + (lock
+            ? '<div class="note warn" id="f_parentlock"><i class="bi bi-diagram-3" aria-hidden="true"></i>'
+              + '<span>' + esc(I.t('parentLockedHint', { names: lock.names })) + '</span></div>'
+            : '<div class="hint">' + esc(I.t('lifeStageHint')) + '</div>')
         + '<div class="lbl2"><label for="f_hatch">' + esc(I.t('hatchAdoptionDate')) + '</label></div>'
         + DateField.html({ id: 'f_hatch', value: animal.hatch_date || '', max: C.today() })
         + weightFields(animal, isNew) + Photos.editorHtml(animal, A)

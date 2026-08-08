@@ -767,6 +767,21 @@ function signStatus(records, endDate) {
      repeats   [{id, name, count}]  두 번 이상 나온 조상
      cycles    [{id, name}]  자기 조상이면서 자손인 잘못된 입력
      known     조상 칸 중 실제로 채워진 개수 / 전체 칸 수 */
+/* 이 개체를 부모로 걸어 둔 자식들.
+   -----------------------------------------------------------------------------
+   부모 자격은 자식 쪽에서만 검사하고 있었습니다. 그래서 어미를 만들어 연결한
+   뒤에 그 어미의 종을 '기타' 로 바꾸면, 레오파드 새끼의 어미가 기타가 되는 일이
+   생겼습니다. 성별과 성장 단계도 마찬가지입니다 — 어미를 수컷이나 베이비로
+   바꿔도 아무도 막지 않았습니다.
+
+   화면에서 먼저 막으려면 '이 개체가 누군가의 부모인가' 를 알아야 해서, 족보와
+   따로 쓸 수 있게 꺼내 둡니다. 서버 쪽 검사는 supabase_v63.sql 이 합니다 —
+   화면만 막으면 화면을 거치지 않는 경로가 그대로 남습니다. */
+function childrenOf(animals, id) {
+  if (!id) return [];
+  return (animals || []).filter(a => a.parent_a === id || a.parent_b === id);
+}
+
 function buildPedigree(animals, rootId, upGen) {
   const list = animals || [];
   const byId = {};
@@ -969,7 +984,7 @@ if (typeof window !== 'undefined') {
     isDueOn, lastDueBefore, nextDueAfter, planStatus, cycleLabel,
     buildIcs, icsEscape, icsFold, weeklySummary,
     completionRate, streakDays, lastDoneByKind, weightSummary, dailyCounts, ageText,
-    SIGNS, signsFor, signStatus, buildPedigree,
+    SIGNS, signsFor, signStatus, buildPedigree, childrenOf,
     FEED_KINDS, FEED_LEVEL, feedKindInfo, planPerDay, feedForecast
   };
 }

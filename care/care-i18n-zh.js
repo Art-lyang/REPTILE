@@ -12,6 +12,7 @@
     loading: '加载中…', terms: '服务条款', privacy: '隐私政策', backToList: '列表', all: '全部', allAnimals: '全部个体',
     lifeStage: '成长阶段', stageBabyUnknown: '幼体（未分性）', stageJuvenile: '亚成体', stageSubadult: '准成体', stageAdult: '成体',
     lifeStageHint: '成长阶段用于亲本候选和繁育分析。',
+    parentLockedHint: '已被登记为 {names} 的亲本，因此物种、性别与成长阶段已锁定。如需修改，请先解除子代的亲本关联。',
     unnamed: '未命名', save: '保存', saved: '已保存', cancel: '取消', delete: '删除', deleted: '已删除', edit: '编辑',
     manage: '管理', close: '关闭', add: '添加', view: '查看', today: '今天', common: '共用', on: '开启', off: '关闭', optional: '可选',
     sexUnknown: '未知', sexMale: '雄性', sexFemale: '雌性', parentFather: '父本', parentMother: '母本',

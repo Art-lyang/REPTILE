@@ -164,8 +164,8 @@
     "sha256": "862bb6a1690ea2a3"
   },
   "care/animal-ui.js": {
-    "version": "20260807c",
-    "sha256": "0ac6b64fefdf1879"
+    "version": "20260808a",
+    "sha256": "030e2e3fb426af2a"
   },
   "care/animal-weight-date.css": {
     "version": "20260804a",
@@ -284,8 +284,8 @@
     "sha256": "3091c4a64d255d11"
   },
   "care/care-core.js": {
-    "version": "16",
-    "sha256": "47af4a8ae5a396b5"
+    "version": "17",
+    "sha256": "5a9311d673b208e4"
   },
   "care/care-health-ui.js": {
     "version": "20260803a",
@@ -348,8 +348,8 @@
     "sha256": "355cc6ffb0dd3a8b"
   },
   "care/care.css": {
-    "version": "20260807c",
-    "sha256": "ac74e79b6251e6ca"
+    "version": "20260808a",
+    "sha256": "2cf533fe2d0e805b"
   },
   "care/date-field.js": {
     "version": "20260807c",
@@ -412,8 +412,8 @@
     "sha256": "bcd1d169b6f6979b"
   },
   "crested/crested-ui.js": {
-    "version": "20260809d",
-    "sha256": "084160fb5f922761"
+    "version": "20260809e",
+    "sha256": "a5a468cacad471fc"
   },
   "crested/crested.css": {
     "version": "07302330",

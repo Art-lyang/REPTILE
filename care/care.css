@@ -867,9 +867,26 @@ a.pedbox:hover{border-color:var(--teal);transform:translateY(-1px)}
   .pedname{font-size:10.5px}
 }
 
-/* 세대 수 고르기 */
-.pedgens{display:flex;gap:6px;margin-top:10px}
+/* 5·6세대 — 마지막 줄이 32칸·64칸입니다. 92px 씩 두면 6,500px 을 밀어야 해서
+   조상을 찾는 게 아니라 헤매게 됩니다. 사진을 접고 이름만 남겨 칸을 좁힙니다.
+   이 깊이에서 보려는 것은 얼굴이 아니라 '누가 어디에 있는가' 입니다.
+   .deep 은 미디어 쿼리보다 뒤에 와야 좁은 화면에서도 이깁니다. */
+.pedtree.deep .pedbox{width:48px;padding:6px 3px;gap:2px;border-radius:10px}
+.pedtree.deep .pedface{display:none}
+.pedtree.deep .pedname{font-size:9.5px;font-weight:800;line-height:1.25;white-space:normal;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.pedtree.deep .pedrole{display:none}
+.pedtree.deep .pedlinks{height:16px}
+.pedtree.deep .pedrow.ancestors .pedcell:not(.empty)::after{bottom:-5px;height:5px}
+.pedtree.deep .pedbranch.has-left::before,.pedtree.deep .pedbranch.has-right::before,
+.pedtree.deep .pedbranch.has-left::after,.pedtree.deep .pedbranch.has-right::after{top:4px}
+
+/* 세대 수 고르기 — 6개라 좁은 화면에서 넘칩니다. 줄바꿈으로 받습니다. */
+.pedgens{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
 .pedgens .mode{flex:0 0 auto;min-width:60px;padding:8px 14px;font-size:12.5px}
+@media (max-width:440px){
+  .pedgens .mode{min-width:0;padding:8px 11px;font-size:12px}
+}
 
 /* 자식은 세대가 아니라 목록입니다 — 몇 마리가 될지 모르므로 흐르게 둡니다 */
 .pedkids{display:flex;flex-wrap:wrap;gap:9px;margin-top:8px}

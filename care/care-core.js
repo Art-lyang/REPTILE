@@ -775,9 +775,14 @@ function buildPedigree(animals, rootId, upGen) {
   if (!root) return null;
 
   /* upGen 을 안 주면 3세대. 0 을 줬을 때 기본값으로 새지 않게 NaN 만 봅니다 —
-     parseInt(0) || 3 은 0 이 falsy 라 3 이 됩니다. */
+     parseInt(0) || 3 은 0 이 falsy 라 3 이 됩니다.
+
+     상한은 6세대입니다. 마지막 줄이 64칸(2^6)이고 조상 칸을 다 합치면 126칸인데,
+     이게 혈통서에서 흔히 쓰는 깊이입니다. 더 늘리면 칸이 다시 두 배가 되는 데
+     비해 채워지는 칸은 거의 늘지 않습니다 — 그만큼 거슬러 올라간 기록을 가진
+     사람이 없습니다. */
   const asked = parseInt(upGen, 10);
-  const maxUp = Math.max(1, Math.min(isNaN(asked) ? 3 : asked, 5));
+  const maxUp = Math.max(1, Math.min(isNaN(asked) ? 3 : asked, 6));
   const up = [], slots = [];
   const seen = {}, cycles = [];
 

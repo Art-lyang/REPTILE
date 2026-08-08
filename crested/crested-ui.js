@@ -374,10 +374,12 @@ function comboChip(combo, side, matched){
   const on = (matched===combo);
   const chip=document.createElement('button');
   chip.className='chip combochip'+(side==='B'?' b':'')+(on?' on':'');
-  const mark = combo.proof && combo.proof!=='established'
-    ? ' <span class="chipproof">'+escapeHtml(L().proof[combo.proof]||'')+'</span>' : '';
+  /* 검증 수준은 칩에 적지 않습니다. '릴잔틱 부분검증' 처럼 이름 옆에 붙으면
+     그게 모프 이름의 일부로 읽히고, 칩 두 개만 그래서 나머지와 폭도 어긋납니다.
+     검증 수준은 하단 안내문에서 형질별로 한 번에 설명합니다. 위험 조합은
+     이름과 무관한 신호라 경고 표시만 남깁니다. */
   chip.innerHTML='<i class="bi bi-stars combo-icon" aria-hidden="true"></i>'
-    +escapeHtml(tr(combo))+mark
+    +escapeHtml(tr(combo))
     +(combo.warn?' <i class="bi bi-exclamation-triangle-fill chiprisk" aria-hidden="true"></i>':'');
   chip.onclick=()=>{
     if(on){ CR_ALL_GENES().forEach(g=>CR_STATE[side][g.id]='nn'); }

@@ -185,9 +185,16 @@
     }
 
     /* 세대별 칸 수가 2·4·8 로 늘어납니다. 카드 하나에 최소 폭을 주고
-       그 배수로 전체 폭을 잡습니다. */
+       그 배수로 전체 폭을 잡습니다.
+
+       깊은 세대에서는 카드를 줄입니다. 6세대면 마지막 줄이 64칸이라 92px 로는
+       6,500px 이 넘습니다 — 스크롤 상자 안이라도 그만큼 밀어야 하면 조상을
+       찾는 것이 아니라 헤매게 됩니다. 5세대부터 사진을 빼고 이름만 남겨
+       칸을 좁힙니다. */
     const compactDefaultTree = up <= 2 && window.matchMedia('(max-width: 440px)').matches;
-    const CARD = compactDefaultTree ? 72 : 92, GAP = compactDefaultTree ? 6 : 10;
+    const deep = up >= 5;
+    const CARD = deep ? 52 : (compactDefaultTree ? 72 : 92);
+    const GAP = deep ? 4 : (compactDefaultTree ? 6 : 10);
     const widest = p.slots.length ? p.slots[p.slots.length - 1] : 1;
     const W = Math.max(widest * (CARD + GAP), 300);
 
@@ -220,10 +227,11 @@
       + '<div class="hint">' + I.t('pedigreeKnown', {
         filled: I.formatNumber(p.known.filled), total: I.formatNumber(p.known.total)
       }) + '</div>'
-      + '<div class="pedgens">' + [2, 3, 4].map(v =>
+      + '<div class="pedgens">' + [2, 3, 4, 5, 6].map(v =>
           '<button class="mode' + (up === v ? ' on' : '') + '" data-upgen="' + v + '">'
           + I.t('generation', { count: I.formatNumber(v) }) + '</button>').join('') + '</div>'
-      + '<div class="pedscroll"><div class="pedtree" style="min-width:' + W + 'px">'
+      + '<div class="pedscroll"><div class="pedtree' + (deep ? ' deep' : '')
+      + '" style="min-width:' + W + 'px">'
       + rows + '</div></div>';
 
     /* 근친 신호 — 족보를 그리는 가장 큰 이유입니다 */

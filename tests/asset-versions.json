@@ -116,8 +116,8 @@
     "sha256": "4e508244deffece4"
   },
   "assets/studio-config.js": {
-    "version": "20260809y",
-    "sha256": "ccf95d9b7eef975b"
+    "version": "20260809z",
+    "sha256": "43a99da5c012bbc9"
   },
   "assets/theme.css": {
     "version": "20260809x",
@@ -188,8 +188,8 @@
     "sha256": "862bb6a1690ea2a3"
   },
   "care/animal-ui.js": {
-    "version": "20260809y",
-    "sha256": "df0f17add3707580"
+    "version": "20260809z",
+    "sha256": "1300d4cc78d9774a"
   },
   "care/animal-weight-date.css": {
     "version": "20260804a",

@@ -140,3 +140,19 @@ test('Given no new table was added, when the feature ships, then no migration is
   assert.doesNotMatch(src, /\.from\(|rpc\(/, 'DB 를 직접 부르면 안 됩니다');
   assert.doesNotMatch(src, /document\./, '값 고르는 파일이 화면을 만지면 안 됩니다');
 });
+
+test('Given the report is not released yet, when the page renders, then it stays hidden by default', () => {
+  /* 병원에서 남에게 건네지는 종이입니다. 실제 진료에서 써 보기 전까지는
+     내보내지 않습니다 — 문서 하나가 어색해도 그게 서비스 신뢰가 됩니다. */
+  const cfg = read('assets/studio-config.js');
+  assert.match(cfg, /var MEDICAL_REPORT_ACCESS = 'off';/);
+
+  const ui = read('care/animal-ui.js');
+  assert.match(ui, /function medicalVisible\(\)/);
+  /* 스위치를 모르는 옛 캐시는 꺼짐으로 봅니다 — 안 보이는 편이 낫습니다. */
+  assert.match(ui, /typeof MEDICAL_REPORT_ACCESS === 'undefined' \? 'off'/);
+  assert.match(ui, /A\.premium && A\.premium\.kind === 'pro'/);
+
+  const block = ui.slice(ui.indexOf('function medicalBlock()'), ui.indexOf('function medicalBlock()') + 200);
+  assert.match(block, /if \(!medicalVisible\(\)\) return '';/);
+});

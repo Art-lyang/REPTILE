@@ -218,9 +218,21 @@
     });
   }
 
+  /* 진료 참고 기록을 누가 볼 수 있는가.
+     assets/studio-config.js 의 MEDICAL_REPORT_ACCESS 가 정합니다.
+     스위치가 없던 판을 캐시로 들고 있는 사람도 있으니 undefined 는
+     꺼짐으로 봅니다 — 안 보이는 것이 잘못 보이는 것보다 낫습니다. */
+  function medicalVisible() {
+    const mode = typeof MEDICAL_REPORT_ACCESS === 'undefined' ? 'off' : MEDICAL_REPORT_ACCESS;
+    if (mode === 'all') return true;
+    if (mode === 'pro') return !!(A.premium && A.premium.kind === 'pro');
+    return false;
+  }
+
   /* 진료 참고 기록. 병원에 데려갈 때 함께 내는 문서입니다 —
      "마지막으로 언제 먹었나요" 에 기억이 아니라 날짜로 답하기 위한 것. */
   function medicalBlock() {
+    if (!medicalVisible()) return '';
     const Ui = window.MedicalReportUi;
     if (!Ui) return '';
     return Ui.html({

@@ -71,10 +71,10 @@ test('Given the animal was handed over, when the block renders, then it offers n
   assert.doesNotMatch(html, /tf_create|tf_cancel/);
 });
 
-test('Given both halves exist, when transfer is switched on, then the way to switch it off survives', () => {
-  /* 사고가 나면 한 글자로 닫을 수 있어야 합니다. 켰다고 해서 잠글 길을
-     지우면 안 됩니다. */
-  assert.match(read('assets/studio-config.js'), /var TRANSFER_ENABLED = true;/);
+test('Given both halves are built, when they have not been used for real, then the block stays hidden', () => {
+  /* 개체가 남의 계정으로 넘어가는 일입니다. 한 번 잘못되면 되돌릴 방법이
+     없어서, 실제로 주고받아 보기 전에는 내보내지 않습니다. */
+  assert.match(read('assets/studio-config.js'), /var TRANSFER_ENABLED = false;/);
   const ui = read('care/animal-ui.js');
   assert.match(ui, /typeof TRANSFER_ENABLED === 'undefined' \|\| !TRANSFER_ENABLED\) return '';/);
 });

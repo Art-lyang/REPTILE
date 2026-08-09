@@ -30,3 +30,13 @@
   display:inline-block;margin:4px 0 6px;padding:3px 10px;border-radius:999px;
   background:var(--hair);color:var(--ink2);font-size:12px;font-weight:800;
 }
+
+/* 받는 쪽 미리보기 — 무엇을 받는지 한 장으로. */
+.rc-card{
+  background:var(--card2);border-radius:14px;padding:14px 15px;margin:10px 0 12px;
+}
+.rc-name{font-size:17px;font-weight:850;margin-bottom:8px;word-break:keep-all}
+.rc-what{
+  font-size:12.5px;line-height:1.7;color:var(--ink2);word-break:keep-all;
+  padding:10px 12px;border-radius:10px;background:var(--card2);
+}

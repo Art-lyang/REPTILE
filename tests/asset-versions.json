@@ -116,8 +116,8 @@
     "sha256": "137d3d30745a2135"
   },
   "assets/studio-config.js": {
-    "version": "20260810c",
-    "sha256": "d5fc4a05c2dfd986"
+    "version": "20260810d",
+    "sha256": "66b0f69e161969cf"
   },
   "assets/theme.css": {
     "version": "20260809x",
@@ -192,8 +192,8 @@
     "sha256": "e7c80102927c550e"
   },
   "care/animal-transfer.css": {
-    "version": "20260810a",
-    "sha256": "232fbb22a35a02a7"
+    "version": "20260810d",
+    "sha256": "3adac9a7311c8685"
   },
   "care/animal-transfer.js": {
     "version": "20260810a",
@@ -332,20 +332,20 @@
     "sha256": "f15eae5f32b28484"
   },
   "care/care-i18n-en.js": {
-    "version": "20260810c",
-    "sha256": "66bc26325ebed8c6"
+    "version": "20260810d",
+    "sha256": "7c50f50ae0d874a3"
   },
   "care/care-i18n-ja.js": {
-    "version": "20260810c",
-    "sha256": "c8de1111fc15bd9b"
+    "version": "20260810d",
+    "sha256": "89f1fa783f9bac7b"
   },
   "care/care-i18n-ko.js": {
-    "version": "20260810c",
-    "sha256": "380c991394d377fc"
+    "version": "20260810d",
+    "sha256": "320c61a2b2bc3317"
   },
   "care/care-i18n-zh.js": {
-    "version": "20260810c",
-    "sha256": "48c94f8e1ed68ac2"
+    "version": "20260810d",
+    "sha256": "4f450c8efb5b294a"
   },
   "care/care-i18n.js": {
     "version": "20260803m",
@@ -462,6 +462,10 @@
   "care/public-weight-chart.js": {
     "version": "20260803a",
     "sha256": "fa9ee6841eaaea1e"
+  },
+  "care/transfer-ui.js": {
+    "version": "20260810a",
+    "sha256": "0efc7f81e682ec37"
   },
   "crested/crested-app.js": {
     "version": "20260806c",

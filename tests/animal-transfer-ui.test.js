@@ -71,11 +71,41 @@ test('Given the animal was handed over, when the block renders, then it offers n
   assert.doesNotMatch(html, /tf_create|tf_cancel/);
 });
 
-test('Given the receiving screen does not exist yet, when the page renders, then the block stays hidden', () => {
-  /* 켜면 열 곳 없는 링크를 만들게 됩니다. 그건 기능이 아니라 함정입니다. */
-  assert.match(read('assets/studio-config.js'), /var TRANSFER_ENABLED = false;/);
+test('Given both halves exist, when transfer is switched on, then the way to switch it off survives', () => {
+  /* 사고가 나면 한 글자로 닫을 수 있어야 합니다. 켰다고 해서 잠글 길을
+     지우면 안 됩니다. */
+  assert.match(read('assets/studio-config.js'), /var TRANSFER_ENABLED = true;/);
   const ui = read('care/animal-ui.js');
   assert.match(ui, /typeof TRANSFER_ENABLED === 'undefined' \|\| !TRANSFER_ENABLED\) return '';/);
+});
+
+test('Given a link is opened, when the visitor is not signed in, then login comes before the preview', () => {
+  /* peek_animal_transfer 가 익명에게 닫혀 있습니다(supabase_v65 에서 일부러
+     revoke). 미리보기에 이름·모프·거래 금액이 들어가는데, 링크가 어디로
+     굴러갈지는 보낸 사람도 모릅니다. */
+  const src = read('care/transfer-ui.js');
+  const boot = src.slice(src.indexOf('async function boot()'));
+  assert.ok(boot.indexOf('rcLoginTitle') < boot.indexOf("rpc('peek_animal_transfer'"),
+    '로그인 확인이 미리보기보다 먼저 와야 합니다');
+  assert.match(boot, /next: next/, '돌아올 주소를 실어야 합니다');
+});
+
+test('Given the sender opens their own link, when the screen loads, then it does not offer to accept', () => {
+  const src = read('care/transfer-ui.js');
+  const boot = src.slice(src.indexOf('async function boot()'));
+  assert.match(boot, /if \(p\.mine\)/);
+  assert.ok(boot.indexOf('p.mine') < boot.indexOf("p.status !== 'pending'"),
+    '본인 링크 검사가 먼저여야 합니다');
+  /* 되돌릴 수 없으니 한 번 더 묻습니다. */
+  assert.match(src, /confirm\(I\.t\('rcConfirm'\)\)/);
+});
+
+test('Given the receiving screen, when it talks to the server, then it only calls the two allowed functions', () => {
+  /* 받는 화면이 animals 표에 직접 붙으면 RLS 로도 못 막는 실수가 생깁니다. */
+  const src = read('care/transfer-ui.js');
+  assert.match(src, /rpc\('peek_animal_transfer'/);
+  assert.match(src, /rpc\('accept_animal_transfer'/);
+  assert.doesNotMatch(src, /\.from\(/);
 });
 
 test('Given the ledger rules, when the client calls the server, then it never writes the table directly', () => {

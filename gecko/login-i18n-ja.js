@@ -83,7 +83,7 @@
     newPasswordTitle: '新しいパスワードを設定', forcedPasswordTitle: '新しいパスワードを決めてください',
     forcedPasswordHint: '仮パスワードでログインしました。<b>安全のため今すぐ変更してください。</b>', newPassword: '新しいパスワード', change: '変更する',
     passwordChangedMove: '変更しました。移動します…', signedIn: 'ログイン中', subscription: 'サブスクリプション', trial: '体験版', premiumAccess: 'プレミアム', until: '{date}まで', unlimited: '無期限',
-    freePlan: '無料利用中', breedingManagement: 'ブリーディング管理', creatureCare: '生き物ケア スケジュール管理', premiumCode: 'プレミアムコード入力', logout: 'ログアウト',
+    freePlan: '無料利用中', breedingManagement: 'ブリーディング管理', creatureCare: 'クリーチャーケアログ', premiumCode: 'プレミアムコード入力', logout: 'ログアウト',
     accountSettings: 'アカウント設定', accountOverview: 'マイアカウント', profileSettings: '基本情報', privacySettings: '同意設定', securitySettings: 'ログイン・セキュリティ',
     adminBadge: '最高管理者', adminConsole: '管理者ページ', adminOnlySummary: '最高管理者アカウントでは、一般会員向けの同意・セキュリティ・退会設定を表示しません。ニックネームは基本情報タブで変更できます。',
     profileExistingNote: '空欄で保存すると現在の値を維持します。完全に削除する場合は退会してください。', name: '名前', nickname: 'ニックネーム',

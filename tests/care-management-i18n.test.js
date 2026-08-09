@@ -48,7 +48,7 @@ test('Given a non-Korean care locale, when every visible value is inspected, the
 test('Given an English care route, when common labels are requested, then core care concepts are translated', () => {
   const { i18n } = loadI18n('?lang=en');
 
-  assert.equal(i18n.t('pageTitle'), 'Creature Care Scheduler · Ryang Studio');
+  assert.equal(i18n.t('pageTitle'), 'Creature Care Log · Ryang Studio');
   assert.equal(i18n.t('tabToday'), 'Today');
   assert.equal(i18n.speciesName('leopard'), 'Leopard Gecko');
   assert.equal(i18n.kindName('feed'), 'Feeding');
@@ -67,7 +67,7 @@ test('Given Chinese is selected, when the care page initializes, then the docume
   i18n.initialize('pageTitle');
 
   assert.equal(document.documentElement.lang, 'zh-Hans');
-  assert.equal(document.title, '生物护理日程管理 · Ryang Studio');
+  assert.equal(document.title, '生物护理日志 · Ryang Studio');
 });
 
 test('Given navigation between care screens, when a localized URL is created, then language and existing query data are preserved', () => {

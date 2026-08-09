@@ -83,7 +83,7 @@
     newPasswordTitle: '새 비밀번호 설정', forcedPasswordTitle: '새 비밀번호를 정해 주세요',
     forcedPasswordHint: '임시 비밀번호로 로그인했습니다. <b>안전을 위해 지금 새 비밀번호로 바꿔 주세요.</b>', newPassword: '새 비밀번호', change: '변경하기',
     passwordChangedMove: '변경되었어요! 잠시 후 이동합니다.', signedIn: '로그인됨', subscription: '구독', trial: '체험판', premiumAccess: '프리미엄', until: '{date}까지', unlimited: '무기한',
-    freePlan: '무료 이용 중', breedingManagement: '브리딩 관리', creatureCare: '생물 케어 스케줄 관리', premiumCode: '프리미엄 코드 입력', logout: '로그아웃',
+    freePlan: '무료 이용 중', breedingManagement: '브리딩 관리', creatureCare: '크리처 케어로그', premiumCode: '프리미엄 코드 입력', logout: '로그아웃',
     accountSettings: '계정 설정', accountOverview: '내 계정', profileSettings: '기본 정보', privacySettings: '동의 설정', securitySettings: '로그인·보안',
     adminBadge: '최고 관리자', adminConsole: '관리자 페이지', adminOnlySummary: '최고 관리자 계정에는 일반 회원용 동의·보안·탈퇴 설정을 표시하지 않습니다. 닉네임은 기본 정보 탭에서 바꿀 수 있습니다.',
     profileExistingNote: '비워두고 저장하면 기존 값이 유지됩니다. 완전히 삭제하려면 회원탈퇴를 이용해 주세요.', name: '이름', nickname: '닉네임',

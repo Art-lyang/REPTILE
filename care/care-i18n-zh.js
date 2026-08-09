@@ -2,8 +2,8 @@
   'use strict';
   const locales = w.CareI18nLocales || (w.CareI18nLocales = {});
   locales.zh = Object.freeze(Object.assign({}, locales.ko, {
-    pageTitle: '生物护理日程管理 · Ryang Studio', pageDescription: '记录喂食、清洁、补充剂和体重，并导出日历提醒。',
-    pageHeader: '生物护理日程管理', pageSubtitle: '设置照护周期并查看今天要做的事项',
+    pageTitle: '生物护理日志 · Ryang Studio', pageDescription: '记录喂食、清洁、补充剂和体重，并导出日历提醒。',
+    pageHeader: '生物护理日志', pageSubtitle: '设置照护周期并查看今天要做的事项',
     animalPageTitle: '个体管理 · Ryang Studio', galleryPageTitle: '其他饲主的个体 · Ryang Studio',
     galleryDescription: '浏览饲主公开分享的个体。', publicPageTitle: '个体档案 · Ryang Studio',
     galleryHeader: '其他饲主的个体', gallerySubtitle: '这里只显示饲主选择公开的个体。点击可查看详情。',
@@ -295,11 +295,11 @@
     rotateConfirm: '生成新地址后，旧地址和已分享的QR会立即失效。继续吗？', rotated: '已生成新地址', copied: '地址已复制', copyFailed: '无法复制，请长按手动复制。',
     recorded: '已记录{name}', removed: '已删除', weightSaved: '已记录体重',
     galleryAll: '全部', galleryLeopard: '豹纹', galleryCrested: '睫角', galleryFattail: '肥尾', galleryPygmy: '侏儒睡鼠',
-    galleryEmpty: '尚无公开个体。<br>在生物护理日程管理中公开后会显示在这里。', galleryPrivacy: '只显示饲主选择公开的个体，不包含照护记录和体重等私人信息。',
+    galleryEmpty: '尚无公开个体。<br>在生物护理日志中公开后会显示在这里。', galleryPrivacy: '只显示饲主选择公开的个体，不包含照护记录和体重等私人信息。',
     galleryLoadError: '加载失败，请稍后重试。', backendMissing: '后端未配置。', invalidShareTitle: '无法打开此地址', profile: '个体档案', morphInfoMissing: '无形态信息',
     speciesFact: '物种', sexFact: '性别', hatchFact: '孵化日', ageFact: '年龄', morph: '形态', noMorph: '未登记形态',
     clutchFact: '窝次', latestWeightFact: '最近体重', breederAnimals: '该繁育者的其他个体', studioHome: '前往Ryan Studio', introduction: '介绍', parents: '父母',
-    publicOwnerNotice: '此页面只显示饲主选择公开的信息。照护记录不会公开，体重历史仅在单独启用后显示。', startCare: '我也要使用生物护理日程管理',
+    publicOwnerNotice: '此页面只显示饲主选择公开的信息。照护记录不会公开，体重历史仅在单独启用后显示。', startCare: '我也要使用生物护理日志',
     publicWeightTrend: '体重变化', publicWeightSummary: '{count}次记录 · 总变化{change}g', weightChartAria: '按日期显示的体重变化图',
     breederPageTitle: '繁育者公开个体 · Ryang Studio', breederProfile: '繁育者主页', breederPublicAnimals: '公开个体{count}只',
     breederProfileHint: '仅汇总该繁育者加入公开列表的个体。', breederAllSpecies: '全部物种', breederSpeciesFilter: '按物种筛选个体',

@@ -2,10 +2,10 @@
   'use strict';
   const locales = w.CareI18nLocales || (w.CareI18nLocales = {});
   locales.en = Object.freeze(Object.assign({}, locales.ko, {
-    pageTitle: 'Creature Care Scheduler · Ryang Studio', pageDescription: 'Track feeding, cleaning, supplements, weight, and calendar reminders.',
-    pageHeader: 'Creature Care Scheduler', pageSubtitle: 'Set care routines and see what is due today.',
+    pageTitle: 'Creature Care Log · Ryang Studio', pageDescription: 'Track feeding, cleaning, supplements, weight, and calendar reminders.',
+    pageHeader: 'Creature Care Log', pageSubtitle: 'Set care routines and see what is due today.',
     animalPageTitle: 'Animal Care · Ryang Studio', galleryPageTitle: 'Community Animals · Ryang Studio',
-    galleryDescription: 'Meet animals shared by Creature Care Scheduler keepers.', publicPageTitle: 'Animal Profile · Ryang Studio',
+    galleryDescription: 'Meet animals shared by Creature Care Log keepers.', publicPageTitle: 'Animal Profile · Ryang Studio',
     galleryHeader: 'Community Animals', gallerySubtitle: 'Only animals their keepers chose to share appear here. Select one for details.',
     studio: 'Studio', account: 'Account', language: 'Language', care: 'Care', animal: 'Animal', focusAnimal: 'Choose an animal',
     tabToday: 'Today', tabAnimals: 'Animals', tabPlans: 'Plans', tabFeed: 'Food', tabHealth: 'Health', tabReport: 'Summary',
@@ -337,7 +337,7 @@
     invalidShareTitle: 'This link cannot be opened', profile: 'Animal Profile', morphInfoMissing: 'No morph information', speciesFact: 'Species',
     sexFact: 'Sex', hatchFact: 'Hatch date', ageFact: 'Age', morph: 'Morph', noMorph: 'No morphs registered',
     clutchFact: 'Clutch', latestWeightFact: 'Latest weight', breederAnimals: 'More animals from this breeder', studioHome: 'Visit Ryan Studio', introduction: 'About', parents: 'Parents',
-    publicOwnerNotice: 'This page shows only information the keeper chose to share. Care records stay private, and weight history appears only when separately enabled.', startCare: 'Start using Creature Care Scheduler',
+    publicOwnerNotice: 'This page shows only information the keeper chose to share. Care records stay private, and weight history appears only when separately enabled.', startCare: 'Start using Creature Care Log',
     publicWeightTrend: 'Weight trend', publicWeightSummary: '{count} measurements · {change}g overall', weightChartAria: 'Weight trend by date',
     breederPageTitle: 'Public Breeder Animals · Ryang Studio', breederProfile: 'Breeder profile', breederPublicAnimals: '{count} public animals',
     breederProfileHint: 'Browse animals this breeder chose to list publicly.', breederAllSpecies: 'All species', breederSpeciesFilter: 'Filter animals by species',

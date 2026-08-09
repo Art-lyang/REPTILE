@@ -47,7 +47,7 @@
     scriptLoadError: '{src} 를 불러오지 못했습니다',
     headerTitle: '{species} 브리딩',
     headerSubtitle: '개체 · 페어링 · 클러치 · 계산 분석을 관리합니다',
-    otherSpecies: '다른 종 {count}마리는 위에서 종을 바꾸거나 <a href="/care/">생물 케어 스케줄 관리</a>에서 볼 수 있어요.',
+    otherSpecies: '다른 종 {count}마리는 위에서 종을 바꾸거나 <a href="/care/">크리처 케어로그</a>에서 볼 수 있어요.',
     errorOwnership: '내 기록이 아니거나 로그인이 풀렸습니다. 다시 로그인해 주세요.',
     errorDuplicate: '이미 오늘 처리한 항목입니다.',
     errorLogin: '로그인이 필요합니다.',

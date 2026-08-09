@@ -82,7 +82,7 @@
     newPasswordTitle: '设置新密码', forcedPasswordTitle: '请设置新密码',
     forcedPasswordHint: '您使用临时密码登录。<b>为了账户安全，请立即更换密码。</b>', newPassword: '新密码', change: '更改密码',
     passwordChangedMove: '密码已更改，正在跳转…', signedIn: '已登录', subscription: '订阅', trial: '试用', premiumAccess: '高级权限', until: '至 {date}', unlimited: '无期限',
-    freePlan: '免费使用中', breedingManagement: '繁育管理', creatureCare: '生物护理日程管理', premiumCode: '输入高级代码', logout: '退出登录',
+    freePlan: '免费使用中', breedingManagement: '繁育管理', creatureCare: '生物护理日志', premiumCode: '输入高级代码', logout: '退出登录',
     accountSettings: '账户设置', accountOverview: '我的账户', profileSettings: '基本信息', privacySettings: '同意设置', securitySettings: '登录与安全',
     adminBadge: '最高管理员', adminConsole: '管理员页面', adminOnlySummary: '最高管理员账户不显示普通会员使用的同意、安全和注销设置。昵称可在基本信息标签页中修改。',
     profileExistingNote: '留空会保留原值。如需彻底删除，请使用注销账户。', name: '姓名', nickname: '昵称',

@@ -336,20 +336,20 @@
     "sha256": "f15eae5f32b28484"
   },
   "care/care-i18n-en.js": {
-    "version": "20260810d",
-    "sha256": "7c50f50ae0d874a3"
+    "version": "20260810f",
+    "sha256": "d1695a2e98c118a7"
   },
   "care/care-i18n-ja.js": {
-    "version": "20260810d",
-    "sha256": "89f1fa783f9bac7b"
+    "version": "20260810f",
+    "sha256": "f7f7556c99b17bee"
   },
   "care/care-i18n-ko.js": {
-    "version": "20260810d",
-    "sha256": "320c61a2b2bc3317"
+    "version": "20260810f",
+    "sha256": "78b192e3e6d62710"
   },
   "care/care-i18n-zh.js": {
-    "version": "20260810d",
-    "sha256": "4f450c8efb5b294a"
+    "version": "20260810f",
+    "sha256": "e1be6d6ca9bcf736"
   },
   "care/care-i18n.js": {
     "version": "20260803m",
@@ -402,6 +402,14 @@
   "care/gallery-ui.js": {
     "version": "20260802d",
     "sha256": "723db9bcd2e2587f"
+  },
+  "care/labels-ui.js": {
+    "version": "20260810a",
+    "sha256": "9e7cdc62ab10336a"
+  },
+  "care/labels.css": {
+    "version": "20260810a",
+    "sha256": "51b9621057e3dc6f"
   },
   "care/medical-report-ui.js": {
     "version": "20260809a",

@@ -46,7 +46,7 @@
   function icon(n) { return '<i class="bi ' + n + '" aria-hidden="true"></i>'; }
 
   const S = { id: null, animal: null, animals: [], plans: [], records: [], weights: [], feeds: [],
-              busy: false, range: 90, upGen: 2, legal: null, hold: null };
+              busy: false, range: 90, upGen: 2, legal: null, hold: null, transfer: null };
 
   function toast(m) {
     const t = $('toast'); t.textContent = m; t.classList.add('on');
@@ -68,6 +68,7 @@
     S.feeds = feeds;
     await loadLegal();
     await loadHold();
+    await loadTransfer();
   }
 
   async function act(fn, ok) {
@@ -183,6 +184,24 @@
     const H = window.AnimalHold;
     if (!H || !S.hold) return '';
     return H.html(S.hold, { i18n: I, esc: esc, today: C.today() });
+  }
+
+  /* 양도 상태(supabase_v65). v65 를 안 올렸으면 조용히 빠집니다 —
+     이것 때문에 개체 화면이 안 뜨면 안 됩니다. */
+  async function loadTransfer() {
+    if (!window.AnimalTransfer || !A.sb || !A.user) { S.transfer = null; return; }
+    try { S.transfer = await window.AnimalTransfer.load(A.sb, S.id); }
+    catch (e) { S.transfer = null; }
+  }
+
+  function transferBlock() {
+    /* 받는 화면이 아직 없습니다. 켜면 열 곳 없는 링크를 만들게 됩니다
+       (assets/studio-config.js 의 TRANSFER_ENABLED). 스위치를 모르는 옛
+       캐시는 꺼짐으로 봅니다. */
+    if (typeof TRANSFER_ENABLED === 'undefined' || !TRANSFER_ENABLED) return '';
+    const Ui = window.AnimalTransferUi;
+    if (!Ui) return '';
+    return Ui.html(S.transfer, { i18n: I, esc: esc, animal: S.animal });
   }
 
   async function loadHold() {
@@ -660,6 +679,7 @@
       + planList()
       + shareBlock()
       + legalBlock()
+      + transferBlock()
       + medicalBlock()
       + certificateBlock()
       + '<div class="hint no-print" style="text-align:center;margin-top:18px">'
@@ -668,6 +688,10 @@
     /* 사진은 비공개 버킷이라 서명 주소를 받아야 보입니다 (assets/photo.js) */
     Photo.hydrate($('body'), A.sb);
     drawQr();
+    /* 양도 대기 중일 때만 그립니다. 라이브러리는 그릴 때 받아옵니다. */
+    if (window.AnimalTransferUi) {
+      window.AnimalTransferUi.drawQr(S.transfer, { i18n: I, esc: esc, ensureQr: ensureQr });
+    }
   }
 
   document.addEventListener('click', function (ev) {
@@ -733,6 +757,37 @@
           file_path: path
         });
       }, I.t('legalSaved'));
+    }
+
+    /* 양도 — 링크 만들기 · 복사 · 취소 */
+    if (t.id === 'tf_create') {
+      const gens = parseInt(($('tf_gens') || {}).value, 10) || 3;
+      const note = (($('tf_note') || {}).value || '').trim();
+      const price = (($('tf_price') || {}).value || '').replace(/[^0-9]/g, '');
+      return act(async function () {
+        const r = await window.AnimalTransfer.start(A.sb, S.id, { gens: gens, note: note, price: price });
+        if (r.error) throw r.error;
+        await loadTransfer();
+      }, I.t('tfCreated'));
+    }
+
+    if (t.id === 'tf_copy') {
+      const box = $('tf_link');
+      if (!box) return;
+      box.select();
+      /* clipboard 가 막힌 브라우저(비 HTTPS·구형)에서는 선택만 됩니다 —
+         그 상태에서 직접 복사할 수 있으니 실패로 알리지 않습니다. */
+      try { navigator.clipboard.writeText(box.value); } catch (e) { try { document.execCommand('copy'); } catch (e2) {} }
+      return toast(I.t('tfCopied'));
+    }
+
+    if (t.id === 'tf_cancel') {
+      if (!confirm(I.t('tfCancelAsk'))) return;
+      return act(async function () {
+        const r = await window.AnimalTransfer.cancel(A.sb, S.id);
+        if (r.error) throw r.error;
+        await loadTransfer();
+      }, I.t('tfCancelled'));
     }
 
     /* 진료 참고 기록 — 인쇄(브라우저의 PDF 저장이 그대로 PDF 가 됩니다) */

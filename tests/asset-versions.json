@@ -116,8 +116,8 @@
     "sha256": "4759f6a84954b1e6"
   },
   "assets/studio-config.js": {
-    "version": "20260810a",
-    "sha256": "7845636a332b1a51"
+    "version": "20260810b",
+    "sha256": "e73f73da9cccb7d5"
   },
   "assets/theme.css": {
     "version": "20260809x",
@@ -187,9 +187,21 @@
     "version": "20260803a",
     "sha256": "862bb6a1690ea2a3"
   },
+  "care/animal-transfer-ui.js": {
+    "version": "20260810a",
+    "sha256": "e7c80102927c550e"
+  },
+  "care/animal-transfer.css": {
+    "version": "20260810a",
+    "sha256": "232fbb22a35a02a7"
+  },
+  "care/animal-transfer.js": {
+    "version": "20260810a",
+    "sha256": "ddf87133bd14c4f1"
+  },
   "care/animal-ui.js": {
-    "version": "20260809z",
-    "sha256": "1300d4cc78d9774a"
+    "version": "20260810b",
+    "sha256": "213a6a228c04062b"
   },
   "care/animal-weight-date.css": {
     "version": "20260804a",
@@ -320,20 +332,20 @@
     "sha256": "f15eae5f32b28484"
   },
   "care/care-i18n-en.js": {
-    "version": "20260810a",
-    "sha256": "249e17625633b9cc"
+    "version": "20260810b",
+    "sha256": "72f2aa8a26e11f81"
   },
   "care/care-i18n-ja.js": {
-    "version": "20260810a",
-    "sha256": "40fbc0139315c72e"
+    "version": "20260810b",
+    "sha256": "7c6f58ad2db51625"
   },
   "care/care-i18n-ko.js": {
-    "version": "20260810a",
-    "sha256": "d8685834a0ddb2dd"
+    "version": "20260810b",
+    "sha256": "3b84936a5f633a9f"
   },
   "care/care-i18n-zh.js": {
-    "version": "20260810a",
-    "sha256": "7833ca3aaaa17dfd"
+    "version": "20260810b",
+    "sha256": "36646198a06035f5"
   },
   "care/care-i18n.js": {
     "version": "20260803m",

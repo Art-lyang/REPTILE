@@ -1145,3 +1145,12 @@ body.pub .wrap{max-width:560px}
 .hold-acts{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
 .hold-acts .mini{text-decoration:none}
 .chip-held{background:var(--warn-bg);color:var(--warn-fg)}
+
+/* 고칠 때의 체중 칸. 만들 때만 입력이 있어서, 수정을 누르면 적어 둔 g 이
+   사라진 것처럼 보였습니다 — 실제로 그런 제보가 왔습니다. 기록은 멀쩡하고
+   이 폼이 안 건드릴 뿐이라, 지금 값을 보여 주고 어디서 이어 적는지 적습니다. */
+.animal-weight-current{display:flex;flex-direction:column;gap:6px;padding:2px 0 4px}
+.awc-now{display:flex;align-items:baseline;gap:9px}
+.awc-now b{font-size:21px;font-weight:850;line-height:1}
+.awc-now span{font-size:12.5px;color:var(--ink2)}
+.awc-none{font-size:13px;color:var(--ink2);font-style:italic}

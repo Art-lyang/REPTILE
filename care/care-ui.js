@@ -292,12 +292,21 @@
       + '</div>';
   }
 
+  /* 이 개체의 가장 최근 체중. 폼이 '그람수가 사라졌다' 로 보이지 않게
+     넘겨줍니다. */
+  function latestWeightOf(id) {
+    const rows = S.weights.filter(w => w.animal_id === id && w.measured_on)
+      .slice().sort((x, y) => x.measured_on < y.measured_on ? 1 : -1);
+    return rows.length ? { grams: Number(rows[0].grams), measured_on: rows[0].measured_on } : null;
+  }
+
   function animalForm(a) {
     if (a.transferred_at) return transferredNotice(a);
     /* 이 개체를 부모로 걸어 둔 자식이 있으면 종·성별·성장 단계를 잠급니다.
        바꾸면 자식 쪽 혈통이 어긋납니다 — 레오파드 새끼의 어미가 '기타' 가 되는
        식으로요. 서버도 같은 것을 막습니다(supabase_v63.sql). */
-    return AnimalForm.html(a, C.childrenOf(S.animals, a.id));
+    return AnimalForm.html(a, C.childrenOf(S.animals, a.id),
+      { latestWeight: a.id ? latestWeightOf(a.id) : null });
   }
 
   /* ── 체중 ─────────────────────────────────────────────────────────── */

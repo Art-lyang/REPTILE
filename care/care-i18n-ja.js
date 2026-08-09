@@ -11,6 +11,10 @@
     tabToday: '今日', tabAnimals: '個体', tabPlans: '計画', tabFeed: 'フード', tabHealth: '健康', tabReport: 'まとめ',
     loading: '読み込み中…', terms: '利用規約', privacy: 'プライバシーポリシー', backToList: '一覧', all: 'すべて', allAnimals: 'すべての個体',
     lifeStage: '成長段階', stageBabyUnknown: 'ベビー（性別未判定）', stageJuvenile: '亜成体', stageSubadult: '若成体', stageAdult: '成体',
+    /* 개체 폼의 체중 칸 — 만들 때만 입력이 있어서, 고칠 때 사라진 것처럼 보였습니다 */
+    weightNoneYet: 'まだ記録された体重がありません。',
+    weightEditElsewhere: '体重はこの画面ではなく個体画面で記録します。入力した値が消えたのではなく、計測日とともに別に積み上がっています。',
+
     /* 사육장 라벨 (care/labels.html) */
     lbPageTitle: 'ケージラベル · Ryang Studio',
     lbTitle: 'ケージラベル',

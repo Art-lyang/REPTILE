@@ -320,8 +320,8 @@
     "sha256": "1de51e5d997dc766"
   },
   "care/care-animal-form.js": {
-    "version": "20260809a",
-    "sha256": "e6fe484b2665d7d8"
+    "version": "20260810m",
+    "sha256": "4bac17be9763f344"
   },
   "care/care-app.js": {
     "version": "20260809a",
@@ -336,20 +336,20 @@
     "sha256": "f15eae5f32b28484"
   },
   "care/care-i18n-en.js": {
-    "version": "20260810f",
-    "sha256": "d1695a2e98c118a7"
+    "version": "20260810m",
+    "sha256": "9ee996063147488d"
   },
   "care/care-i18n-ja.js": {
-    "version": "20260810f",
-    "sha256": "f7f7556c99b17bee"
+    "version": "20260810m",
+    "sha256": "ed4278ba332ee439"
   },
   "care/care-i18n-ko.js": {
-    "version": "20260810f",
-    "sha256": "78b192e3e6d62710"
+    "version": "20260810m",
+    "sha256": "085b8b15c0367dcf"
   },
   "care/care-i18n-zh.js": {
-    "version": "20260810f",
-    "sha256": "e1be6d6ca9bcf736"
+    "version": "20260810m",
+    "sha256": "1917ccde7ae17237"
   },
   "care/care-i18n.js": {
     "version": "20260803m",
@@ -388,12 +388,12 @@
     "sha256": "e6e6ff62a4c7bb96"
   },
   "care/care-ui.js": {
-    "version": "20260810j",
-    "sha256": "ebc8badd0814de58"
+    "version": "20260810m",
+    "sha256": "5d8a444305167294"
   },
   "care/care.css": {
-    "version": "20260809x",
-    "sha256": "38b8a5f708965923"
+    "version": "20260810m",
+    "sha256": "db315c15a28c9aee"
   },
   "care/date-field.js": {
     "version": "20260807c",

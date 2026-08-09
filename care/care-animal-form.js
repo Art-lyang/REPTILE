@@ -21,7 +21,14 @@
       }).join('');
     }
 
-    function weightFields(animal, isNew) {
+    /* ⚠️ 고칠 때는 최초 체중 칸이 사라집니다. 새 개체에만 있는 칸이라 그런데,
+          만들 때 g 을 적어 넣은 사람에게는 '수정을 눌렀더니 그람수가
+          사라졌다' 로 보입니다 — 실제로 그런 제보가 왔습니다.
+
+          기록은 멀쩡합니다. 체중은 개체마다 따로 쌓이고(weight_logs) 이 폼이
+          건드리지 않을 뿐입니다. 그래서 사라진 것처럼 보이지 않게 지금 값을
+          보여 주고, 어디서 이어 적는지 함께 적습니다. */
+    function weightFields(animal, isNew, latest) {
       const input = isNew
         ? '<div class="animal-initial-weight"><div class="lbl2"><label for="f_weight">'
           + esc(I.t('initialWeight')) + '</label></div><div class="weight-input-unit">'
@@ -29,7 +36,12 @@
           + 'inputmode="decimal" aria-describedby="f_weight_hint" placeholder="'
           + esc(I.t('initialWeightPlaceholder')) + '"><span aria-hidden="true">g</span></div>'
           + '<div class="hint" id="f_weight_hint">' + esc(I.t('initialWeightHint')) + '</div></div>'
-        : '';
+        : '<div class="animal-weight-current">'
+          + (latest
+              ? '<div class="awc-now"><b>' + esc(I.formatNumber(latest.grams)) + ' g</b>'
+                + '<span>' + esc(I.formatDate(latest.measured_on)) + '</span></div>'
+              : '<div class="awc-none">' + esc(I.t('weightNoneYet')) + '</div>')
+          + '<div class="hint">' + esc(I.t('weightEditElsewhere')) + '</div></div>';
       return '<fieldset class="animal-weight-register"><legend>' + esc(I.t('weightRecordSettings')) + '</legend>'
         + input + '<label class="animal-weight-public" for="f_public_weight">'
         + '<input id="f_public_weight" type="checkbox"' + (animal.public_weight ? ' checked' : '') + '>'
@@ -70,7 +82,9 @@
       return all.filter(o => o.value === current || o.value === required);
     }
 
-    function html(animal, kids) {
+    /* opts.latestWeight — 고칠 때 보여 줄 지금 체중. 폼이 체중 표를 직접
+       읽지 않는 것은 일부러입니다. 화면이 이미 들고 있는 값을 넘겨받습니다. */
+    function html(animal, kids, opts) {
       const isNew = !animal.id;
       const lock = parentLock(animal, kids);
       const opt = function (value, label, selected) {
@@ -119,7 +133,7 @@
             : '<div class="hint">' + esc(I.t('lifeStageHint')) + '</div>')
         + '<div class="lbl2"><label for="f_hatch">' + esc(I.t('hatchAdoptionDate')) + '</label></div>'
         + DateField.html({ id: 'f_hatch', value: animal.hatch_date || '', max: C.today() })
-        + weightFields(animal, isNew) + Photos.editorHtml(animal, A)
+        + weightFields(animal, isNew, opts && opts.latestWeight) + Photos.editorHtml(animal, A)
         + '<div class="lbl2"><label for="f_clutch">' + esc(I.t('clutchLabel')) + '</label></div>'
         + '<input class="in" id="f_clutch" maxlength="80" value="' + esc(animal.clutch_label || '')
         + '" placeholder="' + esc(I.t('clutchPlaceholder')) + '"><div class="lbl2"><label for="f_note">'

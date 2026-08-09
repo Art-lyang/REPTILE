@@ -11,6 +11,10 @@
     tabToday: '今天', tabAnimals: '个体', tabPlans: '计划', tabFeed: '饲料', tabHealth: '健康', tabReport: '摘要',
     loading: '加载中…', terms: '服务条款', privacy: '隐私政策', backToList: '列表', all: '全部', allAnimals: '全部个体',
     lifeStage: '成长阶段', stageBabyUnknown: '幼体（未分性）', stageJuvenile: '亚成体', stageSubadult: '准成体', stageAdult: '成体',
+    /* 개체 폼의 체중 칸 — 만들 때만 입력이 있어서, 고칠 때 사라진 것처럼 보였습니다 */
+    weightNoneYet: '尚未记录体重。',
+    weightEditElsewhere: '体重在个体页面记录，而不是这里。您填写的数值并没有消失，而是连同称重日期分别保存。',
+
     /* 사육장 라벨 (care/labels.html) */
     lbPageTitle: '饲养箱标签 · Ryang Studio',
     lbTitle: '饲养箱标签',

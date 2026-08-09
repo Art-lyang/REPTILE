@@ -68,7 +68,9 @@ test('Given a lock is shown, when the keeper reads it, then it says what the val
 
 test('Given the list screen opens the form, when it does, then it passes the children through', () => {
   const ui = read('care/care-ui.js');
-  assert.match(ui, /AnimalForm\.html\(a, C\.childrenOf\(S\.animals, a\.id\)\)/);
+  /* 세 번째 인자로 지금 체중을 함께 넘깁니다 — 고칠 때 '그람수가 사라졌다'
+     로 보이지 않게 하려는 것이고, 자식 목록은 그대로여야 합니다. */
+  assert.match(ui, /AnimalForm\.html\(a, C\.childrenOf\(S\.animals, a\.id\)/);
 });
 
 test('Given four languages, when the lock hint renders, then each language has its own words', () => {

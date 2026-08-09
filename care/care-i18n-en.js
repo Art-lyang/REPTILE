@@ -12,6 +12,10 @@
     loading: 'Loading…', terms: 'Terms of Service', privacy: 'Privacy Policy', backToList: 'List',
     all: 'All', allAnimals: 'All animals', unnamed: 'Unnamed', save: 'Save', saved: 'Saved', cancel: 'Cancel',
     lifeStage: 'Life stage', stageBabyUnknown: 'Baby (unsexed)', stageJuvenile: 'Juvenile', stageSubadult: 'Subadult', stageAdult: 'Adult',
+    /* 개체 폼의 체중 칸 — 만들 때만 입력이 있어서, 고칠 때 사라진 것처럼 보였습니다 */
+    weightNoneYet: 'No weight recorded yet.',
+    weightEditElsewhere: 'Weights are recorded on the animal screen, not here. Nothing you entered was lost — each weighing is kept with its own date.',
+
     /* 사육장 라벨 (care/labels.html) */
     lbPageTitle: 'Enclosure labels · Ryang Studio',
     lbTitle: 'Enclosure labels',

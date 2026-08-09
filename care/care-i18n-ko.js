@@ -12,6 +12,10 @@
     loading: '불러오는 중…', terms: '이용약관', privacy: '개인정보처리방침', backToList: '목록',
     all: '전체', allAnimals: '전체 개체', unnamed: '이름 없음', save: '저장', saved: '저장했습니다',
     lifeStage: '성장 단계', stageBabyUnknown: '베이비(미구분)', stageJuvenile: '아성체', stageSubadult: '준성체', stageAdult: '성체',
+    /* 개체 폼의 체중 칸 — 만들 때만 입력이 있어서, 고칠 때 사라진 것처럼 보였습니다 */
+    weightNoneYet: '아직 기록된 체중이 없습니다.',
+    weightEditElsewhere: '체중은 이 화면이 아니라 개체 화면에서 기록합니다. 여기 적은 값이 사라진 것이 아니라, 잰 날짜와 함께 따로 쌓입니다.',
+
     /* 사육장 라벨 (care/labels.html) */
     lbPageTitle: '사육장 라벨 · 량 스튜디오',
     lbTitle: '사육장 라벨',

@@ -94,7 +94,11 @@
   function track(event) {
     try {
       var a = w.StudioAnalytics;
-      if (a && a.logFunnel) a.logFunnel(client(), event, w.SERVICE_ID || null);
+      /* SERVICE_ID 는 코어가 const 로 선언합니다 — 스크립트 최상위 const 는
+         window 에 붙지 않아서 w.SERVICE_ID 로는 늘 undefined 였습니다.
+         전역 렉시컬 스코프에는 있으므로 이름으로 직접 부릅니다. */
+      const svc = typeof SERVICE_ID !== 'undefined' ? SERVICE_ID : null;
+      if (a && a.logFunnel) a.logFunnel(client(), event, svc);
     } catch (e) { /* 통계 한 줄 때문에 화면이 멈추면 안 됩니다. */ }
   }
 

@@ -116,8 +116,8 @@
     "sha256": "3d0e44b5ae2b6db4"
   },
   "assets/signup-cta.js": {
-    "version": "20260810c",
-    "sha256": "137d3d30745a2135"
+    "version": "20260810h",
+    "sha256": "cf2664855e0ba468"
   },
   "assets/studio-config.js": {
     "version": "20260810g",
@@ -404,8 +404,8 @@
     "sha256": "723db9bcd2e2587f"
   },
   "care/labels-ui.js": {
-    "version": "20260810a",
-    "sha256": "9e7cdc62ab10336a"
+    "version": "20260810b",
+    "sha256": "22660334cab0f82a"
   },
   "care/labels.css": {
     "version": "20260810a",

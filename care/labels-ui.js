@@ -46,6 +46,11 @@
 
   /* QR 은 그릴 때만 라이브러리를 받아옵니다 — 고르기만 하고 나가는 사람에게는
      필요 없는 파일입니다. */
+  /* 한 번 만든 QR 은 다시 만들지 않습니다. 체크를 켰다 껐다 할 때마다
+     100장을 다시 계산하면 화면이 멎습니다. 여는 곳(mode)이 바뀌면 주소가
+     달라지므로 열쇠에 함께 넣습니다. */
+  const QR_CACHE = {};
+
   let qrLoading = null;
   function ensureQr() {
     if (window.qrcode) return Promise.resolve(true);
@@ -119,7 +124,7 @@
       + '<div class="lb-tools">'
       + '<button class="mini" id="lb_all" type="button">' + esc(I.t('lbAll')) + '</button>'
       + '<button class="mini" id="lb_none" type="button">' + esc(I.t('lbNone')) + '</button>'
-      + '<span class="hint">' + esc(I.t('lbPicked', { n: n }))
+      + '<span class="hint lb-count">' + esc(I.t('lbPicked', { n: n }))
       + (skipped ? ' · ' + esc(I.t('lbSkipped', { n: skipped })) : '') + '</span>'
       + '</div>'
 
@@ -161,15 +166,48 @@
       return;
     }
     boxes.forEach(function (b) {
+      if (b.firstChild) return;              /* 이미 그려진 것은 건드리지 않습니다 */
       const a = S.animals.filter(x => x.id === b.getAttribute('data-lb-qr'))[0];
       if (!a) return;
-      /* 'M' 은 흔히 쓰는 오류정정 수준입니다. 라벨은 통에 붙어 긁히므로
-         한 단계 높여 'Q' 를 씁니다 — 조금 더 촘촘해지지만 잘 읽힙니다. */
-      const qr = window.qrcode(0, 'Q');
-      qr.addData(urlOf(a));
-      qr.make();
-      b.innerHTML = qr.createImgTag(4, 0);
+      const key = S.mode + '|' + a.id;
+      if (!QR_CACHE[key]) {
+        /* 'M' 은 흔히 쓰는 오류정정 수준입니다. 라벨은 통에 붙어 긁히므로
+           한 단계 높여 'Q' 를 씁니다 — 조금 더 촘촘해지지만 잘 읽힙니다. */
+        const qr = window.qrcode(0, 'Q');
+        qr.addData(urlOf(a));
+        qr.make();
+        QR_CACHE[key] = qr.createImgTag(4, 0);
+      }
+      b.innerHTML = QR_CACHE[key];
     });
+  }
+
+  /* 인쇄면만 다시 그립니다. 이미 그린 QR 은 그대로 두고 새로 들어온 것만
+     만듭니다 — 100마리에서 체크 하나가 100장 재생성이 되면 안 됩니다. */
+  function refreshSheet() {
+    const old = document.getElementById('lbSheet');
+    const wrap = document.createElement('div');
+    wrap.innerHTML = sheet();
+    const next = wrap.firstChild;
+
+    if (!next) { if (old) old.remove(); }
+    else if (old) old.replaceWith(next);
+    else document.getElementById('body').appendChild(next);
+
+    const n = picked().length;
+    const btn = $('lb_print');
+    if (btn) btn.disabled = !n;
+    const count = document.querySelector('.lb-count');
+    if (count) {
+      /* 공개 모드에서 빠진 마릿수까지 같이 고칩니다 — 장수만 고치면
+         '몇 마리가 왜 빠졌는지' 가 사라져서 조용히 없어진 것이 됩니다. */
+      const skipped = S.mode === 'public'
+        ? S.animals.filter(a => S.picked[a.id] && !usable(a)).length : 0;
+      count.textContent = I.t('lbPicked', { n: n })
+        + (skipped ? ' · ' + I.t('lbSkipped', { n: skipped }) : '');
+    }
+
+    drawQrs();
   }
 
   function render() {
@@ -192,10 +230,13 @@
     const none = $('lb_none');
     if (none) none.onclick = function () { S.picked = {}; render(); };
 
+    /* 체크 하나에 화면을 통째로 다시 그리면 QR 을 전부 다시 만듭니다 —
+       100마리면 한 번 누를 때 100장입니다. 목록은 그대로 두고 인쇄면과
+       장수만 고칩니다. 스크롤 위치도 함께 지켜집니다. */
     [].slice.call(document.querySelectorAll('[data-lb-pick]')).forEach(function (el) {
       el.onchange = function () {
         S.picked[el.getAttribute('data-lb-pick')] = el.checked;
-        render();
+        refreshSheet();
       };
     });
 

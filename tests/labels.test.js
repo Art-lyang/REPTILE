@@ -58,3 +58,19 @@ test('Given someone came to print labels, when the page opens, then everything i
 test('Given the care list, when a keeper looks for labels, then there is a way in', () => {
   assert.match(read('care/index.html'), /href="\/care\/labels\.html"/);
 });
+
+test('Given a hundred animals, when a checkbox is toggled, then every QR is not rebuilt', () => {
+  /* 체크 하나에 화면을 통째로 다시 그리면 QR 을 전부 다시 만듭니다.
+     100마리면 한 번 누를 때 100장이고, 그 사이 화면이 멎습니다. */
+  assert.match(UI, /function refreshSheet\(\)/);
+  assert.match(UI, /refreshSheet\(\);/);
+  assert.match(UI, /const QR_CACHE = \{\};/);
+  assert.match(UI, /if \(b\.firstChild\) return;/);
+  /* 여는 곳이 바뀌면 주소가 달라지므로 열쇠에 함께 들어가야 합니다. */
+  assert.match(UI, /const key = S\.mode \+ '\|' \+ a\.id;/);
+
+  /* 체크 처리가 전체 render 로 돌아가면 안 됩니다. */
+  const at = UI.indexOf("data-lb-pick]')).forEach");
+  const block = UI.slice(at, at + 300);
+  assert.doesNotMatch(block, /\brender\(\);/);
+});

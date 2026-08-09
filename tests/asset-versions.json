@@ -52,8 +52,8 @@
     "sha256": "92f9a1b7c1e49690"
   },
   "assets/base.css": {
-    "version": "20260808c",
-    "sha256": "58111f1e26f9c3ae"
+    "version": "20260810e",
+    "sha256": "6ca9fba966fbff25"
   },
   "assets/breeding-btn.js": {
     "version": "20260809x",
@@ -111,6 +111,10 @@
     "version": "20260808a",
     "sha256": "6b0802b270d37b7b"
   },
+  "assets/result-card.js": {
+    "version": "20260810a",
+    "sha256": "3d0e44b5ae2b6db4"
+  },
   "assets/signup-cta.js": {
     "version": "20260810c",
     "sha256": "137d3d30745a2135"
@@ -140,8 +144,8 @@
     "sha256": "05048f874312c04d"
   },
   "ballpython/ball-ui.js": {
-    "version": "20260809d",
-    "sha256": "645caf90aac1e368"
+    "version": "20260810e",
+    "sha256": "5426c17aac1e8266"
   },
   "ballpython/ball.css": {
     "version": "07302330",
@@ -480,8 +484,8 @@
     "sha256": "bcd1d169b6f6979b"
   },
   "crested/crested-ui.js": {
-    "version": "20260809e",
-    "sha256": "a5a468cacad471fc"
+    "version": "20260810e",
+    "sha256": "099efc0410e1f446"
   },
   "crested/crested.css": {
     "version": "07302330",
@@ -500,8 +504,8 @@
     "sha256": "17a914abd7acc38b"
   },
   "fattail/fattail-ui.js": {
-    "version": "20260809x",
-    "sha256": "03c4328084504aec"
+    "version": "20260810e",
+    "sha256": "2a4bfe42e422adab"
   },
   "fattail/fattail.css": {
     "version": "07302330",
@@ -536,8 +540,8 @@
     "sha256": "2d3246913ce9b645"
   },
   "gecko/gecko-ui.js": {
-    "version": "20260809e",
-    "sha256": "5b5c8b74b7f35eac"
+    "version": "20260810f",
+    "sha256": "19dcb54e611aeac5"
   },
   "gecko/gecko.css": {
     "version": "20260731f",

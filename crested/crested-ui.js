@@ -519,6 +519,9 @@ function render(payload){
     if(liveOdds && deadP>1e-12 && deadP<1-1e-12){
       rows=rows.filter(r=>!r.nonViable).map(r=>Object.assign({}, r, {prob:r.prob/(1-deadP)}));
     }
+    /* 결과를 이미지 한 장으로. 무료입니다 — 묶어 두면 퍼지지 않습니다.
+       (assets/result-card.js) */
+    if(window.StudioResultCard) html+=StudioResultCard.buttonHtml();
     html+='<h2>'+t.resultsH+'</h2><div class="summary">'
         +(MODE==='geno'? t.summaryGeno(rows.length) : t.summaryVisual(rows.length))+'</div>';
     html+=buildPie(rows);

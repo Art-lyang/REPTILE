@@ -32,8 +32,8 @@ const I18N = {
     pmPerk1B:'내 개체·혈통 등록, 사진 저장, 페어링·클러치 기록 관리',
     pmPerk2T:'목표 모프 역산',
     pmPerk2B:'등록한 개체 기준으로 목표까지 가능한 페어링과 부족한 조건을 찾아줍니다',
-    pmPerk3T:'결과 이미지 저장',
-    pmPerk3B:'계산 결과를 이미지로 내려받아 기록·공유',
+    pmPerk3T:'개체 카드 내보내기',
+    pmPerk3B:'등록한 개체와 페어링을 담은 카드를 이미지로 저장 (계산 결과 이미지는 누구나 무료)',
     pmPerk4T:'광고 제거',
     pmPerk4B:'모든 화면에서 광고가 표시되지 않습니다',
     pmPerk5T:'계정 동기화',
@@ -103,8 +103,8 @@ const I18N = {
     pmPerk1B:'Register your animals and lineage, store photos, track pairings and clutches',
     pmPerk2T:'Work back from a target morph',
     pmPerk2B:'From the animals you own, find the pairings that reach your target and what you are still missing',
-    pmPerk3T:'Save results as an image',
-    pmPerk3B:'Download a calculation to keep or share',
+    pmPerk3T:'Export animal cards',
+    pmPerk3B:'Save a card with your registered animals and pairings (plain result images are free for everyone)',
     pmPerk4T:'No ads',
     pmPerk4B:'Ads are hidden on every screen',
     pmPerk5T:'Account sync',
@@ -174,8 +174,8 @@ const I18N = {
     pmPerk1B:'登记个体与血统、保存照片、管理配对与产卵记录',
     pmPerk2T:'目标形态反推',
     pmPerk2B:'以已登记的个体为准，找出通往目标的配对方案以及还缺少的条件',
-    pmPerk3T:'保存结果图片',
-    pmPerk3B:'把计算结果下载为图片，便于记录与分享',
+    pmPerk3T:'导出个体卡片',
+    pmPerk3B:'把已登记的个体与配对保存为图片卡片（普通计算结果图片对所有人免费）',
     pmPerk4T:'去除广告',
     pmPerk4B:'所有页面均不显示广告',
     pmPerk5T:'账号同步',
@@ -245,8 +245,8 @@ const I18N = {
     pmPerk1B:'個体と血統の登録、写真の保存、ペアリング・クラッチ記録の管理',
     pmPerk2T:'目標モルフから逆算',
     pmPerk2B:'登録した個体をもとに、目標に届くペアリングと足りない条件を探します',
-    pmPerk3T:'結果を画像で保存',
-    pmPerk3B:'計算結果を画像として保存し、記録・共有できます',
+    pmPerk3T:'個体カードの書き出し',
+    pmPerk3B:'登録した個体とペアリングを含むカードを画像で保存（計算結果の画像は誰でも無料）',
     pmPerk4T:'広告の非表示',
     pmPerk4B:'すべての画面で広告が表示されません',
     pmPerk5T:'アカウント同期',
@@ -759,6 +759,9 @@ function render(payload){
   }
   if(payload.rows && payload.rows.length){
     const rows=payload.rows;
+    /* 결과를 이미지 한 장으로. 무료입니다 — 묶어 두면 퍼지지 않습니다.
+       (assets/result-card.js) */
+    if(window.StudioResultCard) html+=StudioResultCard.buttonHtml();
     html+='<h2>'+t.resultsH+'</h2><div class="summary">'+t.summary(rows.length)+'</div>';
     html+=buildPie(rows);
     html+='<table class="rtable"><thead><tr><th>'+t.colProb+'</th><th>'+t.colVisual+'</th><th>'+t.colHet+'</th></tr></thead><tbody>';

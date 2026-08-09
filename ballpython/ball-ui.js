@@ -612,6 +612,9 @@ function render(payload){
       rows=rows.filter(function(r){return !r.nonViable;})
                .map(function(r){ const o={}; for(var k in r) o[k]=r[k]; o.prob=r.prob/(1-deadP); return o; });
     }
+    /* 결과를 이미지 한 장으로. 무료입니다 — 묶어 두면 퍼지지 않습니다.
+       (assets/result-card.js) */
+    if(window.StudioResultCard) html+=StudioResultCard.buttonHtml();
     html+='<h2>'+t.resultsH+'</h2><div class="summary">'
         +(MODE==='geno'? t.summaryGeno(rows.length) : t.summaryVisual(rows.length))+'</div>';
     html+=buildPie(rows);

@@ -22,8 +22,8 @@
   var T = {
     ko: {
       btn: '회원가입',
-      title: '계산기는 로그인 없이 계속 무료입니다',
-      body: '회원가입하면 <b>크리처 케어로그</b>와 <b>브리딩 관리</b>를 함께 쓸 수 있어요.',
+      title: '이 조합, 개체로 남겨 둘까요?',
+      body: '계산은 로그인 없이 계속 무료입니다. 회원가입하면 여기에 <b>크리처 케어로그</b>와 <b>브리딩 관리</b>가 붙습니다.',
       f1: '급여·물·청소·영양제 주기를 정해두면 오늘 할 일로 뜨고, 캘린더로 내보내 폰에서 알림을 받습니다.',
       f2: '개체와 혈통을 등록해 페어링·클러치·체중을 기록하고, 계산기 결과를 그대로 개체로 남깁니다.',
       note: '등록한 기록은 본인에게만 보입니다. 공개는 개체별로 직접 켜야 시작됩니다.',
@@ -32,8 +32,8 @@
     },
     en: {
       btn: 'Sign up',
-      title: 'The calculator stays free, no account needed',
-      body: 'An account adds <b>Creature Care Log</b> and <b>Breeding Manager</b>.',
+      title: 'Keep this pairing?',
+      body: 'Calculating stays free without an account. Signing up adds <b>Creature Care Log</b> and <b>Breeding Manager</b> on top.',
       f1: 'Set feeding, water, cleaning and supplement cycles — they show up as today’s tasks, and export to your phone’s calendar.',
       f2: 'Register animals and lineage, track pairings, clutches and weight, and save a calculation straight onto an animal.',
       note: 'Your records are visible only to you. Publishing starts only when you turn it on for a specific animal.',
@@ -42,8 +42,8 @@
     },
     ja: {
       btn: '会員登録',
-      title: '計算機はログインなしでも無料のままです',
-      body: '会員登録すると<b>クリーチャーケアログ</b>と<b>ブリーディング管理</b>も使えます。',
+      title: 'この組み合わせ、個体として残しますか',
+      body: '計算はログインなしでも無料のままです。会員登録すると<b>クリーチャーケアログ</b>と<b>ブリーディング管理</b>が加わります。',
       f1: '給餌・水・掃除・サプリの周期を決めておくと今日のタスクとして表示され、カレンダーに書き出してスマホで通知を受け取れます。',
       f2: '個体と血統を登録してペアリング・クラッチ・体重を記録し、計算結果をそのまま個体として残せます。',
       note: '登録した記録はご本人にだけ表示されます。公開は個体ごとにご自身でオンにしたときだけ始まります。',
@@ -52,8 +52,8 @@
     },
     zh: {
       btn: '注册',
-      title: '计算器无需登录，始终免费',
-      body: '注册后还能使用<b>生物护理日志</b>与<b>繁育管理</b>。',
+      title: '要把这个组合保存为个体吗？',
+      body: '计算无需登录，始终免费。注册后还会加上<b>生物护理日志</b>与<b>繁育管理</b>。',
       f1: '设定喂食、换水、清洁与营养品的周期后会显示为今日待办，并可导出到手机日历接收提醒。',
       f2: '登记个体与血统，记录配对、产卵与体重，并把计算结果直接保存为个体。',
       note: '您登记的记录仅您本人可见。只有您为某个个体手动开启后才会公开。',
@@ -213,12 +213,36 @@
 
   var nudgeOn = wantsNudge();
 
+  /* 안내는 계산이 끝난 뒤에 뜹니다. 들어오자마자 띄우면 계산기를 보러 온
+     사람에게 우리 얘기를 먼저 들이미는 꼴이고, 그때는 케어로그가 왜 필요한지
+     알 수 없습니다. 결과를 본 직후라야 '이 조합을 개체로 남겨 둘까' 가
+     그 사람의 물음이 됩니다.
+
+     계산기 넷의 내부를 건드리지 않고 결과 표가 나타나는 것을 지켜봅니다 —
+     result-card.js 가 표를 읽는 것과 같은 자리입니다. */
+  var watching = false;
+
+  function armAfterResult() {
+    if (watching || !w.MutationObserver) return;
+    var host = d.getElementById('results');
+    if (!host) return;
+    watching = true;
+
+    var seen = new w.MutationObserver(function () {
+      if (!host.querySelector('.rtable')) return;   /* 아직 결과가 없음 */
+      if (seenToday()) { seen.disconnect(); return; }
+      seen.disconnect();
+      /* 결과를 먼저 보게 두고 띄웁니다. 같은 순간에 겹치면 계산 결과가
+         가려져서, 안내가 아니라 방해가 됩니다. */
+      w.setTimeout(function () { if (!seenToday()) showNudge(); }, 1400);
+    });
+    seen.observe(host, { childList: true, subtree: true });
+  }
+
   function run(signedIn) {
     paintButtons(signedIn);
     if (signedIn || !open() || !nudgeOn || seenToday()) return;
-    /* 화면이 자리를 잡은 뒤에 띄웁니다. 뜨자마자 겹치면 계산기를 보러 온
-       사람에게 먼저 보이는 것이 안내가 됩니다. */
-    w.setTimeout(function () { if (!seenToday()) showNudge(); }, 1600);
+    armAfterResult();
   }
 
   function boot() {
@@ -242,5 +266,5 @@
   if (d.readyState === 'loading') d.addEventListener('DOMContentLoaded', boot);
   else boot();
 
-  w.StudioSignupCta = { refresh: boot, show: showNudge };
+  w.StudioSignupCta = { refresh: boot, show: showNudge, armAfterResult: armAfterResult };
 })(window, document);

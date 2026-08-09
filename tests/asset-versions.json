@@ -116,8 +116,8 @@
     "sha256": "4e508244deffece4"
   },
   "assets/studio-config.js": {
-    "version": "20260809x",
-    "sha256": "4958057b9ea17120"
+    "version": "20260809y",
+    "sha256": "ccf95d9b7eef975b"
   },
   "assets/theme.css": {
     "version": "20260809x",
@@ -188,8 +188,8 @@
     "sha256": "862bb6a1690ea2a3"
   },
   "care/animal-ui.js": {
-    "version": "20260809b",
-    "sha256": "a6b5b1519a245140"
+    "version": "20260809y",
+    "sha256": "df0f17add3707580"
   },
   "care/animal-weight-date.css": {
     "version": "20260804a",
@@ -320,20 +320,20 @@
     "sha256": "f15eae5f32b28484"
   },
   "care/care-i18n-en.js": {
-    "version": "20260809c",
-    "sha256": "f6770a916d01d8ca"
+    "version": "20260809y",
+    "sha256": "a54697496d39d3f7"
   },
   "care/care-i18n-ja.js": {
-    "version": "20260809c",
-    "sha256": "fb19083c25343b75"
+    "version": "20260809y",
+    "sha256": "4261210153214af8"
   },
   "care/care-i18n-ko.js": {
-    "version": "20260809x",
-    "sha256": "b6985e420edef068"
+    "version": "20260809y",
+    "sha256": "b5b775af53d84acf"
   },
   "care/care-i18n-zh.js": {
-    "version": "20260809c",
-    "sha256": "68462d6b37606b44"
+    "version": "20260809y",
+    "sha256": "45a4c1add3e870c1"
   },
   "care/care-i18n.js": {
     "version": "20260803m",
@@ -386,6 +386,18 @@
   "care/gallery-ui.js": {
     "version": "20260802d",
     "sha256": "723db9bcd2e2587f"
+  },
+  "care/medical-report-ui.js": {
+    "version": "20260809a",
+    "sha256": "d20f6310a5dd6045"
+  },
+  "care/medical-report.css": {
+    "version": "20260809a",
+    "sha256": "193078f9e6e01483"
+  },
+  "care/medical-report.js": {
+    "version": "20260809a",
+    "sha256": "12c703b1dc4868fa"
   },
   "care/pedigree-certificate-ui.js": {
     "version": "20260808a",

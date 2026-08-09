@@ -45,6 +45,15 @@ var PASSWORD_RESET_REQUESTS_ENABLED = true;
    있으므로(supabase_v61), 이걸 꺼도 사업자 인증 자체는 막히지 않습니다. */
 var BUSINESS_SIGNUP_ENABLED = false;
 
+/* 혈통서(개체 페이지의 문서 블록).
+   양도·양수 기능이 아직 화면으로 나오지 않은 상태라 함께 내려 둡니다 —
+   혈통서에는 '이 개체를 누가 넘겼는가' 자리가 있는데, 그걸 채울 방법이
+   없는 채로 내보내면 빈 칸이 있는 문서를 손에 쥐여 주는 셈이 됩니다.
+
+   코드와 문서 서식은 그대로 있습니다(care/pedigree-certificate*.js).
+   양도 화면이 붙는 날 여기를 true 로 바꾸면 됩니다. */
+var PEDIGREE_CERTIFICATE_ENABLED = false;
+
 /* 가입 봇 차단 (Cloudflare Turnstile)
    ---------------------------------------------------------------------------
    비워 두면 아무 일도 하지 않습니다. 키를 넣는 순간부터 가입·로그인 화면에

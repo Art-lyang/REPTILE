@@ -204,12 +204,28 @@
   }
 
   function certificateBlock() {
+    /* 양도·양수가 아직 화면에 없어서 함께 내려 둡니다
+       (assets/studio-config.js 의 PEDIGREE_CERTIFICATE_ENABLED).
+       스위치가 없던 시절에 열어 본 화면도 있으니 undefined 는 꺼짐으로 봅니다. */
+    if (typeof PEDIGREE_CERTIFICATE_ENABLED === 'undefined'
+        || !PEDIGREE_CERTIFICATE_ENABLED) return '';
     const Ui = window.PedigreeCertificateUi;
     if (!Ui) return '';
     return Ui.html({
       core: C, i18n: I, esc: esc, lifeStage: LifeStage,
       animal: S.animal, animals: S.animals,
       records: S.records, plans: S.plans, weights: S.weights
+    });
+  }
+
+  /* 진료 참고 기록. 병원에 데려갈 때 함께 내는 문서입니다 —
+     "마지막으로 언제 먹었나요" 에 기억이 아니라 날짜로 답하기 위한 것. */
+  function medicalBlock() {
+    const Ui = window.MedicalReportUi;
+    if (!Ui) return '';
+    return Ui.html({
+      core: C, i18n: I, esc: esc,
+      animal: S.animal, records: S.records, weights: S.weights, plans: S.plans
     });
   }
 
@@ -632,6 +648,7 @@
       + planList()
       + shareBlock()
       + legalBlock()
+      + medicalBlock()
       + certificateBlock()
       + '<div class="hint no-print" style="text-align:center;margin-top:18px">'
       + I.t('recordDisclaimer') + '</div>';
@@ -704,6 +721,14 @@
           file_path: path
         });
       }, I.t('legalSaved'));
+    }
+
+    /* 진료 참고 기록 — 인쇄(브라우저의 PDF 저장이 그대로 PDF 가 됩니다) */
+    if (t.id === 'mr_print') {
+      /* 접혀 있으면 인쇄해도 빈 종이가 나옵니다. */
+      const box = document.getElementById('mrBox');
+      if (box) box.open = true;
+      return window.print();
     }
 
     /* 혈통서 — 인쇄와 추신 */

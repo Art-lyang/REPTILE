@@ -84,3 +84,23 @@ test('Given one link is live, when another is made, then the first one dies', ()
   assert.match(start, /set status = 'cancelled', cancelled_at = now\(\)[\s\S]{0,120}status = 'pending'/);
   assert.match(start, /ALREADY_TRANSFERRED/, '한 번 넘긴 개체는 다시 못 넘깁니다');
 });
+
+test('Given an animal was handed over, when the keeper opens the edit form, then there is no form to fill', () => {
+  /* 서버가 거부하지만(v77), 다 적고 저장을 눌러 보고 나서 알게 하면
+     그건 안내가 아니라 함정입니다. */
+  const ui = read('care/care-ui.js');
+
+  assert.match(ui, /function transferredNotice\(a\)/);
+  const form = ui.slice(ui.indexOf('function animalForm(a)'), ui.indexOf('function animalForm(a)') + 260);
+  assert.match(form, /if \(a\.transferred_at\) return transferredNotice\(a\);/);
+  assert.ok(form.indexOf('transferredNotice') < form.indexOf('AnimalForm.html'),
+    '폼을 만들기 전에 걸러야 합니다');
+
+  /* 목록에서도 미리 보여야 헛걸음을 안 합니다. */
+  assert.match(ui, /a\.transferred_at \? '<span class="chip chip-locked">'/);
+
+  /* 안내에서 나갈 길이 있어야 합니다 — 이 화면이 실제로 듣는 이름으로. */
+  const notice = ui.slice(ui.indexOf('function transferredNotice'), ui.indexOf('function animalForm(a)'));
+  assert.match(notice, /data-cancel="animal"/);
+  assert.doesNotMatch(notice, /<input|<select|<textarea/);
+});

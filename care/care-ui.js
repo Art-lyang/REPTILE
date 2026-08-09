@@ -260,6 +260,9 @@
       /* 100마리를 키우면 어느 개체가 조치됐는지 목록에서 못 찾습니다. */
       + (a.held_at ? '<span class="chip chip-held">' + icon('bi-exclamation-octagon')
           + esc(I.t('holdBadge')) + '</span>' : '')
+      /* 넘긴 개체는 고칠 수 없습니다. 목록에서 미리 보여야 헛걸음을 안 합니다. */
+      + (a.transferred_at ? '<span class="chip chip-locked">' + icon('bi-box-arrow-right')
+          + esc(I.t('tfDone')) + '</span>' : '')
       + '</div>'
       + '<div class="ms">' + esc(bits.join(' · '))
       + (locked ? '<br><span class="lockedwhy">' + esc(I.t('freeSlotLockedWhy')) + '</span>' : '')
@@ -273,7 +276,24 @@
       + (S.focus === a.id ? weightPanel(a) : '');
   }
 
+  /* 넘긴 개체는 고칠 수 없습니다. 서버가 거부하지만(supabase_v77), 다 적고
+     저장을 눌러 보고 나서 알게 하면 안 됩니다 — 그건 안내가 아니라 함정입니다. */
+  function transferredNotice(a) {
+    return '<div class="pad">'
+      + '<div class="lbl">' + icon('bi-box-arrow-right') + esc(a.name || I.t('unnamed')) + '</div>'
+      + '<div><span class="chip chip-locked">' + icon('bi-box-arrow-right')
+      + esc(I.t('tfDone')) + '</span></div>'
+      + (a.transferred_at
+          ? '<div class="hint">' + esc(I.t('tfDoneAt', { date: I.formatDate(a.transferred_at) })) + '</div>'
+          : '')
+      + '<div class="hint">' + esc(I.t('tfLocked')) + '</div>'
+      + '<button class="btn ghost wide" data-cancel="animal" style="margin-top:16px">'
+      + icon('bi-arrow-left') + esc(I.t('backToList')) + '</button>'
+      + '</div>';
+  }
+
   function animalForm(a) {
+    if (a.transferred_at) return transferredNotice(a);
     /* 이 개체를 부모로 걸어 둔 자식이 있으면 종·성별·성장 단계를 잠급니다.
        바꾸면 자식 쪽 혈통이 어긋납니다 — 레오파드 새끼의 어미가 '기타' 가 되는
        식으로요. 서버도 같은 것을 막습니다(supabase_v63.sql). */

@@ -164,3 +164,30 @@ test('Given a sweep and a detail differ, when either happens, then the log tells
   assert.match(sql, /auth\.uid\(\), 'detail', p_reason/);
   assert.match(read('admin/admin-moderation.js'), /detail: '세부조회'/);
 });
+
+test('Given a member just uploaded a photo, when the queue hides it, then the screen says why', () => {
+  /* 새 개체는 비공개로 시작합니다(care-app.js 의 is_public: false). 사진을
+     올려도 '비공개 포함' 을 켜기 전에는 목록에 안 뜨는데, 화면이 그 말을
+     안 하면 사진이 사라진 것으로 읽힙니다 — 실제로 그런 신고가 왔습니다. */
+  const src = read('admin/admin-moderation.js');
+
+  assert.match(src, /function hiddenPrivate\(\)/);
+  assert.match(src, /with_photos[^)]*\)\s*-\s*\(c\.visible/);
+  assert.match(src, /건이 비공개라 지금은 가려져 있습니다/);
+  /* 목록이 아예 비어도 같은 말을 해야 합니다. */
+  assert.match(src, /비공개 개체 ' \+ hidden \+ '건에는 사진이 있습니다/);
+
+  /* 집계는 토글과 무관하게 '공개만' 으로 받아야 두 숫자가 모두 남습니다. */
+  assert.match(src, /admin_photo_queue_counts',\s*\n\s*\{ p_include_private: false \}/);
+});
+
+test('Given an account was picked, when the filter changes, then a vanished account does not hide everything', () => {
+  /* 계정을 골라 둔 채 필터를 바꾸면, 그 계정이 새 결과에 없을 때
+     '이 계정에는 볼 개체가 없습니다' 만 뜹니다. 방금 등록된 남의 개체가
+     바로 옆에 있는데도 안 보입니다. */
+  const src = read('admin/admin-moderation.js');
+  const load = src.slice(src.indexOf('async function load()'), src.indexOf('function hydrate()'));
+
+  assert.match(load, /if \(state\.owner && !state\.rows\.some/);
+  assert.match(load, /state\.owner = null;/);
+});

@@ -150,16 +150,38 @@
      없는 개체는 검수할 것이 없어 빠진 것인데, 그 말이 없으면 숫자가 어긋난
      것으로 읽힙니다. 어긋나 보이는 숫자는 어느 쪽이 맞는지를 계속 묻게
      만듭니다. */
-  function scopeLine() {
-    const base = '사진이 등록된 개체만 나옵니다. '
-      + (state.withPrivate ? '비공개까지 훑고 있으며, 그 사실이 기록에 남습니다.'
-                           : '‘비공개 포함’ 을 켜면 비공개 개체까지 훑습니다.');
+  /* 새로 등록한 개체는 비공개로 시작합니다(care-app.js 의 is_public: false).
+     그래서 사진을 올려도 '비공개 포함' 을 켜기 전에는 목록에 안 뜹니다.
+     화면이 그 말을 안 하면 사진이 사라진 것으로 읽힙니다 — 실제로 그런
+     신고가 들어왔습니다. */
+  function hiddenPrivate() {
     const c = state.counts;
-    if (!c) return base;
+    if (!c) return 0;
+    return Math.max(0, (c.with_photos || 0) - (c.visible || 0));
+  }
+
+  function scopeLine() {
+    const c = state.counts;
+    const base = '사진이 등록된 개체만 나옵니다. ';
+    if (!c) {
+      return base + (state.withPrivate ? '비공개까지 훑고 있으며, 그 사실이 기록에 남습니다.'
+                                       : '‘비공개 포함’ 을 켜면 비공개 개체까지 훑습니다.');
+    }
+
     const skipped = (c.animals || 0) - (c.with_photos || 0);
-    return base + ' 전체 개체 ' + (c.animals || 0) + '건 중 사진 있는 것 '
+    const hidden = hiddenPrivate();
+    const counts = '전체 개체 ' + (c.animals || 0) + '건 중 사진 있는 것 '
       + (c.with_photos || 0) + '건'
-      + (skipped > 0 ? ' — 사진이 없는 ' + skipped + '건은 검수할 것이 없습니다.' : '.');
+      + (skipped > 0 ? ', 사진이 없는 ' + skipped + '건은 검수 대상이 아닙니다' : '') + '. ';
+
+    if (state.withPrivate) {
+      return base + counts + '비공개까지 훑고 있으며, 그 사실이 기록에 남습니다.';
+    }
+    return base + counts
+      + (hidden > 0
+          ? '그중 ' + hidden + '건이 비공개라 지금은 가려져 있습니다 — '
+            + '새로 등록한 개체는 비공개로 시작합니다. ‘비공개 포함’ 을 켜면 보입니다.'
+          : '‘비공개 포함’ 을 켜면 비공개 개체까지 훑습니다.');
   }
 
   function html() {
@@ -187,7 +209,17 @@
   }
 
   function listHtml(rows) {
-    if (!rows.length) return '<div class="asub" style="padding:24px 0">검수할 사진이 없습니다.</div>';
+    if (!rows.length) {
+      const hidden = hiddenPrivate();
+      /* 그냥 '없습니다' 라고만 하면, 방금 사진을 올린 회원이 있는데도
+         우리가 못 보는 상황과 구별이 안 됩니다. */
+      return '<div class="asub" style="padding:24px 0">검수할 사진이 없습니다.'
+        + (!state.withPrivate && hidden > 0
+            ? '<br><b>비공개 개체 ' + hidden + '건에는 사진이 있습니다.</b> '
+              + '위의 ‘비공개 포함’ 을 켜면 보입니다.'
+            : '')
+        + '</div>';
+    }
 
     if (!state.owner) {
       const list = owners(rows);
@@ -329,10 +361,19 @@
     }
     state.rows = r.data || [];
 
+    /* 계정을 하나 골라 둔 채로 필터를 바꾸면, 그 계정이 새 결과에 없을 때
+       '이 계정에는 볼 개체가 없습니다' 만 뜹니다. 방금 등록된 남의 개체가
+       바로 옆에 있는데도 안 보이는 겁니다. 없으면 목록으로 돌립니다. */
+    if (state.owner && !state.rows.some(function (x) {
+      return (x.owner_email || x.owner_nickname || '—') === state.owner;
+    })) state.owner = null;
+
     /* 없어도 목록은 봐야 합니다 — v74 를 아직 안 올렸으면 숫자만 빠집니다. */
     try {
+      /* 토글과 무관하게 '공개만' 으로 셉니다 — 비공개를 켜면 몇 건이 더
+         보이는지를 알려면 두 숫자가 모두 필요합니다. */
       const c = await state.SB.rpc('admin_photo_queue_counts',
-        { p_include_private: state.withPrivate });
+        { p_include_private: false });
       state.counts = (c && !c.error) ? c.data : null;
     } catch (e) { state.counts = null; }
     state.body.innerHTML = html();

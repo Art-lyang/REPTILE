@@ -32,8 +32,8 @@
     "sha256": "5334ae93ef4466d0"
   },
   "admin/admin-moderation.js": {
-    "version": "20260809f",
-    "sha256": "5e0afd30b58fc1a4"
+    "version": "20260810a",
+    "sha256": "0fcc655c39b84c53"
   },
   "admin/admin-security.js": {
     "version": "20260807a",

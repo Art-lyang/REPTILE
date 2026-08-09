@@ -605,16 +605,18 @@ async function seedCombos(){
   async function tabInfo(){
     const body=panelBody();
     body.innerHTML='<div class="asub">불러오는 중…</div>';
-    const today=new Date().toISOString().slice(0,10);
-    const d7=new Date(Date.now()-6*864e5).toISOString().slice(0,10);
+    /* day 컬럼(UTC)이 아니라 서울 경계로 봅니다. 아래 질의도 ts 로 겁니다. */
+    const today=seoulYmd();
+    const d7=seoulYmd(Date.now()-6*864e5);
+    const todayFrom=seoulStart(today), weekFrom=seoulStart(d7);
     const num=r=>(r&&r.count)||0;
     const rows=r=>(r&&r.data)||[];
 
     const [vTot,vToday,vWeek,vDev,prof,codes,anim,pair,clu,cq]=await Promise.all([
       svcFilter(SB.from('visits').select('*',{count:'exact',head:true})),
-      svcFilter(SB.from('visits').select('*',{count:'exact',head:true})).eq('day',today),
-      svcFilter(SB.from('visits').select('*',{count:'exact',head:true})).gte('day',d7),
-      fetchAll(()=>svcFilter(SB.from('visits').select('device,day,service,client')).gte('day',d7),'day'),
+      svcFilter(SB.from('visits').select('*',{count:'exact',head:true})).gte('ts',todayFrom),
+      svcFilter(SB.from('visits').select('*',{count:'exact',head:true})).gte('ts',weekFrom),
+      fetchAll(()=>svcFilter(SB.from('visits').select('device,ts,service,client')).gte('ts',weekFrom),'ts'),
       SB.from('profiles').select('*'),
       SB.from('access_codes').select('*'),
       fetchAll(()=>SB.from('animals').select('id,device,created_at'),'created_at'),
@@ -648,8 +650,8 @@ async function seedCombos(){
     const pct=(a,b)=>b? Math.round(a/b*100)+'%' : '0%';
 
     // 최근 7일 추이
-    const byDay={}; rows(vDev).forEach(x=>{ if(x.day) byDay[x.day]=(byDay[x.day]||0)+1; });
-    const days=[]; for(let i=6;i>=0;i--) days.push(new Date(Date.now()-i*864e5).toISOString().slice(0,10));
+    const byDay={}; rows(vDev).forEach(x=>{ if(x.ts){ const d=seoulYmd(Date.parse(x.ts)); byDay[d]=(byDay[d]||0)+1; } });
+    const days=[]; for(let i=6;i>=0;i--) days.push(seoulYmd(Date.now()-i*864e5));
     const mx=Math.max(1,...days.map(d=>byDay[d]||0));
 
     // 최근 7일 방문자 종류 (client 컬럼이 없으면 전부 사람으로 잡힘)
@@ -857,7 +859,9 @@ async function seedCombos(){
 
   /* 기간 선택 — 1시간 단위부터 6개월까지.
      visits.day 는 UTC 기준이라 한국 시간과 하루가 어긋납니다(오전 8시 접속이
-     전날로 잡힘). 그래서 day 를 쓰지 않고 ts 를 브라우저 현지시간으로 묶습니다. */
+     전날로 잡힘). 그래서 day 를 쓰지 않고 ts 를 서울 시각으로 묶습니다
+     — 아래 seoulYmd·seoulDate 참고. 브라우저 지역을 따르지 않는 것은
+     의도입니다. 운영자가 어디에 있든 오늘은 서울의 오늘이어야 합니다. */
   const RANGES=[
     ['24h','24시간',  1,      'hour'],
     ['7d', '7일',     7,      'day'],
@@ -867,20 +871,44 @@ async function seedCombos(){
   ];
   let adRange='7d';
 
+  /* ── 날짜는 서울 기준으로 셉니다 ────────────────────────────────────────
+     visits.day 컬럼은 UTC 로 저장됩니다. 그대로 세면 한국 아침 9시간 동안의
+     접속이 전날로 잡힙니다. 한눈에는 그 컬럼을, 통계는 브라우저 지역 시각을
+     쓰고 있어서 같은 '오늘 접속' 이 169 와 92 로 갈렸습니다.
+
+     운영자가 어디에 있든 '오늘' 은 서울의 오늘이어야 합니다. 그래서 브라우저
+     지역이 아니라 +09:00 로 못박습니다. supabase_v76 의 admin_funnel 도
+     같은 기준입니다.
+
+     ⚠️ day 컬럼으로 거르지 마세요. ts 로 걸러야 서울 경계와 맞습니다. */
+  const KST = 9 * 3600e3;
+
+  /* 어떤 시각이 서울에서 며칠인가. */
+  function seoulYmd(t){
+    return new Date((t == null ? Date.now() : t) + KST).toISOString().slice(0, 10);
+  }
+  /* 서울의 그 날 0시가 UTC 로 언제인가 — 질의에 넘길 값입니다. */
+  function seoulStart(ymd){
+    return new Date(Date.parse(ymd + 'T00:00:00+09:00')).toISOString();
+  }
+  /* 서울 시각으로 읽으라고 밀어 둔 Date. 아래 bucketKey 가 UTC 로 읽습니다. */
+  function seoulDate(t){ return new Date((t == null ? Date.now() : t) + KST); }
+
+  /* d 는 seoulDate() 로 밀어 둔 값입니다 — 그래서 UTC 로 읽습니다. */
   function bucketKey(d, unit){
     const p=n=>String(n).padStart(2,'0');
-    if(unit==='hour') return p(d.getHours())+'시';
-    if(unit==='week'){ const t=new Date(d); t.setDate(t.getDate()-t.getDay()); // 일요일 시작
-      return (t.getMonth()+1)+'/'+t.getDate(); }
-    return (d.getMonth()+1)+'/'+p(d.getDate());
+    if(unit==='hour') return p(d.getUTCHours())+'시';
+    if(unit==='week'){ const t=new Date(d); t.setUTCDate(t.getUTCDate()-t.getUTCDay()); // 일요일 시작
+      return (t.getUTCMonth()+1)+'/'+t.getUTCDate(); }
+    return (d.getUTCMonth()+1)+'/'+p(d.getUTCDate());
   }
   function bucketList(days, unit){
-    const out=[], now=new Date();
-    if(unit==='hour'){ for(let i=23;i>=0;i--){ const d=new Date(now-i*3600e3); out.push(bucketKey(d,unit)); } return out; }
+    const out=[], now=Date.now();
+    if(unit==='hour'){ for(let i=23;i>=0;i--) out.push(bucketKey(seoulDate(now-i*3600e3), unit)); return out; }
     if(unit==='week'){ const step=7, n=Math.ceil(days/step);
-      for(let i=n-1;i>=0;i--) out.push(bucketKey(new Date(now-i*step*864e5), unit));
+      for(let i=n-1;i>=0;i--) out.push(bucketKey(seoulDate(now-i*step*864e5), unit));
       return [...new Set(out)]; }
-    for(let i=days-1;i>=0;i--) out.push(bucketKey(new Date(now-i*864e5), unit));
+    for(let i=days-1;i>=0;i--) out.push(bucketKey(seoulDate(now-i*864e5), unit));
     return out;
   }
 
@@ -893,11 +921,11 @@ async function seedCombos(){
       const rows=(await fetchAll(()=>svcFilter(SB.from('visits').select('ts,device,client,service')).gte('ts',since),'ts')).data;
 
       const cntK={human:0,bot:0,ai:0}, uniqK={human:new Set(),bot:new Set(),ai:new Set()};
-      const byB={}; const today=new Date().toDateString(); let todayN=0;
+      const byB={}; const today=seoulYmd(); let todayN=0;
       rows.forEach(r=>{ const k=kindOf(r); cntK[k]++; uniqK[k].add(r.device);
-        const d=new Date(r.ts);
-        if(d.toDateString()===today) todayN++;
-        const b=bucketKey(d,unit); (byB[b]=byB[b]||{human:0,bot:0,ai:0})[k]++; });
+        const t=Date.parse(r.ts);
+        if(seoulYmd(t)===today) todayN++;
+        const b=bucketKey(seoulDate(t),unit); (byB[b]=byB[b]||{human:0,bot:0,ai:0})[k]++; });
       const human=cntK.human, machine=cntK.bot+cntK.ai, tot=rows.length||1;
 
       const card=(n,l,sub)=>'<div class="statcard"><div class="statn">'+n+'</div><div class="statl">'+l+'</div>'

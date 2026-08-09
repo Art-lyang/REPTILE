@@ -194,11 +194,19 @@
     catch (e) { S.transfer = null; }
   }
 
+  /* 양도는 프리미엄 기능입니다(assets/studio-config.js 의 TRANSFER_ACCESS).
+     이 화면 자체가 이미 프리미엄에서만 열리지만, 등급을 여기서도 봅니다 —
+     화면의 문이 나중에 넓어져도 이 기능은 제자리에 있어야 합니다.
+     스위치를 모르는 옛 캐시는 꺼짐으로 봅니다. */
+  function transferVisible() {
+    const mode = typeof TRANSFER_ACCESS === 'undefined' ? 'off' : TRANSFER_ACCESS;
+    if (mode === 'all') return true;
+    if (mode === 'premium') return !!(A.premium && A.premium.active);
+    return false;
+  }
+
   function transferBlock() {
-    /* 받는 화면이 아직 없습니다. 켜면 열 곳 없는 링크를 만들게 됩니다
-       (assets/studio-config.js 의 TRANSFER_ENABLED). 스위치를 모르는 옛
-       캐시는 꺼짐으로 봅니다. */
-    if (typeof TRANSFER_ENABLED === 'undefined' || !TRANSFER_ENABLED) return '';
+    if (!transferVisible()) return '';
     const Ui = window.AnimalTransferUi;
     if (!Ui) return '';
     return Ui.html(S.transfer, { i18n: I, esc: esc, animal: S.animal });

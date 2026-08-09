@@ -71,12 +71,33 @@ test('Given the animal was handed over, when the block renders, then it offers n
   assert.doesNotMatch(html, /tf_create|tf_cancel/);
 });
 
-test('Given both halves are built, when they have not been used for real, then the block stays hidden', () => {
-  /* 개체가 남의 계정으로 넘어가는 일입니다. 한 번 잘못되면 되돌릴 방법이
-     없어서, 실제로 주고받아 보기 전에는 내보내지 않습니다. */
-  assert.match(read('assets/studio-config.js'), /var TRANSFER_ENABLED = false;/);
+test('Given transfer is a paid feature, when the block renders, then the tier decides', () => {
+  assert.match(read('assets/studio-config.js'), /var TRANSFER_ACCESS = 'premium';/);
   const ui = read('care/animal-ui.js');
-  assert.match(ui, /typeof TRANSFER_ENABLED === 'undefined' \|\| !TRANSFER_ENABLED\) return '';/);
+  assert.match(ui, /function transferVisible\(\)/);
+  assert.match(ui, /A\.premium && A\.premium\.active/);
+  /* 스위치를 모르는 옛 캐시는 꺼짐으로 봅니다. */
+  assert.match(ui, /typeof TRANSFER_ACCESS === 'undefined' \? 'off'/);
+  assert.match(ui, /if \(!transferVisible\(\)\) return '';/);
+});
+
+test('Given a premium keeper hands to a free member, when the link opens, then the tier is not asked again', () => {
+  /* 받는 쪽까지 프리미엄을 물으면 파는 사람을 막는 셈이 됩니다. 받는 쪽은
+     개체 상한만 봅니다 — 그건 서버가 accept 안에서 셉니다. */
+  const rc = read('care/transfer-ui.js');
+  assert.doesNotMatch(rc, /premium/i, '받는 화면은 등급을 묻지 않습니다');
+  assert.match(read('supabase_v65.sql'), /ANIMAL_LIMIT_REACHED/);
+});
+
+test('Given it is sold as a premium feature, when someone reads the pricing, then it is listed there', () => {
+  /* 돈을 받는 기능이면 요금 안내에 적혀 있어야 합니다. */
+  const t = read('pricing-i18n.js');
+  for (const w of ['개체 양도', 'Hand an animal over', '個体の譲渡', '个体转让']) {
+    assert.ok(t.indexOf(w) >= 0, '요금 문구 없음: ' + w);
+  }
+  const html = read('pricing.html');
+  assert.match(html, /data-pt="p8"/, '혜택 줄이 밀려나야 합니다');
+  assert.match(html, /data-pt="r14"/, '비교표 줄이 밀려나야 합니다');
 });
 
 test('Given a link is opened, when the visitor is not signed in, then login comes before the preview', () => {

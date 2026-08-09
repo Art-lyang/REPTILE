@@ -40,7 +40,7 @@
     p1: '개체 <b>50마리</b>까지 등록', p2: '무료의 모든 기능',
     p3: '<b>브리딩 관리</b> — 페어링·클러치·해칭', p4: '<b>라인브리딩 플래너</b>',
     p5: '<b>공개 브리더 프로필</b>', p6: '<b>개체 카드 내보내기</b> — 분양용',
-    p7: '캘린더 내보내기', proCta: '프리미엄 코드 입력',
+    p7: '<b>개체 양도</b> — 링크·QR 로 넘기기', p8: '캘린더 내보내기', proCta: '프리미엄 코드 입력',
 
     cmpTitle: '기능 비교', thFeature: '기능', thFree: '무료', thPro: '프리미엄',
     r1: '개체 등록', r1free: '10마리', r1pro: '50마리',
@@ -49,7 +49,7 @@
     r7: '모프 계산기 (레오·크레·펫테일·볼파이톤)',
     r8: '브리딩 관리 (페어링·클러치·해칭)', r9: '메이팅 그룹',
     r10: '라인브리딩 플래너', r11: '공개 브리더 프로필',
-    r12: '개체 카드 내보내기', r13: '캘린더 내보내기',
+    r12: '개체 카드 내보내기', r13: '개체 양도 (링크·QR)', r14: '캘린더 내보내기',
 
     emQ: '<b>결제를 멈추면 기록은 어떻게 되나요?</b>',
     emA1: '기록은 <b>지우지 않습니다.</b> 다만 무료 범위(10마리)를 넘는 개체는 잠깁니다. 잠긴 개체는 <b>보기와 삭제만</b> 되고, 수정과 계획 지정은 막히며 알림도 멈춥니다.',
@@ -92,7 +92,7 @@
     p1: 'Up to <b>50 animals</b>', p2: 'Everything in Free',
     p3: '<b>Breeding management</b> — pairings, clutches, hatching', p4: '<b>Line-breeding planner</b>',
     p5: '<b>Public breeder profile</b>', p6: '<b>Animal card export</b> — for rehoming',
-    p7: 'Calendar export', proCta: 'Enter a premium code',
+    p7: '<b>Hand an animal over</b> — by link or QR', p8: 'Calendar export', proCta: 'Enter a premium code',
 
     cmpTitle: 'Feature comparison', thFeature: 'Feature', thFree: 'Free', thPro: 'Premium',
     r1: 'Animals', r1free: '10', r1pro: '50',
@@ -101,7 +101,7 @@
     r7: 'Morph calculators (Leopard, Crested, Fat-Tailed, Ball Python)',
     r8: 'Breeding management (pairings, clutches, hatching)', r9: 'Mating groups',
     r10: 'Line-breeding planner', r11: 'Public breeder profile',
-    r12: 'Animal card export', r13: 'Calendar export',
+    r12: 'Animal card export', r13: 'Animal transfer (link or QR)', r14: 'Calendar export',
 
     emQ: '<b>What happens to my records if I stop paying?</b>',
     emA1: 'Your records are <b>not deleted.</b> Animals beyond the free limit (10) are locked instead. A locked animal can only be <b>viewed and deleted</b> — editing and scheduling are blocked, and its reminders stop.',
@@ -144,7 +144,7 @@
     p1: '個体 <b>50匹</b>まで登録', p2: '無料のすべての機能',
     p3: '<b>ブリーディング管理</b> — ペアリング・クラッチ・ハッチング', p4: '<b>ラインブリーディング・プランナー</b>',
     p5: '<b>公開ブリーダープロフィール</b>', p6: '<b>個体カード書き出し</b> — 譲渡用',
-    p7: 'カレンダー書き出し', proCta: 'プレミアムコードを入力',
+    p7: '<b>個体の譲渡</b> — リンク・QRで引き渡し', p8: 'カレンダー書き出し', proCta: 'プレミアムコードを入力',
 
     cmpTitle: '機能比較', thFeature: '機能', thFree: '無料', thPro: 'プレミアム',
     r1: '個体登録', r1free: '10匹', r1pro: '50匹',
@@ -153,7 +153,7 @@
     r7: 'モーフ計算機（ヒョウモン・クレス・ニシアフ・ボールパイソン）',
     r8: 'ブリーディング管理（ペアリング・クラッチ・ハッチング）', r9: 'メイティンググループ',
     r10: 'ラインブリーディング・プランナー', r11: '公開ブリーダープロフィール',
-    r12: '個体カード書き出し', r13: 'カレンダー書き出し',
+    r12: '個体カード書き出し', r13: '個体の譲渡 (リンク・QR)', r14: 'カレンダー書き出し',
 
     emQ: '<b>支払いをやめると記録はどうなりますか？</b>',
     emA1: '記録は<b>消しません。</b>ただし無料の範囲（10匹）を超える個体はロックされます。ロックされた個体は<b>閲覧と削除のみ</b>可能で、編集と計画の指定はできず、通知も止まります。',
@@ -196,7 +196,7 @@
     p1: '登记最多 <b>50 只</b>个体', p2: '免费版全部功能',
     p3: '<b>繁育管理</b> — 配对·窝次·孵化', p4: '<b>系族繁育规划器</b>',
     p5: '<b>公开繁育者主页</b>', p6: '<b>个体卡片导出</b> — 用于转让',
-    p7: '日历导出', proCta: '输入高级代码',
+    p7: '<b>个体转让</b> — 用链接或二维码交接', p8: '日历导出', proCta: '输入高级代码',
 
     cmpTitle: '功能对比', thFeature: '功能', thFree: '免费', thPro: '高级版',
     r1: '个体登记', r1free: '10 只', r1pro: '50 只',
@@ -205,7 +205,7 @@
     r7: '形态计算器（豹纹·睫角·肥尾·球蟒）',
     r8: '繁育管理（配对·窝次·孵化）', r9: '交配组',
     r10: '系族繁育规划器', r11: '公开繁育者主页',
-    r12: '个体卡片导出', r13: '日历导出',
+    r12: '个体卡片导出', r13: '个体转让 (链接·二维码)', r14: '日历导出',
 
     emQ: '<b>停止付费后记录会怎样？</b>',
     emA1: '记录<b>不会删除。</b>但超出免费范围（10 只）的个体会被锁定。被锁定的个体<b>只能查看和删除</b>，无法编辑或指定计划，提醒也会停止。',

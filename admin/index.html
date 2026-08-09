@@ -1142,7 +1142,10 @@ async function seedCombos(){
     if(!f) return '';
     const pct=(a,b)=> b>0 ? Math.round(a/b*1000)/10+'%' : '—';
     const step=(label,n,base,note)=>
-      '<div class="afstep"><div class="afn">'+num(n)+'</div>'
+      /* num() 은 tabInfo 안에만 있는 지역 함수이고 뜻도 다릅니다
+         (Supabase 응답에서 count 를 꺼내는 용도). 여기서 부르면
+         ReferenceError 로 유입 탭이 통째로 죽습니다. */
+      '<div class="afstep"><div class="afn">'+(Number(n)||0).toLocaleString()+'</div>'
       +'<div class="aflb">'+esc(label)+'</div>'
       +'<div class="afpc">'+(base==null?'':pct(n,base))+'</div>'
       +(note?'<div class="asub">'+esc(note)+'</div>':'')+'</div>';

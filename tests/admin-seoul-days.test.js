@@ -67,3 +67,36 @@ test('Given the server counts the funnel, when the client counts visits, then bo
   assert.match(v76, /Asia\/Seoul/);
   assert.doesNotMatch(v76, /time zone 'utc'/i, 'v76 은 서울 기준이어야 합니다');
 });
+
+test('Given the funnel block sits outside the overview tab, when it draws, then it uses no helper it cannot see', () => {
+  /* funnelHtml 이 tabInfo 안의 지역 함수 num() 을 불러서 유입 탭이 통째로
+     죽었습니다(Can't find variable: num). 이름이 같아도 뜻이 달랐습니다 —
+     그쪽 num 은 Supabase 응답에서 count 를 꺼내는 함수입니다.
+     실제로 실행해 봐야 잡힙니다. */
+  const start = ADMIN.indexOf('function funnelHtml(f){');
+  assert.notEqual(start, -1, '깔때기 함수가 없습니다');
+  const end = ADMIN.indexOf('async function tabSource(){', start);
+
+  const ctx = { esc: s => String(s == null ? '' : s) };
+  vm.createContext(ctx);
+  vm.runInContext(ADMIN.slice(start, end), ctx);
+
+  const html = ctx.funnelHtml({
+    days: 30, visitors: 361, nudge_shown: 120, nudge_click: 14, signup_click: 9,
+    signups: 5, with_animal: 3, care_started: 2, care_kept_7d: 1
+  });
+
+  assert.match(html, /361/);
+  assert.match(html, /33\.2%/, '앞 칸 대비 비율이 나와야 합니다');
+  assert.match(html, /60%/);
+
+  /* 아무것도 없을 때 0 으로 나누면 안 됩니다. */
+  const empty = ctx.funnelHtml({
+    days: 7, visitors: 0, nudge_shown: 0, nudge_click: 0, signup_click: 0,
+    signups: 0, with_animal: 0, care_started: 0, care_kept_7d: 0
+  });
+  assert.doesNotMatch(empty, /NaN|Infinity/);
+
+  /* v76 을 아직 안 올렸으면 조용히 빠져야 합니다. */
+  assert.equal(ctx.funnelHtml(null), '');
+});

@@ -23,7 +23,7 @@
     ko: {
       btn: '회원가입',
       title: '계산기는 로그인 없이 계속 무료입니다',
-      body: '회원가입하면 <b>생물 케어 스케쥴 관리</b>와 <b>브리딩 관리</b>를 함께 쓸 수 있어요.',
+      body: '회원가입하면 <b>생물 케어 스케줄 관리</b>와 <b>브리딩 관리</b>를 함께 쓸 수 있어요.',
       f1: '급여·물·청소·영양제 주기를 정해두면 오늘 할 일로 뜨고, 캘린더로 내보내 폰에서 알림을 받습니다.',
       f2: '개체와 혈통을 등록해 페어링·클러치·체중을 기록하고, 계산기 결과를 그대로 개체로 남깁니다.',
       note: '등록한 기록은 본인에게만 보입니다. 공개는 개체별로 직접 켜야 시작됩니다.',
@@ -33,7 +33,7 @@
     en: {
       btn: 'Sign up',
       title: 'The calculator stays free, no account needed',
-      body: 'An account adds <b>Creature Care Log</b> and <b>Breeding Manager</b>.',
+      body: 'An account adds <b>Creature Care Scheduler</b> and <b>Breeding Manager</b>.',
       f1: 'Set feeding, water, cleaning and supplement cycles — they show up as today’s tasks, and export to your phone’s calendar.',
       f2: 'Register animals and lineage, track pairings, clutches and weight, and save a calculation straight onto an animal.',
       note: 'Your records are visible only to you. Publishing starts only when you turn it on for a specific animal.',
@@ -43,7 +43,7 @@
     ja: {
       btn: '会員登録',
       title: '計算機はログインなしでも無料のままです',
-      body: '会員登録すると<b>クリーチャーケアログ</b>と<b>ブリーディング管理</b>も使えます。',
+      body: '会員登録すると<b>生き物ケア スケジュール管理</b>と<b>ブリーディング管理</b>も使えます。',
       f1: '給餌・水・掃除・サプリの周期を決めておくと今日のタスクとして表示され、カレンダーに書き出してスマホで通知を受け取れます。',
       f2: '個体と血統を登録してペアリング・クラッチ・体重を記録し、計算結果をそのまま個体として残せます。',
       note: '登録した記録はご本人にだけ表示されます。公開は個体ごとにご自身でオンにしたときだけ始まります。',
@@ -53,7 +53,7 @@
     zh: {
       btn: '注册',
       title: '计算器无需登录，始终免费',
-      body: '注册后还能使用<b>生物护理日志</b>与<b>繁育管理</b>。',
+      body: '注册后还能使用<b>生物护理日程管理</b>与<b>繁育管理</b>。',
       f1: '设定喂食、换水、清洁与营养品的周期后会显示为今日待办，并可导出到手机日历接收提醒。',
       f2: '登记个体与血统，记录配对、产卵与体重，并把计算结果直接保存为个体。',
       note: '您登记的记录仅您本人可见。只有您为某个个体手动开启后才会公开。',

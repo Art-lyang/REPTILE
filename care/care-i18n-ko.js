@@ -2,8 +2,8 @@
   'use strict';
   const locales = w.CareI18nLocales || (w.CareI18nLocales = {});
   locales.ko = Object.freeze({
-    pageTitle: '생물 케어 스케쥴 관리 · 량 스튜디오', pageDescription: '급여·청소·영양제 주기와 체중을 기록하고 캘린더로 알림을 받습니다.',
-    pageHeader: '생물 케어 스케쥴 관리', pageSubtitle: '급여·청소·영양제 주기를 정해두고 오늘 할 일로 확인하세요',
+    pageTitle: '생물 케어 스케줄 관리 · 량 스튜디오', pageDescription: '급여·청소·영양제 주기와 체중을 기록하고 캘린더로 알림을 받습니다.',
+    pageHeader: '생물 케어 스케줄 관리', pageSubtitle: '급여·청소·영양제 주기를 정해두고 오늘 할 일로 확인하세요',
     animalPageTitle: '개체 관리 · 량 스튜디오', galleryPageTitle: '다른 집사들의 개체 · 량 스튜디오',
     galleryDescription: '량 스튜디오 케어를 쓰는 집사들이 공개한 개체들을 구경하세요.', publicPageTitle: '개체 프로필 · 량 스튜디오',
     galleryHeader: '다른 집사들의 개체', gallerySubtitle: '공개하기로 한 개체만 보입니다. 눌러서 자세히 볼 수 있어요.',
@@ -302,7 +302,7 @@
     rotated: '새 주소를 만들었습니다', copied: '주소를 복사했습니다', copyFailed: '복사하지 못했습니다. 길게 눌러 복사해 주세요.',
     recorded: '{name} 기록됨', removed: '지웠습니다', weightSaved: '체중을 기록했습니다',
     galleryAll: '전체', galleryLeopard: '레오파드', galleryCrested: '크레스티드', galleryFattail: '펫테일', galleryPygmy: '피그미',
-    galleryEmpty: '아직 공개된 개체가 없습니다.<br>생물 케어 스케쥴 관리에서 개체를 공개하면 여기에 함께 보입니다.',
+    galleryEmpty: '아직 공개된 개체가 없습니다.<br>생물 케어 스케줄 관리에서 개체를 공개하면 여기에 함께 보입니다.',
     galleryPrivacy: '주인이 공개하기로 한 개체만 보입니다. 사육 기록·체중 같은 개인 기록은 포함되지 않습니다.',
     galleryLoadError: '불러오지 못했습니다. 잠시 뒤 다시 시도해 주세요.', backendMissing: '백엔드가 설정되지 않았습니다.',
     invalidShareTitle: '열 수 없는 주소입니다', profile: '개체 프로필', morphInfoMissing: '모프 정보 없음',
@@ -321,7 +321,7 @@
     breederUnavailableHint: '브리더명 공개가 꺼졌거나 주소가 더 이상 유효하지 않습니다.', breederProfileLink: '전체 개체 보기',
     breederMoreCta: '이 브리더의 개체 더보기',
     breederPreviewHint: '같은 브리더가 공개한 개체입니다.',
-    startCare: '나도 생물 케어 스케쥴 관리 시작하기', shareBackendMissing: '백엔드가 설정되지 않았습니다.',
+    startCare: '나도 생물 케어 스케줄 관리 시작하기', shareBackendMissing: '백엔드가 설정되지 않았습니다.',
     shareTokenMissing: '주소에 개체 정보가 없습니다.', shareLoadError: '불러오지 못했습니다. 잠시 뒤 다시 시도해 주세요.',
     shareClosed: '주소가 잘못됐거나, 주인이 공개를 끝냈습니다.',
     backendTitle: '백엔드가 설정되지 않았습니다', backendBody: 'assets/studio-config.js를 확인해 주세요.', back: '돌아가기',

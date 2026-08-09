@@ -47,7 +47,7 @@
     scriptLoadError: '{src} を読み込めませんでした',
     headerTitle: '{species} ブリーディング',
     headerSubtitle: '個体・ペアリング・クラッチ・計算分析を管理します',
-    otherSpecies: 'ほかの種の個体が{count}匹います。上で種を切り替えるか、<a href="/care/">クリーチャーケアログ</a>で確認できます。',
+    otherSpecies: 'ほかの種の個体が{count}匹います。上で種を切り替えるか、<a href="/care/">生き物ケア スケジュール管理</a>で確認できます。',
     errorOwnership: '自分の記録ではないか、ログインの有効期限が切れています。もう一度ログインしてください。',
     errorDuplicate: '本日すでに処理済みの項目です。',
     errorLogin: 'ログインが必要です。',

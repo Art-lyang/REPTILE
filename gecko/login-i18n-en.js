@@ -83,7 +83,7 @@
     newPasswordTitle: 'Set a new password', forcedPasswordTitle: 'Choose a new password',
     forcedPasswordHint: 'You signed in with a temporary password. <b>Change it now to keep your account safe.</b>', newPassword: 'New password', change: 'Change password',
     passwordChangedMove: 'Password changed. Redirecting…', signedIn: 'Signed in', subscription: 'Subscription', trial: 'Trial', premiumAccess: 'Premium', until: 'until {date}', unlimited: 'no expiry',
-    freePlan: 'Free plan', breedingManagement: 'Breeding management', creatureCare: 'Creature Care Log', premiumCode: 'Enter premium code', logout: 'Log out',
+    freePlan: 'Free plan', breedingManagement: 'Breeding management', creatureCare: 'Creature Care Scheduler', premiumCode: 'Enter premium code', logout: 'Log out',
     accountSettings: 'Account settings', accountOverview: 'Account', profileSettings: 'Profile', privacySettings: 'Consent', securitySettings: 'Login & security',
     adminBadge: 'Highest administrator', adminConsole: 'Admin console', adminOnlySummary: 'Member consent, security, and account-deletion settings are hidden for the highest administrator account. You can change your nickname on the Profile tab.',
     profileExistingNote: 'Blank fields keep their current value. To erase account data completely, delete the account.', name: 'Name', nickname: 'Nickname',

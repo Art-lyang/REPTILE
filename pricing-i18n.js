@@ -19,10 +19,10 @@
   L.ko = {
     htmlLang: 'ko', ogLocale: 'ko_KR',
     pageTitle: '요금 안내 · RYANG STUDIO',
-    metaDesc: '생물 케어 스케쥴 관리의 무료 이용 범위와 프리미엄 기능을 비교해 안내합니다. 개체 등록 수, 브리딩 관리, 공개 프로필 등 차이를 확인하세요.',
+    metaDesc: '생물 케어 스케줄 관리의 무료 이용 범위와 프리미엄 기능을 비교해 안내합니다. 개체 등록 수, 브리딩 관리, 공개 프로필 등 차이를 확인하세요.',
     ogDesc: '무료로 어디까지 쓸 수 있고, 프리미엄에서 무엇이 열리는지 정리했습니다.',
     back: '← 스튜디오', h1: '요금 안내',
-    sub: '생물 케어 스케쥴 관리를 무료로 어디까지 쓸 수 있고,<br>프리미엄에서 무엇이 열리는지 정리했습니다.',
+    sub: '생물 케어 스케줄 관리를 무료로 어디까지 쓸 수 있고,<br>프리미엄에서 무엇이 열리는지 정리했습니다.',
     language: '언어',
 
     noticeTitle: '프리미엄 결제는 아직 준비 중입니다.',
@@ -71,10 +71,10 @@
   L.en = {
     htmlLang: 'en', ogLocale: 'en_US',
     pageTitle: 'Plans · RYANG STUDIO',
-    metaDesc: 'Compare what the Creature Care Log gives you for free with what premium adds — animal limit, breeding management, public breeder profile, and more.',
+    metaDesc: 'Compare what the Creature Care Scheduler gives you for free with what premium adds — animal limit, breeding management, public breeder profile, and more.',
     ogDesc: 'What you get for free, and what premium opens up.',
     back: '← Studio', h1: 'Plans',
-    sub: 'How far the Creature Care Log goes for free,<br>and what premium adds.',
+    sub: 'How far the Creature Care Scheduler goes for free,<br>and what premium adds.',
     language: 'Language',
 
     noticeTitle: 'Premium checkout is not open yet.',
@@ -123,10 +123,10 @@
   L.ja = {
     htmlLang: 'ja', ogLocale: 'ja_JP',
     pageTitle: '料金案内 · RYANG STUDIO',
-    metaDesc: 'クリーチャー・ケアログの無料範囲とプレミアム機能を比較してご案内します。個体登録数、ブリーディング管理、公開プロフィールなどの違いをご確認ください。',
+    metaDesc: '生き物ケア スケジュール管理の無料範囲とプレミアム機能を比較してご案内します。個体登録数、ブリーディング管理、公開プロフィールなどの違いをご確認ください。',
     ogDesc: '無料でどこまで使えて、プレミアムで何が開くのかをまとめました。',
     back: '← スタジオ', h1: '料金案内',
-    sub: 'クリーチャー・ケアログを無料でどこまで使えるか、<br>プレミアムで何が開くのかをまとめました。',
+    sub: '生き物ケア スケジュール管理を無料でどこまで使えるか、<br>プレミアムで何が開くのかをまとめました。',
     language: '言語',
 
     noticeTitle: 'プレミアムの決済はまだ準備中です。',
@@ -175,10 +175,10 @@
   L.zh = {
     htmlLang: 'zh', ogLocale: 'zh_CN',
     pageTitle: '价格说明 · RYANG STUDIO',
-    metaDesc: '对比生物照护日志的免费范围与高级功能，包括个体登记数量、繁育管理、公开繁育者主页等差异。',
+    metaDesc: '对比生物护理日程管理的免费范围与高级功能，包括个体登记数量、繁育管理、公开繁育者主页等差异。',
     ogDesc: '免费能用到哪里，高级版又能开启什么。',
     back: '← 工作室', h1: '价格说明',
-    sub: '生物照护日志免费能用到哪里，<br>以及高级版会开启什么。',
+    sub: '生物护理日程管理免费能用到哪里，<br>以及高级版会开启什么。',
     language: '语言',
 
     noticeTitle: '高级版支付尚未开放。',

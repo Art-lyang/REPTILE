@@ -2,8 +2,8 @@
   'use strict';
   const locales = w.CareI18nLocales || (w.CareI18nLocales = {});
   locales.ja = Object.freeze(Object.assign({}, locales.ko, {
-    pageTitle: 'クリーチャー・ケアログ · Ryang Studio', pageDescription: '給餌・清掃・サプリ・体重を記録し、カレンダー通知を書き出します。',
-    pageHeader: 'クリーチャー・ケアログ', pageSubtitle: 'ケア周期を設定し、今日することを確認できます',
+    pageTitle: '生き物ケア スケジュール管理 · Ryang Studio', pageDescription: '給餌・清掃・サプリ・体重を記録し、カレンダー通知を書き出します。',
+    pageHeader: '生き物ケア スケジュール管理', pageSubtitle: 'ケア周期を設定し、今日することを確認できます',
     animalPageTitle: '個体管理 · Ryang Studio', galleryPageTitle: 'みんなの個体 · Ryang Studio',
     galleryDescription: '飼育者が公開した個体を見ることができます。', publicPageTitle: '個体プロフィール · Ryang Studio',
     galleryHeader: 'みんなの個体', gallerySubtitle: '飼育者が公開を選んだ個体だけが表示されます。選ぶと詳細を確認できます。',
@@ -276,13 +276,13 @@
     madePrivate: '非公開にしました', rotateConfirm: '新しいURLを作ると以前のURLと共有済みQRはすぐ無効になります。続けますか？', rotated: '新しいURLを作成しました',
     copied: 'URLをコピーしました', copyFailed: 'コピーできませんでした。長押ししてコピーしてください。', recorded: '{name}を記録しました', removed: '削除しました', weightSaved: '体重を記録しました',
     galleryAll: 'すべて', galleryLeopard: 'レオパ', galleryCrested: 'クレス', galleryFattail: 'ニシアフ', galleryPygmy: 'ヤマネ',
-    galleryEmpty: '公開された個体はまだありません。<br>クリーチャー・ケアログで公開するとここに表示されます。',
+    galleryEmpty: '公開された個体はまだありません。<br>生き物ケア スケジュール管理で公開するとここに表示されます。',
     galleryPrivacy: '飼育者が公開を選んだ個体だけを表示します。ケア記録や体重などの非公開情報は含まれません。',
     galleryLoadError: '読み込めませんでした。少し待ってからもう一度お試しください。', backendMissing: 'バックエンドが設定されていません。',
     invalidShareTitle: 'このURLは開けません', profile: '個体プロフィール', morphInfoMissing: 'モルフ情報なし', speciesFact: '種', sexFact: '性別',
     hatchFact: 'ハッチ日', ageFact: '年齢', morph: 'モルフ', noMorph: '登録されたモルフなし',
     clutchFact: 'クラッチ', latestWeightFact: '最新体重', breederAnimals: 'このブリーダーの他の個体', studioHome: 'Ryan Studioへ', introduction: '紹介', parents: '親',
-    publicOwnerNotice: 'このページには飼育者が公開を選んだ情報だけを表示します。ケア記録は非公開で、体重履歴は個別に許可した場合だけ表示されます。', startCare: 'クリーチャー・ケアログを始める',
+    publicOwnerNotice: 'このページには飼育者が公開を選んだ情報だけを表示します。ケア記録は非公開で、体重履歴は個別に許可した場合だけ表示されます。', startCare: '生き物ケア スケジュール管理を始める',
     publicWeightTrend: '体重の推移', publicWeightSummary: '{count}回の記録 · 全体{change}g', weightChartAria: '日付別の体重推移グラフ',
     breederPageTitle: 'ブリーダー公開個体 · Ryang Studio', breederProfile: 'ブリーダープロフィール', breederPublicAnimals: '公開個体 {count}匹',
     breederProfileHint: 'このブリーダーが公開一覧に載せた個体だけを表示します。', breederAllSpecies: 'すべての種', breederSpeciesFilter: '種別で個体を絞り込む',

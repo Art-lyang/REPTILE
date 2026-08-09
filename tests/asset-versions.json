@@ -112,12 +112,12 @@
     "sha256": "6b0802b270d37b7b"
   },
   "assets/signup-cta.js": {
-    "version": "20260809x",
-    "sha256": "4e508244deffece4"
+    "version": "20260810a",
+    "sha256": "4759f6a84954b1e6"
   },
   "assets/studio-config.js": {
-    "version": "20260809z",
-    "sha256": "43a99da5c012bbc9"
+    "version": "20260810a",
+    "sha256": "7845636a332b1a51"
   },
   "assets/theme.css": {
     "version": "20260809x",
@@ -236,16 +236,16 @@
     "sha256": "be29469b8eb68de3"
   },
   "care/breeding-i18n-en.js": {
-    "version": "20260808a",
-    "sha256": "8bbe8b28c57cf078"
+    "version": "20260810a",
+    "sha256": "b0ec26aa5a8a2c66"
   },
   "care/breeding-i18n-ja.js": {
-    "version": "20260808a",
-    "sha256": "9eeeeebcb83e745a"
+    "version": "20260810a",
+    "sha256": "40c6505cdd50e29d"
   },
   "care/breeding-i18n-ko.js": {
-    "version": "20260809x",
-    "sha256": "a92cd91ea1df99df"
+    "version": "20260810a",
+    "sha256": "5e81187cfb73c07f"
   },
   "care/breeding-i18n-zh.js": {
     "version": "20260808a",
@@ -320,20 +320,20 @@
     "sha256": "f15eae5f32b28484"
   },
   "care/care-i18n-en.js": {
-    "version": "20260809y",
-    "sha256": "a54697496d39d3f7"
+    "version": "20260810a",
+    "sha256": "249e17625633b9cc"
   },
   "care/care-i18n-ja.js": {
-    "version": "20260809y",
-    "sha256": "4261210153214af8"
+    "version": "20260810a",
+    "sha256": "40fbc0139315c72e"
   },
   "care/care-i18n-ko.js": {
-    "version": "20260809y",
-    "sha256": "b5b775af53d84acf"
+    "version": "20260810a",
+    "sha256": "d8685834a0ddb2dd"
   },
   "care/care-i18n-zh.js": {
-    "version": "20260809y",
-    "sha256": "45a4c1add3e870c1"
+    "version": "20260810a",
+    "sha256": "7833ca3aaaa17dfd"
   },
   "care/care-i18n.js": {
     "version": "20260803m",
@@ -528,20 +528,20 @@
     "sha256": "5c4e6f3dd6012a05"
   },
   "gecko/login-i18n-en.js": {
-    "version": "20260809b",
-    "sha256": "fff40804fe055e02"
+    "version": "20260810a",
+    "sha256": "b7857a972a671e9c"
   },
   "gecko/login-i18n-ja.js": {
-    "version": "20260809b",
-    "sha256": "7446ce959ab7a3ee"
+    "version": "20260810a",
+    "sha256": "8c821a12837d6a30"
   },
   "gecko/login-i18n-ko.js": {
-    "version": "20260809x",
-    "sha256": "e273238142571112"
+    "version": "20260810a",
+    "sha256": "08f7edd5397775e8"
   },
   "gecko/login-i18n-zh.js": {
-    "version": "20260809b",
-    "sha256": "e3e3b57e9750ece5"
+    "version": "20260810a",
+    "sha256": "aea13963221749c5"
   },
   "gecko/login-i18n.js": {
     "version": "20260808a",
@@ -556,7 +556,7 @@
     "sha256": "3d75ede255dd9811"
   },
   "pricing-i18n.js": {
-    "version": "20260809x",
-    "sha256": "158d6d1d308f74f7"
+    "version": "20260810a",
+    "sha256": "b8e637055e1c5ede"
   }
 }

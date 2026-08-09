@@ -47,7 +47,7 @@
     scriptLoadError: 'Could not load {src}',
     headerTitle: '{species} Breeding',
     headerSubtitle: 'Manage animals, pairings, clutches, and calculation analysis',
-    otherSpecies: '{count} animals of other species are available by changing the species above or in the <a href="/care/">Creature Care Log</a>.',
+    otherSpecies: '{count} animals of other species are available by changing the species above or in the <a href="/care/">Creature Care Scheduler</a>.',
     errorOwnership: 'This record is not yours, or your session has expired. Please sign in again.',
     errorDuplicate: 'This item has already been completed today.',
     errorLogin: 'Sign in required.',

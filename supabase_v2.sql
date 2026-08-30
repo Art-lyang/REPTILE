@@ -255,9 +255,15 @@ do $storage$
 begin
   -- 버킷 생성 (없을 때만)
   begin
-    insert into storage.buckets (id, name, public)
-      values ('morph-images','morph-images', true)
-      on conflict (id) do update set public = true;
+    insert into storage.buckets
+      (id, name, public, file_size_limit, allowed_mime_types)
+      values
+      ('morph-images','morph-images', true, 5242880,
+       array['image/jpeg','image/png','image/webp'])
+      on conflict (id) do update
+        set public = true,
+            file_size_limit = 5242880,
+            allowed_mime_types = array['image/jpeg','image/png','image/webp'];
   exception when others then
     raise notice '[건너뜀] 버킷 생성 실패: % — Storage 화면에서 직접 만들어 주세요.', sqlerrm;
   end;
@@ -269,21 +275,26 @@ begin
     drop policy if exists mi_update on storage.objects;
     drop policy if exists mi_delete on storage.objects;
 
-    -- 누구나 읽기 (이미지가 사이트에 표시되어야 하므로)
-    create policy mi_read on storage.objects for select
-      using (bucket_id = 'morph-images');
+    -- 공개 URL 읽기는 public 버킷 자체가 처리합니다. 목록·upsert 조회는 관리자만.
+    create policy mi_read on storage.objects for select to authenticated
+      using (bucket_id = 'morph-images' and public.is_admin());
 
-    -- 업로드: 관리자는 모프 이미지(m/), 그 외에는 개체 사진(a/) 만
-    create policy mi_insert on storage.objects for insert to anon, authenticated
+    -- 업로드: 관리자만 모프 이미지 폴더(m/)에 올립니다.
+    create policy mi_insert on storage.objects for insert to authenticated
       with check (
         bucket_id = 'morph-images'
-        and ( public.is_admin() or name like 'a/%' )
+        and public.is_admin()
+        and (storage.foldername(name))[1] = 'm'
       );
 
     -- 수정/삭제: 관리자만 (실수로 남의 사진을 지우지 못하게)
     create policy mi_update on storage.objects for update to authenticated
-      using      (bucket_id = 'morph-images' and public.is_admin())
-      with check (bucket_id = 'morph-images' and public.is_admin());
+      using (bucket_id = 'morph-images' and public.is_admin())
+      with check (
+        bucket_id = 'morph-images'
+        and public.is_admin()
+        and (storage.foldername(name))[1] = 'm'
+      );
 
     create policy mi_delete on storage.objects for delete to authenticated
       using (bucket_id = 'morph-images' and public.is_admin());
@@ -299,9 +310,11 @@ $storage$;
 --  1. Supabase 좌측 메뉴 → Storage → New bucket
 --       Name: morph-images   /   Public bucket: 켜기   → Save
 --  2. Storage → morph-images → Policies → New policy → For full customization
---       ① 이름 mi_read    / SELECT / Target roles 비움  / USING:  bucket_id = 'morph-images'
---       ② 이름 mi_insert  / INSERT / anon, authenticated
---          WITH CHECK:  bucket_id = 'morph-images' and ( public.is_admin() or name like 'a/%' )
+--       ① 이름 mi_read / SELECT / authenticated
+--          USING: bucket_id = 'morph-images' and public.is_admin()
+--       ② 이름 mi_insert / INSERT / authenticated
+--          WITH CHECK: bucket_id = 'morph-images' and public.is_admin()
+--                      and (storage.foldername(name))[1] = 'm'
 --  3. 저장 후 브리딩 관리에서 개체 사진 업로드가 되는지 확인하세요.
 -- ──────────────────────────────────────────────────────────────
 

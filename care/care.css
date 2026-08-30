@@ -23,6 +23,11 @@
   --eggplant:#675780; --leaf:#5c8a3a;
   --warn-bg:#fbeae3; --warn-bd:#f0c3b2; --warn-fg:#b4402a;
   --good-bg:#eaf2e4; --good-bd:#c9ddba; --good-fg:#3d6b28;
+  /* 고르는 중임을 알리는 안내 띠. 빨강(--warn)을 쓰면 "내가 뭘 잘못 눌렀나"로
+     읽혀서, 실제로 되돌릴 수 없는 것은 삭제 버튼 하나뿐인데 화면 전체가
+     경고처럼 보였습니다. 지우는 신호는 .btn danger 에만 남깁니다. */
+  --sel-bg:#eef4f1; --sel-bd:#cadfd6; --sel-fg:#1d4b3f;
+  --ped-line:rgba(7,90,72,.34);
   --shadow:0 2px 4px rgba(35,48,41,.03), 0 10px 28px rgba(35,48,41,.07);
   --radius:22px;                       /* (theme) 큰 카드 */
   --radius-sm:18px;                    /* (theme/base) 목록 카드 */
@@ -36,6 +41,8 @@
     --leaf:#8fc16a; --butter:#d9ab4a;
     --warn-bg:#2e1713; --warn-bd:#6e2e22; --warn-fg:#f3a594;
     --good-bg:#1a2418; --good-bd:#33502a; --good-fg:#9cd183;
+    --sel-bg:#18231f; --sel-bd:#2f4a41; --sel-fg:#a9d8c8;
+    --ped-line:rgba(58,169,135,.5);
     --shadow:0 3px 8px rgba(0,0,0,.18), 0 18px 40px rgba(0,0,0,.2);
     --hdbg:#1a211d;
   }
@@ -92,6 +99,8 @@ header .sub{
   .hd-deco.leaf{width:120px;top:-34px}
 }
 
+[hidden]{display:none!important;}
+
 /* 헤더 우측 버튼 — 계산기의 .blink 와 같은 치수 */
 .hd-btns{display:flex;gap:8px;align-items:center;flex:0 0 auto;position:relative;z-index:4}
 .blink{
@@ -105,6 +114,12 @@ header .sub{
 }
 .blink:hover{background:var(--card2)}
 .blink i{font-size:15px}
+.care-lang{position:relative}
+.care-lang select{
+  position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;
+  border:0;font-family:inherit
+}
+.pubtools{display:flex;justify-content:flex-end;margin-bottom:10px}
 @media (max-width:520px){
   .blink span{display:none}          /* 좁으면 아이콘만 */
   .blink{padding:0 12px}
@@ -218,7 +233,67 @@ header .sub{
 }
 .in:focus{outline:none;border-color:var(--teal);background:var(--card)}
 textarea.in{min-height:76px;resize:vertical;line-height:1.6}
-.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.row2>*{min-width:0}
+input.in[type="date"]{min-width:0;max-width:100%}
+
+/* 날짜 고르기 — 년 / 월 / 일 세 칸 (care/date-field.js)
+   -----------------------------------------------------------------------------
+   input[type=date] 는 브라우저마다 다르게 그려집니다. iOS 사파리는 글씨를
+   가운데로 몰고 높이도 달라서, 바로 위 '무게' 칸과 눈에 띄게 어긋났습니다.
+   select 세 개로 바꾸면 폭·높이가 다른 입력칸과 같아지고, iOS 는 select 를
+   아래에서 올라오는 휠로 그려 주어 손으로 만든 것보다 익숙합니다.
+
+   년 칸이 조금 넓은 것은 네 자리라서입니다. 셋을 같은 폭으로 두면 '2026' 이
+   잘리거나 월·일 칸에 빈자리가 남습니다. */
+.datefield{display:grid;grid-template-columns:1.35fr 1fr 1fr;gap:8px;margin-bottom:8px}
+.datepart{position:relative;min-width:0}
+.datepart select.in{margin-bottom:0;padding-right:30px;
+  -webkit-appearance:none;appearance:none;text-align:left}
+/* 단위 글자. 값 위에 겹치지 않게 오른쪽 끝에 두고, 눌러도 통과시켜
+   그 자리를 눌러도 선택 창이 열리게 합니다. */
+.datepart i{position:absolute;right:11px;top:50%;transform:translateY(-50%);
+  font-style:normal;font-size:12px;font-weight:700;color:var(--ink2);pointer-events:none}
+@media (max-width:360px){
+  .datefield{gap:6px}
+  .datepart select.in{padding-left:10px;padding-right:24px;font-size:14px}
+  .datepart i{right:8px;font-size:11px}
+}
+.animal-weight-register{
+  min-width:0;margin:17px 0 4px;padding:14px 15px 15px;
+  border:1px solid var(--hair);border-radius:16px;background:var(--card2);
+}
+.animal-weight-register legend{
+  padding:0 7px;color:var(--ink);font-size:13px;font-weight:800;
+}
+.animal-initial-weight .lbl2{margin-top:2px}
+.weight-input-unit{position:relative}
+.weight-input-unit .in{padding-right:42px;margin-bottom:0;background:var(--card)}
+.weight-input-unit>span{
+  position:absolute;right:15px;top:50%;transform:translateY(-50%);
+  color:var(--ink2);font-size:13px;font-weight:800;pointer-events:none;
+}
+.animal-weight-public{
+  display:grid;grid-template-columns:auto minmax(0,1fr);align-items:start;gap:10px;
+  margin-top:13px;padding-top:13px;border-top:1px solid var(--hair);cursor:pointer;
+}
+.animal-weight-public input{width:18px;height:18px;margin:2px 0 0;accent-color:var(--teal)}
+.animal-weight-public b{display:block;font-size:13.5px;color:var(--ink)}
+.animal-weight-public small{display:block;margin-top:3px;color:var(--ink2);font-size:11.5px;line-height:1.55}
+/* 두 칸 나란히. 단, 한 칸이라도 제 내용을 못 담을 만큼 좁아지면 세로로
+   내려놓습니다.
+
+   1fr 1fr 로만 두면 격자가 칸을 정해진 폭으로 눌러버립니다. 글자는 안
+   줄어드니 날짜 입력처럼 최소 폭이 있는 칸은 내용이 밖으로 삐져나와
+   옆 칸을 덮습니다. 폰에서 날짜 칸이 겹쳐 보이던 이유입니다.
+   실제로 375px 에서 여유가 2px 밖에 없었습니다 — 폰트가 조금만 커지거나
+   날짜 형식이 길어지면 바로 넘칩니다.
+
+   minmax(0,1fr) 는 칸이 넘칠 때 격자가 알아서 늘어나게 두는 것이고,
+   좁은 화면에서는 아예 한 줄에 하나씩 놓아 여유를 확보합니다. */
+.row2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
+@media (max-width:520px){
+  .row2{grid-template-columns:1fr}
+}
 .row3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 
 /* ── 버튼 : 계산기의 .act / .btn-calc / .btn-reset ────────────────────── */
@@ -260,13 +335,12 @@ textarea.in{min-height:76px;resize:vertical;line-height:1.6}
 
 /* ── 빈 상태 (theme .empty) ───────────────────────────────────────────── */
 .empty{
-  min-height:116px; display:flex; flex-direction:column;
-  align-items:center; justify-content:center; gap:6px;
+  min-height:116px; display:block;
   border:1px solid var(--hair); border-radius:20px;
   color:var(--ink2); font-size:13.5px; line-height:1.8; text-align:center;
   padding:26px 18px;
 }
-.empty i{font-size:26px;opacity:.45}
+.empty>i{font-size:26px;opacity:.45;display:block;margin:0 auto 8px}
 
 /* ── 오늘 할 일 ───────────────────────────────────────────────────────── */
 .task{
@@ -310,9 +384,22 @@ textarea.in{min-height:76px;resize:vertical;line-height:1.6}
 }
 .thumb img{width:100%;height:100%;object-fit:cover;display:block}
 .thumb i{font-size:19px}
+.thumb.thumb-empty{background:var(--card2)}
 .info{flex:1;min-width:0}
 .nm{font-weight:780;font-size:15px;letter-spacing:-.025em;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.animal-card-heading{display:flex;align-items:flex-start;min-width:0}
+.animal-card-name{font-weight:780;font-size:15px;line-height:1.35;letter-spacing:-.025em;overflow-wrap:anywhere}
+.animal-card-meta{display:flex;align-items:center;flex-wrap:nowrap;gap:6px;min-width:0;min-height:22px;margin-top:4px;overflow:hidden}
+.animal-card-meta .chip{flex:0 0 auto;white-space:nowrap}
+.animal-card-meta .animal-card-combo{flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis}
 .ms{font-size:11.5px;color:var(--ink2);margin-top:2px;word-break:keep-all;line-height:1.6}
+/* 라인브리딩 색 강도 — 5점 만점을 점으로 보여줍니다.
+   빈 점까지 그려야 '3' 이 3/5 인지 3/10 인지 헷갈리지 않습니다. */
+.gdrow{display:inline-flex;align-items:center;gap:1px;white-space:nowrap}
+.gd{display:inline-block;width:7px;height:7px;border-radius:50%;
+    background:var(--line);flex:0 0 auto}
+.gd.on{background:var(--teal)}
+.gdrow .gd:last-of-type{margin-right:4px}
 .acts{display:flex;gap:6px;flex:0 0 auto}
 
 /* 배지 (theme .fambadge / .selchip) */
@@ -322,6 +409,27 @@ textarea.in{min-height:76px;resize:vertical;line-height:1.6}
   padding:2px 9px; font-size:10.5px; font-weight:700; color:var(--ink2);
 }
 .chip.off{opacity:.7}
+/* 무료 한도 안내와, 한도를 넘어 잠긴 개체.
+   잠긴 것을 흐리게만 두면 고장으로 읽힙니다. 왜 잠겼고 무엇은 되는지
+   (보기·삭제) 카드 안에서 바로 알 수 있어야 합니다. */
+.quotabar{display:flex;align-items:center;justify-content:space-between;gap:12px;
+  margin:0 0 12px;padding:12px 14px;border:1px solid var(--sel-bd);border-radius:16px;
+  background:var(--sel-bg);color:var(--sel-fg);font-size:13px}
+.quotabar.over{border-color:var(--warn-bd);background:var(--warn-bg);color:var(--warn-fg)}
+.quotahint{margin-top:3px;font-size:11.5px;opacity:.85;line-height:1.5}
+.quotabar .mini{flex:0 0 auto;text-decoration:none}
+.card-locked{opacity:.72}
+.chip.chip-locked{background:var(--warn-bg);border-color:var(--warn-bd);color:var(--warn-fg)}
+.lockedwhy{color:var(--warn-fg)}
+/* 성별 기호 — ♀/♂(U+2640/2642)는 본문 한글 폰트에 없어 시스템 기호 폰트로
+   대체됩니다. 대체 폰트는 베이스라인과 상하 여백이 달라서, 기호와 글자가 한
+   텍스트 노드로 묶여 있으면 .chip 의 align-items:center 로도 어긋난 채 남습니다
+   (기호가 글자보다 떠 보이던 원인). 같은 자리를 아이콘 폰트로 바꾸면 나머지
+   아이콘과 metric 이 같아지고, 기호가 별도 flex 항목이 되어 글자와 따로 세로
+   가운데를 잡습니다. bootstrap-icons 의 vertical-align:-.125em 은 flex 항목
+   안에서 다시 기호를 내리므로 여기서만 되돌립니다. */
+.chip .chip-sex{flex:0 0 auto;font-size:11.5px;line-height:1}
+.chip .chip-sex::before{vertical-align:0}
 
 /* ── 고르는 칩 : 계산기 .chip 과 같은 규칙 ────────────────────────────── */
 .wdays{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:10px}
@@ -340,6 +448,158 @@ textarea.in{min-height:76px;resize:vertical;line-height:1.6}
 }
 .modes{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
 .mode{padding:11px 12px;font-size:13.5px}
+
+/* 자주 쓰는 주기·요일 묶음. 개수가 유동적이라 흐르게 두고, 칩과 같은 규칙을
+   씁니다 — 같은 화면에서 고르는 것끼리 모양이 다르면 뭐가 뭔지 헷갈립니다. */
+.presets{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.preset{
+  min-height:36px; padding:7px 14px;
+  border:1px solid var(--chipbd); border-radius:999px;
+  background:var(--card); color:var(--ink);
+  font-size:12.5px; font-weight:650; font-family:inherit; cursor:pointer;
+  transition:background .12s,border-color .12s,color .12s;
+}
+.preset:hover{border-color:rgba(7,90,72,.55);background:rgba(7,90,72,.035)}
+.preset.on{
+  border-color:var(--teal); background:rgba(7,90,72,.075); color:var(--teal);
+  box-shadow:inset 0 0 0 1px var(--teal); font-weight:750;
+}
+
+/* ── 사진 고르기 ──────────────────────────────────────────────────────── */
+.photorow{display:flex;gap:12px;align-items:flex-start;margin-top:8px}
+.photoprev{
+  width:96px;height:96px;flex:0 0 auto;border-radius:14px;overflow:hidden;
+  background:var(--gtile);border:1px solid var(--hair);
+  display:flex;align-items:center;justify-content:center;
+  font-size:11.5px;color:var(--ink2);
+}
+.photoprev img{width:100%;height:100%;object-fit:cover;display:block}
+.photoside{flex:1;min-width:0;display:flex;flex-direction:column;gap:7px;align-items:flex-start}
+/* label 을 버튼처럼 씁니다 — 파일 입력을 숨기고 이걸 누르게 하면
+   브라우저 기본 '파일 선택' 버튼의 제각각인 모양을 안 봐도 됩니다. */
+.photoside label.btn{cursor:pointer}
+.cphoto-editor{margin-top:8px}
+.cphoto-slot{min-width:0}
+.cphoto-slot.cover{
+  display:grid;grid-template-columns:112px minmax(0,1fr);grid-template-rows:auto 1fr;
+  gap:8px 14px;align-items:start;padding:12px;
+  border:1px solid var(--hair);border-radius:16px;background:var(--card2);
+}
+.cphoto-slot.cover .cphoto-preview{grid-column:1;grid-row:1/3}
+.cphoto-slot.cover .cphoto-label{grid-column:2;align-self:end}
+.cphoto-slot.cover .cphoto-actions{grid-column:2;align-self:start}
+.cphoto-label,.cphoto-group-title{font-size:12.5px;font-weight:800;color:var(--ink)}
+.cphoto-preview{
+  width:100%;aspect-ratio:1;border:1px solid var(--hair);border-radius:13px;
+  overflow:hidden;background:var(--gtile);display:flex;align-items:center;justify-content:center;
+}
+.cphoto-image{width:100%;height:100%;object-fit:cover;display:block}
+.cphoto-empty{
+  display:flex;flex-direction:column;align-items:center;gap:5px;
+  color:var(--ink2);font-size:10.5px;text-align:center;
+}
+.cphoto-empty i{font-size:20px;opacity:.55}
+.cphoto-actions{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.cphoto-actions label{cursor:pointer}
+.cphoto-actions .mini{font-size:11.5px;padding:7px 10px;min-height:34px}
+.cphoto-extras{margin-top:14px}
+.cphoto-group-title{margin-bottom:8px}
+.cphoto-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+.cphoto-grid .cphoto-slot{
+  padding:9px;border:1px solid var(--hair);border-radius:14px;background:var(--card2);
+}
+.cphoto-grid .cphoto-label{font-size:11px;margin-bottom:6px}
+.cphoto-grid .cphoto-actions{margin-top:7px}
+.cphoto-grid .cphoto-actions .mini{width:100%;padding:6px 5px;white-space:normal;line-height:1.3}
+.cphoto-hint{margin-top:10px}
+@media (max-width:380px){
+  .cphoto-slot.cover{grid-template-columns:96px minmax(0,1fr)}
+  .cphoto-grid{gap:6px}
+  .cphoto-grid .cphoto-slot{padding:6px}
+}
+
+body.cropper-open{overflow:hidden;touch-action:none}
+.pcrop-modal{
+  position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;
+  background:rgba(12,18,16,.72);color:#162b25;
+}
+.pcrop-shell{
+  width:min(100%,600px);height:100dvh;max-height:940px;display:flex;flex-direction:column;
+  background:#f9f7f2;box-shadow:0 28px 80px rgba(0,0,0,.34);overflow:hidden;
+}
+.pcrop-head{
+  min-height:72px;padding:calc(10px + env(safe-area-inset-top)) 18px 10px;
+  display:grid;grid-template-columns:48px 1fr 48px;align-items:center;gap:10px;
+  background:#fff;border-bottom:1px solid rgba(17,30,26,.08);
+}
+.pcrop-head h2{margin:0;text-align:center;font-size:18px;line-height:1.25;letter-spacing:-.025em}
+.pcrop-icon{
+  width:46px;height:46px;padding:0;border:0;border-radius:50%;display:grid;place-items:center;
+  background:#f5f3ee;color:#172d26;font:inherit;font-size:23px;cursor:pointer;
+  box-shadow:0 4px 14px rgba(31,45,39,.08);
+}
+.pcrop-icon.apply{background:var(--teal);color:#fff}
+.pcrop-icon:disabled{opacity:.55;cursor:wait}
+.pcrop-work{
+  min-height:0;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;
+  background:#17201d;overflow:hidden;
+}
+.pcrop-stage{
+  position:relative;width:min(100%,calc((100dvh - 250px)*4/3));aspect-ratio:4/3;
+  overflow:hidden;background:#0c1311;touch-action:none;user-select:none;
+}
+.pcrop-image{
+  position:absolute;left:50%;top:50%;max-width:none;max-height:none;display:block;
+  pointer-events:none;will-change:width,height,transform;opacity:0;transition:opacity .15s;
+  image-orientation:from-image;
+}
+.pcrop-stage.ready .pcrop-image{opacity:1}
+.pcrop-grid,.pcrop-safe{position:absolute;inset:0;pointer-events:none}
+.pcrop-grid{border:1px solid rgba(255,255,255,.7)}
+.pcrop-grid span{position:absolute;background:rgba(255,255,255,.34)}
+.pcrop-grid span:nth-child(1),.pcrop-grid span:nth-child(2){top:0;bottom:0;width:1px}
+.pcrop-grid span:nth-child(1){left:33.333%}
+.pcrop-grid span:nth-child(2){left:66.666%}
+.pcrop-grid span:nth-child(3),.pcrop-grid span:nth-child(4){left:0;right:0;height:1px}
+.pcrop-grid span:nth-child(3){top:33.333%}
+.pcrop-grid span:nth-child(4){top:66.666%}
+.pcrop-safe{
+  width:calc(75% - 12px);height:calc(100% - 12px);inset:6px auto auto 50%;
+  transform:translateX(-50%);border:2px solid rgba(255,255,255,.9);border-radius:50%;
+  box-shadow:0 0 0 999px rgba(8,14,12,.26);
+}
+.pcrop-copy{
+  width:100%;min-height:62px;flex:1;padding:10px 18px 11px;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:2px;text-align:center;color:#f4f7f5;
+  background:#17201d;font-size:12px;
+}
+.pcrop-copy strong{font-size:13px}
+.pcrop-copy span{color:rgba(244,247,245,.72)}
+.pcrop-controls{
+  padding:14px 22px calc(16px + env(safe-area-inset-bottom));background:#fff;
+}
+.pcrop-controls>label{display:block;margin-bottom:7px;font-size:12px;font-weight:800}
+.pcrop-zoom{display:grid;grid-template-columns:22px 1fr 22px;align-items:center;gap:10px}
+.pcrop-zoom i{font-size:15px;text-align:center;color:#46635a}
+.pcrop-zoom input{width:100%;accent-color:var(--teal)}
+.pcrop-reset{
+  min-height:38px;margin:10px auto 0;padding:7px 14px;display:flex;align-items:center;gap:6px;
+  border:1px solid rgba(31,48,41,.14);border-radius:999px;background:#f8f5ee;color:#314a42;
+  font:700 12px inherit;cursor:pointer;
+}
+.pcrop-status{height:18px;margin-top:4px;text-align:center;font-size:11px;color:#61716b}
+@media (min-width:601px) and (min-height:680px){
+  .pcrop-shell{height:min(900px,calc(100dvh - 36px));border-radius:24px}
+}
+@media (max-height:620px){
+  .pcrop-head{min-height:58px;padding-top:calc(6px + env(safe-area-inset-top));padding-bottom:6px}
+  .pcrop-icon{width:40px;height:40px}
+  .pcrop-copy{min-height:48px;padding:6px 14px}
+  .pcrop-controls{padding-top:8px;padding-bottom:calc(8px + env(safe-area-inset-bottom))}
+  .pcrop-reset{margin-top:5px}
+  .pcrop-status{display:none}
+}
+@media (prefers-reduced-motion:reduce){.pcrop-image{transition:none}}
 
 /* ── 체중 ─────────────────────────────────────────────────────────────── */
 .wchart{width:100%;height:auto;display:block;margin:6px 0 10px}
@@ -367,6 +627,54 @@ textarea.in{min-height:76px;resize:vertical;line-height:1.6}
 .safety{
   font-size:11.5px; color:var(--ink2); line-height:1.75; margin-top:14px;
   padding-top:13px; border-top:1px solid var(--hair);
+}
+
+/* =============================================================================
+   브리딩 관리 (breeding.html)
+   -----------------------------------------------------------------------------
+   모프 체크박스가 종에 따라 9개(펫테일)에서 52개(볼파이톤)까지 갑니다.
+   개수가 크게 달라지므로 고정 칸 수 대신 폭에 맞춰 흐르게 둡니다.
+   ============================================================================= */
+.tokgrid{
+  display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
+  gap:2px 10px; margin-bottom:4px;
+}
+.tokchk{
+  display:flex; align-items:center; gap:7px; padding:7px 4px;
+  font-size:13px; line-height:1.4; cursor:pointer; border-radius:8px;
+}
+.tokchk:hover{background:var(--card2)}
+.tokchk input{accent-color:var(--teal);flex:0 0 auto;width:16px;height:16px}
+.tokgrid.line-score-grid{grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:6px 10px}
+.line-score-row{display:grid;grid-template-columns:auto minmax(0,1fr) 108px;align-items:center}
+.line-score-row .line-score{width:100%;min-height:34px;padding:5px 7px;font-size:12px}
+.line-score-row .line-score:disabled{opacity:.45;cursor:not-allowed}
+/* 역산 목록의 배지 — '이 모프를 지금 개체로 만들 수 있나' 를 한눈에.
+   개체 수를 적었더니 '슈퍼카푸치노 보유 1' 이 슈퍼카푸치노를 갖고 있는
+   것처럼 읽혀서 여부로 바꿨습니다. */
+.ownb{
+  margin-left:auto; flex:0 0 auto;
+  background:var(--teal); color:#fff; font-size:9.5px; font-weight:800;
+  padding:1px 7px; border-radius:999px; white-space:nowrap;
+}
+/* 일부만 있는 것은 가능한 것과 구분되어야 합니다. 색만으로는 색을 구별하기
+   어려운 사람에게 같아 보여서 테두리만 있는 형태로 다르게 둡니다. */
+.ownb.part{
+  background:transparent; color:var(--ink2);
+  border:1px solid var(--chipbd); font-weight:700;
+}
+.pathbox{
+  background:var(--card2); border:1px solid var(--hair); border-radius:14px;
+  padding:13px 15px; font-size:13.5px; line-height:1.7;
+}
+.combotag{
+  display:inline-block; background:var(--teal); color:#fff;
+  font-size:9.5px; font-weight:800; padding:2px 8px; border-radius:6px; margin-right:6px;
+}
+@media (max-width:420px){
+  .tokgrid{grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:0 8px}
+  .tokgrid.line-score-grid{grid-template-columns:1fr;gap:5px}
+  .tokchk{font-size:12.5px}
 }
 
 /* =============================================================================
@@ -498,6 +806,98 @@ textarea.in{min-height:76px;resize:vertical;line-height:1.6}
 .lastrow.old{background:var(--warn-bg);border-color:var(--warn-bd)}
 .lastrow.old .lago{color:var(--warn-fg)}
 @media (max-width:440px){ .lastgrid{grid-template-columns:1fr} }
+
+/* ── 족보 ─────────────────────────────────────────────────────────────── */
+/* 세대가 늘면 폭이 두 배씩 커집니다. 화면 밖으로 흘리지 않고 이 상자 안에서만
+   가로로 스크롤되게 가둡니다 — 페이지 전체가 옆으로 밀리면 다른 것도 다 깨집니다. */
+.pedscroll{overflow-x:auto;padding:4px 2px 8px;margin:10px -2px 0}
+.pedtree{display:flex;flex-direction:column}
+.pedrow{display:grid;gap:8px}
+.pedcell{display:flex;justify-content:center;min-width:0;position:relative}
+.pedcell.empty{visibility:hidden}
+
+.pedrow.ancestors .pedcell:not(.empty)::after{
+  content:'';position:absolute;left:50%;bottom:-8px;width:2px;height:8px;
+  background:var(--ped-line);transform:translateX(-1px);
+}
+.pedlinks{height:28px;display:grid}
+.pedbranch{position:relative;--branch-left:50%;--branch-right:50%}
+.pedbranch.has-left.has-right{--branch-left:25%;--branch-right:25%}
+.pedbranch.has-left:not(.has-right){--branch-left:25%;--branch-right:50%}
+.pedbranch.has-right:not(.has-left){--branch-left:50%;--branch-right:25%}
+.pedbranch.has-left::before,.pedbranch.has-right::before{
+  content:'';position:absolute;left:var(--branch-left);right:var(--branch-right);top:7px;
+  height:2px;background:var(--ped-line);
+}
+.pedbranch.has-left::after,.pedbranch.has-right::after{
+  content:'';position:absolute;left:50%;top:7px;bottom:0;width:2px;
+  background:var(--ped-line);transform:translateX(-1px);
+}
+
+.pedbox{
+  display:flex;flex-direction:column;align-items:center;gap:5px;
+  width:84px;padding:9px 6px;text-decoration:none;color:inherit;
+  background:var(--card2);border:1px solid var(--hair);border-radius:14px;
+  transition:border-color .12s,transform .12s;
+}
+a.pedbox:hover{border-color:var(--teal);transform:translateY(-1px)}
+.pedbox.root{background:var(--card);border-color:var(--teal);box-shadow:inset 0 0 0 1px var(--teal)}
+/* 같은 조상이 양쪽 혈통에 나오는 것 = 근친 신호. 족보를 그리는 가장 큰 이유라
+   테두리로도 구분합니다 — 색만으로는 색을 구별하기 어려운 사람에게 안 보입니다. */
+.pedbox.repeated{border-color:var(--warn-fg);border-style:dashed;background:var(--warn-bg)}
+.pedbox.missing{opacity:.6;border-style:dashed}
+
+.pedface{
+  width:42px;height:42px;border-radius:50%;flex:0 0 auto;overflow:hidden;
+  background:var(--gtile);border:1.5px solid rgba(7,90,72,.14);
+  display:flex;align-items:center;justify-content:center;font-size:19px;
+}
+.pedface img{width:100%;height:100%;object-fit:cover;display:block}
+.pedface.none{color:var(--ink2);font-weight:800}
+.pedname{
+  font-size:11.5px;font-weight:750;text-align:center;line-height:1.3;
+  width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.pedrole{font-size:10px;font-weight:800;color:var(--ink2)}
+.pedbox.repeated .pedrole,.pedbox.repeated .pedname{color:var(--warn-fg)}
+
+@media (max-width:440px){
+  .pedbox{width:72px;padding:8px 4px;gap:4px}
+  .pedface{width:38px;height:38px;font-size:17px}
+  .pedname{font-size:10.5px}
+}
+
+/* 5·6세대 — 마지막 줄이 32칸·64칸입니다. 92px 씩 두면 6,500px 을 밀어야 해서
+   조상을 찾는 게 아니라 헤매게 됩니다. 사진을 접고 이름만 남겨 칸을 좁힙니다.
+   이 깊이에서 보려는 것은 얼굴이 아니라 '누가 어디에 있는가' 입니다.
+   .deep 은 미디어 쿼리보다 뒤에 와야 좁은 화면에서도 이깁니다. */
+.pedtree.deep .pedbox{width:48px;padding:6px 3px;gap:2px;border-radius:10px}
+.pedtree.deep .pedface{display:none}
+.pedtree.deep .pedname{font-size:9.5px;font-weight:800;line-height:1.25;white-space:normal;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.pedtree.deep .pedrole{display:none}
+.pedtree.deep .pedlinks{height:16px}
+.pedtree.deep .pedrow.ancestors .pedcell:not(.empty)::after{bottom:-5px;height:5px}
+.pedtree.deep .pedbranch.has-left::before,.pedtree.deep .pedbranch.has-right::before,
+.pedtree.deep .pedbranch.has-left::after,.pedtree.deep .pedbranch.has-right::after{top:4px}
+
+/* 세대 수 고르기 — 6개라 좁은 화면에서 넘칩니다. 줄바꿈으로 받습니다. */
+.pedgens{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.pedgens .mode{flex:0 0 auto;min-width:60px;padding:8px 14px;font-size:12.5px}
+@media (max-width:440px){
+  .pedgens .mode{min-width:0;padding:8px 11px;font-size:12px}
+}
+
+/* 자식은 세대가 아니라 목록입니다 — 몇 마리가 될지 모르므로 흐르게 둡니다 */
+.pedkids{display:flex;flex-wrap:wrap;gap:9px;margin-top:8px}
+.pedkid{
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  width:84px;padding:9px 6px;text-decoration:none;color:inherit;
+  background:var(--card2);border:1px solid var(--hair);border-radius:14px;
+}
+.pedkid:hover{border-color:var(--teal)}
+.pedmate{font-size:10px;color:var(--ink2);text-align:center;line-height:1.3;
+  width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
 /* ── 기록 히트맵 ──────────────────────────────────────────────────────── */
 /* 세로가 요일(일~토), 가로가 주. grid-auto-flow:column 으로 열 단위로 채웁니다. */
@@ -680,3 +1080,77 @@ body.pub .wrap{max-width:560px}
   .wrap{padding:16px 14px}
   .hd{padding:22px 16px 18px}
 }
+
+/* ── 일괄 빠른 기록 ────────────────────────────────────────────────────────
+   100마리를 키우면 물 교체 한 번 남기는 데 개체를 하나씩 눌러 들어갔다
+   나오기를 100번 해야 했습니다. 여기서 체크해서 한 번에 남깁니다.
+
+   막대는 목록 위에 붙어 따라옵니다. 아래로 내려가며 고르는 동안 버튼이
+   화면 밖으로 사라지면, 다 고른 뒤 다시 맨 위로 올라와야 합니다. */
+.bulkbar{
+  position:sticky;top:0;z-index:5;margin:0 0 12px;padding:12px 14px 14px;
+  background:var(--card);border:1px solid var(--chipbd,rgba(38,34,29,.16));border-radius:14px;
+  box-shadow:0 6px 18px rgba(38,34,29,.08);
+}
+.bulkhead{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.bulkpicks{display:flex;gap:6px}
+/* 고른 것이 없을 때는 눌러도 아무 일이 없습니다. 눌러 보고 알게 하지 않고
+   버튼을 흐리게 두어 미리 알립니다. */
+.bulkbar.idle .qbtn{opacity:.45}
+.bulkbar .qbtn[disabled]{cursor:default}
+
+/* 카드 전체가 체크상자입니다. 작은 네모만 눌러야 하면 100마리를 고르는 동안
+   손이 아픕니다. */
+.card-picking{cursor:pointer}
+.card-picked{border-color:var(--teal);box-shadow:inset 0 0 0 1px var(--teal)}
+.bulkpick{display:flex;align-items:center;padding:0 4px 0 2px;flex:0 0 auto}
+.bulkpick input{width:22px;height:22px;accent-color:var(--teal)}
+
+@media (max-width:520px){
+  .bulkbar{padding:10px 11px 12px}
+  .bulkbar .quick{grid-template-columns:repeat(4,1fr);gap:6px}
+}
+
+/* ── 법적 지위와 서류 (CITES) ─────────────────────────────────────────────
+   v64 가 DB 를 만들어 두고 화면이 없어 방치돼 있던 자리입니다. */
+.lgdocs{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+.lgdoc{
+  display:flex;align-items:center;gap:10px;padding:10px 12px;
+  background:var(--card2);border:1px solid var(--hair);border-radius:12px;
+}
+.lgdoc.expired{border-color:var(--warn-bd,#f0c3b2);background:var(--warn-bg)}
+.lgdoc-main{flex:1;min-width:0}
+.lgdoc-kind{font-weight:750;font-size:13.5px}
+.lgdoc-meta{color:var(--ink2);font-size:12px;margin-top:2px}
+.lgdoc-extra,.lgdoc-expired{
+  font-size:10.5px;font-weight:800;padding:1px 6px;border-radius:6px;vertical-align:1px;
+}
+.lgdoc-extra{background:var(--hair);color:var(--ink2)}
+.lgdoc-expired{background:var(--warn-bg);color:var(--warn-fg)}
+.lgdoc-acts{display:flex;gap:6px;flex:0 0 auto}
+.lgadd{margin-top:12px}
+.lgadd summary{cursor:pointer;font-weight:750;font-size:13.5px;padding:8px 0}
+.note.ok{background:var(--gtile,#eef5f0);color:var(--teal)}
+
+/* ── 보류 안내 ─────────────────────────────────────────────────────────────
+   관리자가 사진을 비공개로 돌렸을 때 회원에게 왜 그런지 알립니다.
+   조치만 하고 안 알리면 회원에게 남는 것은 '내 사진이 왜 사라졌지' 뿐입니다. */
+.holdbanner{
+  margin:0 0 14px;padding:14px 16px;border-radius:14px;
+  background:var(--warn-bg);border:1px solid var(--warn-bd,#f0c3b2);
+}
+.hold-top{display:flex;align-items:center;gap:7px;color:var(--warn-fg);font-size:14px}
+.hold-why{margin:8px 0 0;font-size:13.5px;line-height:1.55}
+.hold-what{margin:6px 0 0;font-size:12.5px;color:var(--ink2)}
+.hold-acts{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+.hold-acts .mini{text-decoration:none}
+.chip-held{background:var(--warn-bg);color:var(--warn-fg)}
+
+/* 고칠 때의 체중 칸. 만들 때만 입력이 있어서, 수정을 누르면 적어 둔 g 이
+   사라진 것처럼 보였습니다 — 실제로 그런 제보가 왔습니다. 기록은 멀쩡하고
+   이 폼이 안 건드릴 뿐이라, 지금 값을 보여 주고 어디서 이어 적는지 적습니다. */
+.animal-weight-current{display:flex;flex-direction:column;gap:6px;padding:2px 0 4px}
+.awc-now{display:flex;align-items:baseline;gap:9px}
+.awc-now b{font-size:21px;font-weight:850;line-height:1}
+.awc-now span{font-size:12.5px;color:var(--ink2)}
+.awc-none{font-size:13px;color:var(--ink2);font-style:italic}

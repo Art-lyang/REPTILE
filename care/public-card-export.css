@@ -1,0 +1,9 @@
+.share-export{position:relative;display:grid;grid-template-columns:48px 1fr;gap:4px 14px;margin-top:14px;padding:18px;border:1px solid color-mix(in srgb,var(--teal) 24%,var(--hair));border-radius:22px;background:linear-gradient(145deg,color-mix(in srgb,var(--teal) 9%,var(--card)),var(--card) 65%);overflow:hidden}
+.share-export::after{content:"";position:absolute;right:-42px;top:-48px;width:138px;height:138px;border-radius:50%;border:24px solid color-mix(in srgb,var(--teal) 8%,transparent);pointer-events:none}
+.share-export-mark{position:relative;z-index:1;grid-row:1/3;width:48px;height:48px;display:grid;place-items:center;border-radius:16px;background:var(--teal);color:#fff;font-size:21px;box-shadow:0 10px 24px color-mix(in srgb,var(--teal) 20%,transparent)}
+.share-export-copy{position:relative;z-index:1;display:flex;flex-direction:column;gap:3px;padding-right:24px}
+.share-export-copy strong{font-size:15px;letter-spacing:-.025em;color:var(--ink)}
+.share-export-copy span{font-size:12px;line-height:1.55;color:var(--ink2)}
+.share-export .btn{position:relative;z-index:1;grid-column:1/-1;margin-top:11px}
+.share-export .btn[aria-busy="true"]{opacity:.72;cursor:progress}
+@media(max-width:430px){.share-export{grid-template-columns:42px 1fr;padding:16px}.share-export-mark{width:42px;height:42px;border-radius:14px;font-size:18px}.share-export-copy{padding-right:8px}}

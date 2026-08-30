@@ -3,16 +3,26 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>로그인 · 레오파드 모프 계산기</title>
+<title>계정 · 량 스튜디오</title>
 <link rel="icon" type="image/png" sizes="32x32" href="/assets/logo-mark-32.png">
 <link rel="icon" type="image/png" sizes="512x512" href="/assets/logo-mark.png">
 <link rel="apple-touch-icon" href="/assets/logo-mark-180.png">
 <!-- robots.txt 의 Disallow 는 '읽지 말라'일 뿐이라, 다른 데서 링크가 걸리면
      주소만 검색결과에 남을 수 있습니다. noindex 는 색인 자체를 막습니다. -->
 <meta name="robots" content="noindex, nofollow">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="../assets/studio-config.js?v=113119"></script>
-<script src="gecko-core.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.8/dist/umd/supabase.js"></script>
+<script src="../assets/studio-config.js?v=20260810k"></script>
+<script src="/assets/imgtool.js?v=20260809x"></script>
+<script src="gecko-core.js?v=20260809x"></script>
+<script src="login-i18n-ko.js?v=20260810c"></script>
+<script src="login-i18n-en.js?v=20260810c"></script>
+<script src="login-i18n-zh.js?v=20260810c"></script>
+<script src="login-i18n-ja.js?v=20260810c"></script>
+<script src="login-i18n.js?v=20260808a"></script>
+<link rel="stylesheet" href="account-shell.css?v=20260803b">
+<script src="account-shell.js?v=20260808a"></script>
+<script src="/assets/premium-expiry-notice.js?v=20260808a"></script>
+<script>window.LoginI18n.initialize();</script>
 <!-- 가입 봇 차단. TURNSTILE_SITE_KEY 가 비어 있으면 이 스크립트를 아예
      읽지 않습니다 — 키 없이 위젯만 띄우면 토큰이 안 나와 가입이 막힙니다. -->
 <script>
@@ -46,6 +56,11 @@ if (typeof TURNSTILE_SITE_KEY === 'string' && TURNSTILE_SITE_KEY.trim()) {
     -webkit-font-smoothing:antialiased;display:flex;flex-direction:column}
   header{padding:22px 16px 6px;text-align:center;position:relative}
   .back{position:absolute;left:14px;top:22px;color:var(--teal);text-decoration:none;font-weight:700;font-size:13.5px}
+  .langpick{position:absolute;right:14px;top:16px;display:inline-flex;align-items:center;gap:5px;
+    min-height:34px;padding:0 10px;border:1px solid var(--hair);border-radius:11px;background:var(--card);
+    color:var(--ink);font-size:12px;font-weight:700;box-shadow:var(--shadow)}
+  .langpick:focus-within{outline:2px solid var(--teal);outline-offset:2px}
+  .langpick select{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer}
   header h1{margin:0;font-size:20px;font-weight:800;letter-spacing:-.4px}
   .wrap{flex:1;width:100%;max-width:400px;margin:0 auto;padding:14px 16px 40px}
   .card{background:var(--card);border-radius:18px;padding:20px;box-shadow:var(--shadow)}
@@ -85,16 +100,37 @@ if (typeof TURNSTILE_SITE_KEY === 'string' && TURNSTILE_SITE_KEY.trim()) {
   .links{display:flex;flex-direction:column;gap:8px;margin-top:18px}
   .links a{display:block;text-align:center;background:var(--card2);color:var(--ink);text-decoration:none;
     border-radius:11px;padding:12px;font-size:14px;font-weight:700}
+  /* 가입 갈래. 로그인/가입 전환(.seg)과 같은 성격의 선택이라 비슷한 모양으로
+     두었습니다. 라디오 대신 버튼인 것은, 고른 쪽에 따라 아래 칸이 늘고 줄기
+     때문입니다 — 누르면 화면이 바뀐다는 것이 버튼 쪽이 더 잘 읽힙니다. */
+  .jkbar{display:flex;gap:7px;margin:0 0 10px}
+  .jkbar .jk{flex:1;background:var(--card2);border:1.5px solid transparent;border-radius:11px;
+    padding:11px 8px;font-size:13.5px;font-weight:700;color:var(--ink);cursor:pointer;font-family:inherit}
+  .jkbar .jk.on{border-color:var(--teal);color:var(--teal);background:var(--card)}
 .consent{background:var(--card2);border-radius:12px;padding:12px 13px;margin:6px 0 12px}
+/* 어느 판의 약관에 동의하는지. 안 보여 주면 회원도 우리도 나중에 확인할 수
+   없습니다. */
+.cver{display:inline-block;margin:0 4px;padding:0 5px;border-radius:5px;
+  background:var(--hair);color:var(--ink2);font-size:10.5px;font-weight:800;vertical-align:1px}
   .cAll{display:flex;align-items:center;gap:9px;font-size:14.5px;font-weight:800;padding:4px 2px 10px;border-bottom:1px solid var(--hair);margin-bottom:6px;cursor:pointer}
   .cRow{display:flex;align-items:flex-start;gap:9px;font-size:13px;padding:6px 2px;cursor:pointer}
   .cRow input,.cAll input{width:18px;height:18px;accent-color:var(--teal);flex:0 0 auto;margin-top:1px}
   .cRow .req{color:var(--teal);font-weight:800;font-size:11.5px;margin-right:3px}
   .cRow .opt{color:var(--ink2);font-weight:700;font-size:11.5px;margin-right:3px}
-  .cRow a{color:var(--ink2);text-decoration:underline;font-size:11.5px;margin-left:4px}
+  .cRow a{color:var(--ink2);text-decoration:underline;font-size:11.5px;margin-left:4px;
+    white-space:nowrap}
+  /* 한국어는 어절 중간에서 끊으면 안 됩니다. keep-all 이 없으면
+     '보기' 가 '보 / 기' 로, '제9조' 가 '제9 / 조' 로 갈라집니다.
+     줄 간격도 함께 잡아 줍니다 — 판 칩과 링크가 섞이면 줄마다 높이가
+     달라져 목록이 들쭉날쭉해 보입니다. */
+  .cRow > span{flex:1;min-width:0;word-break:keep-all;overflow-wrap:anywhere;line-height:1.75}
+  .cRow .cver{white-space:nowrap}
   .cNote{font-size:11px;color:var(--ink2);line-height:1.6;margin-top:8px;padding-top:8px;border-top:1px solid var(--hair)}
   .why{background:var(--card2);border-radius:12px;padding:13px;font-size:12.5px;color:var(--ink2);line-height:1.65;margin-top:16px}
   .why b{color:var(--ink)}
+  .beta-notice{margin-bottom:16px;padding:12px 13px;border:1px solid var(--okbd);border-radius:12px;
+    background:var(--okbg);color:var(--ok);font-size:12px;line-height:1.6}
+  .beta-notice b{display:block;margin-bottom:2px;font-size:13px;color:var(--ink)}
   /* 로그인 수단 목록 */
   .idrow{display:flex;align-items:center;gap:10px;padding:9px 2px;border-bottom:1px solid var(--hair)}
   .idrow:last-of-type{border-bottom:none}
@@ -125,31 +161,47 @@ if (typeof TURNSTILE_SITE_KEY === 'string' && TURNSTILE_SITE_KEY.trim()) {
 </head>
 <body>
 <header>
-  <a class="back" href="index.html">← 계산기</a>
-  <h1>🦎 계정</h1>
+  <a class="back" id="backLink" href="index.html">← <span data-login-text="calculator">계산기</span></a>
+  <h1>🦎 <span data-login-text="account">계정</span></h1>
+  <label class="langpick"><span aria-hidden="true">🌐</span><span data-login-text="language">언어</span>
+    <select data-login-language data-login-aria="language"><option value="ko">한국어</option><option value="en">English</option><option value="zh">中文</option><option value="ja">日本語</option></select>
+  </label>
 </header>
-<div class="wrap"><div class="card" id="root">불러오는 중…</div></div>
+<div class="wrap"><div class="card" id="root" data-login-text="loading">불러오는 중…</div></div>
+
+<script>window.LoginI18n.apply(document);</script>
 
 <script>
 const SB = (SUPABASE_URL && window.supabase) ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON) : null;
+const LoginLocale = window.LoginI18n;
+const t = LoginLocale.t;
 const $=id=>document.getElementById(id);
 const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 let MODE='login';   // login | signup | reset | newpw
+let ACCOUNT_RENDER=0;
 
 function devId(){ try{ let d=localStorage.getItem('leoDevice'); if(!d){ d='dev_'+Math.random().toString(36).slice(2,10)+Date.now().toString(36); localStorage.setItem('leoDevice',d);} return d; }catch(e){ return 'dev_anon'; } }
 function say(kind,text){ const m=$('msg'); if(!m) return; m.className='msg show '+(kind==='e'?'e':'o'); m.innerHTML=text; }
 function clearMsg(){ const m=$('msg'); if(m){ m.className='msg'; m.textContent=''; } }
-function err(e){
-  const t=(e&&e.message)||String(e);
-  if(/Invalid login credentials/i.test(t)) return '이메일 또는 비밀번호가 올바르지 않아요.';
-  if(/User already registered|already been registered/i.test(t)) return '이미 가입된 이메일이에요. 로그인해 주세요.';
-  if(/Password should be at least|Password should contain/i.test(t)) return '비밀번호는 8자 이상, 특수문자를 포함해야 해요.';
-  if(/Unable to validate email|invalid format/i.test(t)) return '이메일 형식이 올바르지 않아요.';
-  if(/Email not confirmed/i.test(t)) return '메일 인증이 아직 안 됐어요. 받은 편지함(스팸함 포함)을 확인해 주세요.';
-  if(/rate limit|too many/i.test(t)) return '시도가 너무 잦아요. 잠시 후 다시 시도해 주세요.';
-  if(/provider is not enabled|Unsupported provider/i.test(t)) return '구글 로그인이 아직 설정되지 않았어요. (관리자 설정 필요)';
-  return t;
+function err(e){ return esc(LoginLocale.friendly(e)); }
+const returnTarget = LoginLocale.safeNextPath();
+/* 뒤로가기가 늘 레오파드 계산기로 갔습니다. 크레스티드에서 들어온 사람도,
+   케어로그에서 들어온 사람도 마찬가지였습니다. ?next= 가 없으면 실제로
+   직전에 있던 화면으로 보냅니다.
+   주소는 같은 사이트 안의 것만 씁니다 — 남의 사이트에서 들어왔을 때
+   그쪽으로 돌려보내면 안 되고, 로그인 화면 자기 자신도 제외합니다. */
+function previousPage(){
+  try{
+    if(!document.referrer) return null;
+    const u = new URL(document.referrer, location.href);
+    if(u.origin !== location.origin) return null;
+    if(u.pathname === location.pathname) return null;
+    return u.pathname + u.search + u.hash;
+  }catch(e){ return null; }
 }
+const backTo = returnTarget || previousPage();
+$('backLink').href = backTo || LoginLocale.calculatorUrl();
+$('backLink').querySelector('span').textContent = t(backTo ? 'back' : 'calculator');
 /* ---------- 가입 봇 차단 (Cloudflare Turnstile) ----------
    키가 없으면 모든 함수가 조용히 통과합니다. 지금은 꺼진 상태이고,
    assets/studio-config.js 에 사이트 키를 넣는 순간 켜집니다.
@@ -185,32 +237,33 @@ const GOOGLE_SVG='<svg viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.5 0
 /* 회원이 원할 때만 적는 항목. 가입 화면과 내 정보 화면이 같이 씁니다.
    지역은 시·도까지만 받습니다 — 상세 주소는 이 서비스가 쓸 데가 없고,
    받아두면 유출 시 피해만 커집니다. */
-const SPECIES=['레오파드 게코','크레스티드 게코','펫테일 게코','기타 파충류','소형 포유류','아직 없음'];
-const EXPERIENCE=[['','선택 안 함'],['new','입문 (1년 미만)'],['mid','1~3년'],['exp','3년 이상'],['pro','전문 브리더']];
-const REGIONS=['','서울','부산','대구','인천','광주','대전','울산','세종','경기','강원',
-               '충북','충남','전북','전남','경북','경남','제주','해외'];
-const PURPOSE=[['','선택 안 함'],['hobby','취미 사육'],['breed','브리딩'],['shop','분양샵·업체'],['study','학습·연구']];
+const SPECIES=[['레오파드 게코','speciesLeopard'],['크레스티드 게코','speciesCrested'],['펫테일 게코','speciesFattail'],
+  ['기타 파충류','speciesReptile'],['소형 포유류','speciesMammal'],['아직 없음','speciesNone']];
+const EXPERIENCE=[['','selectNone'],['new','expNew'],['mid','expMid'],['exp','expExperienced'],['pro','expPro']];
+const REGIONS=[['','selectNone'],['서울','regionSeoul'],['부산','regionBusan'],['대구','regionDaegu'],['인천','regionIncheon'],
+  ['광주','regionGwangju'],['대전','regionDaejeon'],['울산','regionUlsan'],['세종','regionSejong'],['경기','regionGyeonggi'],
+  ['강원','regionGangwon'],['충북','regionChungbuk'],['충남','regionChungnam'],['전북','regionJeonbuk'],['전남','regionJeonnam'],
+  ['경북','regionGyeongbuk'],['경남','regionGyeongnam'],['제주','regionJeju'],['해외','regionOverseas']];
+const PURPOSE=[['','selectNone'],['hobby','purposeHobby'],['breed','purposeBreed'],['shop','purposeShop'],['study','purposeStudy']];
 
 function extraHTML(p){
   p=p||{}; const keep=p.keep_species||[];
   const opt=(list,cur)=>list.map(x=>{
-    const v=Array.isArray(x)?x[0]:x, t=Array.isArray(x)?x[1]:(x||'선택 안 함');
-    return '<option value="'+esc(v)+'"'+((cur||'')===v?' selected':'')+'>'+esc(t)+'</option>'; }).join('');
+    const v=x[0], label=t(x[1]);
+    return '<option value="'+esc(v)+'"'+((cur||'')===v?' selected':'')+'>'+esc(label)+'</option>'; }).join('');
   return '<div class="consent" id="extraBox">'
-    +'<div style="font-size:13px;font-weight:800;padding:2px 2px 4px">알려주시면 도움이 되는 정보 <span class="opt">[선택]</span></div>'
-    +'<div class="cNote" style="margin:0 0 8px">모두 비워두셔도 됩니다. 계산기 기본값을 맞추고 어떤 기능을 먼저 만들지 정하는 데만 씁니다.</div>'
-    +'<label class="fl">주로 키우는 종 (복수 선택)</label>'
+    +'<div style="font-size:13px;font-weight:800;padding:2px 2px 4px">'+t('extraTitle')+' <span class="opt">'+t('optional')+'</span></div>'
+    +'<div class="cNote" style="margin:0 0 8px">'+t('extraNote')+'</div>'
+    +'<label class="fl">'+t('keepSpecies')+'</label>'
     +'<div class="tokgrid2">'+SPECIES.map((x,i)=>
-       '<label class="cRow" style="padding:4px 2px"><input type="checkbox" class="xSp" value="'+esc(x)+'"'
-       +(keep.indexOf(x)>=0?' checked':'')+'><span>'+esc(x)+'</span></label>').join('')+'</div>'
-    +'<label class="fl" style="margin-top:8px">사육 경력</label>'
+       '<label class="cRow" style="padding:4px 2px"><input type="checkbox" class="xSp" value="'+esc(x[0])+'"'
+       +(keep.indexOf(x[0])>=0?' checked':'')+'><span>'+esc(t(x[1]))+'</span></label>').join('')+'</div>'
+    +'<label class="fl" style="margin-top:8px">'+t('experience')+'</label>'
     +'<select class="in" id="xExp" style="margin-bottom:8px">'+opt(EXPERIENCE,p.experience)+'</select>'
-    +'<label class="fl">활동 지역 <span class="opt">시·도만</span></label>'
+    +'<label class="fl">'+t('region')+' <span class="opt">'+t('provinceOnly')+'</span></label>'
     +'<select class="in" id="xReg" style="margin-bottom:8px">'+opt(REGIONS,p.region)+'</select>'
-    +'<label class="fl">이용 목적</label>'
+    +'<label class="fl">'+t('purpose')+'</label>'
     +'<select class="in" id="xPur" style="margin-bottom:8px">'+opt(PURPOSE,p.purpose)+'</select>'
-    +'<label class="fl">하고 싶은 말</label>'
-    +'<textarea class="in" id="xNote" rows="2" placeholder="바라는 기능, 잘못된 정보 제보 등 (선택)" style="margin-bottom:0;resize:vertical">'+esc(p.note||'')+'</textarea>'
     +'</div>';
 }
 function extraValues(){
@@ -218,23 +271,41 @@ function extraValues(){
   if(!$('extraBox')) return {};
   return { species:[...document.querySelectorAll('.xSp:checked')].map(e=>e.value),
            experience:g('xExp')||null, region:g('xReg')||null,
-           purpose:g('xPur')||null, note:g('xNote')||null };
+           purpose:g('xPur')||null };
 }
 
+/* 회원이 어느 판의 약관에 동의했는지 남기려면, 먼저 지금 살아 있는 판이
+   무엇인지 알아야 합니다. 로그인 전에도 부를 수 있게 열어 두었습니다
+   (supabase_v67.sql). 못 받아 오면 null 로 두고 서버가 채우게 합니다 —
+   가입이 이것 때문에 막히면 안 됩니다. */
+let CONSENT_VER=null;
+async function loadConsentVersions(){
+  if(CONSENT_VER) return CONSENT_VER;
+  try{ const r=await SB.rpc('current_consent_versions');
+       if(!r.error && r.data && typeof r.data==='object') CONSENT_VER=r.data; }
+  catch(e){}
+  return CONSENT_VER;
+}
+/* 화면에 판을 적어 둡니다. 안 적으면 나중에 "내가 동의한 약관이 이거였나" 를
+   회원도 우리도 확인할 길이 없습니다. */
+function verTag(doc){
+  const v=CONSENT_VER && CONSENT_VER[doc];
+  return v? ' <span class="cver">'+esc(v)+'</span>' : '';
+}
 function consentHTML(){
   return '<div class="consent" id="consentBox">'
-    +'<label class="cAll"><input type="checkbox" id="cAll"><span>전체 동의</span></label>'
-    +'<label class="cRow"><input type="checkbox" class="cItem" id="cTerms"><span><span class="req">[필수]</span>이용약관에 동의합니다<a href="../terms.html#terms" target="_blank">보기</a></span></label>'
-    +'<label class="cRow"><input type="checkbox" class="cItem" id="cPrivacy"><span><span class="req">[필수]</span>개인정보 수집·이용에 동의합니다<a href="../terms.html#privacy" target="_blank">보기</a></span></label>'
-    +'<label class="cRow"><input type="checkbox" class="cItem" id="cAge"><span><span class="req">[필수]</span>만 14세 이상입니다</span></label>'
-    +'<label class="cRow"><input type="checkbox" class="cItem" id="cThird"><span><span class="opt">[선택]</span>개인정보 제3자 제공에 동의합니다<a href="../terms.html#privacy" target="_blank">보기</a></span></label>'
-    +'<label class="cRow"><input type="checkbox" class="cItem" id="cMailAd"><span><span class="opt">[선택]</span>이메일로 이벤트·혜택 정보를 받겠습니다</span></label>'
-    +'<label class="cRow"><input type="checkbox" class="cItem" id="cSms"><span><span class="opt">[선택]</span>문자로 이벤트·혜택 정보를 받겠습니다</span></label>'
-    +'<label class="cRow"><input type="checkbox" class="cItem" id="cAi"><span><span class="opt">[선택]</span>등록한 사진·개체 정보를 <b>AI 모델 학습</b>에 이용하는 것에 동의합니다'
-      +'<a href="../terms.html#terms" target="_blank">약관 제9조 ③</a>'
-      +'<br><span style="font-size:11px;color:var(--ink2)">동의하지 않아도 모든 기능을 그대로 쓸 수 있어요. 언제든 해제할 수 있지만, <b>이미 학습이 끝난 모델은 되돌릴 수 없습니다.</b></span></span></label>'
-    +'<div id="phoneWrap" style="display:none;margin-top:8px"><input class="in" id="cPhone" type="tel" placeholder="휴대전화번호 (예: 010-1234-5678)" style="margin-bottom:0"></div>'
-    +'<div class="cNote">선택 항목에 동의하지 않아도 서비스를 이용할 수 있어요. 동의는 계정 화면에서 언제든 철회할 수 있습니다.</div>'
+    +'<label class="cAll"><input type="checkbox" id="cAll"><span>'+t('consentAll')+'</span></label>'
+    +'<label class="cRow"><input type="checkbox" class="cItem" id="cTerms"><span><span class="req">'+t('required')+'</span>'+t('termsConsent')+verTag('terms')+'<a href="../terms.html#terms" target="_blank">'+t('view')+'</a></span></label>'
+    +'<label class="cRow"><input type="checkbox" class="cItem" id="cPrivacy"><span><span class="req">'+t('required')+'</span>'+t('privacyConsent')+verTag('privacy')+'<a href="../terms.html#privacy" target="_blank">'+t('view')+'</a></span></label>'
+    +'<label class="cRow"><input type="checkbox" class="cItem" id="cAge"><span><span class="req">'+t('required')+'</span>'+t('ageConsent')+'</span></label>'
+    +'<label class="cRow"><input type="checkbox" class="cItem" id="cThird"><span><span class="opt">'+t('optional')+'</span>'+t('thirdConsent')+'<a href="../terms.html#privacy" target="_blank">'+t('view')+'</a></span></label>'
+    +'<label class="cRow"><input type="checkbox" class="cItem" id="cMailAd"><span><span class="opt">'+t('optional')+'</span>'+t('mailConsent')+'</span></label>'
+    +'<label class="cRow"><input type="checkbox" class="cItem" id="cSms"><span><span class="opt">'+t('optional')+'</span>'+t('smsConsent')+'</span></label>'
+    +'<label class="cRow"><input type="checkbox" class="cItem" id="cAi"><span><span class="opt">'+t('optional')+'</span>'+t('aiConsent')+verTag('ai_train')
+      +'<a href="../terms.html#terms" target="_blank">'+t('aiTerms')+'</a>'
+      +'<br><span style="font-size:11px;color:var(--ink2)">'+t('aiConsentNote')+'</span></span></label>'
+    +'<div id="phoneWrap" style="display:none;margin-top:8px"><input class="in" id="cPhone" type="tel" placeholder="'+esc(t('phonePlaceholder'))+'" style="margin-bottom:0"></div>'
+    +'<div class="cNote">'+t('optionalConsentNote')+'</div>'
     +'</div>';
 }
 function wireConsent(){
@@ -244,14 +315,45 @@ function wireConsent(){
   items.forEach(i=>i.onchange=()=>{ all.checked=items.every(x=>x.checked); togglePhone(); });
   function togglePhone(){ const w=$('phoneWrap'); if(w) w.style.display=$('cSms').checked?'block':'none'; }
 }
+/* 가입 갈래. 사업자는 가입할 때부터 상호명과 등록번호를 냅니다.
+   계정은 바로 만들어지고 무료 회원으로 쓸 수 있으며, 관리자가 승인해야
+   인증 표시와 로고가 붙습니다(supabase_v61). 승인 전이라고 못 들어오게
+   막으면, 승인까지 며칠 걸리는 동안 아무것도 못 하게 됩니다. */
+let JOIN_KIND='personal';   // personal | business
+/* 스위치가 꺼져 있으면 갈래 자체가 없습니다. 화면만 감추고 JOIN_KIND 를
+   그대로 두면, 예전에 사업자를 골라 둔 상태가 남아 상호명 없이 사업자로
+   가입 요청이 나갈 수 있습니다. */
+const JOIN_KIND_ON = (typeof BUSINESS_SIGNUP_ENABLED === 'undefined') || !!BUSINESS_SIGNUP_ENABLED;
+if(!JOIN_KIND_ON) JOIN_KIND='personal';
+
+function joinKindHTML(){
+  if(!JOIN_KIND_ON) return '';
+  const tab=(k,label)=>'<button type="button" class="jk'+(JOIN_KIND===k?' on':'')
+    +'" data-jk="'+k+'">'+esc(label)+'</button>';
+  return '<div class="jkbar" role="group" aria-label="'+esc(t('joinKind'))+'">'
+    + tab('personal', t('joinPersonal')) + tab('business', t('joinBusiness')) + '</div>'
+    + '<div class="hint" style="margin:-4px 0 12px 2px">'
+    + t(JOIN_KIND==='business'?'joinBusinessHint':'joinPersonalHint') + '</div>';
+}
+
+function bizSignupHTML(){
+  if(!JOIN_KIND_ON || JOIN_KIND!=='business') return '';
+  return '<div class="consent" id="bizBox">'
+    +'<div style="font-size:13px;font-weight:800;padding:2px 2px 8px">'+t('bizTitle')
+      +' <span class="opt">'+t('required')+'</span></div>'
+    +'<input class="in" id="jName" placeholder="'+esc(t('bizName'))+'" style="margin-bottom:8px">'
+    +'<input class="in" id="jNum" inputmode="numeric" placeholder="'+esc(t('bizNumber'))+'" style="margin-bottom:0">'
+    +'<div class="cNote">'+t('joinBizNote')+'</div></div>';
+}
+
 // 기본정보 (선택 수집) — 동의 화면과 함께 노출
 function profileHTML(p){
   p=p||{};
   return '<div class="consent" id="profBox">'
-    +'<div style="font-size:13px;font-weight:800;padding:2px 2px 8px">기본 정보 <span class="opt">[선택]</span></div>'
-    +'<input class="in" id="pName" placeholder="이름 (선택)" value="'+esc(p.name||'')+'" style="margin-bottom:8px">'
-    +'<input class="in" id="pNick" placeholder="닉네임 (선택 · 커뮤니티 표시명)" value="'+esc(p.nickname||'')+'" style="margin-bottom:0">'
-    +'<div class="cNote">입력하지 않아도 가입할 수 있어요. 이벤트 당첨 안내·문의 응대에만 사용하며, 언제든 계정 화면에서 수정·삭제할 수 있습니다.</div>'
+    +'<div style="font-size:13px;font-weight:800;padding:2px 2px 8px">'+t('profileTitle')+' <span class="opt">'+t('optional')+'</span></div>'
+    +'<input class="in" id="pName" placeholder="'+esc(t('nameOptional'))+'" value="'+esc(p.name||'')+'" style="margin-bottom:8px">'
+    +'<input class="in" id="pNick" placeholder="'+esc(t('nicknameRequired'))+'" value="'+esc(p.nickname||'')+'" style="margin-bottom:0">'
+    +'<div class="cNote">'+t('profileSignupNote')+'</div>'
     +'</div>';
 }
 function consentValues(){
@@ -261,21 +363,58 @@ function consentValues(){
            ai:!!($('cAi')&&$('cAi').checked),
            phone:($('cPhone')&&$('cPhone').value.trim())||null,
            name:g('pName')||null, nickname:g('pNick')||null,
+           joinKind:JOIN_KIND, bizName:g('jName')||null, bizNumber:g('jNum')||null,
            extra:extraValues() };
 }
+/* 화면에서 미리 거르는 것들. 서버(supabase_v61)가 최종 판단을 하지만, 가입은
+   되돌리기 번거로운 동작이라 보내기 전에 알려 주는 편이 낫습니다.
+
+   허용 글자는 서버와 같은 목록입니다. 두 곳이 갈라지면 화면은 통과시키고
+   서버가 막는, 설명할 수 없는 상태가 됩니다. */
+const PLAIN_NAME = /^[A-Za-z0-9가-힣ㄱ-ㅎㅏ-ㅣぁ-ゖァ-ヺー一-鿿 ._-]+$/;
+function joinProblem(c){
+  if(c.name && !PLAIN_NAME.test(c.name)) return t('nameCharset');
+  if(c.nickname && !PLAIN_NAME.test(c.nickname)) return t('nickCharset');
+  if(c.joinKind==='business'){
+    if(!c.bizName) return t('bizNameNeeded');
+    if(String(c.bizNumber||'').replace(/[^0-9]/g,'').length!==10) return t('bizNumberInvalid');
+  }
+  return null;
+}
+
+/* 가입 직후 사업자 신청을 함께 냅니다. 계정은 이미 만들어졌고 무료로 쓸 수
+   있으므로, 신청이 실패해도 가입 자체를 되돌리지는 않습니다 — 계정 화면에서
+   다시 낼 수 있습니다. */
+async function submitJoinBusiness(c){
+  if(c.joinKind!=='business' || !c.bizName) return;
+  try{ await SB.rpc('apply_business_verification',
+    {p_name:c.bizName, p_number:c.bizNumber, p_logo:null}); }
+  catch(e){ /* 계정 화면에서 다시 낼 수 있습니다 */ }
+}
+
 async function saveConsent(c){
   const base={ p_terms:c.terms, p_privacy:c.privacy, p_age14:c.age,
     p_third:c.third, p_mkt_email:c.mail, p_mkt_sms:c.sms, p_phone:c.phone,
     p_nickname:c.nickname||null };
   // 인자가 많은 것부터 시도하고, 서버가 아직 그 인자를 모르면 줄여서 다시 부릅니다.
   // supabase_v14.sql 적용 전에도 가입이 막히지 않게 하기 위한 것입니다.
+  /* null 은 '건드리지 않음' 입니다. 계정 화면에서 닉네임을 지운 경우는
+     set_my_nickname 이 따로 처리하므로 여기로는 null 이 옵니다. */
   const full=Object.assign({p_name:c.name||null, p_ai_train:!!c.ai}, base);
-  let r=await SB.rpc('save_consent', full);
+
+  /* 화면이 보여 준 판을 그대로 넘깁니다. 안 넘기면 서버가 '지금 살아 있는 판'
+     으로 채우는데, 회원이 읽은 것과 저장되는 것이 어긋날 수 있습니다 —
+     동의를 누르는 사이에 약관을 고치면 그렇게 됩니다. */
+  let r=await SB.rpc('save_consent_versioned',
+    Object.assign({p_versions: CONSENT_VER || null}, full));
+  if(r.error && /save_consent_versioned|p_versions|does not exist|PGRST202/i.test(r.error.message||''))
+    r=await SB.rpc('save_consent', full);
   if(r.error && /p_ai_train|does not exist|function .*save_consent/i.test(r.error.message||''))
     r=await SB.rpc('save_consent', Object.assign({p_name:c.name||null}, base));
   if(r.error && /p_name|does not exist|function .*save_consent/i.test(r.error.message||''))
     r=await SB.rpc('save_consent', base);
   if(!r.error && c.extra) await saveExtra(c.extra);
+  if(!r.error) await submitJoinBusiness(c);
   return r;
 }
 /* 선택 정보는 profiles 를 직접 고칩니다. 본인 줄만 고칠 수 있게
@@ -287,28 +426,31 @@ async function saveExtra(x){
     await SB.from('profiles').update({
       keep_species:(x.species&&x.species.length)?x.species:null,
       experience:x.experience||null, region:x.region||null,
-      purpose:x.purpose||null, note:x.note||null
+      purpose:x.purpose||null
     }).eq('user_id', u.id);
   }catch(e){}
 }
 // 로그인은 됐지만 동의 기록이 없는 경우 (구글 가입 등) 동의 화면
-function renderConsentGate(u){
-  $('root').innerHTML='<h2 style="margin:0 0 4px;font-size:17px">서비스 이용 동의</h2>'
-    +'<div class="hint">'+esc(u.email||'')+' 계정으로 계속하려면 아래에 동의해 주세요.</div>'
+async function renderConsentGate(u){
+  await loadConsentVersions();
+  $('root').innerHTML='<h2 style="margin:0 0 4px;font-size:17px">'+t('consentGateTitle')+'</h2>'
+    +'<div class="hint">'+LoginLocale.html('consentGateBody',{email:u.email||''})+'</div>'
     +profileHTML()+extraHTML()+consentHTML()
-    +'<button class="btn" id="go">동의하고 시작하기</button>'
-    +'<button class="btn ghost" id="out" style="margin-top:8px">다른 계정으로</button>'
+    +'<button class="btn" id="go">'+t('consentStart')+'</button>'
+    +'<button class="btn ghost" id="out" style="margin-top:8px">'+t('otherAccount')+'</button>'
     +'<div class="msg" id="msg"></div>';
   wireConsent();
   $('out').onclick=async()=>{ await SB.auth.signOut(); location.reload(); };
   $('go').onclick=async()=>{
     const c=consentValues(); clearMsg();
-    if(!(c.terms&&c.privacy&&c.age)) return say('e','필수 항목에 모두 동의해 주세요.');
-    if(c.sms&&!c.phone) return say('e','문자 수신에 동의하셨어요. 휴대전화번호를 입력해 주세요.');
+    if(!(c.terms&&c.privacy&&c.age)) return say('e',t('consentRequired'));
+    if(!c.nickname) return say('e',t('nickNeeded'));
+    { const p=joinProblem(c); if(p) return say('e',p); }
+    if(c.sms&&!c.phone) return say('e',t('phoneRequired'));
     $('go').disabled=true;
     const r=await saveConsent(c); $('go').disabled=false;
     if(r.error) return say('e',err(r.error));
-    await claim(); renderMe(u);
+    await claim(); finishLogin(u);
   };
 }
 async function mustChangePw(){
@@ -321,15 +463,18 @@ async function hasConsent(){
 }
 
 async function boot(){
-  if(!SB){ $('root').innerHTML='<b>백엔드가 설정되지 않았습니다.</b><br><br>gecko-core.js 의 SUPABASE_URL / SUPABASE_ANON 을 채워주세요.'; return; }
+  if(!SB){ $('root').innerHTML=t('backendMissing'); return; }
   // 비밀번호 재설정 메일로 들어온 경우
   const h=location.hash||''; if(h.indexOf('type=recovery')>=0){ MODE='newpw'; render(); return; }
+  /* 다른 화면의 '회원가입' 버튼이 바로 가입 탭으로 보낼 수 있게 합니다.
+     이게 없으면 눌러도 로그인 탭이 떠서 한 번 더 눌러야 합니다. */
+  try{ if(SIGNUPS_ENABLED && new URLSearchParams(location.search).get('mode')==='signup') MODE='signup'; }catch(e){}
   const s=await SB.auth.getSession();
   if(s.data.session){
     const u=s.data.session.user;
     /* 임시 비밀번호로 들어온 경우 다른 화면보다 먼저 변경을 요구합니다. */
     if(await mustChangePw()) return renderNewPw(true);
-    if(await hasConsent()) return renderMe(u);
+    if(await hasConsent()) return finishLogin(u);
     return renderConsentGate(u);
   }
   render();
@@ -338,26 +483,36 @@ async function boot(){
 function render(){
   if(MODE==='newpw') return renderNewPw();
   if(MODE==='reset') return renderReset();
-  const isUp = MODE==='signup';
+  const isUp = SIGNUPS_ENABLED && MODE==='signup';
   $('root').innerHTML=
-    '<div class="seg"><button id="tLogin" class="'+(isUp?'':'on')+'">로그인</button>'
-    +'<button id="tSignup" class="'+(isUp?'on':'')+'">회원가입</button></div>'
-    +'<button class="gbtn" id="google">'+GOOGLE_SVG+' Google로 '+(isUp?'가입':'로그인')+'</button>'
-    +'<div class="divider">또는 이메일로</div>'
-    +'<label class="fl">이메일</label><input class="in" id="email" type="email" autocomplete="email" placeholder="you@example.com">'
-    +(isUp? '<div class="hint" style="margin:-6px 0 12px 2px">⚠️ <b>실제로 사용하는 이메일 주소로 가입해 주세요.</b> 가입 확인 메일이 발송되고, 비밀번호를 잊으셨을 때 이 주소로만 임시 비밀번호를 보내드릴 수 있습니다. 받을 수 없는 주소로 가입하시면 계정을 되찾을 방법이 없습니다.</div>' : '')
-    +'<label class="fl">비밀번호</label><input class="in" id="pw" type="password" autocomplete="'+(isUp?'new-password':'current-password')+'" placeholder="'+(isUp?'8자 이상 · 특수문자 포함':'비밀번호')+'">'
-    +(isUp? '<label class="fl">비밀번호 확인</label><input class="in" id="pw2" type="password" autocomplete="new-password" placeholder="한 번 더 입력">' : '')
-    +(isUp? profileHTML()+extraHTML()+consentHTML() : '')
+    '<div class="beta-notice" role="status"><b>'+t('closedBetaTitle')+'</b>'+t('closedBetaBody')+'</div>'
+    +'<div class="seg"><button id="tLogin" class="'+(isUp?'':'on')+'">'+t('login')+'</button>'
+    +(SIGNUPS_ENABLED ? '<button id="tSignup" class="'+(isUp?'on':'')+'">'+t('signup')+'</button>' : '')+'</div>'
+    +'<button class="gbtn" id="google">'+GOOGLE_SVG+' '+t(isUp?'googleSignup':'googleLogin')+'</button>'
+    +'<div class="divider">'+t('emailDivider')+'</div>'
+    +'<label class="fl">'+t('email')+'</label><input class="in" id="email" type="email" autocomplete="email" placeholder="you@example.com">'
+    +(isUp? '<div class="hint" style="margin:-6px 0 12px 2px">'+t('signupEmailWarning')+'</div>' : '')
+    +'<label class="fl">'+t('password')+'</label><input class="in" id="pw" type="password" autocomplete="'+(isUp?'new-password':'current-password')+'" placeholder="'+esc(t(isUp?'passwordRule':'password'))+'">'
+    +(isUp? '<label class="fl">'+t('passwordConfirm')+'</label><input class="in" id="pw2" type="password" autocomplete="new-password" placeholder="'+esc(t('passwordAgain'))+'">' : '')
+    +(isUp? joinKindHTML()+profileHTML()+bizSignupHTML()+extraHTML()+consentHTML() : '')
     +capHTML()
-    +'<button class="btn" id="go">'+(isUp?'가입하기':'로그인')+'</button>'
+    +'<button class="btn" id="go">'+t(isUp?'signupAction':'loginAction')+'</button>'
     +'<div class="msg" id="msg"></div>'
-    +(isUp? '' : '<div class="sub"><a id="toReset">비밀번호를 잊으셨나요?</a></div>')
-    +'<div class="why"><b>왜 로그인이 필요한가요?</b><br>프리미엄 코드를 계정에 연결하면 <b>휴대폰·PC 어디서든</b> 이용할 수 있어요. 등록한 개체·페어링 기록도 계정에 저장돼 기기를 바꿔도 유지됩니다.</div>';
+    +(isUp? '' : (PASSWORD_RESET_REQUESTS_ENABLED ? '<div class="sub"><a id="toReset">'+t('forgotPassword')+'</a></div>' : ''))
+    +'<div class="why"><b>'+t('whyLoginTitle')+'</b><br>'+t('whyLoginBody')+'</div>';
   $('tLogin').onclick=()=>{ MODE='login'; render(); };
-  $('tSignup').onclick=()=>{ MODE='signup'; render(); };
+  const signupTab=$('tSignup');
+  if(signupTab) signupTab.onclick=()=>{ MODE='signup'; render(); };
   const rs=$('toReset'); if(rs) rs.onclick=()=>{ MODE='reset'; render(); };
-  if(isUp) wireConsent();
+  document.querySelectorAll('[data-jk]').forEach(b=>{
+    b.onclick=()=>{ JOIN_KIND=b.dataset.jk; render(); };
+  });
+  if(isUp){ wireConsent(); loadConsentVersions().then(function(){
+    /* 늦게 도착하면 그때 판만 다시 그립니다. 화면 전체를 다시 그리면
+       입력하던 이메일·비밀번호가 날아갑니다. */
+    const box=$('consentBox'); if(!box || !CONSENT_VER) return;
+    if(!box.querySelector('.cver')) render();
+  }); }
   capMount();
   $('google').onclick=isUp? doGoogleSignup : doGoogle;
   $('go').onclick=isUp? doSignup : doLogin;
@@ -368,117 +523,381 @@ function render(){
    요청만 남기고, 운영자가 관리자 화면에서 임시 비밀번호를 발급해
    회원 이메일로 보내줍니다. */
 function renderReset(){
-  $('root').innerHTML='<h2 style="margin:0 0 6px;font-size:17px">비밀번호 찾기</h2>'
-    +'<div class="hint">가입하신 이메일 주소를 알려주시면, 운영자가 확인 후 <b>임시 비밀번호</b>를 그 주소로 보내드립니다.</div>'
-    +'<label class="fl">가입한 이메일</label><input class="in" id="email" type="email" placeholder="you@example.com">'
-    +'<label class="fl">남기실 말 (선택)</label>'
-    +'<input class="in" id="note" placeholder="예: 가입일, 닉네임 등 확인에 도움이 되는 정보">'
-    +'<button class="btn" id="go">임시 비밀번호 요청</button>'
-    +'<button class="btn ghost" id="back" style="margin-top:8px">돌아가기</button>'
+  if(!PASSWORD_RESET_REQUESTS_ENABLED) return renderResetPaused();
+  $('root').innerHTML='<h2 style="margin:0 0 6px;font-size:17px">'+t('resetTitle')+'</h2>'
+    +'<div class="hint">'+t('resetHint')+'</div>'
+    +'<label class="fl">'+t('joinedEmail')+'</label><input class="in" id="email" type="email" placeholder="you@example.com">'
+    +'<label class="fl">'+t('resetNote')+'</label>'
+    +'<input class="in" id="note" placeholder="'+esc(t('resetNotePlaceholder'))+'">'
+    +'<button class="btn" id="go">'+t('resetRequest')+'</button>'
+    +'<button class="btn ghost" id="back" style="margin-top:8px">'+t('back')+'</button>'
     +'<div class="msg" id="msg"></div>'
-    +'<div class="why"><b>어떻게 진행되나요?</b><br>'
-    +'① 요청을 남기시면 운영자가 확인합니다.<br>'
-    +'② <b>가입하실 때 쓰신 이메일 주소로</b> 임시 비밀번호를 보내드립니다.<br>'
-    +'③ 임시 비밀번호로 로그인하시면 바로 새 비밀번호를 정하는 화면이 나옵니다.<br><br>'
-    +'사람이 직접 확인하고 보내드리기 때문에 <b>시간이 걸릴 수 있습니다.</b> '
-    +'급하시면 '+CR_MAIL_LINK+' 로 함께 연락 주세요.</div>';
+    +'<div class="why"><b>'+t('resetHowTitle')+'</b><br>'+t('resetHowBody')
+    +'<br><br>'+CR_MAIL_LINK+'</div>';
   $('back').onclick=()=>{ MODE='login'; render(); };
   $('go').onclick=async()=>{
     const em=$('email').value.trim(); clearMsg();
-    if(!validEmail(em)) return say('e','이메일 형식을 확인해 주세요.');
-    $('go').disabled=true; $('go').textContent='보내는 중…';
+    if(!validEmail(em)) return say('e',t('emailCheck'));
+    $('go').disabled=true; $('go').textContent=t('sending');
     let ok=false;
     try{
       const r=await SB.rpc('request_password_reset',{p_email:em,p_note:$('note').value.trim()||null});
       ok = !r.error;
     }catch(e){}
-    $('go').disabled=false; $('go').textContent='임시 비밀번호 요청';
+    $('go').disabled=false; $('go').textContent=t('resetRequest');
     /* 가입 여부를 알려주지 않습니다. 알려주면 남의 가입 여부를 확인하는
        수단이 됩니다. 가입되지 않은 주소여도 같은 안내가 나갑니다. */
-    if(ok) say('o','요청을 접수했어요.<br>가입된 주소라면 <b>'+esc(em)+'</b> 으로 임시 비밀번호를 보내드립니다.<br>메일이 안 보이면 <b>스팸함</b>도 확인해 주세요.');
-    else   say('e','요청을 보내지 못했어요. 잠시 후 다시 시도해 주세요.');
+    if(ok) say('o',LoginLocale.html('resetAccepted',{email:em}));
+    else   say('e',t('resetFailed'));
   };
+}
+
+function renderResetPaused(){
+  $('root').innerHTML='<h2 style="margin:0 0 6px;font-size:17px">'+t('resetTitle')+'</h2>'
+    +'<div class="hint">'+t('resetPaused')+'</div>'
+    +'<button class="btn ghost" id="back" style="margin-top:8px">'+t('backToLogin')+'</button>';
+  $('back').onclick=()=>{ MODE='login'; render(); };
 }
 
 /* forced=true 면 '나중에' 없이 변경만 가능합니다.
    임시 비밀번호는 운영자와 메일에 남아 있으므로 계속 쓰면 안 됩니다. */
 function renderNewPw(forced){
-  $('root').innerHTML='<h2 style="margin:0 0 6px;font-size:17px">'+(forced?'새 비밀번호를 정해 주세요':'새 비밀번호 설정')+'</h2>'
-    +(forced? '<div class="hint">임시 비밀번호로 로그인하셨어요. <b>안전을 위해 지금 새 비밀번호로 바꿔 주세요.</b> 임시 비밀번호는 메일에 남아 있어 계속 쓰시면 위험합니다.</div>' : '')
-    +'<label class="fl">새 비밀번호</label><input class="in" id="pw" type="password" placeholder="8자 이상 · 특수문자 포함">'
-    +'<label class="fl">비밀번호 확인</label><input class="in" id="pw2" type="password" placeholder="한 번 더 입력">'
-    +'<button class="btn" id="go">변경하기</button><div class="msg" id="msg"></div>';
+  $('root').innerHTML='<h2 style="margin:0 0 6px;font-size:17px">'+t(forced?'forcedPasswordTitle':'newPasswordTitle')+'</h2>'
+    +(forced? '<div class="hint">'+t('forcedPasswordHint')+'</div>' : '')
+    +'<label class="fl">'+t('newPassword')+'</label><input class="in" id="pw" type="password" placeholder="'+esc(t('passwordRule'))+'">'
+    +'<label class="fl">'+t('passwordConfirm')+'</label><input class="in" id="pw2" type="password" placeholder="'+esc(t('passwordAgain'))+'">'
+    +'<button class="btn" id="go">'+t('change')+'</button><div class="msg" id="msg"></div>';
   $('go').onclick=async()=>{
     const a=$('pw').value, b=$('pw2').value; clearMsg();
     { const p=pwProblem(a); if(p) return say('e',p); }
-    if(a!==b) return say('e','비밀번호가 서로 달라요.');
+    if(a!==b) return say('e',t('passwordMismatch'));
     $('go').disabled=true;
     const r=await SB.auth.updateUser({password:a});
     $('go').disabled=false;
     if(r.error) return say('e',err(r.error));
     try{ await SB.rpc('clear_must_change'); }catch(e){}
-    say('o','변경되었어요! 잠시 후 이동합니다.');
-    setTimeout(()=>{ location.href='login.html'; },1200);
+    say('o',t('passwordChangedMove'));
+    setTimeout(()=>{ const next=LoginLocale.safeNextPath(); if(next) location.replace(next); else location.href=LoginLocale.url('/gecko/login.html'); },1200);
   };
 }
 
-async function renderMe(u){
+async function renderMe(u,isAdmin){
+  const run=++ACCOUNT_RENDER;
   let prem={active:false};
+  if(typeof isAdmin!=='boolean'){
+    try{ const r=await SB.rpc('is_owner'); isAdmin=r.data===true; }catch(e){ isAdmin=false; }
+  }
   try{ const r=await SB.rpc('premium_status',{p_device:'u_'+u.id}); prem=r.data||{active:false}; }catch(e){}
-  const exp=prem.expires_at? new Date(prem.expires_at).toLocaleDateString('ko-KR') : null;
+  if(run!==ACCOUNT_RENDER) return;
+  const exp=prem.expires_at? LoginLocale.formatDate(prem.expires_at) : null;
   const letter=(u.email||'?').charAt(0).toUpperCase();
-  $('root').innerHTML='<div class="me"><div class="av">'+esc(letter)+'</div>'
-    +'<div class="em">'+esc(u.email||'로그인됨')+'</div>'
-    +(prem.active? '<div class="badge pro">💎 '+(prem.kind==='sub'?'구독':'체험판')+(exp?' · '+exp+'까지':' · 무기한')+'</div>'
-                 : '<div class="badge free">무료 이용 중</div>')
+  const overview='<div class="me"><div class="av">'+esc(letter)+'</div>'
+    +'<div class="em">'+esc(u.email||t('signedIn'))+'</div>'
+    +(isAdmin? '<div class="badge pro">🛡️ '+t('adminBadge')+'</div>' : '')
+    +(prem.active? '<div class="badge pro">💎 '+t(prem.kind==='sub'?'subscription':prem.kind==='trial'?'trial':'premiumAccess')
+      +(exp?' · '+t('until',{date:exp}):' · '+t('unlimited'))+'</div>'
+                 : '<div class="badge free">'+t('freePlan')+'</div>')
     +'</div>'
-    +'<div class="links"><a href="index.html">🧮 계산기</a>'
-    +(prem.active? '<a href="breeding.html">🦎 브리딩 관리</a>' : '')
-    +(prem.active? '<a href="/care/">🗓 케어 관리</a>' : '')
-    +'<a href="index.html" id="codeLink">💎 프리미엄 코드 입력</a></div>'
-    +'<button class="btn ghost" id="out" style="margin-top:14px">로그아웃</button>'
-    +'<div class="msg" id="msg"></div>';
+    +'<div class="links"><a href="'+esc(LoginLocale.calculatorUrl())+'">🧮 '+t('calculator')+'</a>'
+    /* 브리딩 링크가 '레오파드 전용' 과 '전 종' 두 개로 나뉘어 있었습니다.
+       레오파드 전용 화면에서 종을 바꾸려고 하면 다시 레오파드가 나와서
+       뭐가 뭔지 알 수 없었습니다. 이제 한 화면으로 합쳤습니다. */
+    /* 브리딩 관리는 유료지만 링크는 무료 회원에게도 보여 줍니다. 감춰 두면
+       무엇이 더 있는지 알 수 없어서, 결제를 권할 자리 자체가 없어집니다.
+       무료가 누르면 요금 안내로 갑니다. */
+    +'<a href="'+esc(prem.active? LoginLocale.url('/care/breeding.html?species=gecko&v=20260803m') : LoginLocale.url('/pricing.html'))+'">'
+      +'🧬 '+t('breedingManagement')+(prem.active? '' : ' <span class="opt">'+t('premiumAccess')+'</span>')+'</a>'
+    /* 케어로그는 무료도 10마리까지 쓸 수 있게 만들어 두었지만(supabase_v54),
+       회원가입을 막아 둔 동안에는 링크를 열지 않습니다. 아직 들어올 수 없는
+       사람에게 먼저 보여 줄 이유가 없습니다. 가입을 열 때 이 조건을 풉니다. */
+    +(prem.active? '<a href="'+esc(LoginLocale.url('/care/'))+'">🗓 '+t('creatureCare')+'</a>' : '')
+    +(isAdmin? '<a href="'+esc(LoginLocale.url('/admin/'))+'">🛡️ '+t('adminConsole')+'</a>'
+      : '<a href="'+esc(LoginLocale.calculatorUrl())+'" id="codeLink">💎 '+t('premiumCode')+'</a>')+'</div>'
+    +(isAdmin? '<div class="admin-note">'+t('adminOnlySummary')+'</div>' : '')
+    +'<button class="btn ghost" id="out" style="margin-top:14px">'+t('logout')+'</button>';
+  $('root').innerHTML=AccountShell.html({overview:overview,isAdmin:isAdmin,i18n:LoginLocale});
+  AccountShell.bind($('root'));
   $('out').onclick=async()=>{ await SB.auth.signOut(); location.reload(); };
-  renderConsentSettings();
+  (isAdmin? renderAdminProfile(run) : renderConsentSettings(run)).catch(error=>{
+    if(run===ACCOUNT_RENDER) say('e',err(error));
+  });
+  /* 기한이 얼마 안 남았으면 알려 줍니다. 관리자에게는 띄우지 않습니다 —
+     관리자 계정은 무기한이라 어차피 조건에 걸리지 않지만, 걸리더라도
+     본인이 관리하는 쪽이라 안내받을 일이 아닙니다. */
+  if(!isAdmin && window.PremiumExpiryNotice) window.PremiumExpiryNotice.show(prem, LoginLocale.language());
 }
 
-async function renderConsentSettings(){
+async function finishLogin(user){
+  const next=LoginLocale.safeNextPath();
+  if(next){ location.replace(next); return; }
+  let isAdmin=false;
+  try{ const r=await SB.rpc('is_owner'); isAdmin=r.data===true; }catch(e){}
+  return renderMe(user,isAdmin);
+}
+
+/* 남은 닉네임 변경 횟수. v59 적용 전에는 함수가 없으므로 조용히 비웁니다 —
+   안내 한 줄 때문에 계정 화면 전체가 멈추면 안 됩니다. */
+async function nickStatus(){
+  try{ const r=await SB.rpc('my_nickname_status'); return r.error? null : r.data; }
+  catch(e){ return null; }
+}
+function nickNoteText(s){
+  if(!s) return '';
+  const left=Math.max(0, (s.limit||2) - (s.used||0));
+  return left>0 ? t('nickChangesLeft').replace('{n}', String(left)) : t('nickChangesNone');
+}
+/* 닉네임 저장 절차는 일반 계정 화면과 관리자 화면이 같이 씁니다. 두 곳에
+   따로 적어 두면 한쪽만 고치게 되고, 그 화면에서만 조용히 옛 동작이 남습니다.
+   legacy 는 v59 를 아직 적용하지 않은 상태입니다. */
+async function submitNickname(wanted){
+  const n=await SB.rpc('set_my_nickname',{p_nickname:wanted});
+  const legacy=!!(n.error && /set_my_nickname|does not exist|PGRST202/i
+    .test(String(n.error.message||'')+' '+String(n.error.code||'')));
+  return { n:n, legacy:legacy };
+}
+/* 서버가 지어 준 이름을 화면에 되돌려 줍니다. 안 하면 지운 칸이 빈 채로
+   남아 사용자는 저장이 안 된 줄 압니다. */
+function applyNickResult(data){
+  if(!data) return;
+  const input=$('iNick'); if(input) input.value=data.nickname||'';
+  const note=$('nickNote'); if(note) note.textContent=nickNoteText(data);
+}
+
+/* ---------- 사업자 인증 (supabase_v60) ----------
+   프리미엄 계정만 신청합니다. 승인되면 공개 화면에서 브리더명 옆에 로고와
+   인증 표시가 붙습니다. 사업자등록번호는 관리자만 봅니다 — 공개 화면으로는
+   상호명과 로고만 나갑니다. */
+const BIZ_TYPES = ['image/png','image/jpeg','image/webp'];
+const BIZ_MAX   = 512*1024;
+
+async function bizStatus(){
+  try{ const r=await SB.rpc('my_business_status'); return r.error? null : r.data; }
+  catch(e){ return null; }
+}
+
+/* 로고는 줄이지 않고 그대로 올립니다. ImgTool.resize 는 JPEG 로 다시 굽는데,
+   투명한 배경의 PNG 로고가 들어오면 뒤가 까맣게 칠해집니다. 로고는 그 회사의
+   자산이라 우리가 말없이 바꿀 것이 아닙니다 — 크면 작은 파일을 달라고 합니다. */
+async function uploadLogo(file){
+  if(BIZ_TYPES.indexOf(file.type)<0) throw new Error('BIZ_LOGO_TYPE');
+  if(file.size>BIZ_MAX) throw new Error('BIZ_LOGO_SIZE');
+  const s=await SB.auth.getSession();
+  const uid=s.data.session && s.data.session.user && s.data.session.user.id;
+  if(!uid) throw new Error('AUTH_REQUIRED');
+  const ext={'image/png':'png','image/jpeg':'jpg','image/webp':'webp'}[file.type];
+  const path='b/u_'+uid+'_'+Date.now()+'.'+ext;
+  const up=await SB.storage.from('breeder-logos').upload(path,file,{contentType:file.type,upsert:true});
+  if(up.error) throw up.error;
+  return SB.storage.from('breeder-logos').getPublicUrl(path).data.publicUrl;
+}
+
+function bizErr(e){
+  const m=String((e&&e.message)||e||'');
+  if(/BIZ_LOGO_TYPE/.test(m))       return t('bizLogoType');
+  if(/BIZ_LOGO_SIZE/.test(m))       return t('bizLogoSize');
+  if(/BIZ_PREMIUM_REQUIRED/.test(m))return t('bizPremiumOnly');
+  if(/BIZ_NAME_REQUIRED/.test(m))   return t('bizNameNeeded');
+  if(/BIZ_NUMBER_INVALID/.test(m))  return t('bizNumberInvalid');
+  if(/BIZ_NUMBER_TAKEN/.test(m))    return t('bizNumberTaken');
+  if(/BIZ_LOGO_INVALID/.test(m))    return t('bizLogoInvalid');
+  if(/BIZ_NOT_APPROVED/.test(m))    return t('bizNotApproved');
+  return err(e);
+}
+
+function bizBoxHTML(b){
+  const st=(b&&b.status)||'none';
+  const badge={pending:'bizStatusPending',approved:'bizStatusApproved',
+               rejected:'bizStatusRejected',none:'bizStatusNone'}[st];
+  return '<div style="font-size:13px;font-weight:800;padding:2px 2px 8px">'+t('bizTitle')
+      +' <span class="opt">'+t(badge)+'</span></div>'
+    +(st==='rejected' && b.note ? '<div class="cNote" style="margin-top:0;border-top:0;padding-top:0">'
+      +esc(t('bizRejectedNote'))+' '+esc(b.note)+'</div>' : '')
+    +'<input class="in" id="bName" placeholder="'+esc(t('bizName'))+'" value="'+esc((b&&b.biz_name)||'')+'" style="margin-bottom:8px">'
+    +'<input class="in" id="bNum" inputmode="numeric" placeholder="'+esc(t('bizNumber'))+'" value="'+esc((b&&b.biz_number)||'')+'" style="margin-bottom:8px">'
+    +'<div id="bLogoBox" style="display:flex;align-items:center;gap:10px;margin-bottom:8px">'
+      +'<img id="bLogoImg" alt="" style="width:46px;height:46px;border-radius:11px;object-fit:contain;'
+        +'background:var(--card);border:1px solid var(--hair);padding:4px;'
+        +'display:'+((b&&b.logo_url)?'block':'none')+'" src="'+esc((b&&b.logo_url)||'')+'">'
+      +'<button class="btn ghost" id="bPick" style="margin:0;flex:1">'+t('bizLogoPick')+'</button>'
+      +'<input type="file" id="bFile" accept="image/png,image/jpeg,image/webp" hidden>'
+    +'</div>'
+    +'<button class="btn ghost" id="bSave" style="margin-top:2px">'
+      +t(st==='approved'?'bizSaveLogo':'bizApply')+'</button>'
+    +'<div class="cNote">'+t('bizHint')+'</div>';
+}
+
+/* 브리더 프로필 이미지. 사업자 인증과는 별개입니다 — 이미지는 '나를 알아보게
+   하는 것' 이고, 인증 표시는 '우리가 확인했다는 것' 입니다. 이미지를 올렸다고
+   확인된 것이 되면 인증 표시가 아무 뜻도 없어집니다.
+   그래서 프리미엄도 인증도 묻지 않고 누구나 등록합니다(supabase_v62). */
+async function renderAvatarBox(profilePane){
+  const b=await bizStatus();
+  if(!b) return;                       // v60 이전이면 그리지 않습니다
+  const box=document.createElement('div');
+  box.className='consent'; box.style.marginTop='12px';
+  profilePane.appendChild(box);
+
+  function draw(url){
+    box.innerHTML='<div style="font-size:13px;font-weight:800;padding:2px 2px 8px">'+t('avatarTitle')+'</div>'
+      +'<div style="display:flex;align-items:center;gap:10px">'
+        +'<img id="avImg" alt="" style="width:46px;height:46px;border-radius:50%;object-fit:cover;'
+          +'background:var(--card);border:1px solid var(--hair);'
+          +'display:'+(url?'block':'none')+'" src="'+esc(url||'')+'">'
+        +'<button class="btn ghost" id="avPick" style="margin:0;flex:1">'+t('avatarPick')+'</button>'
+        +(url? '<button class="btn ghost" id="avClear" style="margin:0;flex:0 0 auto">'+t('avatarClear')+'</button>' : '')
+        +'<input type="file" id="avFile" accept="image/png,image/jpeg,image/webp" hidden>'
+      +'</div>'
+      +'<div class="cNote">'+t('avatarHint')+'</div>';
+    $('avPick').onclick=()=>$('avFile').click();
+    $('avFile').onchange=async()=>{
+      const file=$('avFile').files[0]; if(!file) return;
+      $('avPick').disabled=true;
+      try{
+        const next=await uploadLogo(file);          // 같은 버킷·같은 검사
+        const r=await SB.rpc('set_my_avatar',{p_url:next});
+        if(r.error) throw r.error;
+        draw(r.data && r.data.avatar_url);
+        say('o',t('saved'));
+      }catch(e){ say('e',bizErr(e)); }
+      const pick=$('avPick'); if(pick) pick.disabled=false;
+      const f=$('avFile'); if(f) f.value='';
+    };
+    const clear=$('avClear');
+    if(clear) clear.onclick=async()=>{
+      clear.disabled=true;
+      const r=await SB.rpc('set_my_avatar',{p_url:null});
+      if(r.error){ clear.disabled=false; return say('e',bizErr(r.error)); }
+      draw(null); say('o',t('saved'));
+    };
+  }
+  draw(b.avatar_url||null);
+}
+
+async function renderBusinessBox(profilePane){
+  const first=await bizStatus();
+  /* v60 적용 전이거나 프리미엄이 아니면 아예 안 그립니다. 안 되는 칸을 회색으로
+     띄워 두면 '왜 안 되냐' 는 문의만 늘어납니다. */
+  if(!first || !first.premium) return;
+  const box=document.createElement('div');
+  box.className='consent'; box.style.marginTop='12px';
+  profilePane.appendChild(box);
+
+  function draw(b){
+    box.innerHTML=bizBoxHTML(b);
+    let logoUrl=b.logo_url||null;
+    $('bPick').onclick=()=>$('bFile').click();
+    $('bFile').onchange=async()=>{
+      const file=$('bFile').files[0]; if(!file) return;
+      $('bPick').disabled=true;
+      try{
+        logoUrl=await uploadLogo(file);
+        $('bLogoImg').src=logoUrl; $('bLogoImg').style.display='block';
+        say('o',t('bizLogoReady'));
+      }catch(e){ say('e',bizErr(e)); }
+      $('bPick').disabled=false; $('bFile').value='';
+    };
+    $('bSave').onclick=async()=>{
+      $('bSave').disabled=true;
+      /* 승인된 사람이 로고만 바꿀 때는 승인을 풀지 않습니다. 상호명이나 번호를
+         고치는 것은 다시 확인해야 하니 신청으로 돌아갑니다. */
+      const nameSame=($('bName').value.trim()===(b.biz_name||''));
+      const numSame=($('bNum').value.replace(/[^0-9]/g,'')===String(b.biz_number||''));
+      const r = (b.status==='approved' && nameSame && numSame)
+        ? await SB.rpc('set_my_breeder_logo',{p_logo:logoUrl})
+        : await SB.rpc('apply_business_verification',
+            {p_name:$('bName').value.trim(), p_number:$('bNum').value, p_logo:logoUrl});
+      $('bSave').disabled=false;
+      if(r.error) return say('e',bizErr(r.error));
+      say('o',t('saved'));
+      /* 상태가 바뀌었을 수 있습니다(승인 → 심사 중). 이 칸만 다시 그립니다 —
+         안 그러면 아직 승인된 것처럼 보입니다. */
+      const next=await bizStatus();
+      if(next && next.premium) draw(next);
+    };
+  }
+  draw(first);
+}
+
+/* 관리자 계정의 프로필 칸. 닉네임만 둡니다 — 동의 항목은 관리자에게 보여
+   주지 않기로 한 기존 판단을 그대로 두고, 실제로 막혀 있던 것(본인 닉네임을
+   바꿀 방법이 없던 것)만 엽니다. set_my_nickname 은 동의와 무관한 함수라
+   save_consent 를 거치지 않아도 됩니다. */
+async function renderAdminProfile(run){
+  const nick=await nickStatus();
+  if(run!==ACCOUNT_RENDER) return;
+  const profilePane=AccountShell.pane($('root'),'profile');
+  if(!profilePane) return;
+  const box=document.createElement('div');
+  box.className='consent'; box.style.marginTop='16px';
+  box.innerHTML='<div style="font-size:13px;font-weight:800;padding:2px 2px 8px">'+t('profileTitle')+'</div>'
+    +'<input class="in" id="iNick" placeholder="'+esc(t('nickname'))+'" value="'+esc((nick&&nick.nickname)||'')+'" style="margin-bottom:0">'
+    +(nick? '<div class="cNote" id="nickNote">'+esc(nickNoteText(nick))+'</div>' : '')
+    +'<div class="cNote">'+t('adminProfileNote')+'</div>'
+    +'<button class="btn ghost" id="nSave" style="margin-top:10px">'+t('saveSettings')+'</button>';
+  profilePane.appendChild(box);
+  $('nSave').onclick=async()=>{
+    $('nSave').disabled=true;
+    const r=await submitNickname($('iNick').value.trim());
+    $('nSave').disabled=false;
+    if(r.legacy) return say('e',t('errUnknown'));
+    if(r.n.error) return say('e',err(r.n.error));
+    applyNickResult(r.n.data);
+    say('o',t('saved'));
+  };
+}
+
+async function renderConsentSettings(run){
   let c=null; try{ const r=await SB.rpc('my_consent'); c=r.data; }catch(e){}
-  if(!c) return;
+  if(!c || run!==ACCOUNT_RENDER) return;
+  const nick=await nickStatus();
+  if(run!==ACCOUNT_RENDER) return;
+  const profilePane=AccountShell.pane($('root'),'profile');
+  const privacyPane=AccountShell.pane($('root'),'privacy');
+  const securityPane=AccountShell.pane($('root'),'security');
+  if(!profilePane || !privacyPane || !securityPane) return;
 
   // 기본 정보 (이름·닉네임·전화)
   const info=document.createElement('div');
   info.className='consent'; info.style.marginTop='16px';
-  info.innerHTML='<div style="font-size:13px;font-weight:800;padding:2px 2px 8px">기본 정보 <span class="opt">[선택]</span></div>'
-    +'<input class="in" id="iName" placeholder="이름" value="'+esc(c.name||'')+'" style="margin-bottom:8px">'
-    +'<input class="in" id="iNick" placeholder="닉네임" value="'+esc(c.nickname||'')+'" style="margin-bottom:0">'
-    +'<div class="cNote">비워두고 저장하면 기존 값이 유지됩니다. 완전히 지우려면 회원탈퇴를 이용해 주세요.</div>';
-  $('root').appendChild(info);
+  info.innerHTML='<div style="font-size:13px;font-weight:800;padding:2px 2px 8px">'+t('profileTitle')+' <span class="opt">'+t('optional')+'</span></div>'
+    +'<input class="in" id="iName" placeholder="'+esc(t('name'))+'" value="'+esc(c.name||'')+'" style="margin-bottom:8px">'
+    +'<input class="in" id="iNick" placeholder="'+esc(t('nickname'))+'" value="'+esc(c.nickname||'')+'" style="margin-bottom:0">'
+    +(nick? '<div class="cNote" id="nickNote">'+esc(nickNoteText(nick))+'</div>' : '')
+    +'<div class="cNote">'+t('profileExistingNote')+'</div>';
+  profilePane.appendChild(info);
 
   // 회원이 원할 때만 적는 정보 — 가입 화면과 같은 입력란을 그대로 씁니다.
   const ex=document.createElement('div');
   ex.style.marginTop='12px'; ex.innerHTML=extraHTML(c);
-  $('root').appendChild(ex);
+  profilePane.appendChild(ex);
+
+  /* 사업자 인증은 기다리지 않고 붙입니다. 프리미엄이 아닌 대부분의 회원에게는
+     아무것도 안 그리는데, 그 판정을 기다리느라 아래 동의 설정이 늦게 뜨면
+     화면이 덜컥거립니다. */
+  /* 프로필 이미지는 누구나, 사업자 인증은 프리미엄만. 둘 다 기다리지 않고
+     붙입니다 — 판정을 기다리느라 아래 동의 설정이 늦게 뜨면 화면이 덜컥거립니다. */
+  renderAvatarBox(profilePane).catch(()=>{});
+  renderBusinessBox(profilePane).catch(()=>{});
 
   const box=document.createElement('div');
   box.className='consent'; box.style.marginTop='12px';
   // 가입 화면에는 '전체 선택'이 있는데 여기만 없어서, 항목을 하나씩 눌러야 했습니다.
-  box.innerHTML='<div style="font-size:13px;font-weight:800;padding:2px 2px 8px">수신 및 제공 동의 (선택)</div>'
-    +'<label class="cAll"><input type="checkbox" id="sAll"><span>전체 선택</span></label>'
-    +'<label class="cRow"><input type="checkbox" class="sItem" id="sThird" '+(c.agree_third?'checked':'')+'><span>개인정보 제3자 제공</span></label>'
-    +'<label class="cRow"><input type="checkbox" class="sItem" id="sMail" '+(c.agree_mkt_email?'checked':'')+'><span>이메일로 이벤트·혜택 받기</span></label>'
-    +'<label class="cRow"><input type="checkbox" class="sItem" id="sSms" '+(c.agree_mkt_sms?'checked':'')+'><span>문자로 이벤트·혜택 받기</span></label>'
+  box.innerHTML='<div style="font-size:13px;font-weight:800;padding:2px 2px 8px">'+t('consentSettings')+'</div>'
+    +'<label class="cAll"><input type="checkbox" id="sAll"><span>'+t('selectAll')+'</span></label>'
+    +'<label class="cRow"><input type="checkbox" class="sItem" id="sThird" '+(c.agree_third?'checked':'')+'><span>'+t('thirdShort')+'</span></label>'
+    +'<label class="cRow"><input type="checkbox" class="sItem" id="sMail" '+(c.agree_mkt_email?'checked':'')+'><span>'+t('mailShort')+'</span></label>'
+    +'<label class="cRow"><input type="checkbox" class="sItem" id="sSms" '+(c.agree_mkt_sms?'checked':'')+'><span>'+t('smsShort')+'</span></label>'
     +'<div id="sPhoneWrap" style="display:'+(c.agree_mkt_sms?'block':'none')+';margin-top:6px">'
-    +'<input class="in" id="sPhone" type="tel" placeholder="휴대전화번호" value="'+esc(c.phone||'')+'" style="margin-bottom:0"></div>'
+    +'<input class="in" id="sPhone" type="tel" placeholder="'+esc(t('phone'))+'" value="'+esc(c.phone||'')+'" style="margin-bottom:0"></div>'
     +'<label class="cRow" style="margin-top:4px"><input type="checkbox" class="sItem" id="sAi" '+(c.agree_ai_train?'checked':'')+'>'
-      +'<span>등록한 사진·개체 정보를 <b>AI 모델 학습</b>에 이용'
-      +'<a href="../terms.html#terms" target="_blank">약관 제9조 ③</a>'
-      +'<br><span style="font-size:11px;color:var(--ink2)">해제하면 이후 학습에서 제외하고 원본은 삭제합니다. 다만 <b>이미 학습이 끝난 모델은 되돌릴 수 없습니다.</b></span></span></label>'
-    +(c.ai_at? '<div class="cNote" style="margin-top:2px">AI 학습 동의 '+new Date(c.ai_at).toLocaleDateString('ko-KR')+'</div>' : '')
-    +'<button class="btn ghost" id="sSave" style="margin-top:10px">기본 정보 · 동의 설정 저장</button>'
-    +'<div class="cNote">필수 동의는 서비스 이용에 필요해 해제할 수 없어요.'
-    +(c.consent_at? ' 최종 동의 '+new Date(c.consent_at).toLocaleDateString('ko-KR')+'.' : '')+'</div>';
-  $('root').appendChild(box);
+      +'<span>'+t('aiShort')
+      +'<a href="../terms.html#terms" target="_blank">'+t('aiTerms')+'</a>'
+      +'<br><span style="font-size:11px;color:var(--ink2)">'+t('aiSettingsNote')+'</span></span></label>'
+    +(c.ai_at? '<div class="cNote" style="margin-top:2px">'+t('aiConsentDate',{date:LoginLocale.formatDate(c.ai_at)})+'</div>' : '')
+    +'<button class="btn ghost" id="sSave" style="margin-top:10px">'+t('saveSettings')+'</button>'
+    +'<div class="cNote">'+t('requiredLocked')
+    +(c.consent_at? ' '+t('finalConsentDate',{date:LoginLocale.formatDate(c.consent_at)}) : '')+'</div>';
+  privacyPane.appendChild(box);
 
   const sAll=$('sAll'), sItems=[...document.querySelectorAll('.sItem')];
   const syncAll=()=>{ sAll.checked=sItems.every(x=>x.checked); };
@@ -488,48 +907,84 @@ async function renderConsentSettings(){
   syncAll();
 
   $('sSave').onclick=async()=>{
-    if($('sSms').checked && !$('sPhone').value.trim()) return say('e','문자 수신을 위해 휴대전화번호를 입력해 주세요.');
+    if($('sSms').checked && !$('sPhone').value.trim()) return say('e',t('phoneRequired'));
+    const wanted=$('iNick').value.trim();
     $('sSave').disabled=true;
+    /* 닉네임만 따로 보냅니다. save_consent 는 빈 값을 '건드리지 않음' 으로 읽어서
+       '지우고 저장하면 새로 지어 준다' 를 표현할 수 없습니다.
+       v59 적용 전이면 함수가 없으므로 예전처럼 같이 실어 보냅니다. */
+    const { n, legacy } = await submitNickname(wanted);
     const r=await saveConsent({terms:true,privacy:true,age:true,third:$('sThird').checked,
       mail:$('sMail').checked, sms:$('sSms').checked, ai:$('sAi').checked,
       phone:$('sPhone').value.trim()||null,
-      name:$('iName').value.trim()||null, nickname:$('iNick').value.trim()||null,
+      name:$('iName').value.trim()||null, nickname:legacy?(wanted||null):null,
       extra:extraValues()});
     $('sSave').disabled=false;
-    if(r.error) say('e',err(r.error)); else say('o','저장되었어요.');
+    if(n.error && !legacy) return say('e',err(n.error));
+    if(r.error) return say('e',err(r.error));
+    if(!legacy) applyNickResult(n.data);
+    say('o',t('saved'));
   };
 
-  // 비밀번호 변경 — 지금 로그인한 본인만 바꿀 수 있습니다.
-  // 현재 비밀번호를 다시 묻지 않는 것은 이미 로그인된 세션이기 때문입니다.
+  /* 비밀번호 변경 — 지금 로그인한 본인만 바꿀 수 있습니다.
+     예전에는 현재 비밀번호를 묻지 않았습니다. '이미 로그인된 세션이니까' 라는
+     이유였는데, 그건 자리를 비운 사이 남이 화면을 잡으면 그대로 비밀번호를
+     바꿔 계정을 가져갈 수 있다는 뜻이기도 합니다. 한 번 더 묻습니다.
+
+     구글로만 가입한 계정에는 확인할 비밀번호가 없습니다. 그때는 묻지 않고
+     '처음 정하기' 로 둡니다 — 없는 것을 대라고 하면 영영 정할 수 없습니다.
+     has_password 는 my_identities 가 알려 줍니다. */
+  let hasPassword=true;
+  try{ const r=await SB.rpc('my_identities'); hasPassword=(!r.error && r.data)? !!r.data.has_password : true; }
+  catch(e){ hasPassword=true; }
+  if(run!==ACCOUNT_RENDER) return;
+
   const pwbox=document.createElement('div');
   pwbox.className='consent'; pwbox.style.marginTop='12px';
-  pwbox.innerHTML='<div style="font-size:13px;font-weight:800;padding:2px 2px 8px">비밀번호 변경</div>'
-    +'<input class="in" id="npw" type="password" autocomplete="new-password" placeholder="새 비밀번호 (8자 이상 · 특수문자 포함)" style="margin-bottom:8px">'
-    +'<input class="in" id="npw2" type="password" autocomplete="new-password" placeholder="한 번 더 입력" style="margin-bottom:0">'
-    +'<button class="btn ghost" id="npwSave" style="margin-top:10px">비밀번호 변경</button>'
-    +'<div class="cNote">구글 계정으로만 로그인하신다면 비밀번호를 정하지 않아도 됩니다. 정해두시면 두 가지 방법 모두로 로그인할 수 있어요.</div>';
-  $('root').appendChild(pwbox);
+  pwbox.innerHTML='<div style="font-size:13px;font-weight:800;padding:2px 2px 8px">'
+      +t(hasPassword?'changePassword':'setPassword')+'</div>'
+    +(hasPassword? '<input class="in" id="cpw" type="password" autocomplete="current-password" placeholder="'+esc(t('currentPassword'))+'" style="margin-bottom:8px">' : '')
+    +'<input class="in" id="npw" type="password" autocomplete="new-password" placeholder="'+esc(t('newPasswordPlaceholder'))+'" style="margin-bottom:8px">'
+    +'<input class="in" id="npw2" type="password" autocomplete="new-password" placeholder="'+esc(t('passwordAgain'))+'" style="margin-bottom:0">'
+    +'<button class="btn ghost" id="npwSave" style="margin-top:10px">'
+      +t(hasPassword?'changePassword':'setPassword')+'</button>'
+    +'<div class="cNote">'+t(hasPassword?'passwordChangeNote':'passwordProviderNote')+'</div>';
+  securityPane.appendChild(pwbox);
   $('npwSave').onclick=async()=>{
+    const cur=hasPassword? $('cpw').value : '';
     const a=$('npw').value, b=$('npw2').value;
+    if(hasPassword && !cur) return say('e',t('currentPasswordRequired'));
     const p=pwProblem(a); if(p) return say('e',p);
-    if(a!==b) return say('e','비밀번호가 서로 달라요.');
+    if(a!==b) return say('e',t('passwordMismatch'));
+    /* 같은 비밀번호로 바꾸면 바뀐 것이 없는데 바뀌었다고 안내하게 됩니다. */
+    if(hasPassword && cur===a) return say('e',t('passwordSameAsCurrent'));
     $('npwSave').disabled=true;
+    if(hasPassword){
+      /* 현재 비밀번호 확인. 같은 계정으로 다시 로그인하는 것이라 세션이 새로
+         발급될 뿐 로그아웃되지는 않습니다. */
+      const s=await SB.auth.getSession();
+      const email=(s.data.session && s.data.session.user && s.data.session.user.email)||'';
+      const chk=await SB.auth.signInWithPassword({email:email, password:cur});
+      if(chk.error){ $('npwSave').disabled=false; return say('e',t('currentPasswordWrong')); }
+    }
     const r=await SB.auth.updateUser({password:a});
     $('npwSave').disabled=false;
     if(r.error) return say('e',err(r.error));
     try{ await SB.rpc('clear_must_change'); }catch(e){}
+    if($('cpw')) $('cpw').value='';
     $('npw').value=''; $('npw2').value='';
-    say('o','비밀번호가 변경되었어요.');
+    say('o',t('passwordChanged'));
   };
 
   // 연결된 로그인 수단 (docs/AUTH.md 5장)
-  await renderIdentities();
+  await renderIdentities(securityPane,run);
+  if(run!==ACCOUNT_RENDER) return;
 
   // 회원탈퇴
   const out=document.createElement('div');
   out.style.marginTop='18px'; out.style.textAlign='center';
-  out.innerHTML='<a class="quit" id="quitLink">회원탈퇴</a>';
-  $('root').appendChild(out);
+  out.innerHTML='<a class="quit" id="quitLink">'+t('deleteAccount')+'</a>';
+  securityPane.appendChild(out);
   $('quitLink').onclick=()=>renderQuit(c);
 }
 
@@ -538,14 +993,9 @@ async function renderConsentSettings(){
    "사용 가능한 로그인 수단"은 소셜 identity 수 + (비밀번호 설정됨 ? 1 : 0) 이며,
    해제 후 1개 이상 남을 때만 해제를 허용한다. identity 개수만 세면 안 된다 —
    구글로만 가입한 계정도 email identity 를 갖지만 비밀번호는 없기 때문. */
-const PROVIDERS={
-  email:  {ko:'이메일 + 비밀번호', icon:'✉️'},
-  google: {ko:'Google',           icon:'🔵'},
-  kakao:  {ko:'카카오',            icon:'💛'},
-  apple:  {ko:'Apple',            icon:'🍎'},
-};
-function providerLabel(p){ return (PROVIDERS[p]&&PROVIDERS[p].ko)||p; }
-function providerIcon(p){ return (PROVIDERS[p]&&PROVIDERS[p].icon)||'🔑'; }
+const PROVIDERS={ email:'✉️', google:'🔵', kakao:'💛', apple:'🍎' };
+function providerLabel(p){ return LoginLocale.providerName(p); }
+function providerIcon(p){ return PROVIDERS[p]||'🔑'; }
 
 // 해제 후에도 남는 "사용 가능한" 로그인 수단 개수
 function usableCount(list, hasPassword, excludeProvider){
@@ -554,25 +1004,25 @@ function usableCount(list, hasPassword, excludeProvider){
   return n;
 }
 
-async function renderIdentities(){
+async function renderIdentities(target,run){
   let d=null;
   try{ const r=await SB.rpc('my_identities'); if(r.error) throw r.error; d=r.data; }catch(e){ d=null; }
+  if(run!==ACCOUNT_RENDER) return;
 
   const box=document.createElement('div');
   box.className='consent'; box.style.marginTop='12px';
 
   if(!d){
-    box.innerHTML='<div style="font-size:13px;font-weight:800;padding:2px 2px 8px">로그인 수단</div>'
-      +'<div class="cNote">로그인 수단 정보를 불러오지 못했어요. '
-      +'서버에 <b>supabase_setup.sql</b> 의 H) 항목이 적용됐는지 확인해 주세요.</div>';
-    $('root').appendChild(box); return;
+    box.innerHTML='<div style="font-size:13px;font-weight:800;padding:2px 2px 8px">'+t('loginMethods')+'</div>'
+      +'<div class="cNote">'+t('loginMethodsLoadFailed')+'</div>';
+    target.appendChild(box); return;
   }
 
   const list=d.identities||[], hasPw=!!d.has_password;
   const total=usableCount(list, hasPw, null);
 
-  let h='<div style="font-size:13px;font-weight:800;padding:2px 2px 8px">로그인 수단 '
-    +'<span class="opt">'+total+'개</span></div>';
+  let h='<div style="font-size:13px;font-weight:800;padding:2px 2px 8px">'+t('loginMethods')+' '
+    +'<span class="opt">'+t('methodCount',{count:LoginLocale.formatNumber(total)})+'</span></div>';
 
   // 이메일+비밀번호는 identity 목록이 아니라 비밀번호 설정 여부로 판단
   const rows=[];
@@ -585,64 +1035,57 @@ async function renderIdentities(){
       +'<div class="idmain"><b>'+esc(providerLabel(i.provider))+'</b>'
       +(i.email? '<div class="idsub">'+esc(i.email)+'</div>':'')
       +'</div>'
-      +(last? '<span class="idlast">유일한 수단</span>'
-            : '<button class="mini" data-unlink="'+esc(i.provider)+'">해제</button>')
+      +(last? '<span class="idlast">'+t('onlyMethod')+'</span>'
+            : '<button class="mini" data-unlink="'+esc(i.provider)+'">'+t('unlink')+'</button>')
       +'</div>'; }).join('');
 
-  h+='<div class="cNote">로그인 수단을 여러 개 연결해 두면 하나를 못 쓰게 돼도 계정에 들어올 수 있어요. '
-    +'<b>마지막 하나는 해제할 수 없습니다.</b></div>';
+  h+='<div class="cNote">'+t('methodsNote')+'</div>';
 
   // 아직 연결하지 않은 provider 안내 (연동 UI 는 다음 단계에서 구현)
   const linked=new Set(rows.map(i=>i.provider));
   const missing=Object.keys(PROVIDERS).filter(p=>!linked.has(p) && p!=='kakao' && p!=='apple');
   if(missing.length) h+='<div class="cNote" style="border-top:none;padding-top:0">'
-    +'아직 연결하지 않음: '+missing.map(p=>esc(providerLabel(p))).join(', ')
-    +' <span class="opt">(연결 기능 준비 중)</span></div>';
+    +LoginLocale.html('notLinked',{providers:missing.map(p=>providerLabel(p)).join(', ')})
+    +' <span class="opt">'+t('linkingSoon')+'</span></div>';
 
   box.innerHTML=h;
-  $('root').appendChild(box);
+  target.appendChild(box);
 
   box.querySelectorAll('[data-unlink]').forEach(b=>b.onclick=()=>{
     const p=b.dataset.unlink;
     if(usableCount(list, hasPw, p)===0)
-      return say('e','이 계정의 유일한 로그인 방법이에요. 다른 방법을 먼저 추가해 주세요.');
-    say('e','로그인 수단 해제 기능은 준비 중이에요. '
-      +'지금 필요하시면 kmc612000@gmail.com 으로 요청해 주세요.');
+      return say('e',t('onlyMethodError'));
+    say('e',t('unlinkSoon'));
   });
 }
 
 /* ---------- 회원탈퇴 ---------- */
 function renderQuit(c){
   const email=(c&&c.email)||'';
-  $('root').innerHTML='<h2 style="margin:0 0 6px;font-size:17px">회원탈퇴</h2>'
-    +'<div class="hint">탈퇴하기 전에 아래 내용을 꼭 확인해 주세요.</div>'
+  $('root').innerHTML='<h2 style="margin:0 0 6px;font-size:17px">'+t('deleteAccount')+'</h2>'
+    +'<div class="hint">'+t('deleteIntro')+'</div>'
 
-    +'<div class="quitbox warn"><b>⚠️ 되돌릴 수 없습니다</b>'
-    +'<div>탈퇴하면 계정과 데이터가 삭제되며, 같은 이메일로 다시 가입해도 <b>이전 기록은 복구되지 않습니다.</b></div></div>'
+    +'<div class="quitbox warn"><b>'+t('irreversible')+'</b>'
+    +'<div>'+t('irreversibleBody')+'</div></div>'
 
-    +'<div class="quitbox"><b>즉시 삭제되는 정보</b>'
-    +'<ul><li>계정 정보 (이메일, 이름, 닉네임, 휴대전화번호)</li>'
-    +'<li>등록한 개체·페어링·클러치 기록과 업로드한 사진</li>'
-    +'<li>마케팅 수신 동의 및 제3자 제공 동의</li></ul></div>'
+    +'<div class="quitbox"><b>'+t('deleteNowTitle')+'</b>'
+    +'<ul>'+t('deleteNowItems')+'</ul></div>'
 
-    +'<div class="quitbox"><b>법령에 따라 보관되는 정보</b>'
-    +'<ul><li><b>약관·개인정보 동의 기록 — 탈퇴 후 5년</b><br>'
-    +'<span class="qsub">전자상거래법상 계약·청약철회 기록 보존 의무. 이름·이메일 등 신원정보는 삭제하고 <b>동의 사실과 일시만</b> 남깁니다.</span></li>'
-    +'<li><b>접속 기록 — 수집일로부터 1년</b><br>'
-    +'<span class="qsub">통신비밀보호법상 보존 의무. 개인을 식별할 수 없는 형태로만 남습니다.</span></li></ul>'
-    +'<div class="qsub" style="margin-top:8px">자세한 내용은 <a href="../terms.html#privacy" target="_blank">개인정보처리방침</a>에서 확인하실 수 있어요.</div></div>'
+    +'<div class="quitbox"><b>'+t('retainedTitle')+'</b>'
+    +'<ul>'+t('retainedItems')+'</ul>'
+    +'<div class="qsub" style="margin-top:8px"><a href="../terms.html#privacy" target="_blank">'+t('privacyDetails')+'</a></div></div>'
 
-    +'<div class="quitbox"><b>프리미엄을 이용 중이라면</b>'
-    +'<div class="qsub">탈퇴 시 남은 이용 기간은 <b>환불되지 않으며</b>, 사용한 코드는 다시 사용할 수 없습니다. 잠시 쉬어가는 것이라면 탈퇴 대신 로그아웃을 권해드려요.</div></div>'
+    +'<div class="quitbox"><b>'+t('premiumDeleteTitle')+'</b>'
+    +'<div class="qsub">'+t('premiumDeleteBody')+'</div></div>'
 
     +'<label class="cRow" style="margin-top:14px"><input type="checkbox" id="qAgree">'
-    +'<span>위 내용을 모두 확인했으며, 데이터가 삭제되는 것에 동의합니다.</span></label>'
+    +'<span>'+t('deleteAgree')+'</span></label>'
 
-    +'<div class="fl" style="margin-top:10px">확인을 위해 가입 이메일을 입력해 주세요</div>'
+    +'<div class="fl" style="margin-top:10px">'+t('typeEmail')+'</div>'
     +'<input class="in" id="qEmail" type="email" placeholder="'+esc(email)+'" autocomplete="off">'
 
-    +'<button class="btn danger" id="qGo" disabled>탈퇴하기</button>'
-    +'<button class="btn ghost" id="qBack" style="margin-top:8px">돌아가기</button>'
+    +'<button class="btn danger" id="qGo" disabled>'+t('deleteAction')+'</button>'
+    +'<button class="btn ghost" id="qBack" style="margin-top:8px">'+t('back')+'</button>'
     +'<div class="msg" id="msg"></div>';
 
   const sync=()=>{ $('qGo').disabled = !($('qAgree').checked
@@ -650,25 +1093,23 @@ function renderQuit(c){
   $('qAgree').onchange=sync; $('qEmail').oninput=sync;
   $('qBack').onclick=()=>boot();
   $('qGo').onclick=async()=>{
-    if(!confirm('정말 탈퇴하시겠어요?\n\n등록한 개체와 사진이 모두 삭제되며 되돌릴 수 없습니다.')) return;
-    $('qGo').disabled=true; $('qGo').textContent='처리 중…'; clearMsg();
+    if(!confirm(t('deleteConfirm'))) return;
+    $('qGo').disabled=true; $('qGo').textContent=t('processing'); clearMsg();
     try{
       const r=await SB.rpc('delete_my_account');
       if(r.error) throw r.error;
       await SB.auth.signOut();
       $('root').innerHTML='<div class="me"><div class="av">👋</div>'
-        +'<div class="em">탈퇴가 완료되었습니다</div>'
-        +'<div class="hint" style="margin-top:10px">그동안 이용해 주셔서 감사합니다.<br>언제든 다시 찾아와 주세요.</div></div>'
-        +'<div class="links"><a href="index.html">🧮 계산기로 돌아가기</a></div>';
+        +'<div class="em">'+t('deleteComplete')+'</div>'
+        +'<div class="hint" style="margin-top:10px">'+t('deleteThanks')+'</div></div>'
+        +'<div class="links"><a href="'+esc(LoginLocale.calculatorUrl())+'">🧮 '+t('calculatorBack')+'</a></div>';
     }catch(e){
-      $('qGo').disabled=false; $('qGo').textContent='탈퇴하기';
+      $('qGo').disabled=false; $('qGo').textContent=t('deleteAction');
       const m=(e&&e.message)||'';
       if(/delete_my_account|does not exist|Could not find the function/i.test(m))
-        say('e','탈퇴 기능이 아직 서버에 적용되지 않았어요.<br>'
-          +'<b>kmc612000@gmail.com</b> 으로 탈퇴를 요청해 주시면 직접 처리해 드리겠습니다.');
+        say('e',t('deleteServerMissing'));
       else
-        say('e','탈퇴 처리 중 문제가 생겼어요.<br>'+esc(err(e))
-          +'<br><br>계속 실패하면 kmc612000@gmail.com 으로 연락 주시면 직접 처리해 드릴게요.');
+        say('e',LoginLocale.html('deleteFailed',{error:LoginLocale.friendly(e)}));
     }
   };
 }
@@ -682,16 +1123,16 @@ function validEmail(v){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }
 
 async function doLogin(){
   const em=$('email').value.trim(), pw=$('pw').value; clearMsg();
-  if(!validEmail(em)) return say('e','이메일 형식을 확인해 주세요.');
-  if(!pw) return say('e','비밀번호를 입력해 주세요.');
-  $('go').disabled=true; $('go').textContent='로그인 중…';
+  if(!validEmail(em)) return say('e',t('emailCheck'));
+  if(!pw) return say('e',t('passwordRequired'));
+  $('go').disabled=true; $('go').textContent=t('loginWorking');
   const r=await SB.auth.signInWithPassword(capOpts({email:em,password:pw}));
   if(r.error) capReset();
-  $('go').disabled=false; $('go').textContent='로그인';
+  $('go').disabled=false; $('go').textContent=t('loginAction');
   if(r.error) return say('e',err(r.error));
   await flushPendingConsent(); await claim();
   if(await mustChangePw()) return renderNewPw(true);
-  if(await hasConsent()) renderMe(r.data.user); else renderConsentGate(r.data.user);
+  if(await hasConsent()) finishLogin(r.data.user); else renderConsentGate(r.data.user);
 }
 
 /* 비밀번호 규칙: 8자 이상 + 특수문자 1개 이상.
@@ -701,32 +1142,47 @@ async function doLogin(){
    Required characters = 특수문자 포함 조합. 한쪽만 바꾸면 안내와 실제
    기준이 어긋나 사용자가 영문 오류를 그대로 보게 됩니다. */
 function pwProblem(pw){
-  if(pw.length<8) return '비밀번호는 8자 이상이어야 해요.';
-  if(!/[^A-Za-z0-9]/.test(pw)) return '비밀번호에 특수문자(@, !, # 등)를 하나 이상 넣어 주세요.';
+  if(pw.length<8) return t('passwordTooShort');
+  if(!/[^A-Za-z0-9]/.test(pw)) return t('passwordSpecial');
   return null;
 }
 
+function signupPaused(){
+  MODE='login';
+  render();
+  return say('e',t('signupPaused'));
+}
+
 async function doSignup(){
+  if (!SIGNUPS_ENABLED) return signupPaused();
   const em=$('email').value.trim(), pw=$('pw').value, pw2=$('pw2').value; clearMsg();
   const c=consentValues();
-  if(!validEmail(em)) return say('e','이메일 형식을 확인해 주세요.');
+  if(!validEmail(em)) return say('e',t('emailCheck'));
   { const p=pwProblem(pw); if(p) return say('e',p); }
-  if(pw!==pw2) return say('e','비밀번호가 서로 달라요.');
-  if(!(c.terms&&c.privacy&&c.age)) return say('e','필수 항목([필수] 표시)에 모두 동의해 주세요.');
-  if(c.sms&&!c.phone) return say('e','문자 수신에 동의하셨어요. 휴대전화번호를 입력해 주세요.');
-  $('go').disabled=true; $('go').textContent='가입 중…';
+  if(pw!==pw2) return say('e',t('passwordMismatch'));
+  if(!(c.terms&&c.privacy&&c.age)) return say('e',t('consentRequired'));
+  /* 닉네임은 가입 시 필수입니다. 계정 화면에서 비우고 저장하는 것은 반대로
+     허용인데, 그때는 서버가 새로 지어 줍니다. 여기서 통과시키면 이름 없는
+     계정이 생기고, 공개 카드에 'undefined' 가 찍힙니다. */
+  if(!c.nickname) return say('e',t('nickNeeded'));
+  { const p=joinProblem(c); if(p) return say('e',p); }
+  if(c.sms&&!c.phone) return say('e',t('phoneRequired'));
+  $('go').disabled=true; $('go').textContent=t('signupWorking');
   const r=await SB.auth.signUp(capOpts({email:em,password:pw,options:{emailRedirectTo:location.href.split('#')[0]}}));
   if(r.error) capReset();
-  $('go').disabled=false; $('go').textContent='가입하기';
+  $('go').disabled=false; $('go').textContent=t('signupAction');
   if(r.error) return say('e',err(r.error));
-  if(r.data.session){ await saveConsent(c); await claim(); return renderMe(r.data.user); }
+  if(r.data.session){ await saveConsent(c); await claim(); return finishLogin(r.data.user); }
   try{ sessionStorage.setItem('leoConsent', JSON.stringify(c)); }catch(e){}
-  say('o','가입 확인 메일을 보냈어요. 메일의 링크를 누르면 가입이 완료됩니다.<br>메일이 안 보이면 <b>스팸함</b>도 확인해 주세요.');
+  say('o',t('signupMailSent'));
 }
 // 구글 가입: 동의 먼저 받고 진행
 async function doGoogleSignup(){
+  if (!SIGNUPS_ENABLED) return signupPaused();
   const c=consentValues(); clearMsg();
-  if(!(c.terms&&c.privacy&&c.age)) return say('e','필수 항목에 동의하신 뒤 진행해 주세요.');
+  if(!(c.terms&&c.privacy&&c.age)) return say('e',t('consentRequired'));
+  if(!c.nickname) return say('e',t('nickNeeded'));
+  { const p=joinProblem(c); if(p) return say('e',p); }
   try{ sessionStorage.setItem('leoConsent', JSON.stringify(c)); }catch(e){}
   doGoogle();
 }
@@ -746,7 +1202,7 @@ async function claim(){
 
 if(SB) SB.auth.onAuthStateChange(async (ev,sess)=>{
   if(ev==='SIGNED_IN' && sess){ await flushPendingConsent(); await claim();
-    if(await hasConsent()) renderMe(sess.user); else renderConsentGate(sess.user); }
+    if(await hasConsent()) finishLogin(sess.user); else renderConsentGate(sess.user); }
   if(ev==='PASSWORD_RECOVERY'){ MODE='newpw'; render(); }
 });
 boot();

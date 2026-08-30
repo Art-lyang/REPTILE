@@ -1,0 +1,42 @@
+/* =============================================================================
+   양도 — 보내는 쪽
+   ============================================================================= */
+.tf-wrap > summary{
+  list-style:none;cursor:pointer;display:flex;align-items:center;
+  justify-content:space-between;gap:10px;
+}
+.tf-wrap > summary::-webkit-details-marker{display:none}
+.tf-sum{
+  font-size:11px;font-weight:800;padding:2px 8px;border-radius:999px;
+  background:var(--warnbg,#fdf3e3);color:var(--warn,#a9682f);
+}
+
+.tf-link{display:flex;gap:6px;margin:8px 0 4px}
+.tf-link .in{flex:1;min-width:0;font-size:12.5px}
+.tf-qr{margin-top:10px}
+
+/* 되돌릴 수 없다는 말은 만들기 전에 보여야 합니다. */
+.tf-warn{
+  margin:12px 0 4px;padding:10px 12px;border-radius:10px;
+  background:var(--warnbg,#fdf3e3);border:1px solid var(--warnbd,#e8d5ae);
+  color:var(--warn,#a9682f);font-size:12.5px;line-height:1.6;word-break:keep-all;
+}
+.tf-warn i{margin-right:5px}
+
+.tf-acts{margin-top:12px}
+
+.tf-done{opacity:.9}
+.tf-badge{
+  display:inline-block;margin:4px 0 6px;padding:3px 10px;border-radius:999px;
+  background:var(--hair);color:var(--ink2);font-size:12px;font-weight:800;
+}
+
+/* 받는 쪽 미리보기 — 무엇을 받는지 한 장으로. */
+.rc-card{
+  background:var(--card2);border-radius:14px;padding:14px 15px;margin:10px 0 12px;
+}
+.rc-name{font-size:17px;font-weight:850;margin-bottom:8px;word-break:keep-all}
+.rc-what{
+  font-size:12.5px;line-height:1.7;color:var(--ink2);word-break:keep-all;
+  padding:10px 12px;border-radius:10px;background:var(--card2);
+}

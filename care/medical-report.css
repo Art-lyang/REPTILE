@@ -1,0 +1,97 @@
+/* =============================================================================
+   진료 참고 기록
+   -----------------------------------------------------------------------------
+   화면에서는 개체 페이지 안의 접힌 한 절이고, 인쇄하면 문서만 남습니다.
+   병원에 종이로 들고 가거나 브라우저의 'PDF 로 저장' 으로 내려받는 것이
+   목적입니다.
+   ============================================================================= */
+
+.mr-wrap > summary{
+  list-style:none;cursor:pointer;display:flex;align-items:center;
+  justify-content:space-between;gap:10px;
+}
+.mr-wrap > summary::-webkit-details-marker{display:none}
+.mr-sum{font-size:12px;font-weight:750;color:var(--ink2)}
+
+.mr-doc{
+  background:var(--card);border:1px solid var(--hair);border-radius:14px;
+  padding:20px 18px;margin-top:12px;
+}
+.mr-head{border-bottom:2px solid var(--teal);padding-bottom:12px}
+.mr-head h2{margin:0;font-size:22px;letter-spacing:-.03em}
+.mr-head p{margin:4px 0 0;font-size:12.5px}
+
+/* 진단서가 아니라는 안내. 이 종이는 남에게 건네지므로 눈에 띄어야 합니다. */
+.mr-disc{
+  margin-top:10px !important;padding:9px 11px;border-radius:10px;
+  background:var(--card2);border:1px solid var(--hair);
+  font-size:12px;line-height:1.6;color:var(--ink2);word-break:keep-all;
+}
+.mr-disc i{margin-right:5px}
+
+.mr-sec{margin-top:18px}
+.mr-sec h3{
+  margin:0 0 8px;font-size:12.5px;font-weight:800;letter-spacing:.04em;
+  text-transform:uppercase;color:var(--teal);
+}
+.mr-empty{margin:0;color:var(--ink2);font-size:13px;font-style:italic}
+.mr-dim{color:var(--ink2);font-size:12.5px;line-height:1.6}
+
+.mr-tbl{width:100%;border-collapse:collapse;font-size:13.5px}
+.mr-tbl th{
+  width:34%;text-align:left;vertical-align:top;padding:6px 10px 6px 0;
+  font-weight:750;color:var(--ink2);word-break:keep-all;
+}
+.mr-tbl td{padding:6px 0;border-bottom:1px solid var(--hair);word-break:break-word}
+
+/* 체중 흐름. 그래프 대신 표로 둡니다 — 인쇄했을 때 눈금이 뭉개지지 않고,
+   수의사가 숫자를 그대로 옮겨 적을 수 있습니다. */
+.mr-series{margin-top:8px;font-size:12.5px}
+.mr-series td{padding:3px 0;border-bottom:1px dotted var(--hair)}
+.mr-series td:last-child{text-align:right;font-weight:750}
+
+/* 거식 일수. 진료실에서 제일 먼저 보는 숫자라 크게 둡니다. */
+.mr-big{
+  display:flex;align-items:baseline;gap:6px;margin:0 0 12px;
+  padding:12px 14px;border-radius:12px;background:var(--card2);
+}
+.mr-num{font-size:30px;font-weight:850;line-height:1}
+.mr-unit{font-size:15px;font-weight:800}
+.mr-cap{font-size:12.5px;color:var(--ink2);margin-left:4px}
+
+.mr-signs{margin:0;padding:0;list-style:none}
+.mr-signs li{
+  padding:9px 0;border-bottom:1px solid var(--hair);word-break:keep-all;
+}
+.mr-signs li:last-child{border-bottom:0}
+.mr-tag{
+  display:inline-block;margin-left:6px;padding:1px 7px;border-radius:6px;
+  background:var(--errbg,#fdeceb);color:var(--err,#b4402a);
+  font-size:10.5px;font-weight:800;vertical-align:1px;
+}
+.mr-vet > b{color:var(--err,#b4402a)}
+
+.mr-acts{margin-top:12px}
+.mr-tip{margin-top:6px}
+
+/* 인쇄 — 문서만 남깁니다. 접힌 상태여도 인쇄되도록 details 를 강제로 폅니다. */
+@media print{
+  body > *:not(.wrap),
+  header, #toast,
+  .wrap > *:not(#body),
+  #body > *:not(.mr-wrap),
+  .mr-wrap > summary,
+  .mr-acts, .mr-tip,
+  .no-print{display:none !important}
+
+  .mr-wrap{padding:0}
+  .mr-doc{border:0;border-radius:0;padding:0;margin:0;background:#fff;color:#000}
+  .mr-sec{break-inside:avoid;page-break-inside:avoid}
+  .mr-head{border-bottom:2px solid #000}
+  .mr-sec h3{color:#000}
+  .mr-tbl td{border-bottom:1px solid #ccc}
+  .mr-disc{background:#fff;border:1px solid #000;color:#000}
+  .mr-big{background:#fff;border:1px solid #000}
+  .mr-tag{background:#fff;border:1px solid #000;color:#000}
+  .mr-vet > b{color:#000}
+}

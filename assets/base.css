@@ -10,6 +10,8 @@
       각 계산기의 *-redesign.css 는 이 파일을 덮어쓰는 용도로만 쓰세요.
    ============================================================================= */
 
+[hidden]{display:none!important;}
+
 /* ── 헤더: 좌측 정렬 제목, 우측 버튼 ──
    로고는 뺐습니다. 제목 옆에 원형 마크를 두니 화면 폭에 따라 제목 첫 줄과
    어긋나 보였고, 세 계산기가 저마다 다르게 정렬돼 있었습니다. */
@@ -48,6 +50,26 @@
   @media (max-width:620px){
     .blink.home span{display:none}
     .blink.home{padding:0 12px}
+  }
+
+  /* 좁은 화면의 로그인 버튼.
+     -----------------------------------------------------------------------
+     계산기 CSS 가 좁은 화면에서 .topnav .blink 의 글자를 감춰 44px 정사각
+     아이콘만 남깁니다. 그래서 계정 버튼이 똑같이 생긴 아이콘 셋 중 하나가
+     되고, 로그인하려면 하나씩 눌러 봐야 했습니다. 글자만 되살립니다.
+
+     한 번은 계정 버튼을 헤더 오른쪽 위로 절대배치하고 제목에 오른쪽 여백을
+     줬다가, 430px 에서 제목이 47px 폭에 여섯 줄로 짓눌리고 언어 버튼과
+     겹쳤습니다. 헤더가 줄바꿈되는 폭(≤375 근처)과 안 되는 폭이 갈리는데,
+     절대배치는 그중 한쪽에서만 맞습니다.
+
+     버튼 줄은 이미 헤더 오른쪽에 있습니다. 자리를 옮기지 말고 이름만
+     보이게 하는 편이 두 폭 모두에서 맞습니다. */
+  @media (max-width:620px){
+    .hd-btns #acctBtn,
+    .hd-btns [data-account-btn]{width:auto;min-height:44px;padding:0 12px}
+    .hd-btns #acctBtn span,
+    .hd-btns [data-account-btn] span{display:inline}
   }
 
   /* langbtn 을 헤더 흐름 안으로 (기존 절대배치 해제) */
@@ -176,3 +198,14 @@
    display:none 은 검색엔진이 무시할 수 있어, 자리만 없애는 방식으로 숨깁니다. */
 .seo-intro{position:absolute;width:1px;height:1px;margin:-1px;padding:0;
   overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+
+/* 결과 이미지 저장 — 결과 표 바로 위. 사람들은 이미 스크린샷을 찍어
+   커뮤니티에 올리고 있고, 그 그림에 우리 이름이 없었을 뿐입니다. */
+.rcard-bar{display:flex;justify-content:flex-end;margin:2px 0 10px}
+.rcard-btn{
+  display:inline-flex;align-items:center;gap:7px;min-height:38px;padding:0 14px;
+  border:1px solid var(--chipbd,#e3ded2);border-radius:999px;background:var(--card,#fff);
+  color:var(--ink2,#6b655c);font-size:13px;font-weight:750;font-family:inherit;cursor:pointer;
+}
+.rcard-btn:hover{background:var(--card2,#f6f3ec);color:var(--ink,#1c1a17)}
+.rcard-btn[disabled]{opacity:.5;cursor:default}

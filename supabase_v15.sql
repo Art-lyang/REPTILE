@@ -100,7 +100,7 @@ begin
 end $$;
 
 revoke all on function public.request_password_reset(text,text) from public;
-grant execute on function public.request_password_reset(text,text) to anon, authenticated;
+revoke execute on function public.request_password_reset(text,text) from anon, authenticated;
 
 
 /* ── 3. 관리자: 요청 목록 ───────────────────────────────────────────────

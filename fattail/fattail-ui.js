@@ -1,4 +1,4 @@
-/* fattail-ui.js — 펫테일(아프리카 팻테일) 계산기 화면 로직
+/* fattail-ui.js — 펫테일(아프리카 펫테일) 계산기 화면 로직
    crested-ui.js 와 같은 구조입니다. 레이아웃을 고칠 일이 있으면 두 파일을 함께 보세요.
 
    ※ 이 종은 브리더들이 66%·33% 가능성 헷을 실제 분양 표기에 그대로 쓰기 때문에
@@ -11,6 +11,7 @@ const I18N = {
     title:'펫테일 게코 모프 계산기',
     sub:'부모의 유전 형질을 선택해 새끼 모프 확률을 계산하세요',
     langLabel:'언어', parentA:'부모 A', parentB:'부모 B',
+    navStudio:'스튜디오', navGallery:'다른 집사들의 개체 구경하기', navMail:'문의하기',
     parentRole:'유전 형질 선택', helpBtn:'선택 도움말',
     selectedLabel:'선택된 형질', selNone:'아직 고르지 않았어요',
     reset:'초기화', calc:'모프 계산하기',
@@ -60,9 +61,10 @@ const I18N = {
       +'성장에 따른 색 변화로 달라질 수 있습니다. 중요한 교배 결정은 계통 정보를 가진 브리더와 상의하십시오.',
     terms:'이용약관', privacy:'개인정보처리방침',
     seoIntroH:'펫테일 게코 모프 계산기',
-    seoIntro:'아프리칸 팻테일 게코의 부모 형질을 고르면 새끼 모프와 확률을 계산합니다. 화이트아웃, 패턴리스, 스팅어, 아마엘 알비노, 줄루, 오레오, 캐러멜 등 팻테일 계통의 유전 형질을 다루고 조합 명칭과 주의가 필요한 교배를 함께 표시합니다. 한국어·영어·중국어·일본어를 지원하며 회원가입 없이 무료로 쓸 수 있습니다.',
+    seoIntro:'아프리칸 펫테일 게코의 부모 형질을 고르면 새끼 모프와 확률을 계산합니다. 화이트아웃, 패턴리스, 스팅어, 아마엘 알비노, 줄루, 오레오, 캐러멜 등 펫테일 계통의 유전 형질을 다루고 조합 명칭과 주의가 필요한 교배를 함께 표시합니다. 한국어·영어·중국어·일본어를 지원하며 회원가입 없이 무료로 쓸 수 있습니다.',
     footer:'확률은 멘델 유전 법칙에 따른 이론값입니다 · 라인브리딩(폴리제닉) 형질은 확률 계산 대상이 아닙니다',
     updH:'업데이트 노트', updDone:'업데이트 됨', updSoon:'업데이트 예정',
+    updTitle:'업데이트 노트', modalMail:'문의 · 건의:', btnToday:'오늘 하루 안 보기', btnClose:'닫기',
     updDoneList:[
       'V1.0 테스트버전 출시',
       '가능성 헷(66·33%) 표기 기본 켜짐',
@@ -79,6 +81,7 @@ const I18N = {
     title:'African Fat-Tailed Gecko Morph Calculator',
     sub:'Pick each parent’s genetics to see the probability of each offspring morph',
     langLabel:'Language', parentA:'Parent A', parentB:'Parent B',
+    navStudio:'Studio', navGallery:'See other keepers’ animals', navMail:'Contact',
     parentRole:'Choose genetic traits', helpBtn:'Help',
     selectedLabel:'Selected', selNone:'Nothing selected yet',
     reset:'Reset', calc:'Calculate Morphs',
@@ -130,6 +133,7 @@ const I18N = {
     seoIntro:'Pick each parent’s traits to see the offspring morphs and their odds for African fat-tailed geckos. It covers Whiteout, Patternless, Stinger, Amel albino, Zulu, Oreo and Caramel among others, names the combos and flags pairings that need care. Free, no sign-up, in Korean, English, Chinese and Japanese.',
     footer:'Probabilities are theoretical values from Mendelian inheritance · line-bred (polygenic) traits are not probability-based',
     updH:'Update notes', updDone:'Shipped', updSoon:'Coming next',
+    updTitle:'Update notes', modalMail:'Questions or ideas:', btnToday:'Hide for today', btnClose:'Close',
     updDoneList:[
       'V1.0 test release',
       'Possible-het (66 · 33%) display on by default',
@@ -146,6 +150,7 @@ const I18N = {
     title:'ファットテールゲッコー モルフ計算機',
     sub:'両親の遺伝形質を選ぶと、仔のモルフ確率を計算します',
     langLabel:'言語', parentA:'親 A', parentB:'親 B',
+    navStudio:'スタジオ', navGallery:'ほかの飼い主の個体を見る', navMail:'お問い合わせ',
     parentRole:'遺伝形質を選択', helpBtn:'ヘルプ',
     selectedLabel:'選択した形質', selNone:'まだ選んでいません',
     reset:'リセット', calc:'モルフを計算',
@@ -197,6 +202,7 @@ const I18N = {
     seoIntro:'ニシアフリカトカゲモドキの両親の形質を選ぶと、仔のモルフと確率を計算します。ホワイトアウト、パターンレス、スティンガー、アメルアルビノ、ズールー、オレオ、キャラメルなどに対応し、コンボ名と注意が必要な組み合わせを表示します。会員登録なしで無料、4言語対応です。',
     footer:'確率はメンデル遺伝に基づく理論値です · ラインブリード（ポリジェニック）形質は確率計算の対象外です',
     updH:'アップデート情報', updDone:'更新済み', updSoon:'更新予定',
+    updTitle:'更新履歴', modalMail:'お問い合わせ・ご提案:', btnToday:'今日は表示しない', btnClose:'閉じる',
     updDoneList:[
       'V1.0 テスト版リリース',
       '可能性 het（66・33%）表示をデフォルトでオン',
@@ -213,6 +219,7 @@ const I18N = {
     title:'肥尾守宫基因计算器',
     sub:'选择父母双方的基因，即可计算后代各形态的概率',
     langLabel:'语言', parentA:'亲本 A', parentB:'亲本 B',
+    navStudio:'工作室', navGallery:'看看其他饲主的个体', navMail:'联系我们',
     parentRole:'选择遗传性状', helpBtn:'帮助',
     selectedLabel:'已选性状', selNone:'尚未选择',
     reset:'重置', calc:'计算形态',
@@ -264,6 +271,7 @@ const I18N = {
     seoIntro:'选择非洲肥尾守宫父母双方的性状，即可计算后代形态与概率。支持 Whiteout、无纹、Stinger、Amel 白化、Zulu、Oreo、Caramel 等性状，并显示组合名称与需要注意的配对。免注册免费使用，支持韩英中日四种语言。',
     footer:'概率为基于孟德尔遗传的理论值 · 线育（多基因）性状不在概率计算范围内',
     updH:'更新说明', updDone:'已更新', updSoon:'计划中',
+    updTitle:'更新记录', modalMail:'咨询与建议:', btnToday:'今天不再显示', btnClose:'关闭',
     updDoneList:[
       'V1.0 测试版发布',
       '默认开启可能 het（66 · 33%）显示',
@@ -485,6 +493,9 @@ function render(payload){
     if(liveOdds && deadP>1e-12 && deadP<1-1e-12){
       rows=rows.filter(r=>!r.nonViable).map(r=>Object.assign({}, r, {prob:r.prob/(1-deadP)}));
     }
+    /* 결과를 이미지 한 장으로. 무료입니다 — 묶어 두면 퍼지지 않습니다.
+       (assets/result-card.js) */
+    if(window.StudioResultCard) html+=StudioResultCard.buttonHtml();
     html+='<h2>'+t.resultsH+'</h2><div class="summary">'
         +(MODE==='geno'? t.summaryGeno(rows.length) : t.summaryVisual(rows.length))+'</div>';
     html+=buildPie(rows);
@@ -543,7 +554,8 @@ function applyLang(){
   set('h-title',t.title); set('h-sub',t.sub);
   set('lbl-pa',t.parentA); set('lbl-pb',t.parentB);
   set('lbl-pa-role',t.parentRole); set('lbl-pb-role',t.parentRole);
-  set('lbl-help',t.helpBtn); set('lbl-help2',t.helpBtn);
+  /* '선택 도움말' 버튼 두 개를 없앴습니다. 상단의 '표시 옵션 설명' 과 똑같은
+     #optNote 를 여는 버튼이라, 한 화면에 같은 것을 여는 버튼이 셋이었습니다. */
   set('lbl-selected',t.selectedLabel);
   set('lbl-sel-a',t.parentA); set('lbl-sel-b',t.parentB);
   setH('btn-reset','<i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i><span>'+escapeHtml(t.reset)+'</span>');
@@ -558,6 +570,15 @@ function applyLang(){
   setH('note',t.note);
   set('lbl-terms',t.terms); set('lbl-privacy',t.privacy);
   set('footer',t.footer); set('lbl-langtitle',t.langLabel);
+  /* 헤더·하단의 고정 문구. HTML 에 한국어로 박혀 있어서 영어·일본어·중국어
+     페이지에 그대로 남아 있었습니다 — 계산 결과는 번역되는데 그 주변만
+     한국어라, 바깥에서 들어온 사람에게는 반쯤 깨진 화면으로 보입니다. */
+  [['.blink.home span', 'navStudio'],
+   ['.bottom-links .blink:not(#mailLink) span', 'navGallery'],
+   ['#mailLink span', 'navMail']].forEach(function (pair) {
+    const node = document.querySelector(pair[0]);
+    if (node && t[pair[1]]) node.textContent = t[pair[1]];
+  });
   setH('lbl-updh','<i class="bi bi-megaphone" aria-hidden="true"></i> '+escapeHtml(t.updH));
   setH('lbl-upddone','<i class="bi bi-check-circle-fill" aria-hidden="true"></i> '+escapeHtml(t.updDone));
   setH('lbl-updsoon','<i class="bi bi-clock" aria-hidden="true"></i> '+escapeHtml(t.updSoon));
@@ -566,7 +587,7 @@ function applyLang(){
   setH('updMail', t.updMail+'<a href="mailto:'+FT_CONTACT_MAIL+'">'+FT_CONTACT_MAIL+'</a>');
   set('lbl-today',t.today); set('lbl-mclose',t.mclose);
   document.getElementById('mailLink').href='mailto:'+FT_CONTACT_MAIL+'?subject='+encodeURIComponent(t.mailSubject);
-  document.querySelectorAll('#langMenu button').forEach(b=>b.classList.toggle('on', b.dataset.lang===LANG));
+  document.querySelectorAll('#langMenu [data-lang]').forEach(b=>b.classList.toggle('on', b.dataset.lang===LANG));
   buildParent('A'); buildParent('B');
   if(hasResult) calculate();
   else document.getElementById('results').innerHTML='<div class="empty">'+t.emptyStart+'</div>';
@@ -575,9 +596,34 @@ function setLang(lang){ if(lang===LANG) return; LANG=lang; applyLang(); }
 
 /* ================= 초기화 ================= */
 const langMenuEl=document.getElementById('langMenu'), langBtnEl=document.getElementById('langBtn');
-langBtnEl.addEventListener('click',e=>{ e.stopPropagation(); langMenuEl.classList.toggle('open'); });
-document.querySelectorAll('#langMenu button').forEach(b=>b.addEventListener('click',()=>{ setLang(b.dataset.lang); langMenuEl.classList.remove('open'); }));
+document.body.appendChild(langMenuEl);
+function placeLangMenu(){
+  const button=langBtnEl.getBoundingClientRect();
+  const width=langMenuEl.offsetWidth, height=langMenuEl.offsetHeight;
+  const margin=12, gap=8;
+  const maxLeft=Math.max(margin, window.innerWidth-width-margin);
+  const left=Math.min(Math.max(margin, button.right-width), maxLeft);
+  const below=button.bottom+gap;
+  const top=below+height<=window.innerHeight-margin
+    ? below
+    : Math.max(margin, button.top-height-gap);
+  langMenuEl.style.position='fixed';
+  langMenuEl.style.inset=top+'px auto auto '+left+'px';
+}
+langBtnEl.addEventListener('click',e=>{
+  e.stopPropagation();
+  const open=langMenuEl.classList.toggle('open');
+  if(open) placeLangMenu();
+});
+/* 언어 메뉴는 이제 진짜 링크입니다(<a href="/en/gecko/">).
+   예전에는 버튼을 눌러 그 자리에서 다시 그렸는데, 그러면 두 가지가 어긋납니다.
+     · 주소는 /gecko/ 인데 내용은 영어 — canonical 과 og:locale 이 한국어를 가리킵니다
+     · 언어별 페이지를 가리키는 링크가 사이트에 하나도 없어, 검색엔진이
+       사이트맵으로 주소만 알고 크롤링은 미룹니다(발견됨-색인 안 됨).
+   그래서 가로채지 않고 그냥 이동시킵니다. */
 document.addEventListener('click',e=>{ if(langMenuEl.classList.contains('open') && !langMenuEl.contains(e.target) && !langBtnEl.contains(e.target)) langMenuEl.classList.remove('open'); });
+window.addEventListener('resize',()=>{ if(langMenuEl.classList.contains('open')) placeLangMenu(); });
+window.addEventListener('scroll',()=>langMenuEl.classList.remove('open'), true);
 
 (function(){
   // ⚠️ [data-mode] 로 범위를 좁힙니다. 세그먼트 바에 옵션 버튼도 함께 들어 있어서
@@ -642,5 +688,10 @@ applyLang();
 (function(){
   let dismissed=false;
   try{ dismissed=(localStorage.getItem('ftUpdDismiss')===UPD_VER+'|'+todayKey()); }catch(e){ dismissed=false; }
-  if(!dismissed) openUpd();
+  /* 서버에서 받은 문구가 확정된 뒤에 엽니다. 기본 문구로 먼저 열면 읽는 도중에
+     내용이 바뀝니다(assets/uitext.js 참고). 늦어지면 기본 문구로 그냥 엽니다. */
+  if(!dismissed){
+    if(window.StudioText && StudioText.whenReady) StudioText.whenReady(1200).then(openUpd);
+    else openUpd();
+  }
 })();

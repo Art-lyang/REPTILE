@@ -18,6 +18,7 @@ const I18N = {
     title:'볼파이톤 모프 계산기',
     sub:'부모의 유전 형질을 선택해 새끼 모프 확률을 계산하세요',
     langLabel:'언어', parentA:'부모 A', parentB:'부모 B',
+    navStudio:'스튜디오', navGallery:'다른 집사들의 개체 구경하기', navMail:'문의하기',
     parentRole:'유전 형질 선택', helpBtn:'선택 도움말',
     searchPh:'모프 검색 (예: 파스텔, pied, yb)', searchClear:'검색 지우기',
     searchNone:'검색 결과가 없습니다. 다른 이름이나 영문 철자로 찾아보세요.',
@@ -70,9 +71,10 @@ const I18N = {
       +'실제 부화 개체의 외형은 여러 형질의 상호작용과 성장에 따른 색 변화로 달라질 수 있습니다. 중요한 교배 결정은 계통 정보를 가진 브리더와 상의하십시오.',
     terms:'이용약관', privacy:'개인정보처리방침',
     seoIntroH:'볼파이톤 모프 계산기',
-    seoIntro:'볼파이톤(볼 파이썬) 부모의 형질을 고르면 새끼 모프와 확률을 계산합니다. 파스텔·모하비·파이볼드·클라운·알비노 등 60가지가 넘는 유전자를 검색으로 찾아 고를 수 있고, 스파이더 워블·데저트 암컷 불임·슈퍼 시나몬 기형 같은 유전 건강 이슈를 함께 알려줍니다. 회원가입 없이 무료입니다.',
+    seoIntro:'볼파이톤 부모의 형질을 고르면 새끼 모프와 확률을 계산합니다. 파스텔·모하비·파이볼드·클라운·알비노 등 60가지가 넘는 유전자를 검색으로 찾아 고를 수 있고, 스파이더 워블·데저트 암컷 불임·슈퍼 시나몬 기형 같은 유전 건강 이슈를 함께 알려줍니다. 회원가입 없이 무료입니다.',
     footer:'확률은 멘델 유전 법칙에 따른 이론값입니다 · 라인브리딩(폴리제닉) 형질은 확률 계산 대상이 아닙니다',
     updH:'업데이트 노트', updDone:'업데이트 됨', updSoon:'업데이트 예정',
+    updTitle:'업데이트 노트', modalMail:'문의 · 건의:', btnToday:'오늘 하루 안 보기', btnClose:'닫기',
     updDoneList:[
       'V1.0 테스트버전 출시',
       '부모 카드별 모프 검색 추가 (한·영·일·중 이름과 별칭 지원)',
@@ -92,6 +94,7 @@ const I18N = {
     title:'Ball Python Morph Calculator',
     sub:'Pick each parent’s genetics to see the probability of each offspring morph',
     langLabel:'Language', parentA:'Parent A', parentB:'Parent B',
+    navStudio:'Studio', navGallery:'See other keepers’ animals', navMail:'Contact',
     parentRole:'Choose genetic traits', helpBtn:'Help',
     searchPh:'Search morphs (e.g. pastel, pied, yb)', searchClear:'Clear search',
     searchNone:'No matches. Try another spelling or the English name.',
@@ -147,6 +150,7 @@ const I18N = {
     seoIntro:'Pick each parent’s traits to see offspring morphs and odds for ball pythons. Search across 60+ genes — Pastel, Mojave, Piebald, Clown, Albino and more — and see genetic health issues such as Spider wobble, Desert female infertility and Super Cinnamon defects alongside the odds. Free, no sign-up.',
     footer:'Probabilities are theoretical values from Mendelian inheritance · line-bred (polygenic) traits are not probability-based',
     updH:'Update notes', updDone:'Shipped', updSoon:'Coming next',
+    updTitle:'Update notes', modalMail:'Questions or ideas:', btnToday:'Hide for today', btnClose:'Close',
     updDoneList:[
       'V1.0 test release',
       'Per-parent morph search (Korean, English, Japanese, Chinese names and aliases)',
@@ -166,6 +170,7 @@ const I18N = {
     title:'ボールパイソン モルフ計算機',
     sub:'両親の遺伝形質を選ぶと、仔のモルフ確率を計算します',
     langLabel:'言語', parentA:'親 A', parentB:'親 B',
+    navStudio:'スタジオ', navGallery:'ほかの飼い主の個体を見る', navMail:'お問い合わせ',
     parentRole:'遺伝形質を選択', helpBtn:'ヘルプ',
     searchPh:'モルフ検索（例：パステル, pied, yb）', searchClear:'検索をクリア',
     searchNone:'該当するモルフがありません。別の表記や英語名でお試しください。',
@@ -221,6 +226,7 @@ const I18N = {
     seoIntro:'ボールパイソンの両親の形質を選ぶと、仔のモルフと確率を計算します。パステル・モハベ・パイボールド・クラウン・アルビノなど60以上の遺伝子を検索で探して選べ、スパイダーのウォブルやデザート雌の不妊、スーパーシナモンの奇形といった遺伝性の健康問題も併せて表示します。登録不要・無料です。',
     footer:'確率はメンデル遺伝に基づく理論値です · ラインブリード（ポリジェニック）形質は確率計算の対象外です',
     updH:'アップデート情報', updDone:'更新済み', updSoon:'更新予定',
+    updTitle:'更新履歴', modalMail:'お問い合わせ・ご提案:', btnToday:'今日は表示しない', btnClose:'閉じる',
     updDoneList:[
       'V1.0 テスト版リリース',
       '親カードごとのモルフ検索を追加（韓・英・日・中の名称と別名に対応）',
@@ -240,6 +246,7 @@ const I18N = {
     title:'球蟒基因计算器',
     sub:'选择父母双方的基因，即可计算后代各形态的概率',
     langLabel:'语言', parentA:'亲本 A', parentB:'亲本 B',
+    navStudio:'工作室', navGallery:'看看其他饲主的个体', navMail:'联系我们',
     parentRole:'选择遗传性状', helpBtn:'帮助',
     searchPh:'搜索形态（例：帕斯特, pied, yb）', searchClear:'清除搜索',
     searchNone:'没有匹配的形态，请换个写法或用英文名试试。',
@@ -295,6 +302,7 @@ const I18N = {
     seoIntro:'选择球蟒父母双方的性状，即可计算后代形态与概率。可搜索 60 多种基因（Pastel、Mojave、Piebald、Clown、白化等）并直接选择，同时提示 Spider 摇头症、Desert 雌性不育、超级 Cinnamon 畸形等遗传健康问题。免注册免费使用。',
     footer:'概率为基于孟德尔遗传的理论值 · 线育（多基因）性状不在概率计算范围内',
     updH:'更新说明', updDone:'已更新', updSoon:'计划中',
+    updTitle:'更新记录', modalMail:'咨询与建议:', btnToday:'今天不再显示', btnClose:'关闭',
     updDoneList:[
       'V1.0 测试版发布',
       '新增亲本卡片内的形态搜索（支持韩英日中名称与别名）',
@@ -604,6 +612,9 @@ function render(payload){
       rows=rows.filter(function(r){return !r.nonViable;})
                .map(function(r){ const o={}; for(var k in r) o[k]=r[k]; o.prob=r.prob/(1-deadP); return o; });
     }
+    /* 결과를 이미지 한 장으로. 무료입니다 — 묶어 두면 퍼지지 않습니다.
+       (assets/result-card.js) */
+    if(window.StudioResultCard) html+=StudioResultCard.buttonHtml();
     html+='<h2>'+t.resultsH+'</h2><div class="summary">'
         +(MODE==='geno'? t.summaryGeno(rows.length) : t.summaryVisual(rows.length))+'</div>';
     html+=buildPie(rows);
@@ -711,7 +722,8 @@ function applyLang(){
   set('h-title',t.title); set('h-sub',t.sub);
   set('lbl-pa',t.parentA); set('lbl-pb',t.parentB);
   set('lbl-pa-role',t.parentRole); set('lbl-pb-role',t.parentRole);
-  set('lbl-help',t.helpBtn); set('lbl-help2',t.helpBtn);
+  /* '선택 도움말' 버튼 두 개를 없앴습니다. 상단의 '표시 옵션 설명' 과 똑같은
+     #optNote 를 여는 버튼이라, 한 화면에 같은 것을 여는 버튼이 셋이었습니다. */
   set('lbl-selected',t.selectedLabel);
   set('lbl-sel-a',t.parentA); set('lbl-sel-b',t.parentB);
   ['A','B'].forEach(function(s){
@@ -732,6 +744,15 @@ function applyLang(){
   setH('note',t.note);
   set('lbl-terms',t.terms); set('lbl-privacy',t.privacy);
   set('footer',t.footer); set('lbl-langtitle',t.langLabel);
+  /* 헤더·하단의 고정 문구. HTML 에 한국어로 박혀 있어서 영어·일본어·중국어
+     페이지에 그대로 남아 있었습니다 — 계산 결과는 번역되는데 그 주변만
+     한국어라, 바깥에서 들어온 사람에게는 반쯤 깨진 화면으로 보입니다. */
+  [['.blink.home span', 'navStudio'],
+   ['.bottom-links .blink:not(#mailLink) span', 'navGallery'],
+   ['#mailLink span', 'navMail']].forEach(function (pair) {
+    const node = document.querySelector(pair[0]);
+    if (node && t[pair[1]]) node.textContent = t[pair[1]];
+  });
   setH('lbl-updh','<i class="bi bi-megaphone" aria-hidden="true"></i> '+escapeHtml(t.updH));
   setH('lbl-upddone','<i class="bi bi-check-circle-fill" aria-hidden="true"></i> '+escapeHtml(t.updDone));
   setH('lbl-updsoon','<i class="bi bi-clock" aria-hidden="true"></i> '+escapeHtml(t.updSoon));
@@ -740,7 +761,7 @@ function applyLang(){
   setH('updMail', t.updMail+'<a href="mailto:'+BP_CONTACT_MAIL+'">'+BP_CONTACT_MAIL+'</a>');
   set('lbl-today',t.today); set('lbl-mclose',t.mclose);
   document.getElementById('mailLink').href='mailto:'+BP_CONTACT_MAIL+'?subject='+encodeURIComponent(t.mailSubject);
-  document.querySelectorAll('#langMenu button').forEach(function(b){ b.classList.toggle('on', b.dataset.lang===LANG); });
+  document.querySelectorAll('#langMenu [data-lang]').forEach(function(b){ b.classList.toggle('on', b.dataset.lang===LANG); });
   buildParent('A'); buildParent('B');
   if(hasResult) calculate();
   else document.getElementById('results').innerHTML='<div class="empty">'+t.emptyStart+'</div>';
@@ -749,14 +770,37 @@ function setLang(lang){ if(lang===LANG) return; LANG=lang; applyLang(); }
 
 /* ================= 초기화 ================= */
 const langMenuEl=document.getElementById('langMenu'), langBtnEl=document.getElementById('langBtn');
-langBtnEl.addEventListener('click',function(e){ e.stopPropagation(); langMenuEl.classList.toggle('open'); });
-document.querySelectorAll('#langMenu button').forEach(function(b){
-  b.addEventListener('click',function(){ setLang(b.dataset.lang); langMenuEl.classList.remove('open'); });
+document.body.appendChild(langMenuEl);
+function placeLangMenu(){
+  const button=langBtnEl.getBoundingClientRect();
+  const width=langMenuEl.offsetWidth, height=langMenuEl.offsetHeight;
+  const margin=12, gap=8;
+  const maxLeft=Math.max(margin, window.innerWidth-width-margin);
+  const left=Math.min(Math.max(margin, button.right-width), maxLeft);
+  const below=button.bottom+gap;
+  const top=below+height<=window.innerHeight-margin
+    ? below
+    : Math.max(margin, button.top-height-gap);
+  langMenuEl.style.position='fixed';
+  langMenuEl.style.inset=top+'px auto auto '+left+'px';
+}
+langBtnEl.addEventListener('click',function(e){
+  e.stopPropagation();
+  const open=langMenuEl.classList.toggle('open');
+  if(open) placeLangMenu();
 });
+/* 언어 메뉴는 이제 진짜 링크입니다(<a href="/en/ballpython/">).
+   예전에는 버튼을 눌러 그 자리에서 다시 그렸는데, 그러면 두 가지가 어긋납니다.
+     · 주소는 /ballpython/ 인데 내용은 영어 — canonical 과 og:locale 이 한국어를 가리킵니다
+     · 언어별 페이지를 가리키는 링크가 사이트에 하나도 없어, 검색엔진이
+       사이트맵으로 주소만 알고 크롤링은 미룹니다(발견됨-색인 안 됨).
+   그래서 가로채지 않고 그냥 이동시킵니다. */
 document.addEventListener('click',function(e){
   if(langMenuEl.classList.contains('open') && !langMenuEl.contains(e.target) && !langBtnEl.contains(e.target))
     langMenuEl.classList.remove('open');
 });
+window.addEventListener('resize',function(){ if(langMenuEl.classList.contains('open')) placeLangMenu(); });
+window.addEventListener('scroll',function(){ langMenuEl.classList.remove('open'); }, true);
 
 (function(){
   // ⚠️ [data-mode] 로 범위를 좁힙니다. 세그먼트 바에 옵션 버튼도 함께 들어 있어서
@@ -822,5 +866,10 @@ applyLang();
 (function(){
   let dismissed=false;
   try{ dismissed=(localStorage.getItem('bpUpdDismiss')===UPD_VER+'|'+todayKey()); }catch(e){ dismissed=false; }
-  if(!dismissed) openUpd();
+  /* 서버에서 받은 문구가 확정된 뒤에 엽니다. 기본 문구로 먼저 열면 읽는 도중에
+     내용이 바뀝니다(assets/uitext.js 참고). 늦어지면 기본 문구로 그냥 엽니다. */
+  if(!dismissed){
+    if(window.StudioText && StudioText.whenReady) StudioText.whenReady(1200).then(openUpd);
+    else openUpd();
+  }
 })();

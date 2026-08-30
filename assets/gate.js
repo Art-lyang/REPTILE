@@ -37,6 +37,48 @@
   var SALT = 'ryangstudio-care-v1';
   var GATE_HASH = 'feffb957392f2a726264df906a49891f936764e23f2990950f5813ee3507640c';
   var KEY = 'ryangGate.' + SALT;
+  var COPY = {
+    ko: {
+      title: '준비 중인 화면입니다',
+      body: '테스트 중이라 잠시 닫아 두었습니다.<br>비밀번호를 아시는 분만 들어와 주세요.',
+      password: '비밀번호', button: '들어가기',
+      insecure: '이 브라우저에서는 확인할 수 없습니다 (HTTPS로 접속해 주세요).',
+      wrong: '비밀번호가 맞지 않습니다.', failed: '확인 중 문제가 생겼습니다. 새로고침해 주세요.'
+    },
+    en: {
+      title: 'This feature is being prepared',
+      body: 'This test area is temporarily closed.<br>Please enter only if you have the password.',
+      password: 'Password', button: 'Enter',
+      insecure: 'Verification is unavailable in this browser. Please use HTTPS.',
+      wrong: 'The password is incorrect.', failed: 'Verification failed. Please refresh and try again.'
+    },
+    zh: {
+      title: '此功能正在准备中',
+      body: '测试区域暂时关闭。<br>仅限知道密码的用户进入。',
+      password: '密码', button: '进入',
+      insecure: '此浏览器无法验证，请使用 HTTPS 访问。',
+      wrong: '密码不正确。', failed: '验证时出现问题，请刷新后重试。'
+    },
+    ja: {
+      title: '準備中の画面です',
+      body: 'テスト中のため一時的に閉じています。<br>パスワードをご存じの方のみお入りください。',
+      password: 'パスワード', button: '入る',
+      insecure: 'このブラウザでは確認できません。HTTPSでアクセスしてください。',
+      wrong: 'パスワードが正しくありません。', failed: '確認中に問題が発生しました。再読み込みしてください。'
+    }
+  };
+
+  function language() {
+    var match = /(?:^|[?&])lang=([^&]+)/i.exec(String(window.location.search || ''));
+    var raw = '';
+    try { raw = match ? decodeURIComponent(match[1]) : ''; } catch (e) {}
+    raw = String(raw || document.documentElement.lang || 'ko').toLowerCase().split('-')[0];
+    return COPY[raw] ? raw : 'ko';
+  }
+
+  function copy(key) {
+    return COPY[language()][key];
+  }
 
   /* 통과 표시는 sessionStorage 에 둡니다. 탭을 닫으면 사라지므로 남의 폰을
      잠깐 빌려 보여준 뒤 그대로 열려 있는 일이 없습니다. */
@@ -80,12 +122,12 @@
     g.innerHTML =
       '<div class="box">' +
       '<img class="mk" src="/assets/logo-mark-180.png" alt="">' +
-      '<h2>준비 중인 화면입니다</h2>' +
-      '<p>테스트 중이라 잠시 닫아 두었습니다.<br>비밀번호를 아시는 분만 들어와 주세요.</p>' +
+      '<h2>' + copy('title') + '</h2>' +
+      '<p>' + copy('body') + '</p>' +
       '<input type="password" id="ryang-gate-pw" autocomplete="off" ' +
         'autocapitalize="off" autocorrect="off" spellcheck="false" ' +
-        'inputmode="text" aria-label="비밀번호">' +
-      '<button type="button" id="ryang-gate-go">들어가기</button>' +
+        'inputmode="text" aria-label="' + copy('password') + '">' +
+      '<button type="button" id="ryang-gate-go">' + copy('button') + '</button>' +
       '<div class="msg" id="ryang-gate-msg" role="alert" aria-live="polite"></div>' +
       '</div>';
     document.body.appendChild(g);
@@ -94,7 +136,7 @@
     var msg = document.getElementById('ryang-gate-msg');
 
     if (!canHash) {
-      msg.textContent = '이 브라우저에서는 확인할 수 없습니다 (HTTPS 로 접속해 주세요).';
+      msg.textContent = copy('insecure');
       pw.disabled = true;
       document.getElementById('ryang-gate-go').disabled = true;
       return;
@@ -114,7 +156,7 @@
         .digest('SHA-256', new TextEncoder().encode(SALT + ':' + v))
         .then(function (buf) {
           if (hex(buf) !== GATE_HASH) {
-            msg.textContent = '비밀번호가 맞지 않습니다.';
+            msg.textContent = copy('wrong');
             pw.value = '';
             pw.focus();
             return;
@@ -123,7 +165,7 @@
           g.remove();
           style.remove();
         })
-        .catch(function () { msg.textContent = '확인 중 문제가 생겼습니다. 새로고침해 주세요.'; });
+        .catch(function () { msg.textContent = copy('failed'); });
     }
 
     document.getElementById('ryang-gate-go').addEventListener('click', tryOpen);

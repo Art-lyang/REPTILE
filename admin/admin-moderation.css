@@ -1,0 +1,91 @@
+/* 이미지 검수 (supabase_v68~v70)
+   사업자 인증 탭과 같은 모양을 씁니다 — 관리자 화면 안에서 탭마다 다른 언어를
+   쓰면 어느 화면인지 매번 다시 읽어야 합니다. */
+.mdhead{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.mdfilter{display:flex;gap:6px;flex:0 0 auto}
+.mdfilter .mini.on{background:var(--teal);color:#fff}
+
+.mdlist{display:flex;flex-direction:column;gap:10px;margin-top:14px}
+.mdcard{
+  display:flex;align-items:center;gap:12px;padding:10px;
+  background:var(--card2);border:1px solid var(--hair);border-radius:12px;
+}
+/* 보류된 것은 목록에서 바로 눈에 띄어야 합니다 — 되돌아와 확인할 것들입니다. */
+.mdcard.held{border-color:var(--warn-hi-bd);background:var(--warn-hi-bg)}
+
+/* 썸네일은 서명 주소를 받은 뒤에 채워집니다. 그전에는 빈 칸이 보입니다. */
+.mdthumb{
+  width:64px;height:64px;flex:0 0 auto;border-radius:10px;cursor:pointer;
+  background:var(--hair) center/cover no-repeat;position:relative;
+}
+.mdcount{
+  position:absolute;right:3px;bottom:3px;padding:0 5px;border-radius:6px;
+  background:rgba(0,0,0,.6);color:#fff;font-size:10.5px;font-weight:800;
+}
+.mdinfo{flex:1;min-width:0}
+.mdname{font-weight:750;font-size:14px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.mdbadge{
+  font-size:10.5px;font-weight:800;padding:1px 7px;border-radius:6px;
+  background:var(--warn-hi-fg);color:#fff;
+}
+.mdbadge.wait{background:var(--teal)}
+.mdmeta{font-size:12px;color:var(--ink2);margin-top:2px;overflow:hidden;text-overflow:ellipsis}
+.mdreason{font-size:12.5px;margin-top:4px;color:var(--warn-hi-fg)}
+.mdacts{display:flex;gap:6px;flex:0 0 auto}
+
+/* 조치 대화상자 */
+.mddlg{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.4);display:flex;
+  align-items:center;justify-content:center;padding:16px}
+.mddlg-in{background:var(--card);border-radius:16px;padding:18px;width:min(460px,100%);
+  max-height:90vh;overflow:auto}
+.mddlg-in .ain{width:100%;margin-top:4px}
+.mddlg-acts{display:flex;gap:8px;margin-top:14px}
+
+/* 목록에 안 뜨는 비공개 개체를 직접 여는 자리. 이게 없으면 '비공개는 사유가
+   있을 때 본다' 는 규칙이 실제로는 '못 본다' 가 됩니다. */
+.mdlookup{display:flex;gap:6px;flex:1 1 260px;max-width:420px}
+.mdlookup .ain{flex:1;min-width:0}
+
+/* 목록에 비공개가 섞이면 어느 것이 비공개인지 보여야 합니다. */
+.mdprivtag{display:inline-block;margin-left:6px;padding:1px 6px;border-radius:6px;
+  background:var(--hair);color:var(--ink2);font-size:10.5px;font-weight:800}
+
+/* 처리 기록. 조치와 열람이 한눈에 갈려 보여야 합니다 — 열람이 훨씬 잦아서
+   같은 색이면 조치가 묻힙니다. */
+.mdlog{margin:12px 0;border:1px solid var(--hair);border-radius:12px;overflow:hidden}
+.mdlogrow{display:grid;grid-template-columns:84px 1fr 2fr auto;gap:8px;align-items:center;
+  padding:8px 12px;font-size:12.5px;border-bottom:1px solid var(--hair)}
+.mdlogrow:last-child{border-bottom:0}
+.mdlogact{font-weight:800;padding:1px 7px;border-radius:6px;text-align:center;
+  background:var(--hair);color:var(--ink2)}
+.mdlogact.a-hold,.mdlogact.a-delete_photos,.mdlogact.a-delete_animal,.mdlogact.a-expire{
+  background:var(--warn-hi-bg);color:var(--warn-hi-fg)}
+.mdlogact.a-release{background:var(--gtile,#eef5f0);color:var(--teal)}
+.mdlogwho{color:var(--ink2);overflow:hidden;text-overflow:ellipsis}
+.mdlogwhy{overflow:hidden;text-overflow:ellipsis}
+.mdlogat{color:var(--ink2);white-space:nowrap}
+@media (max-width:640px){
+  .mdlogrow{grid-template-columns:72px 1fr;grid-auto-rows:auto}
+  .mdlogwhy,.mdlogat{grid-column:1/-1}
+}
+
+/* 세부조회 — 사진과 데이터를 나란히. 사진만 보고는 개체와 맞는지 알 수
+   없습니다. */
+.mdshots{display:flex;gap:8px;overflow-x:auto;padding:4px 0 10px}
+.mdshots img{height:140px;border-radius:10px;cursor:zoom-in;flex:0 0 auto}
+.mdtable{width:100%;border-collapse:collapse;font-size:13px}
+.mdtable th{width:34%;text-align:left;padding:5px 8px 5px 0;color:var(--ink2);font-weight:750;
+  vertical-align:top}
+.mdtable td{padding:5px 0;border-bottom:1px solid var(--hair);word-break:break-word}
+
+/* 계정 단위로 먼저 봅니다. 개체를 쭉 늘어놓으면 회원이 늘수록 누구 것을
+   보고 있는지가 사라집니다. */
+.mdowner{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:14px;
+  background:var(--card2);cursor:pointer}
+.mdowner:hover{background:var(--hair)}
+.mdcrumb{display:flex;align-items:center;gap:10px;padding:4px 2px 10px;flex-wrap:wrap}
+
+/* 처리 기록은 쪽으로 나눕니다 — 목록 열람이 하루에 수십 줄씩 쌓여서
+   정작 찾아야 할 조치 한 줄이 묻힙니다. */
+.mdpager{display:flex;align-items:center;gap:10px;padding:6px 2px 10px}
+.mdpager .mini[disabled]{opacity:.4;cursor:default}

@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>공개 카드 하네스 (임시)</title>
+<meta name="robots" content="noindex, nofollow">
+<!-- 카드 이미지를 눈으로 확인하는 파일입니다. build.sh 가 배포에서 제외합니다.
+     실제 데이터 대신 아래 SAMPLE 을 물려 그립니다. -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css">
+<style>
+  body{background:#EDEAE1;font-family:Pretendard,system-ui,sans-serif;margin:0;padding:18px;color:#26221D}
+  .bar{max-width:560px;margin:0 auto 14px;display:flex;gap:6px;flex-wrap:wrap}
+  .bar button{border:1px solid rgba(38,34,29,.15);background:#fff;border-radius:9px;
+    padding:9px 13px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;min-height:40px}
+  img{display:block;max-width:560px;width:100%;margin:0 auto;border-radius:14px;
+    box-shadow:0 8px 30px rgba(0,0,0,.12)}
+  .note{max-width:560px;margin:12px auto 0;font-size:12px;color:#6c756e;line-height:1.7}
+</style>
+</head>
+<body>
+<div class="bar">
+  <button data-case="full">전부 있음</button>
+  <button data-case="min">최소 정보</button>
+  <button data-case="nobreeder">브리더명 없음</button>
+  <button data-case="old">체중이 옛날 것</button>
+</div>
+<img id="out" alt="공개 카드 미리보기">
+<div class="note" id="note"></div>
+
+<script src="care-i18n-ko.js"></script>
+<script src="care-i18n-en.js"></script>
+<script src="care-i18n-zh.js"></script>
+<script src="care-i18n-ja.js"></script>
+<script src="care-i18n.js"></script>
+<script src="care-core.js"></script>
+<script src="animal-life-stage.js"></script>
+<script src="public-card-export.js"></script>
+<script>
+window.CareI18n.initialize('pageTitle');
+const I = window.CareI18n, LifeStage = window.AnimalLifeStage;
+
+/* public_animal RPC 가 돌려주는 모양 그대로입니다. */
+const BASE = {
+  name: 'ㅇㄹㄹㄴ', species: 'leopard', sex: 'male', life_stage: 'baby_unknown',
+  hatch_date: '2025-02-04', clutch: '2025-A',
+  morphs: ['bell'], hets: [],
+  photo_url: '', photos: [],
+  note: '', breeder: '라이트하우스 브리딩',
+  parents: { a: { name: '라봉이' }, b: { name: '도도' } },
+  latest_weight: { grams: 48, measured_on: '2026-08-01' }
+};
+const CASES = {
+  full: () => BASE,
+  min: () => Object.assign({}, BASE, {
+    hatch_date: null, clutch: '', breeder: '', parents: {},
+    latest_weight: null, morphs: [] }),
+  nobreeder: () => Object.assign({}, BASE, { breeder: '' }),
+  /* 반년 전에 잰 체중. 날짜가 없으면 오늘 값처럼 읽힙니다 — 이걸 보려고 만든 칸입니다. */
+  old: () => Object.assign({}, BASE, { latest_weight: { grams: 48, measured_on: '2026-02-10' } })
+};
+
+/* 진짜 QR 라이브러리 대신 격자무늬를 그리는 대체물입니다. 카드 안에서 QR 이
+   차지하는 자리와 크기만 보면 되고, 코드가 실제로 읽히는지는 여기서 볼 일이
+   아닙니다. (qrCode 는 getModuleCount / isDark 두 가지만 씁니다) */
+const FAKE_QR = {
+  getModuleCount: () => 29,
+  isDark: (r, c) => ((r * 7 + c * 5 + ((r / 4) | 0) * 3) % 3) === 0
+};
+
+async function run(name){
+  const data = CASES[name]();
+  const url = 'https://ryangstudio.com/care/p.html?t=SZQ1D4a_8MZaJ1IcsfR_wQ';
+  const m = window.PublicCardExport.model(data, url, I, LifeStage);
+  const b = await window.PublicCardExport.blob({
+    model: m, image: null, qr: FAKE_QR, document,
+    labels: { hatch: I.t('hatchFact'), clutch: I.t('clutchFact'),
+              weight: I.t('latestWeightFact'), age: I.t('ageFact') }
+  });
+  document.getElementById('out').src = URL.createObjectURL(b);
+  document.getElementById('note').textContent =
+    '나이=' + (m.age||'(없음)') + ' · 체중=' + (m.weight||'(없음)') +
+    ' · 측정일=' + (m.weightOn||'(없음)') + ' · 브리더=' + (m.breeder||'(없음)') +
+    ' · 성별=' + m.sex + ' · 단계=' + m.stage;
+}
+document.querySelectorAll('[data-case]').forEach(b=>b.onclick=()=>run(b.dataset.case));
+run('full');
+</script>
+</body>
+</html>

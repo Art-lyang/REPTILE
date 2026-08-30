@@ -18,22 +18,29 @@
 한국어는 기존 주소(/gecko/)를 그대로 씁니다. 이미 색인된 주소를 옮기면
 그동안 쌓인 것이 날아갑니다.
 """
-import io, os, re, sys
+import io, os, re, subprocess, sys
 
 SITE = 'https://ryangstudio.com'
 LANGS = ['ko', 'en', 'ja', 'zh']
 HTML_LANG = {'ko': 'ko', 'en': 'en', 'ja': 'ja', 'zh': 'zh-Hans'}
+# og:locale 은 html lang 과 형식이 다릅니다(언어_지역). 같은 값을 쓰면
+# 공유 미리보기가 언어를 못 알아봅니다.
+OG_LOCALE = {'ko': 'ko_KR', 'en': 'en_US', 'ja': 'ja_JP', 'zh': 'zh_CN'}
 CALCS = [('gecko', 'gecko/gecko-ui.js'),
          ('crested', 'crested/crested-ui.js'),
          ('fattail', 'fattail/fattail-ui.js'),
          ('ballpython', 'ballpython/ball-ui.js')]
 
-# 비밀번호로 가려 둔(assets/gate.js) 테스트 중인 계산기.
+# 비밀번호로 가려 둔(assets/gate.js) 테스트 중인 계산기의 이름을 넣습니다.
 # 언어 사본은 그대로 만들되 sitemap 에서만 뺍니다. 잠긴 화면을 구글에 알려주면
 # 들어와도 비밀번호 창만 보게 되고, 그 인상이 색인에 남습니다.
-# 정식 공개할 때 여기서 이름을 빼고, 그 계산기 index.html 의 gate.js 한 줄과
-# robots 의 noindex 도 함께 되돌리세요.
-GATED = {'ballpython'}
+#
+# 새 계산기를 잠글 때는 세 곳을 함께 손봐야 합니다 —
+#   1) 여기에 이름 추가
+#   2) 그 계산기 index.html 에 gate.js <script> 한 줄과 robots 의 noindex
+#   3) robots.txt 에 Disallow
+# 공개할 때도 셋을 함께 되돌립니다. (2026-07-30 ballpython 공개하며 비웠습니다)
+GATED = set()
 
 
 def read_i18n(path):
@@ -96,6 +103,11 @@ def alt_links(calc, cur):
         href = url_of(calc, L)
         rows.append('  <link rel="alternate" hreflang="%s" href="%s">' % (HTML_LANG[L], href))
     rows.append('  <link rel="alternate" hreflang="x-default" href="%s">' % url_of(calc, 'ko'))
+    # 검색엔진은 hreflang 을 보지만, 카카오·페이스북 같은 공유 미리보기는
+    # og 만 봅니다. 둘 다 있어야 어느 쪽으로 퍼져도 그 언어로 보입니다.
+    for L in LANGS:
+        if L != cur:
+            rows.append('  <meta property="og:locale:alternate" content="%s">' % OG_LOCALE[L])
     return '\n'.join(rows)
 
 
@@ -192,6 +204,9 @@ def build(calc, ui_path, dist):
                    lambda m: m.group(1) + url_of(calc, lang) + m.group(2), h, count=1)
         h = re.sub(r'(<meta property="og:title" content=")[^"]*(">)',
                    lambda m: m.group(1) + t.get('title', '') + m.group(2), h, count=1)
+        # 이 줄이 빠져 있어서 영어·일본어·중국어 페이지가 전부 ko_KR 이었습니다.
+        h = re.sub(r'(<meta property="og:locale" content=")[^"]*(">)',
+                   lambda m: m.group(1) + OG_LOCALE[lang] + m.group(2), h, count=1)
 
         # 언어 교차 링크
         h = h.replace('<link rel="canonical"', alt_links(calc, lang) + '\n  <link rel="canonical"', 1)
@@ -232,17 +247,48 @@ def build(calc, ui_path, dist):
     return made
 
 
+def git_lastmod(paths, fallback):
+    """그 페이지를 이루는 파일들이 마지막으로 커밋된 날짜(YYYY-MM-DD).
+
+    예전에는 모든 주소에 빌드한 날짜를 넣었습니다. 그러면 글자 하나 안 고치고
+    배포만 해도 "어제 전부 바뀌었다"고 알리는 셈이라, 구글은 그런 사이트의
+    lastmod 를 아예 무시합니다. 실제로 고친 페이지만 새 날짜를 갖게 합니다.
+
+    아직 커밋하지 않은 파일은 git 이 날짜를 모릅니다. 그때는 빌드 날짜를 씁니다
+    (방금 고쳤다는 뜻이라 결과적으로 맞습니다)."""
+    best = ''
+    for p in paths:
+        try:
+            out = subprocess.run(['git', 'log', '-1', '--format=%cs', '--', p],
+                                 capture_output=True, text=True, check=True).stdout.strip()
+        except (OSError, subprocess.CalledProcessError):
+            return fallback
+        if out > best:
+            best = out
+    return best or fallback
+
+
 def write_sitemap(dist, today):
+    home = git_lastmod(['index.html', 'home-redesign.css', 'home-redesign.js'], today)
     rows = ['  <url><loc>%s/</loc><lastmod>%s</lastmod><changefreq>weekly</changefreq><priority>1.0</priority></url>'
-            % (SITE, today)]
+            % (SITE, home)]
     for calc, _ in CALCS:
         if calc in GATED:
             continue
+        # 언어 사본은 한국어 원본에서 만들어지므로 같은 날짜를 씁니다.
+        # assets/ 는 네 계산기가 함께 쓰는 자리라 넣지 않습니다 — 넣으면 공용
+        # CSS 를 한 번 고칠 때마다 전 페이지가 동시에 바뀐 것으로 보입니다.
+        mod = git_lastmod([calc], today)
         for lang in LANGS:
             rows.append('  <url><loc>%s</loc><lastmod>%s</lastmod><changefreq>weekly</changefreq><priority>%s</priority></url>'
-                        % (url_of(calc, lang), today, '0.9' if lang == 'ko' else '0.7'))
-    rows.append('  <url><loc>%s/terms</loc><lastmod>%s</lastmod><changefreq>yearly</changefreq><priority>0.2</priority></url>'
-                % (SITE, today))
+                        % (url_of(calc, lang), mod, '0.9' if lang == 'ko' else '0.7'))
+    # 약관·처리방침. 가입을 열면서 함께 넣습니다 — 가입 전에 읽어 보려는
+    # 사람이 검색으로 닿을 수 있어야 합니다. 언어 사본이 없는 한 장짜리라
+    # 계산기들과 달리 주소가 하나입니다.
+    rows.append('  <url><loc>%s/terms.html</loc><lastmod>%s</lastmod>'
+                '<changefreq>monthly</changefreq><priority>0.3</priority></url>'
+                % (SITE, git_lastmod(['terms.html'], today)))
+
     io.open(os.path.join(dist, 'sitemap.xml'), 'w', encoding='utf-8', newline='\n').write(
         '<?xml version="1.0" encoding="UTF-8"?>\n'
         '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' + '\n'.join(rows) + '\n</urlset>\n')

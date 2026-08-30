@@ -1,0 +1,590 @@
+{
+  "admin/admin-business.css": {
+    "version": "20260808a",
+    "sha256": "a500f18c5f8469b8"
+  },
+  "admin/admin-business.js": {
+    "version": "20260808a",
+    "sha256": "9a41c5d27a8c688d"
+  },
+  "admin/admin-crested.js": {
+    "version": "232324",
+    "sha256": "4d1e3f4405c082fa"
+  },
+  "admin/admin-member-actions.js": {
+    "version": "20260804c",
+    "sha256": "b17565ecf0ef890e"
+  },
+  "admin/admin-members-i18n.js": {
+    "version": "20260808b",
+    "sha256": "b087e8845251aa55"
+  },
+  "admin/admin-members.css": {
+    "version": "20260809a",
+    "sha256": "c96e33db17bdd209"
+  },
+  "admin/admin-members.js": {
+    "version": "20260809a",
+    "sha256": "2754b0a2185caa4f"
+  },
+  "admin/admin-moderation.css": {
+    "version": "20260809f",
+    "sha256": "5334ae93ef4466d0"
+  },
+  "admin/admin-moderation.js": {
+    "version": "20260810a",
+    "sha256": "0fcc655c39b84c53"
+  },
+  "admin/admin-security.js": {
+    "version": "20260807a",
+    "sha256": "8d40dd11136f601e"
+  },
+  "admin/admin-text.js": {
+    "version": "20260808a",
+    "sha256": "476bedb2c18935dc"
+  },
+  "assets/account-btn.js": {
+    "version": "20260806c",
+    "sha256": "dfb3bce269536019"
+  },
+  "assets/analytics.js": {
+    "version": "20260809x",
+    "sha256": "92f9a1b7c1e49690"
+  },
+  "assets/base.css": {
+    "version": "20260810e",
+    "sha256": "6ca9fba966fbff25"
+  },
+  "assets/breeding-btn.js": {
+    "version": "20260809x",
+    "sha256": "21237326e4fef5cb"
+  },
+  "assets/breeding-draft.js": {
+    "version": "20260731a",
+    "sha256": "36e288101f628f67"
+  },
+  "assets/breeding-goal-i18n.js": {
+    "version": "20260802a",
+    "sha256": "7bb80e92af16e104"
+  },
+  "assets/breeding-project-contract.js": {
+    "version": "20260731a",
+    "sha256": "a77cafe8db22c60e"
+  },
+  "assets/breeding-project-flow.js": {
+    "version": "20260731a",
+    "sha256": "c6e1be2f222df75a"
+  },
+  "assets/breeding-workspace-i18n.js": {
+    "version": "20260731h",
+    "sha256": "8e940f7da2ba7789"
+  },
+  "assets/breeding-workspace.js": {
+    "version": "20260731h",
+    "sha256": "d58b583f5f1b6d2c"
+  },
+  "assets/calculation-history-store.js": {
+    "version": "20260731h",
+    "sha256": "feaa5c6c141addaf"
+  },
+  "assets/imgtool.js": {
+    "version": "20260809x",
+    "sha256": "e5d14f24b6a5a25b"
+  },
+  "assets/line-trait-scores.js": {
+    "version": "20260731a",
+    "sha256": "456c132a821035ca"
+  },
+  "assets/linebreeding-species-policy.js": {
+    "version": "20260802b",
+    "sha256": "3e2b6e19f5290810"
+  },
+  "assets/pairing-compare-metrics.js": {
+    "version": "20260731h",
+    "sha256": "4d68b73043967cd7"
+  },
+  "assets/photo.js": {
+    "version": "20260731c",
+    "sha256": "988c5cd717760da6"
+  },
+  "assets/premium-expiry-notice.js": {
+    "version": "20260808a",
+    "sha256": "6b0802b270d37b7b"
+  },
+  "assets/result-card.js": {
+    "version": "20260810a",
+    "sha256": "3d0e44b5ae2b6db4"
+  },
+  "assets/signup-cta.js": {
+    "version": "20260810i",
+    "sha256": "51a43da3be8434f1"
+  },
+  "assets/studio-config.js": {
+    "version": "20260810k",
+    "sha256": "9ef692cdb87e88ea"
+  },
+  "assets/theme.css": {
+    "version": "20260809x",
+    "sha256": "70149ba9e531e9af"
+  },
+  "assets/uitext.js": {
+    "version": "20260806b",
+    "sha256": "ab0cb49d0cdf94e3"
+  },
+  "ballpython/ball-app.js": {
+    "version": "20260806c",
+    "sha256": "71d555b3f886c4eb"
+  },
+  "ballpython/ball-boot.js": {
+    "version": "072901",
+    "sha256": "ea9e528c0c5c5672"
+  },
+  "ballpython/ball-core.js": {
+    "version": "072902",
+    "sha256": "05048f874312c04d"
+  },
+  "ballpython/ball-ui.js": {
+    "version": "20260810e",
+    "sha256": "5426c17aac1e8266"
+  },
+  "ballpython/ball.css": {
+    "version": "07302330",
+    "sha256": "794c814adea29030"
+  },
+  "care/animal-calendar.css": {
+    "version": "20260803c",
+    "sha256": "eb6917f1d9dd9f44"
+  },
+  "care/animal-calendar.js": {
+    "version": "20260803c",
+    "sha256": "34647b083ed39f13"
+  },
+  "care/animal-feeding-dialog.css": {
+    "version": "20260803c",
+    "sha256": "30ffa9f001371a8f"
+  },
+  "care/animal-feeding-dialog.js": {
+    "version": "20260807c",
+    "sha256": "6b761c2fe8b2cab4"
+  },
+  "care/animal-hold.js": {
+    "version": "20260809a",
+    "sha256": "5b4f1a474c0144d7"
+  },
+  "care/animal-legal-ui.js": {
+    "version": "20260809a",
+    "sha256": "2ae65bda1d2a3bf8"
+  },
+  "care/animal-legal.js": {
+    "version": "20260809a",
+    "sha256": "d8c39598f4d4b586"
+  },
+  "care/animal-life-stage.js": {
+    "version": "20260803a",
+    "sha256": "fb641fde97edfbc5"
+  },
+  "care/animal-record-dialog.css": {
+    "version": "20260803a",
+    "sha256": "4c0da76e869997d9"
+  },
+  "care/animal-record-dialog.js": {
+    "version": "20260803a",
+    "sha256": "862bb6a1690ea2a3"
+  },
+  "care/animal-transfer-ui.js": {
+    "version": "20260810a",
+    "sha256": "e7c80102927c550e"
+  },
+  "care/animal-transfer.css": {
+    "version": "20260810d",
+    "sha256": "3adac9a7311c8685"
+  },
+  "care/animal-transfer.js": {
+    "version": "20260810a",
+    "sha256": "ddf87133bd14c4f1"
+  },
+  "care/animal-ui.js": {
+    "version": "20260810k",
+    "sha256": "7728c353ea01cfd0"
+  },
+  "care/animal-weight-date.css": {
+    "version": "20260804a",
+    "sha256": "e7579a6be1336ad6"
+  },
+  "care/breeder-ui.js": {
+    "version": "20260808b",
+    "sha256": "4eb7cffe82ff9e4c"
+  },
+  "care/breeding-animal-panel.js": {
+    "version": "20260808a",
+    "sha256": "adbdc3ce4b72666b"
+  },
+  "care/breeding-clutch-panel.js": {
+    "version": "20260807c",
+    "sha256": "e1f73c9545c7452f"
+  },
+  "care/breeding-events.js": {
+    "version": "20260808a",
+    "sha256": "f05921372484f0a8"
+  },
+  "care/breeding-genetic-goal.js": {
+    "version": "20260802b",
+    "sha256": "bc898b2cc1d816e5"
+  },
+  "care/breeding-goal-results.js": {
+    "version": "20260802a",
+    "sha256": "36dce8c5166b81bb"
+  },
+  "care/breeding-goal-ui.js": {
+    "version": "20260802d",
+    "sha256": "85dfcdf49494dfda"
+  },
+  "care/breeding-hatch-outcomes.js": {
+    "version": "20260803b",
+    "sha256": "fb214812ba2dcd5c"
+  },
+  "care/breeding-hatch-panel.js": {
+    "version": "20260807c",
+    "sha256": "3cf60992525040e4"
+  },
+  "care/breeding-hatch.css": {
+    "version": "20260803b",
+    "sha256": "be29469b8eb68de3"
+  },
+  "care/breeding-i18n-en.js": {
+    "version": "20260810c",
+    "sha256": "8bbe8b28c57cf078"
+  },
+  "care/breeding-i18n-ja.js": {
+    "version": "20260810c",
+    "sha256": "9eeeeebcb83e745a"
+  },
+  "care/breeding-i18n-ko.js": {
+    "version": "20260810c",
+    "sha256": "f91703d5370437d9"
+  },
+  "care/breeding-i18n-zh.js": {
+    "version": "20260808a",
+    "sha256": "09a0241830161ab8"
+  },
+  "care/breeding-i18n.js": {
+    "version": "20260808a",
+    "sha256": "d7a866560689b5fe"
+  },
+  "care/breeding-mating-groups.css": {
+    "version": "20260803a",
+    "sha256": "786966b910bb921b"
+  },
+  "care/breeding-mating-groups.js": {
+    "version": "20260803a",
+    "sha256": "ac488ae3b349d1bc"
+  },
+  "care/breeding-mating-panel.js": {
+    "version": "20260807c",
+    "sha256": "52c5ad8f27f39f16"
+  },
+  "care/breeding-pairing-panel.js": {
+    "version": "20260803b",
+    "sha256": "b74800c281504d8d"
+  },
+  "care/breeding-row-scope.js": {
+    "version": "20260802c",
+    "sha256": "d0d2d303499a5f7b"
+  },
+  "care/breeding-ui.js": {
+    "version": "20260808c",
+    "sha256": "8c9479cb6d7ff30f"
+  },
+  "care/breeding-workspace.css": {
+    "version": "20260809a",
+    "sha256": "5eebc7308d8b44ef"
+  },
+  "care/bulk-care-record.js": {
+    "version": "20260809a",
+    "sha256": "9b212664eefbbcc9"
+  },
+  "care/care-alert-ui.js": {
+    "version": "20260807a",
+    "sha256": "19b2f6def1ea6ba1"
+  },
+  "care/care-alert.css": {
+    "version": "20260804a",
+    "sha256": "28f015dd9e5b2b59"
+  },
+  "care/care-alerts.js": {
+    "version": "20260807a",
+    "sha256": "01380be7593155b9"
+  },
+  "care/care-animal-edit-route.js": {
+    "version": "20260803a",
+    "sha256": "1de51e5d997dc766"
+  },
+  "care/care-animal-form.js": {
+    "version": "20260810m",
+    "sha256": "4bac17be9763f344"
+  },
+  "care/care-app.js": {
+    "version": "20260809a",
+    "sha256": "2349c7ca575245f3"
+  },
+  "care/care-core.js": {
+    "version": "20260809x",
+    "sha256": "2837d39c4136d103"
+  },
+  "care/care-health-ui.js": {
+    "version": "20260803a",
+    "sha256": "f15eae5f32b28484"
+  },
+  "care/care-i18n-en.js": {
+    "version": "20260810m",
+    "sha256": "9ee996063147488d"
+  },
+  "care/care-i18n-ja.js": {
+    "version": "20260810m",
+    "sha256": "ed4278ba332ee439"
+  },
+  "care/care-i18n-ko.js": {
+    "version": "20260810m",
+    "sha256": "085b8b15c0367dcf"
+  },
+  "care/care-i18n-zh.js": {
+    "version": "20260810m",
+    "sha256": "1917ccde7ae17237"
+  },
+  "care/care-i18n.js": {
+    "version": "20260803m",
+    "sha256": "40bbb3be444460ea"
+  },
+  "care/care-photos.js": {
+    "version": "20260731d",
+    "sha256": "bcd160c3f330848d"
+  },
+  "care/care-plan-bulk-delete.css": {
+    "version": "20260806b",
+    "sha256": "deb146a2e4ca0471"
+  },
+  "care/care-plan-bulk-delete.js": {
+    "version": "20260806b",
+    "sha256": "6890f243efdd0ba4"
+  },
+  "care/care-plan-store.js": {
+    "version": "20260802a",
+    "sha256": "a078cffb6b8674f1"
+  },
+  "care/care-plan-ui.js": {
+    "version": "20260807c",
+    "sha256": "fc55461f659f79f4"
+  },
+  "care/care-routine.css": {
+    "version": "20260802a",
+    "sha256": "cec67ec78953d6d9"
+  },
+  "care/care-routine.js": {
+    "version": "20260802b",
+    "sha256": "3dc60084a6c3a8b6"
+  },
+  "care/care-today-ui.js": {
+    "version": "20260802b",
+    "sha256": "e6e6ff62a4c7bb96"
+  },
+  "care/care-ui.js": {
+    "version": "20260810m",
+    "sha256": "5d8a444305167294"
+  },
+  "care/care.css": {
+    "version": "20260810m",
+    "sha256": "db315c15a28c9aee"
+  },
+  "care/date-field.js": {
+    "version": "20260807c",
+    "sha256": "1164c0661f0f99f9"
+  },
+  "care/gallery-ui.js": {
+    "version": "20260802d",
+    "sha256": "723db9bcd2e2587f"
+  },
+  "care/labels-ui.js": {
+    "version": "20260810b",
+    "sha256": "22660334cab0f82a"
+  },
+  "care/labels.css": {
+    "version": "20260810a",
+    "sha256": "51b9621057e3dc6f"
+  },
+  "care/medical-report-ui.js": {
+    "version": "20260809a",
+    "sha256": "d20f6310a5dd6045"
+  },
+  "care/medical-report.css": {
+    "version": "20260809a",
+    "sha256": "193078f9e6e01483"
+  },
+  "care/medical-report.js": {
+    "version": "20260809a",
+    "sha256": "12c703b1dc4868fa"
+  },
+  "care/pedigree-certificate-ui.js": {
+    "version": "20260808a",
+    "sha256": "eb4a51ecc3e4d456"
+  },
+  "care/pedigree-certificate.css": {
+    "version": "20260808a",
+    "sha256": "20f1203abc98934d"
+  },
+  "care/pedigree-certificate.js": {
+    "version": "20260808a",
+    "sha256": "ff95f8667f46c5b1"
+  },
+  "care/photo-cropper-geometry.js": {
+    "version": "20260731d",
+    "sha256": "db61e4690b6e5059"
+  },
+  "care/photo-cropper-i18n.js": {
+    "version": "20260731d",
+    "sha256": "437838b254a80f73"
+  },
+  "care/photo-cropper.js": {
+    "version": "20260731d",
+    "sha256": "9fac99f7ccdb4649"
+  },
+  "care/pub-ui.js": {
+    "version": "20260808c",
+    "sha256": "c7f0ad31a4ccddf6"
+  },
+  "care/public-animal-cards.js": {
+    "version": "20260803a",
+    "sha256": "adb6b15fcea79a4e"
+  },
+  "care/public-card-export-ui.js": {
+    "version": "20260803a",
+    "sha256": "1cf666bc8d5881e0"
+  },
+  "care/public-card-export.css": {
+    "version": "20260803a",
+    "sha256": "de7e4d47b2342218"
+  },
+  "care/public-card-export.js": {
+    "version": "20260803a",
+    "sha256": "d531ac7cdc2e8b32"
+  },
+  "care/public-profile.css": {
+    "version": "20260808a",
+    "sha256": "9f5e2ac0280e0c78"
+  },
+  "care/public-weight-chart.js": {
+    "version": "20260803a",
+    "sha256": "fa9ee6841eaaea1e"
+  },
+  "care/transfer-ui.js": {
+    "version": "20260810a",
+    "sha256": "0efc7f81e682ec37"
+  },
+  "crested/crested-app.js": {
+    "version": "20260806c",
+    "sha256": "33bc009d001feb28"
+  },
+  "crested/crested-boot.js": {
+    "version": "014345",
+    "sha256": "95f028b3133b865d"
+  },
+  "crested/crested-core.js": {
+    "version": "20260809c",
+    "sha256": "bcd1d169b6f6979b"
+  },
+  "crested/crested-ui.js": {
+    "version": "20260810e",
+    "sha256": "099efc0410e1f446"
+  },
+  "crested/crested.css": {
+    "version": "07302330",
+    "sha256": "921829c66be7b8a0"
+  },
+  "fattail/fattail-app.js": {
+    "version": "20260806c",
+    "sha256": "af59126c76d9b8d7"
+  },
+  "fattail/fattail-boot.js": {
+    "version": "072801",
+    "sha256": "9b2ef99dc781a221"
+  },
+  "fattail/fattail-core.js": {
+    "version": "20260809x",
+    "sha256": "17a914abd7acc38b"
+  },
+  "fattail/fattail-ui.js": {
+    "version": "20260810e",
+    "sha256": "2a4bfe42e422adab"
+  },
+  "fattail/fattail.css": {
+    "version": "07302330",
+    "sha256": "c6568e6706f9d61a"
+  },
+  "gecko/account-shell.css": {
+    "version": "20260803b",
+    "sha256": "37d1f808eb938fb2"
+  },
+  "gecko/account-shell.js": {
+    "version": "20260808a",
+    "sha256": "9c2262f690a41f45"
+  },
+  "gecko/gecko-app.js": {
+    "version": "20260809a",
+    "sha256": "8e403c033bc22f3c"
+  },
+  "gecko/gecko-boot.js": {
+    "version": "014345",
+    "sha256": "1d5e4e2e54be4b9e"
+  },
+  "gecko/gecko-core.js": {
+    "version": "20260809x",
+    "sha256": "23401b51bc2d312c"
+  },
+  "gecko/gecko-explain.css": {
+    "version": "20260731e",
+    "sha256": "27c948b38376c66d"
+  },
+  "gecko/gecko-explain.js": {
+    "version": "20260731e",
+    "sha256": "2d3246913ce9b645"
+  },
+  "gecko/gecko-ui.js": {
+    "version": "20260810f",
+    "sha256": "19dcb54e611aeac5"
+  },
+  "gecko/gecko.css": {
+    "version": "20260731f",
+    "sha256": "5c4e6f3dd6012a05"
+  },
+  "gecko/login-i18n-en.js": {
+    "version": "20260810c",
+    "sha256": "fff40804fe055e02"
+  },
+  "gecko/login-i18n-ja.js": {
+    "version": "20260810c",
+    "sha256": "f892d12a6da2ea1c"
+  },
+  "gecko/login-i18n-ko.js": {
+    "version": "20260810c",
+    "sha256": "7e5954c57986af6c"
+  },
+  "gecko/login-i18n-zh.js": {
+    "version": "20260810c",
+    "sha256": "9317796ef24612e6"
+  },
+  "gecko/login-i18n.js": {
+    "version": "20260808a",
+    "sha256": "9a9b3bc360c21555"
+  },
+  "home-redesign.css": {
+    "version": "20260808a",
+    "sha256": "a3f9d986893a6759"
+  },
+  "home-redesign.js": {
+    "version": "20260728b",
+    "sha256": "3d75ede255dd9811"
+  },
+  "pricing-i18n.js": {
+    "version": "20260810k",
+    "sha256": "bb41ba4f7f79da95"
+  }
+}

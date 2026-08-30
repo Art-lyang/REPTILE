@@ -1,0 +1,212 @@
+/* =============================================================================
+   앱인토스 · 파충류 모프 계산기 — 종 선택 허브
+   -----------------------------------------------------------------------------
+   계산기 화면(base.css → <종>.css → theme.css)과 색만 맞추고 규칙은 공유하지
+   않습니다. 허브는 링크 네 개뿐이라 계산기 CSS 를 통째로 끌어오면 쓰지 않는
+   규칙이 90% 입니다. 첫 화면이 뜨는 속도가 심사 항목('반응 지연 2초')이라
+   여기서는 이 파일 하나만 읽습니다.
+
+   다크 모드 블록은 일부러 넣지 않았습니다. 앱인토스는 라이트 모드만 허용합니다.
+   ============================================================================= */
+
+:root {
+  color-scheme: light;
+
+  /* theme.css 의 라이트 값과 같은 색입니다. 허브에서 계산기로 넘어갈 때
+     배경이 바뀌면 다른 앱으로 튕긴 것처럼 보입니다. */
+  --bg: #f5f1e8;
+  --card: #fffdf9;
+  --ink: #18382f;
+  --ink2: #746f64;
+  --hair: rgba(43, 57, 48, .11);
+  --teal: #075a48;
+  --shadow: 0 2px 4px rgba(35, 48, 41, .03), 0 10px 28px rgba(35, 48, 41, .07);
+}
+
+* { box-sizing: border-box; }
+
+html { background: var(--bg); }
+
+body {
+  margin: 0;
+  min-width: 320px;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont,
+    "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+  line-height: 1.5;
+  -webkit-text-size-adjust: 100%;
+}
+
+a { color: inherit; text-decoration: none; -webkit-tap-highlight-color: transparent; }
+
+a:focus-visible {
+  outline: 3px solid rgba(7, 90, 72, .26);
+  outline-offset: 2px;
+}
+
+/* ── 머리말 ────────────────────────────────────────────────────────────────
+   토스 내비게이션 바가 화면 위쪽을 차지하므로 여기에 또 헤더 바를 두지
+   않습니다. 제목만 크게 놓고 바로 카드로 들어갑니다. */
+.hub-head {
+  padding: 28px 20px 8px;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.hub-head .kicker {
+  margin: 0 0 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .16em;
+  color: var(--ink2);
+}
+
+.hub-head h1 {
+  margin: 0 0 10px;
+  font-size: clamp(24px, 6.4vw, 32px);
+  font-weight: 820;
+  letter-spacing: -.04em;
+  line-height: 1.2;
+}
+
+.hub-head .lead {
+  margin: 0;
+  font-size: 14px;
+  color: var(--ink2);
+  line-height: 1.6;
+}
+
+.hub-wrap {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 20px 16px 40px;
+}
+
+/* ── 종 카드 ──────────────────────────────────────────────────────────────
+   한 줄에 하나씩 쌓습니다. 종이 네 개뿐이라 2열로 만들면 카드가 작아져서
+   사진이 무슨 종인지 알아보기 어려워집니다. 넓은 화면에서만 2열로 갑니다. */
+.species-grid {
+  display: grid;
+  gap: 12px;
+}
+
+@media (min-width: 600px) {
+  .species-grid { grid-template-columns: 1fr 1fr; }
+}
+
+.species-card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 116px;
+  padding: 16px 18px;
+  background: var(--card);
+  border: 1px solid var(--hair);
+  border-radius: 22px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  transition: transform .14s ease, box-shadow .14s ease;
+}
+
+/* 손가락을 뗄 때가 아니라 누르는 순간 반응해야 눌린 걸 압니다.
+   웹뷰는 :hover 가 의미 없으므로 :active 만 씁니다. */
+.species-card:active {
+  transform: scale(.985);
+  box-shadow: 0 1px 2px rgba(35, 48, 41, .06);
+}
+
+.sc-art {
+  flex: 0 0 88px;
+  width: 88px;
+  height: 88px;
+  display: grid;
+  place-items: center;
+}
+
+.sc-art img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  /* 히어로 사진은 배경이 비쳐 보이도록 잘라둔 그림이라 그림자만 살짝 줍니다. */
+  filter: drop-shadow(0 6px 10px rgba(35, 48, 41, .16));
+}
+
+.sc-txt { min-width: 0; }
+
+.sc-txt h2 {
+  margin: 0 0 4px;
+  font-size: 17px;
+  font-weight: 760;
+  letter-spacing: -.02em;
+}
+
+.sc-txt p {
+  margin: 0 0 8px;
+  font-size: 12.5px;
+  color: var(--ink2);
+  line-height: 1.5;
+  /* 설명이 길어져도 카드 높이가 들쭉날쭉해지지 않게 두 줄에서 자릅니다. */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.sc-go {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--teal);
+}
+
+/* 종마다 카드 바탕에 옅은 색을 깔아 훑을 때 구분되게 합니다. */
+.species-card.leo  { background: linear-gradient(105deg, #fffdf9 62%, #fdf3e2); }
+.species-card.cres { background: linear-gradient(105deg, #fffdf9 62%, #f1f6ec); }
+.species-card.aft  { background: linear-gradient(105deg, #fffdf9 62%, #f6f1ea); }
+.species-card.bp   { background: linear-gradient(105deg, #fffdf9 62%, #eef4f3); }
+
+/* ── 안내 ────────────────────────────────────────────────────────────────
+   계산기 안에도 같은 취지의 문구가 있지만, 확률을 보기 '전에' 읽어야
+   의미가 있어서 허브에 한 번 더 둡니다. */
+.hub-note {
+  margin-top: 22px;
+  padding: 18px 20px;
+  background: rgba(255, 253, 249, .7);
+  border: 1px solid var(--hair);
+  border-radius: 18px;
+}
+
+.hub-note h3 {
+  margin: 0 0 10px;
+  font-size: 13.5px;
+  font-weight: 740;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.hub-note p {
+  margin: 0 0 8px;
+  font-size: 12.5px;
+  color: var(--ink2);
+  line-height: 1.62;
+}
+
+.hub-note p:last-child { margin-bottom: 0; }
+.hub-note b { color: var(--ink); font-weight: 700; }
+
+/* ── 바닥 ────────────────────────────────────────────────────────────────── */
+.hub-foot {
+  margin-top: 26px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--ink2);
+}
+
+.hub-foot a { text-decoration: underline; text-underline-offset: 3px; }
+.hub-foot span { margin: 0 6px; opacity: .5; }
+.hub-foot p { margin: 10px 0 0; font-size: 11px; opacity: .7; }

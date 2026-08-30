@@ -1,0 +1,78 @@
+/* =============================================================================
+   혈통서
+   -----------------------------------------------------------------------------
+   화면에서는 개체 페이지 안의 한 절이고, 인쇄하면 문서만 남습니다.
+   분양할 때 종이로 건네거나 PDF 로 저장해 보내는 것이 목적입니다.
+   ============================================================================= */
+
+.pc-doc{
+  background:var(--card);border:1px solid var(--hair);border-radius:14px;
+  padding:20px 18px;margin-top:12px;
+}
+.pc-head{border-bottom:2px solid var(--teal);padding-bottom:12px;margin-bottom:6px}
+.pc-head h2{margin:0;font-size:23px;letter-spacing:-.03em}
+.pc-head p{margin:4px 0 0;color:var(--ink2);font-size:13px}
+
+.pc-sec{margin-top:18px}
+.pc-sec h3{
+  margin:0 0 8px;font-size:13px;font-weight:800;letter-spacing:.04em;
+  text-transform:uppercase;color:var(--teal);
+}
+.pc-note{margin:0 0 8px;color:var(--ink2);font-size:12.5px}
+.pc-empty{margin:0;color:var(--ink2);font-size:13px;font-style:italic}
+
+.pc-table{width:100%;border-collapse:collapse;font-size:13.5px}
+.pc-table th{
+  width:34%;text-align:left;vertical-align:top;padding:6px 10px 6px 0;
+  font-weight:750;color:var(--ink2);
+}
+.pc-table td{padding:6px 0;border-bottom:1px solid var(--hair)}
+
+/* 혈통은 세대별 목록입니다. 가로로 넓은 나무는 종이에 안 들어갑니다. */
+.pc-gen{margin-bottom:10px}
+.pc-gen h4{margin:0 0 4px;font-size:12.5px;font-weight:800}
+.pc-gen h4 span{color:var(--ink2);font-weight:600}
+.pc-gen ul{margin:0;padding-left:18px;display:flex;flex-wrap:wrap;gap:2px 14px;font-size:13px}
+.pc-gen li{list-style:disc}
+/* 같은 조상이 두 번 이상 나오면 근친입니다. 문서에서도 눈에 띄어야 합니다 —
+   색만으로는 흑백 인쇄에서 사라지므로 밑줄을 함께 씁니다. */
+.pc-repeat{color:var(--warn-fg);text-decoration:underline}
+.pc-warn{
+  margin:8px 0 0;padding:8px 10px;border-radius:9px;font-size:12.5px;
+  background:var(--warn-bg);color:var(--warn-fg);
+}
+.pc-warn i{margin-right:5px}
+
+.pc-memos{margin:0;padding-left:18px;font-size:13px}
+.pc-memos li{margin-bottom:4px}
+.pc-post{margin-top:10px;padding:10px 12px;background:var(--card2);border-radius:10px}
+.pc-post p{margin:4px 0;font-size:13.5px;white-space:pre-wrap}
+
+.pc-foot{
+  margin-top:20px;padding-top:10px;border-top:1px solid var(--hair);
+  color:var(--ink2);font-size:11.5px;line-height:1.5;
+}
+
+.pc-postform{margin-top:14px}
+.pc-postform label{display:block;font-weight:750;font-size:13.5px;margin-bottom:2px}
+.pc-postform textarea{min-height:72px;resize:vertical}
+.pc-postform .mini{margin-top:8px}
+.pc-acts{margin-top:12px}
+
+/* 인쇄 — 문서만 남깁니다. 머리말·버튼·추신 입력칸은 종이에 있을 이유가
+   없고, 개체 화면의 다른 절도 마찬가지입니다. */
+@media print{
+  body>*:not(.wrap),
+  header, #toast,
+  .wrap>*:not(#body),
+  #body>*:not(.pc-root),
+  .no-print{display:none !important}
+  .pc-root{padding:0}
+  .pc-doc{border:0;border-radius:0;padding:0;margin:0;background:#fff;color:#000}
+  .pc-sec{break-inside:avoid;page-break-inside:avoid}
+  .pc-head{border-bottom:2px solid #000}
+  .pc-sec h3{color:#000}
+  .pc-table td{border-bottom:1px solid #ccc}
+  .pc-warn{background:#fff;border:1px solid #000;color:#000}
+  .pc-repeat{color:#000}
+}

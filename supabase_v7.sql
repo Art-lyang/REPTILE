@@ -472,13 +472,20 @@ end $$;
    반대로 아래 두 개는 PUBLIC 까지 회수합니다. 새로 만든 함수는 기본적으로
    PUBLIC 에 실행 권한이 붙기 때문에, anon 만 회수하면 PUBLIC 경로로 그대로
    불립니다. */
-grant execute on function public.my_rows(text, text)         to anon, authenticated;
-grant execute on function public.save_row(text, text, jsonb) to anon, authenticated;
-grant execute on function public.delete_row(text, text, uuid) to anon, authenticated;
-grant execute on function public.claim_device(text, text)    to anon, authenticated;
-grant execute on function public.redeem_code(text, text)     to anon, authenticated;
-grant execute on function public.is_premium(text)            to anon, authenticated;
-grant execute on function public.premium_status(text)        to anon, authenticated;
+revoke all on function public.my_rows(text, text) from public, anon;
+revoke all on function public.save_row(text, text, jsonb) from public, anon;
+revoke all on function public.delete_row(text, text, uuid) from public, anon;
+revoke all on function public.claim_device(text, text) from public, anon;
+revoke all on function public.redeem_code(text, text) from public, anon;
+revoke all on function public.is_premium(text) from public, anon;
+revoke all on function public.premium_status(text) from public, anon;
+grant execute on function public.my_rows(text, text)          to authenticated;
+grant execute on function public.save_row(text, text, jsonb)  to authenticated;
+grant execute on function public.delete_row(text, text, uuid) to authenticated;
+grant execute on function public.claim_device(text, text)     to authenticated;
+grant execute on function public.redeem_code(text, text)      to authenticated;
+grant execute on function public.is_premium(text)             to authenticated;
+grant execute on function public.premium_status(text)         to authenticated;
 
 revoke all on function public.delete_my_account()          from public;
 revoke all on function public.merge_account(uuid, uuid)    from public;

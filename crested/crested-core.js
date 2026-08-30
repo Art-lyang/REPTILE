@@ -108,11 +108,28 @@ const CR_G_AXANTHIC = {
 };
 
 /* --- 1-4. 추가 유전자 (리서치 검증 · 기본 꺼짐) --- */
-const CR_G_EXTRA = [
-  { id:'whiteout', kind:'bi', type:'incdom', core:false, proof:'partial', order:6,
-    ko:'화이트아웃', en:'Whiteout', ja:'ホワイトアウト', zh:'Whiteout',
-    superKo:'화이트월', superEn:'Whitewall', superJa:'ホワイトウォール', superZh:'白墙' },
+const CR_REMOVED_GENE_IDS = new Set(['whiteout']);
+const CR_LOCKED_GENE_LABELS = {
+  fire:{ ko:'하이포', superKo:'슈퍼하이포' },
+};
+const CR_LOCKED_GENE_STRUCTURE = {
+  pied:{ type:'incdom', proof:'partial' },
+};
 
+function crApplyLockedGeneLabels(gene){
+  const labels=CR_LOCKED_GENE_LABELS[gene.id];
+  if(!labels) return gene;
+  Object.keys(labels).forEach(key=>{ gene[key]=labels[key]; });
+  return gene;
+}
+function crApplyLockedGeneStructure(gene){
+  const fields=CR_LOCKED_GENE_STRUCTURE[gene.id];
+  if(!fields) return gene;
+  Object.keys(fields).forEach(key=>{ gene[key]=fields[key]; });
+  return gene;
+}
+
+const CR_G_EXTRA = [
   { id:'empty_back', kind:'bi', type:'incdom', core:false, proof:'partial', order:7,
     ko:'엠티백', en:'Empty Back', ja:'エンプティバック', zh:'空背',
     superKo:'슈퍼 엠티백', superEn:'Super Empty Back', superJa:'スーパーエンプティバック', superZh:'超级空背' },
@@ -124,20 +141,22 @@ const CR_G_EXTRA = [
            ja:'斑点の<b>有無</b>は優性遺伝ですが、斑点の<b>数・大きさ</b>は多因子です。「スーパーダルメシアン」はホモではなく、斑点が多いという意味に過ぎません。',
            zh:'斑点的<b>有无</b>为显性遗传，但斑点的<b>数量与大小</b>是多基因决定的。"超级大麦町"只表示斑点很多，<b>并非</b>纯合个体。' } },
 
-  { id:'pied', kind:'bi', type:'rec', core:false, proof:'contested', order:9,
+  { id:'pied', kind:'bi', type:'incdom', core:false, proof:'partial', order:9,
     ko:'파이드', en:'Pied', ja:'パイド', zh:'花斑',
-    hetKo:'헷파이드', hetEn:'het Pied', hetJa:'ヘテロパイド', hetZh:'携带花斑' },
+    superKo:'슈퍼 파이드', superEn:'Super Pied', superJa:'スーパーパイド', superZh:'超级花斑' },
 
   { id:'fire', kind:'bi', type:'incdom', core:false, proof:'contested', order:10,
-    ko:'파이어 (제네틱 하이포)', en:'Fire (Genetic Hypo)', ja:'ファイア（ジェネティックハイポ）', zh:'Fire（基因型低黑化）',
-    superKo:'슈퍼파이어 (BEL)', superEn:'Super Fire (BEL)', superJa:'スーパーファイア（BEL）', superZh:'超级 Fire（黑眼白化）',
+    ko:'하이포', en:'Fire (Genetic Hypo)', ja:'ファイア（ジェネティックハイポ）', zh:'Fire（基因型低黑化）',
+    superKo:'슈퍼하이포', superEn:'Super Fire (BEL)', superJa:'スーパーファイア（BEL）', superZh:'超级 Fire（黑眼白化）',
     warnOnSuper:'W5' },
 ];
 
 /* 사용할 유전자 전체 목록 (표기 순서 = order) */
 function CR_ALL_GENES(){
   return [CR_G_LILLY, CR_G_CS, CR_G_PHANTOM, CR_G_CHOCHO, CR_G_AXANTHIC]
-    .concat(CR_G_EXTRA).sort((a,b)=>a.order-b.order);
+    .concat(CR_G_EXTRA)
+    .filter(g=>!CR_REMOVED_GENE_IDS.has(g.id))
+    .sort((a,b)=>a.order-b.order);
 }
 
 /* 부모로 고를 수 있는 유전형인지 — 슈퍼폼이 치사인 형질은 부모가 될 수 없습니다 */
@@ -214,6 +233,7 @@ const CR_TRAITS = [
   { id:'solidback',   grp:'struct', ko:'솔리드백',      en:'Solid Back',      ja:'ソリッドバック',      zh:'Solid Back' },
   { id:'porthole',    grp:'struct', ko:'화이트포트홀',  en:'White Porthole',  ja:'ホワイトポートホール', zh:'白舷窗' },
   { id:'whitecrown',  grp:'struct', ko:'화이트크라운',  en:'White Crown',     ja:'ホワイトクラウン',    zh:'白冠' },
+  { id:'whitewall',   grp:'struct', ko:'화이트 월',     en:'White Wall',      ja:'ホワイトウォール',     zh:'白墙' },
 
   /* --- 베이스 컬러 --- */
   { id:'red',        grp:'color', ko:'레드',        en:'Red',        ja:'レッド',        zh:'红色' },
@@ -247,7 +267,7 @@ const CR_COMBOS = [
   { tokens:['lilly','axanthic'],
     ko:'릴잔틱', en:'Lilyxanthic', ja:'リリーアザンティック', zh:'莉莉无黄化', proof:'partial' },
   { tokens:['super_cappuccino','lilly'],
-    ko:'소락', en:'Sorak', ja:'ソラク', zh:'Sorak', proof:'contested', warn:'W3' },
+    ko:'설악', en:'Sorak', ja:'ソラク', zh:'Sorak', proof:'contested', warn:'W3' },
 ];
 
 /* ============================================================================
@@ -257,14 +277,14 @@ const CR_COLOR = {
   lilly:'#EFE6D8', super_lilly:'#F6F2EA',
   cappuccino:'#8A6A50', super_cappuccino:'#5C4433', sable:'#4A3A2E', super_sable:'#33271F', luwak:'#6E5340',
   phantom:'#8E8478', chocho:'#6B4A3E', axanthic:'#A9AAA4',
-  whiteout:'#E8E2D4', super_whiteout:'#F4F1E9', empty_back:'#C9A878', super_empty_back:'#D6BA92',
-  dalmatian:'#C7A87A', pied:'#DCCFB4', fire:'#D9A05B', super_fire:'#EDE7DA',
+  empty_back:'#C9A878', super_empty_back:'#D6BA92',
+  dalmatian:'#C7A87A', pied:'#DCCFB4', super_pied:'#EFE9DC', fire:'#D9A05B', super_fire:'#EDE7DA',
   patternless:'#C08E55', bicolor:'#C9A063', tricolor:'#D2AE72', supertricolor:'#DBB87E',
   flame:'#C98A3C', harlequin:'#C4762F', exharlequin:'#CE7A24', hypo:'#E0B372', superhypo:'#E8BE79',
   tiger:'#C98F3A', brindle:'#9A7A4A', superdal:'#BFA070',
   pinstripe:'#C89A55', fullpin:'#CFA054', whitepin:'#E4D8C0', superstripe:'#CB9A4F',
   quad:'#C79A5A', drippy:'#C08F63', whitespot:'#DCD2BE',
-  solidback:'#B98E56', porthole:'#E0D6C2', whitecrown:'#E6DCC8',
+  solidback:'#B98E56', porthole:'#E0D6C2', whitecrown:'#E6DCC8', whitewall:'#EFE8DC',
   red:'#A83E2A', orange:'#D2762A', yellow:'#DFB43F', cream:'#E4D2AC', creamsicle:'#E0A469',
   strawberry:'#C2543F', halloween:'#B4581F', buckskin:'#B08E5E', charcoal:'#4E4A44',
   dark:'#6A5F52', black:'#2C2825', white:'#EFECE4',
@@ -294,11 +314,11 @@ function crProfile(tokens, traits){
   if(has('super_fire'))  base='#EDE7DA';
   if(has('super_lilly')) base='#F6F2EA';
 
-  const white  = has('lilly')||has('super_lilly')||has('whiteout')||has('super_whiteout')||has('pied')||hasT('whitepin');
+  const white  = has('lilly')||has('super_lilly')||has('pied')||hasT('whitepin')||hasT('whitewall');
   const spots  = has('dalmatian')||hasT('superdal')||hasT('whitespot')||hasT('drippy');
   const stripe = hasT('pinstripe')||hasT('fullpin')||hasT('quad')||hasT('superstripe')||hasT('whitepin');
   const flame  = hasT('flame')||hasT('harlequin')||hasT('exharlequin')||hasT('tiger')||hasT('bicolor');
-  const plain  = hasT('patternless')||has('super_lilly')||has('super_whiteout');
+  const plain  = hasT('patternless')||has('super_lilly');
   const eye    = has('axanthic') ? '#4A4C4E' : has('super_fire') ? '#1A1714' : '#3A2E22';
   return { base, white, spots, stripe, flame, plain, eye,
            dense: hasT('superdal')||hasT('exharlequin') };
@@ -470,6 +490,36 @@ function crParentTokens(side){
   return s;
 }
 
+/* --- 콤보를 부모에 적용 (crParentTokens 의 역방향) ---
+   토큰 규칙은 위 crParentTokens 와 짝입니다. 한쪽만 고치면 칩을 눌러도
+   그 콤보로 안 잡히는, 설명하기 어려운 상태가 됩니다.
+
+   먼저 전부 비우고 시작합니다. 남겨 두면 이전 선택이 섞여서 누른 콤보와
+   다른 결과가 나옵니다 — 사용자는 칩을 눌렀는데 왜 다른지 알 수 없습니다. */
+function crApplyCombo(side, combo){
+  const genes = CR_ALL_GENES();
+  genes.forEach(g => { CR_STATE[side][g.id] = 'nn'; });
+
+  combo.tokens.forEach(function(token){
+    for (const g of genes){
+      if (g.kind === 'multi'){
+        /* 카푸치노·세이블처럼 한 자리를 여러 대립유전자가 나눠 쓰는 경우 */
+        const hit = Object.keys(g.genos || {}).find(k => (g.genos[k] || {}).token === token);
+        if (hit){ CR_STATE[side][g.id] = hit; return; }
+        continue;
+      }
+      if (g.type === 'rec'){
+        if (token === g.id){ CR_STATE[side][g.id] = 'mm'; return; }
+      } else if (g.type === 'incdom'){
+        if (token === g.id){ CR_STATE[side][g.id] = 'het'; return; }
+        if (token === 'super_' + g.id){ CR_STATE[side][g.id] = 'mm'; return; }
+      } else if (token === g.id){
+        CR_STATE[side][g.id] = 'yes'; return;
+      }
+    }
+  });
+}
+
 /* --- 모프 이름 조립 --- */
 function crJoin(parts){
   if(!parts.length) return null;
@@ -528,13 +578,13 @@ const CR_DANGER = {
     zh:'🛑 <b>莉莉白 × 莉莉白</b> — 约25%的后代为超级莉莉白（纯合）。超级莉莉白通常无法孵化，即使孵出也会出现呼吸困难、运动能力差、拒食等情况，一般在数天至一周内死亡。目前没有长期存活的记录。不建议进行此配对。' },
 
   W2:{ level:'high',
-    ko:'⚠️ 이 조합은 <b>슈퍼카푸치노</b>를 낼 수 있습니다. 약 100마리 표본 조사에서 슈퍼카푸치노·소락 개체의 약 11%가 콧구멍 이상(일부는 구조적 결손이 아니라 탈피 잔여물), 3% 미만이 스펙타클 아이를 보였다는 보고가 있습니다. 슈퍼 개체는 크레스트 감소·긴 꼬리·무른 비늘도 함께 나타나는 편입니다. 진행하실 경우 근친 교배를 피하고 20.5~21.7℃(69~71℉)의 저온 인큐베이팅과 구조 개선을 위한 아웃크로스를 권장합니다.',
+    ko:'⚠️ 이 조합은 <b>슈퍼카푸치노</b>를 낼 수 있습니다. 약 100마리 표본 조사에서 슈퍼카푸치노·설악 개체의 약 11%가 콧구멍 이상(일부는 구조적 결손이 아니라 탈피 잔여물), 3% 미만이 스펙타클 아이를 보였다는 보고가 있습니다. 슈퍼 개체는 크레스트 감소·긴 꼬리·무른 비늘도 함께 나타나는 편입니다. 진행하실 경우 근친 교배를 피하고 20.5~21.7℃(69~71℉)의 저온 인큐베이팅과 구조 개선을 위한 아웃크로스를 권장합니다.',
     en:'⚠️ This pairing can produce <b>Super Cappuccino</b>. In a survey of roughly 100 animals, about 11% of Super Cappuccino / Sorak individuals showed nostril abnormalities (some of which were stuck shed rather than structural occlusion) and under 3% showed spectacle eye. Supers also tend to show reduced crest, a longer tail and soft scale. If you proceed: avoid inbreeding, incubate cooler (69–71°F / 20.5–21.7°C), and outcross for structure.',
     ja:'⚠️ この組み合わせは<b>スーパーカプチーノ</b>を出す可能性があります。約100個体の調査では、スーパーカプチーノおよびソラクの約11%に鼻孔の異常（一部は構造的欠損ではなく脱皮不全の残留）、3%未満にスペクタクルアイが見られたと報告されています。スーパー個体はクレストの減少・尾の伸長・柔らかい鱗も伴う傾向があります。実施される場合は近親交配を避け、20.5〜21.7℃（69〜71℉）の低温インキュベートと、構造改善のためのアウトクロスを推奨します。',
     zh:'⚠️ 此配对可能产出<b>超级卡布奇诺</b>。在约100只个体的调查中，超级卡布奇诺及 Sorak 个体中约11%出现鼻孔异常（部分为蜕皮残留而非结构性闭塞），不足3%出现眼罩积液。超级个体还常伴有背嵴减少、尾部偏长、鳞片柔软等特征。若仍要进行：请避免近亲繁殖，采用较低温度孵化（20.5~21.7℃／69~71℉），并通过外血改善体型结构。' },
 
   W3:{ level:'high',
-    ko:'⚠️ <b>소락(슈퍼카푸치노 릴리)</b>은 슈퍼카푸치노의 콧구멍·안구 위험을 그대로 물려받습니다. 또한 ‘소락’은 브리더 사이의 통용어일 뿐 기초 유전 자료에 정리된 공식 명칭이 아닙니다. 윤리적 이유로 이 조합의 생산을 피하는 브리더가 많습니다.',
+    ko:'⚠️ <b>설악(슈퍼카푸치노 릴리)</b>은 슈퍼카푸치노의 콧구멍·안구 위험을 그대로 물려받습니다. 또한 ‘설악’은 브리더 사이의 통용어일 뿐 기초 유전 자료에 정리된 공식 명칭이 아닙니다. 윤리적 이유로 이 조합의 생산을 피하는 브리더가 많습니다.',
     en:'⚠️ <b>Sorak (Super Cappuccino Lilly White)</b> inherits the full nostril and eye risk profile of Super Cappuccino. "Sorak" is also breeder slang rather than a name settled in the foundation-genetics documentation. Many breeders decline to produce this combination on ethical grounds.',
     ja:'⚠️ <b>ソラク（スーパーカプチーノ・リリーホワイト）</b>は、スーパーカプチーノの鼻孔および眼のリスクをそのまま受け継ぎます。また「ソラク」はブリーダー間の通称であり、基礎遺伝資料に整理された正式名ではありません。倫理的理由からこの組み合わせを避けるブリーダーも多くいます。',
     zh:'⚠️ <b>Sorak（超级卡布奇诺莉莉白）</b>会完整继承超级卡布奇诺的鼻孔与眼部风险。此外，"Sorak" 只是繁育者之间的俗称，并未被基础遗传学资料正式收录。许多繁育者出于伦理考虑拒绝产出此组合。' },
@@ -546,7 +596,7 @@ const CR_DANGER = {
     zh:'ℹ️ <b>ChoCho 与无黄化</b>均为隐性基因，且奠基种群非常小。为获得显性个体而反复近亲繁殖，可能导致近交衰退（包括繁殖力下降）。这并非已确认的基因缺陷，但仍建议做好血统管理。此外无黄化存在多个品系（AE／MSL／Obscurial），品系间的兼容性尚未验证 — 本计算假设其为同一基因座。' },
 
   W5:{ level:'med',
-    ko:'ℹ️ <b>슈퍼파이어(블랙아이 루시스틱)</b>는 표본 수가 매우 적고 독립적인 재현 사례가 없습니다. 릴리화이트의 슈퍼 개체가 생존하지 못한 전례를 고려하면, 이 조합을 목표로 삼기 전에 생존성에 대한 확인이 필요합니다.',
+    ko:'ℹ️ <b>슈퍼하이포(블랙아이 루시스틱)</b>는 표본 수가 매우 적고 독립적인 재현 사례가 없습니다. 릴리화이트의 슈퍼 개체가 생존하지 못한 전례를 고려하면, 이 조합을 목표로 삼기 전에 생존성에 대한 확인이 필요합니다.',
     en:'ℹ️ <b>Super Fire (Black-Eyed Leucistic)</b> rests on a very small sample with no independent replication. Given the Lilly White precedent, its viability deserves independent confirmation before breeding toward it.',
     ja:'ℹ️ <b>スーパーファイア（ブラックアイリューシスティック）</b>は標本数が極めて少なく、独立した再現例がありません。リリーホワイトのスーパー個体が生存できなかった前例を踏まえると、この組み合わせを目指す前に生存性の確認が必要です。',
     zh:'ℹ️ <b>超级 Fire（黑眼白化）</b>目前样本极少，且没有独立复现记录。考虑到莉莉白超级个体无法存活的先例，在朝该方向繁育之前应先确认其存活能力。' },

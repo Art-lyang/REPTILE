@@ -59,9 +59,30 @@
     return changed;
   }
 
+  /* 문구가 확정됐음을 알리는 신호.
+     -------------------------------------------------------------------------
+     화면(*-ui.js)은 app.js 보다 먼저 실행돼서, 코드에 박힌 기본 문구로 업데이트
+     노트를 그리고 곧바로 띄웁니다. 그 뒤 app.js 가 서버 문구를 받아 다시 그리기
+     때문에, 읽고 있는 도중에 내용이 바뀌었습니다. 자동으로 띄우는 쪽이 이 신호를
+     기다렸다 열면 그 깜빡임이 사라집니다.
+
+     resolve 를 setTimeout 0 으로 미루는 이유: load() 의 then 안에서 바로 알리면
+     소비자가 걸어 둔 .then(applyLang) 보다 내 콜백이 먼저 깨어납니다(같은
+     마이크로태스크 줄에서 내가 앞). 그러면 기다린 보람 없이 기본 문구가 잠깐
+     보입니다. 한 틱 미루면 applyLang 이 끝난 뒤에 열립니다. */
+  var settled = false;
+  var resolveReady;
+  var readyPromise = new Promise(function (resolve) { resolveReady = resolve; });
+
+  function markReady(changed) {
+    if (settled) return;
+    settled = true;
+    global.setTimeout(function () { resolveReady(!!changed); }, 0);
+  }
+
   global.StudioText = {
     load: function (sb, service, I18N) {
-      if (!sb || !I18N) return Promise.resolve(false);
+      if (!sb || !I18N) { markReady(false); return Promise.resolve(false); }
       return Promise.all([
         sb.from('ui_texts').select('*').eq('service', service),
         sb.from('update_notes').select('*').eq('service', service).order('ord')
@@ -69,8 +90,22 @@
         var changed = false;
         if (!res[0].error && applyTexts(res[0].data, I18N)) changed = true;
         if (!res[1].error && applyNotes(res[1].data, I18N)) changed = true;
+        markReady(changed);
         return changed;
-      }).catch(function () { return false; });
+      }).catch(function () { markReady(false); return false; });
+    },
+
+    /* 문구가 확정될 때까지 기다립니다. 정해진 시간을 넘기면 기본 문구로 진행합니다.
+       느린 회선에서 안내창이 안 뜨는 것보다, 기본 문구로라도 뜨는 편이 낫습니다.
+       load() 가 아예 호출되지 않는 경우(백엔드 미설정)도 이 시간제한이 받습니다. */
+    whenReady: function (timeoutMs) {
+      if (settled) return readyPromise;
+      return Promise.race([
+        readyPromise,
+        new Promise(function (resolve) {
+          global.setTimeout(function () { resolve(false); }, timeoutMs || 1200);
+        })
+      ]);
     }
   };
 })(window);

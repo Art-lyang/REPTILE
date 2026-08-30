@@ -3,41 +3,32 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<!-- ⚠️ 테스트 공개 중 — 비밀번호 잠금.
-     케어 화면과 같은 잠금(assets/gate.js)을 씁니다. 다른 스크립트보다 먼저
-     놓아야 화면이 한 번 번쩍 보였다가 가려지는 일이 없습니다.
-     ※ 이건 보안이 아니라 '가려두는 것' 입니다. 자세한 내용은 gate.js 머리말.
-
-     정식 공개할 때 지울 것 — 이 <script> 한 줄, 아래 robots 의 noindex,
-     그리고 tools/build_langs.py 의 GATED 목록에서 'ballpython'. 셋을 함께
-     되돌려야 검색엔진이 이 주소를 다시 보게 됩니다. -->
-<script src="/assets/gate.js?v=1"></script>
 <title>볼파이톤 모프 계산기 · Ball Python Morph Calculator</title>
 <link rel="icon" type="image/png" sizes="32x32" href="/assets/logo-mark-32.png">
 <link rel="icon" type="image/png" sizes="512x512" href="/assets/logo-mark.png">
 <link rel="apple-touch-icon" href="/assets/logo-mark-180.png">
-<meta name="description" content="볼파이톤(볼 파이썬) 부모의 형질을 골라 새끼 모프 확률을 계산합니다. 60가지가 넘는 유전자를 검색으로 찾고, 스파이더 워블·데저트 암컷 불임·슈퍼 시나몬 기형 같은 유전 건강 이슈를 함께 알려줍니다.">
-<meta name="keywords" content="볼파이톤, 볼파이썬, 볼파이톤 모프, 모프 계산기, 파스텔, 모하비, 파이볼드, 클라운, 알비노, 스파이더 워블, 데저트 불임, BEL, 아이보리, ball python morph calculator">
+<meta name="description" content="볼파이톤 부모의 형질을 골라 새끼 모프 확률을 계산합니다. 60가지가 넘는 유전자를 검색으로 찾고, 스파이더 워블·데저트 암컷 불임·슈퍼 시나몬 기형 같은 유전 건강 이슈를 함께 알려줍니다.">
+<meta name="keywords" content="볼파이톤, 볼파이톤 모프, 모프 계산기, 파스텔, 모하비, 파이볼드, 클라운, 알비노, 스파이더 워블, 데저트 불임, BEL, 아이보리, ball python morph calculator">
 <meta name="author" content="RYANG STUDIO">
-<!-- 테스트 공개 중이라 색인을 막아 둡니다. 잠긴 화면이 검색에 걸리면
-     들어와도 비밀번호 창만 보게 되고, 그 인상이 그대로 색인에 남습니다.
-     정식 공개할 때 아래 한 줄을 원래대로 되돌리세요.
-     <meta name="robots" content="index, follow, max-image-preview:large"> -->
-<meta name="robots" content="noindex, nofollow">
+<meta name="robots" content="index, follow, max-image-preview:large">
 <link rel="canonical" href="https://ryangstudio.com/ballpython/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="RYANG STUDIO">
 <meta property="og:title" content="볼파이톤 모프 계산기 · RYANG STUDIO">
 <meta property="og:description" content="볼파이톤 부모의 형질을 골라 새끼 모프 확률을 계산합니다. 모프 검색과 유전 건강 이슈 안내를 함께 제공합니다.">
 <meta property="og:url" content="https://ryangstudio.com/ballpython/">
-<meta property="og:image" content="https://ryangstudio.com/assets/og-studio.jpg">
-  <meta property="og:image:width" content="1200">
-  <meta property="og:image:height" content="630">
+<!-- 공유 카드는 tools/make_og.py 가 만든 불투명 1200x630 을 씁니다.
+     헤더용 hero PNG 를 그대로 쓰면 배경이 투명해서 카카오톡·X 가 검정으로
+     메웁니다. hero 를 바꿨다면 make_og.py 를 다시 돌리세요. -->
+<meta property="og:image" content="https://ryangstudio.com/assets/og-ballpython-v1.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="나뭇가지에 감긴 볼파이톤">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="볼파이톤 모프 계산기 · RYANG STUDIO">
 <meta name="twitter:description" content="볼파이톤 부모의 형질을 골라 새끼 모프 확률을 계산합니다.">
-<meta name="twitter:image" content="https://ryangstudio.com/assets/og-studio.jpg">
+<meta name="twitter:image" content="https://ryangstudio.com/assets/og-ballpython-v1.jpg">
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <script type="application/ld+json">
 {
@@ -57,23 +48,20 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 <!-- ?v=… 는 캐시 무효화용입니다. js/css 를 고쳐 올릴 때마다 숫자를 바꿔주세요.
      (안 바꾸면 이미 방문했던 사람의 브라우저가 예전 파일을 계속 씁니다) -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="../assets/studio-config.js?v=113119"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.8/dist/umd/supabase.js"></script>
+<script src="../assets/studio-config.js?v=20260810k"></script>
 <script src="ball-core.js?v=072902"></script>
-<script src="../assets/analytics.js?v=113119"></script>
-<script src="../assets/uitext.js?v=160549"></script>
+<script src="../assets/analytics.js?v=20260809x"></script>
+<script src="../assets/uitext.js?v=20260806b"></script>
 <script src="ball-boot.js?v=072901"></script>
-<link rel="stylesheet" href="../assets/base.css?v=013848">
-<link rel="stylesheet" href="ball.css?v=072901">
-<link rel="stylesheet" href="../assets/theme.css?v=025334">
+<link rel="stylesheet" href="../assets/base.css?v=20260810e">
+<link rel="stylesheet" href="ball.css?v=07302330">
+<link rel="stylesheet" href="../assets/theme.css?v=20260809x">
 </head>
 <body class="bp">
 <header>
   <img class="hd-deco leaf" src="../assets/leaf.svg" alt="" aria-hidden="true">
-  <!-- 다른 계산기는 여기에 전신 컷아웃 사진(.hd-deco.hero)이 들어갑니다.
-       볼파이톤 사진이 준비되면 아래 주석을 풀고 assets 에 파일을 올려주세요.
-       ball.css 의 body.bp .hd-txt 규칙(제목 폭)도 같이 지워야 합니다.
-  <img class="hd-deco hero" src="../assets/ballpython-hero-v1.png" alt="" aria-hidden="true" loading="eager"> -->
+  <img class="hd-deco hero" src="../assets/ballpython-hero-v1.png" alt="" aria-hidden="true" loading="eager">
   <div class="hd">
     <div class="hd-txt">
       <h1 id="h-title">볼파이톤 모프 계산기</h1>
@@ -81,6 +69,14 @@
     </div>
     <div class="hd-btns">
       <a class="blink home" href="/" title="량 스튜디오"><i class="bi bi-house" aria-hidden="true"></i><span>스튜디오</span></a>
+      <!-- 로그인 / 내 정보. 라벨과 아이콘은 assets/account-btn.js 가 채웁니다. -->
+      <a class="blink" data-account-btn hidden></a>
+      <!-- 회원가입. assets/signup-cta.js 가 채우고, 로그인한 사람에게는
+           나오지 않습니다. -->
+      <a class="blink" data-signup-btn hidden></a>
+      <!-- 브리딩 관리로 가는 길. 네 종 모두 브리딩 관리가 되는데
+           레오파드에만 이 버튼이 있었습니다. assets/breeding-btn.js 참고. -->
+      <a class="blink" data-breeding-btn data-species="ballpython" hidden></a>
       <button class="blink" id="btn-upd" onclick="openUpd()"><i class="bi bi-file-earmark-text" aria-hidden="true"></i></button>
       <button class="langbtn" id="langBtn" aria-label="Language" title="Language">
         <i class="bi bi-globe2" aria-hidden="true"></i>
@@ -91,10 +87,10 @@
   </div>
   <div class="langmenu" id="langMenu">
     <div class="mtitle" id="lbl-langtitle">Language</div>
-    <button data-lang="ko">한국어</button>
-    <button data-lang="en">English</button>
-    <button data-lang="ja">日本語</button>
-    <button data-lang="zh">中文</button>
+    <a data-lang="ko" href="/ballpython/">한국어</a>
+    <a data-lang="en" href="/en/ballpython/">English</a>
+    <a data-lang="ja" href="/ja/ballpython/">日本語</a>
+    <a data-lang="zh" href="/zh/ballpython/">中文</a>
   </div>
 </header>
 
@@ -144,7 +140,6 @@
           <h2><span class="dot a"></span> <span id="lbl-pa"></span></h2>
           <div class="card-role" id="lbl-pa-role"></div>
         </div>
-        <button type="button" class="helpbtn" onclick="toggleOptNote()"><i class="bi bi-info-circle" aria-hidden="true"></i><span id="lbl-help"></span></button>
       </div>
       <!-- 검색창은 #parentA 바깥에 둡니다. 안에 두면 칩을 누를 때마다 카드가
            다시 그려지면서 입력 중이던 글자와 커서가 사라집니다. -->
@@ -186,7 +181,6 @@
           <h2><span class="dot b"></span> <span id="lbl-pb"></span></h2>
           <div class="card-role" id="lbl-pb-role"></div>
         </div>
-        <button type="button" class="helpbtn" onclick="toggleOptNote()"><i class="bi bi-info-circle" aria-hidden="true"></i><span id="lbl-help2"></span></button>
       </div>
       <div class="searchbar">
         <i class="bi bi-search sicon" aria-hidden="true"></i>
@@ -229,7 +223,7 @@
        JS 로 그리는 부분과 달리 첫 요청에서 바로 색인됩니다. -->
   <section class="seo-intro">
     <h2>볼파이톤 모프 계산기</h2>
-    <p>볼파이톤(볼 파이썬) 부모의 형질을 고르면 새끼 모프와 확률을 계산합니다. 파스텔·모하비·파이볼드·클라운·알비노 등 60가지가 넘는 유전자를 검색으로 찾아 고를 수 있고, 스파이더 워블·데저트 암컷 불임·슈퍼 시나몬 기형 같은 유전 건강 이슈를 함께 알려줍니다. 한국어·영어·중국어·일본어를 지원하며 회원가입 없이 무료로 쓸 수 있습니다.</p>
+    <p>볼파이톤 부모의 형질을 고르면 새끼 모프와 확률을 계산합니다. 파스텔·모하비·파이볼드·클라운·알비노 등 60가지가 넘는 유전자를 검색으로 찾아 고를 수 있고, 스파이더 워블·데저트 암컷 불임·슈퍼 시나몬 기형 같은 유전 건강 이슈를 함께 알려줍니다. 한국어·영어·중국어·일본어를 지원하며 회원가입 없이 무료로 쓸 수 있습니다.</p>
   </section>
 
   <footer id="footer">확률은 멘델 유전 법칙에 따른 이론값입니다 · 라인브리딩(폴리제닉) 형질은 확률 계산 대상이 아닙니다</footer>
@@ -259,7 +253,11 @@
   </div>
 </div>
 
-<script src="ball-ui.js?v=072902"></script>
-<script src="ball-app.js?v=072901"></script>
+<script src="/assets/result-card.js?v=20260810a"></script>
+<script src="ball-ui.js?v=20260810e"></script>
+<script src="ball-app.js?v=20260806c"></script>
+<script src="../assets/account-btn.js?v=20260806c"></script>
+<script src="../assets/breeding-btn.js?v=20260809x"></script>
+<script src="../assets/signup-cta.js?v=20260810i" data-nudge></script>
 </body>
 </html>

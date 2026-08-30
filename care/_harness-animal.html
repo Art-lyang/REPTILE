@@ -7,20 +7,83 @@
 <meta name="robots" content="noindex, nofollow">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-<link rel="stylesheet" href="care.css?v=5">
+  <link rel="stylesheet" href="care.css?v=20260810m">
+  <link rel="stylesheet" href="animal-weight-date.css?v=20260804a">
+  <link rel="stylesheet" href="animal-calendar.css?v=20260803c">
+  <link rel="stylesheet" href="animal-record-dialog.css?v=20260803a">
+  <link rel="stylesheet" href="animal-feeding-dialog.css?v=20260803c">
+  <link rel="stylesheet" href="public-card-export.css?v=20260803a">
+  <link rel="stylesheet" href="pedigree-certificate.css?v=20260808a">
+  <link rel="stylesheet" href="medical-report.css?v=20260809a">
+  <link rel="stylesheet" href="animal-transfer.css?v=20260810d">
+<script src="care-i18n-ko.js?v=20260810m"></script>
+<script src="care-i18n-en.js?v=20260810m"></script>
+<script src="care-i18n-zh.js?v=20260810m"></script>
+<script src="care-i18n-ja.js?v=20260810m"></script>
+<script src="care-i18n.js?v=20260803m"></script>
+<script>window.CareI18n.initialize('animalPageTitle');</script>
+<script src="animal-life-stage.js?v=20260803a"></script>
 </head>
 <body>
 <header><div class="hd"><div class="hd-txt">
   <h1 id="aname">개체</h1><div class="sub" id="asub"></div>
-</div></div></header>
+</div><div class="hd-btns"><a class="blink" id="animalEdit" href="/care/#animals">개체 수정</a><a class="blink" id="animalShare" href="#share-card">QR</a></div></div></header>
 <div class="wrap"><div id="body"></div></div>
 <div id="toast"></div>
-<script src="care-core.js?v=5"></script>
+<script src="/assets/imgtool.js?v=20260809x"></script>
+<script src="/assets/photo.js?v=20260731c"></script>
+<script src="care-photos.js?v=20260731d"></script>
+<script src="care-core.js?v=20260809x"></script>
+<script src="date-field.js?v=20260807c"></script>
+<script src="care-animal-edit-route.js?v=20260803a"></script>
+<script src="animal-record-dialog.js?v=20260803a"></script>
+<script src="animal-feeding-dialog.js?v=20260807c"></script>
+<script src="animal-calendar.js?v=20260803c"></script>
 <script>
 (function () {
   const C = window.CareCore, T = C.today();
   const ID = 'a1';
-  let animal = { id: ID, name: '노랑이', species: 'leopard', sex: 'female', hatch_date: '2024-05-02',
+  /* 족보용 가계도 — 외조부를 조부와 같게 두어 근친 표시를 확인합니다 */
+  const kin = [
+    { id:'ff', name:'조부', species:'leopard', sex:'male' },
+    { id:'fm', name:'조모', species:'leopard', sex:'female' },
+    { id:'mm', name:'외조모', species:'leopard', sex:'female' },
+    { id:'f',  name:'아비', species:'leopard', sex:'male',   parent_a:'ff', parent_b:'fm' },
+    { id:'m',  name:'어미', species:'leopard', sex:'female', parent_a:'ff', parent_b:'mm' },
+    { id:'x',  name:'짝',   species:'leopard', sex:'female' },
+    { id:'k1', name:'새끼1', species:'leopard', parent_a:ID, parent_b:'x' },
+    { id:'k2', name:'새끼2', species:'leopard', parent_a:'x', parent_b:ID }
+  ];
+  /* 4·5·6세대를 볼 수 있게 위로 더 올립니다. 조부모 셋에게서 시작해 세대마다
+     부모를 붙이되, 절반만 채웁니다 — 여섯 세대가 꽉 찬 기록을 가진 사람은
+     없어서, 다 채운 족보로 확인하면 실제와 다른 화면을 보게 됩니다.
+     이름에 세대를 적어 두어 어느 줄을 보고 있는지 화면에서 바로 읽힙니다. */
+  (function deepen() {
+    const byId = {}; kin.forEach(a => { byId[a.id] = a; });
+    let front = ['ff', 'fm', 'mm'];
+    for (let gen = 3; gen <= 6; gen++) {
+      const next = [];
+      front.forEach(function (id, i) {
+        ['a', 'b'].forEach(function (side, s) {
+          /* 절반만 채웁니다. 규칙으로 걸러야 확인할 때마다 같은 그림이 나옵니다. */
+          if ((i + s) % 2 && gen >= 5) return;
+          const pid = id + side;
+          byId[pid] = { id: pid, name: gen + '대·' + (s ? '모' : '부') + (i + 1),
+                        species: 'leopard', sex: s ? 'female' : 'male' };
+          kin.push(byId[pid]);
+          byId[id]['parent_' + side] = pid;
+          next.push(pid);
+        });
+      });
+      if (!next.length) break;
+      front = next;
+    }
+  })();
+  const demoPhoto = color => 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="900" height="600"><rect width="100%" height="100%" fill="' + color
+    + '"/><circle cx="450" cy="300" r="180" fill="#fff" opacity=".55"/></svg>');
+  let animal = { id: ID, parent_a:'f', parent_b:'m', name: '노랑이', species: 'leopard', sex: 'female', life_stage: 'adult', hatch_date: '2024-05-02',
+                 photo_url: demoPhoto('#dca64c'), photos: [demoPhoto('#70967d'), demoPhoto('#9b8063'), demoPhoto('#7489a5')],
                  note: '비공개 메모 — 새면 안 됨', is_public: true, is_listed: false,
                  public_note: '2024년 5월 해칭. 순한 편입니다.', public_breeder: true,
                  share_token: 'DEMOtoken1234567890ab' };
@@ -34,11 +97,23 @@
   records.push({ id: 'sg1', animal_id: ID, kind: 'symptom', detail: 'wobble', title: '관찰', done_date: C.addDays(T, -3) });
   const weights = [10,8,6,4,2,0].map((i, n) => ({ id: 'w' + n, animal_id: ID,
     measured_on: C.addDays(T, -i * 7), grams: 48 + n * 2.4 }));
+  weights.push({ id: 'w6', animal_id: ID, measured_on: T, measured_at: T + 'T21:00:00+09:00', grams: 60.5 });
+  const feeds = [
+    { id:'food-cgd', name:'망고 슈퍼푸드', kind:'staple', unit:'g', per_use:6, amount_left:84, is_active:true },
+    { id:'food-cricket', name:'귀뚜라미', kind:'staple', unit:'piece', per_use:4, amount_left:20, is_active:true }
+  ];
   const noop = async () => {};
   window.CareApp = { ready: true, user: { id: 'u1', email: 'demo@x' }, premium: { active: true, kind: 'sub' },
+    sb: { rpc: async name => name === 'public_animal' ? { data: {
+      name: animal.name, species: animal.species, sex: animal.sex, life_stage: animal.life_stage,
+      hatch_date: animal.hatch_date, morphs: ['이클립스', '탠저린'], hets: [], photo_url: animal.photo_url,
+      photos: animal.photos, note: animal.public_note, breeder: '량 스튜디오', clutch: '2024-A',
+      parents: { a: { name: '아비' }, b: { name: '어미' } },
+      latest_weight: { grams: 60.5, measured_on: T }, weight_history: []
+    }, error: null } : { data: null, error: new Error('Unknown RPC') } },
     device: () => 'd', friendly: e => String((e && e.message) || e), boot: async () => ({}), logVisit: () => {},
-    listAnimals: async () => [animal], listPlans: async () => plans,
-    listRecords: async () => records, listWeights: async () => weights,
+    listAnimals: async () => [animal].concat(kin), listPlans: async () => plans,
+    listRecords: async () => records, listWeights: async () => weights, listFeeds: async () => feeds,
     addRecord: async r => { records.push(Object.assign({ id: 'n' + records.length, done_date: T }, r)); },
     deleteRecord: noop, saveWeight: noop,
     setShare: async (id, pub, note, br, rot, listed) => {
@@ -46,9 +121,23 @@
         public_note: note, public_breeder: br, share_token: rot ? 'ROTATED' + Date.now() : animal.share_token });
     }
   };
-  history.replaceState(null, '', '?id=' + ID);
+  const harnessUrl = new URL(location.href);
+  harnessUrl.searchParams.set('id', ID);
+  history.replaceState(null, '', harnessUrl.pathname + harnessUrl.search + harnessUrl.hash);
 })();
 </script>
-<script src="animal-ui.js?v=5"></script>
+<script src="public-card-export.js?v=20260803a"></script>
+<script src="animal-hold.js?v=20260809a"></script>
+<script src="animal-legal.js?v=20260809a"></script>
+<script src="animal-legal-ui.js?v=20260809a"></script>
+<script src="pedigree-certificate.js?v=20260808a"></script>
+<script src="pedigree-certificate-ui.js?v=20260808a"></script>
+<script src="medical-report.js?v=20260809a"></script>
+<script src="medical-report-ui.js?v=20260809a"></script>
+<!-- 양도. 값과 화면을 나눠 둡니다 — 다른 문서들과 같은 짜임입니다. -->
+<script src="animal-transfer.js?v=20260810a"></script>
+<script src="animal-transfer-ui.js?v=20260810a"></script>
+<script src="animal-ui.js?v=20260810k"></script>
+<script src="public-card-export-ui.js?v=20260803a"></script>
 </body>
 </html>

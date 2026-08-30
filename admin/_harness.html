@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Admin members harness</title>
+  <style>
+    :root{--bg:#edeae1;--card:#fdfcf9;--card2:#f4f1e9;--ink:#26221d;--ink2:#8a8375;--hair:rgba(38,34,29,.08);--chipbd:rgba(38,34,29,.16);--teal:#0e7c7b;--eggplant:#6b5686;--warn-hi-bg:#fbeae3;--warn-hi-bd:#f0c3b2;--warn-hi-fg:#b4402a}
+    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,sans-serif}.wrap{max-width:720px;margin:auto;padding:16px}.apad{background:var(--card);border-radius:14px;padding:16px}.ain{width:100%;padding:11px 12px;border:1px solid var(--chipbd);border-radius:10px;background:var(--card2);color:var(--ink)}.abtn,.mini{border:0;border-radius:9px;padding:8px 11px;font-weight:700}.abtn{background:var(--teal);color:white}.abtn.ghost,.mini{background:#e8e5dd;color:var(--ink)}.mini.del{color:var(--warn-hi-fg)}.aerr{color:var(--warn-hi-fg)}
+  </style>
+  <link rel="stylesheet" href="admin-members.css">
+  <!-- 읽는 순서가 있습니다. i18n(문구 사전) → member-actions(조치 대화상자) →
+       members(화면). 앞의 둘이 빠져 있어서 이 하네스는 그동안 열리지도 않았습니다. -->
+  <script src="admin-members-i18n.js"></script>
+  <script src="admin-member-actions.js"></script>
+  <script src="admin-members.js"></script>
+</head>
+<body><main class="wrap"><div id="body" class="apad"></div></main>
+<script>
+  const ownerId='11111111-1111-4111-8111-111111111111';
+  let rows=[
+    {user_id:ownerId,email:'owner@example.com',name:'최고 관리자',nickname:'owner',phone:null,providers:['email'],created_at:'2026-07-01T00:00:00Z',last_sign_in_at:'2026-08-04T01:00:00Z',email_confirmed_at:'2026-07-01T00:01:00Z',account_status:'active',tier:'premium',premium_source:'admin',premium_until:null,is_admin:true,admin_role:'owner'},
+    {user_id:'22222222-2222-4222-8222-222222222222',email:'premium@example.com',name:'프리미엄 회원',nickname:'premium',phone:'010-0000-0000',providers:['email','google'],created_at:'2026-07-11T00:00:00Z',last_sign_in_at:'2026-08-03T12:00:00Z',email_confirmed_at:'2026-07-11T00:01:00Z',account_status:'active',tier:'premium',premium_source:'premium_code',premium_until:'2026-09-01T00:00:00Z',is_admin:false,agree_mkt_email:true},
+    {user_id:'33333333-3333-4333-8333-333333333333',email:'restricted@example.com',name:'제한 회원',nickname:'restricted',phone:null,providers:['kakao'],created_at:'2026-07-21T00:00:00Z',last_sign_in_at:'2026-08-01T09:00:00Z',email_confirmed_at:'2026-07-21T00:01:00Z',account_status:'restricted',tier:'general',is_admin:false},
+    {user_id:'44444444-4444-4444-8444-444444444444',email:'member@example.com',name:'일반 회원',nickname:'member',phone:null,providers:['email'],created_at:'2026-08-01T00:00:00Z',last_sign_in_at:null,email_confirmed_at:null,account_status:'active',tier:'general',is_admin:false}
+  ];
+  /* 개체 상한은 따로 받아 옵니다. 함수 이름으로 갈라 주지 않으면 회원 목록이
+     상한 자리에도 들어가서 화면이 엉뚱하게 그려집니다. */
+  const limits = { };
+  /* 닉네임 이력도 따로 옵니다. 세 상태를 다 담아 둡니다 — 이력이 없는 회원,
+     자동 부여만 있는 회원, 2회를 다 쓴 회원. 마지막 경우에 초기화 버튼이
+     살아 있는지가 이 화면에서 확인할 것입니다. */
+  const nicknames = {
+    '22222222-2222-4222-8222-222222222222': { used:2, items:[
+      {at:'2026-08-02T04:00:00Z', from:'프리미엄', to:'premium', kind:'user'},
+      {at:'2026-07-20T04:00:00Z', from:'행복한 집사 007', to:'프리미엄', kind:'user'},
+      {at:'2026-07-11T00:01:00Z', from:null, to:'행복한 집사 007', kind:'auto'}
+    ]},
+    '33333333-3333-4333-8333-333333333333': { used:0, items:[
+      {at:'2026-07-21T00:01:00Z', from:null, to:'느긋한 집사 001', kind:'auto'}
+    ]},
+    '44444444-4444-4444-8444-444444444444': { used:1, items:[
+      {at:'2026-08-03T09:00:00Z', from:'심심한 집사 002', to:'member', kind:'admin'},
+      {at:'2026-08-01T00:01:00Z', from:null, to:'심심한 집사 002', kind:'auto'}
+    ]}
+  };
+  const SB={
+    rpc:async(fn,args)=>{
+      if(fn==='admin_animal_limits') return {data:limits,error:null};
+      if(fn==='admin_nickname_changes') return {data:nicknames,error:null};
+      if(fn==='admin_reset_nickname_changes'){
+        if(nicknames[args.p_target]) nicknames[args.p_target].used=0;
+        return {data:{reset_at:'2026-08-07T00:00:00Z'},error:null};
+      }
+      if(fn==='admin_set_nickname'){
+        const row=rows.find(r=>r.user_id===args.p_target);
+        const before=row.nickname;
+        /* 비우면 서버가 새로 짓습니다. 관리자 변경은 used 를 올리지 않습니다. */
+        row.nickname=(args.p_nickname||'').trim()||'포근한 집사 042';
+        const e=nicknames[args.p_target]||(nicknames[args.p_target]={used:0,items:[]});
+        e.items.unshift({at:'2026-08-08T02:00:00Z',from:before,to:row.nickname,kind:'admin'});
+        return {data:{nickname:row.nickname},error:null};
+      }
+      if(fn==='admin_set_animal_limit'){
+        if(args.p_limit==null) delete limits[args.p_target];
+        else limits[args.p_target]=args.p_limit;
+        return {data:{override:args.p_limit},error:null};
+      }
+      return {data:rows,error:null};
+    },
+    auth:{getSession:async()=>({data:{session:{access_token:'test-token'}}})}};
+  window.fetch=async(_url,options)=>{const input=JSON.parse(options.body);const row=rows.find(item=>item.user_id===input.targetId);if(input.action==='restrict')row.account_status='restricted';if(input.action==='restore')row.account_status='active';if(input.action==='set_tier')row.tier=input.tier;if(input.action==='delete')rows=rows.filter(item=>item.user_id!==input.targetId);return new Response(JSON.stringify({ok:true}),{status:200,headers:{'Content-Type':'application/json'}})};
+  const esc=value=>String(value??'').replace(/[&<>"]/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[char]));
+  AdminMembers.render({SB,body:document.getElementById('body'),adminUser:{id:ownerId},esc,download:()=>{}});
+</script></body></html>

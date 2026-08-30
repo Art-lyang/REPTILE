@@ -28,3 +28,28 @@
 
   # 쓰지 않는 기능은 아예 꺼 둡니다.
   Permissions-Policy: geolocation=(), microphone=(), camera=(), payment=()
+
+  # 어디서 무엇을 불러올 수 있는지 못박습니다.
+  #
+  # ⚠️ 지금은 Report-Only 입니다. 위반해도 막지 않고 콘솔에만 알립니다.
+  #    실제로 깨지는 곳이 없는지 확인한 뒤 Content-Security-Policy 로 이름을
+  #    바꾸면 그때부터 차단됩니다. 이름만 바꾸면 됩니다.
+  #
+  # script-src 와 style-src 에 'unsafe-inline' 이 있는 이유 — 이 사이트는
+  # onclick 같은 인라인 핸들러가 165곳, 인라인 <script> 가 21곳, style="" 이
+  # 238곳입니다. nonce 나 해시로는 onclick 을 덮을 수 없어서, 그것들을 전부
+  # 걷어내기 전에는 뺄 수 없습니다. 즉 이 정책은 XSS 자체를 막지는 못합니다.
+  # 대신 값이 있는 쪽은 아래입니다.
+  #   connect-src  : 스크립트가 실행되더라도 데이터를 남의 서버로 못 보냅니다
+  #   object-src   : 플래시·플러그인 삽입을 막습니다
+  #   base-uri     : <base> 를 심어 모든 상대경로를 가로채는 수법을 막습니다
+  #   form-action  : 폼을 남의 서버로 제출하게 바꾸는 것을 막습니다
+  #   frame-ancestors : X-Frame-Options 와 같은 뜻이되, 최신 브라우저 기준입니다
+  #
+  # 허용한 출처는 실제로 쓰는 것만 넣었습니다(라이브에서 확인).
+  #   cdn.jsdelivr.net        : supabase-js, pretendard, bootstrap-icons(+폰트)
+  #   static.cloudflareinsights.com : Cloudflare 가 자동으로 넣는 방문 통계
+  #   icjuhsktqcfloiqdfxtm    : Supabase REST · 사진(서명 URL)
+  #   challenges.cloudflare.com : Turnstile. 지금은 꺼져 있지만 켤 때 필요합니다
+  #   blob: / data:           : 사진 자르기·카드 내보내기가 캔버스로 만듭니다
+  Content-Security-Policy-Report-Only: default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://static.cloudflareinsights.com https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; font-src 'self' data: https://cdn.jsdelivr.net; img-src 'self' data: blob: https://icjuhsktqcfloiqdfxtm.supabase.co; connect-src 'self' https://icjuhsktqcfloiqdfxtm.supabase.co https://cloudflareinsights.com; frame-src https://challenges.cloudflare.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'

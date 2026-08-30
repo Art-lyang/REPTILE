@@ -1,0 +1,470 @@
+<!-- 개체 양도·양수(매매) 계약서 서식 v1 — 2026-08-08
+
+     ⚠️ 변호사 검토 전 초안입니다. 서비스에 붙이기 전에 반드시 법률 검토를 받으세요.
+        지금은 "인쇄해서 손으로 채우는 종이" 로만 쓸 수 있는 상태입니다.
+
+     ── 이 파일을 이렇게 만든 이유 ────────────────────────────────────
+     1) 의존성 없는 단독 HTML 입니다. 브라우저로 열어 Ctrl+P 하면 A4 계약서가
+        그대로 나옵니다. 지금 당장 브리더가 쓸 수 있어야 하기 때문입니다.
+     2) 채워야 할 자리는 전부 <span class="fill" data-field="..."> 입니다.
+        나중에 앱에서 자동 채우기를 붙일 때 이 한 줄이면 끝나도록 만든 것입니다.
+
+            document.querySelectorAll('[data-field]').forEach(el => {
+              const v = pick(data, el.dataset.field);
+              if (v) { el.textContent = v; el.classList.add('is-filled'); }
+            });
+
+        data-field 이름은 plans/transfer-docs-roadmap.md 의 필드 매핑표와
+        1:1로 맞춰 두었습니다. 한쪽을 고치면 다른 쪽도 고치세요.
+     3) 값이 없으면 밑줄 빈칸으로 인쇄됩니다. 반쯤 채워 인쇄한 뒤 나머지를
+        손으로 적는 실제 거래 방식을 그대로 지원하기 위해서입니다.
+
+     ── 조항을 함부로 지우지 마세요 ──────────────────────────────────
+     제5조(고지·보증)와 제6조(법령상 의무)는 이 서식의 존재 이유입니다.
+     일반 매매계약서와 살아있는 동물 거래를 가르는 조항이고, 나중에 법정
+     신고서로 이어지는 정보가 여기서 나옵니다. 분량이 길다고 줄이지 마세요. -->
+<meta charset="utf-8">
+<title>개체 양도·양수 계약서</title>
+<style>
+  /* 현재 분량은 A4 3장입니다 (본문 2장 + 서명·안내). 10.5pt/1.65 를 올리면
+     4장으로 넘어가 서명란만 있는 장이 생깁니다. 손대면 인쇄해서 확인하세요. */
+  @page { size: A4; margin: 14mm 15mm; }
+
+  :root {
+    --ink: #1a1a1a;
+    --muted: #6b6b6b;
+    --line: #c9c9c9;
+    --fill: #9a9a9a;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0 auto;
+    max-width: 190mm;
+    padding: 14mm 10mm;
+    color: var(--ink);
+    font: 10.5pt/1.65 "Malgun Gothic", "맑은 고딕", -apple-system, sans-serif;
+    word-break: keep-all;
+  }
+
+  h1 {
+    margin: 0 0 2mm;
+    font-size: 17pt;
+    letter-spacing: 0.35em;
+    text-align: center;
+  }
+
+  .subtitle {
+    margin: 0 0 8mm;
+    color: var(--muted);
+    font-size: 9pt;
+    text-align: center;
+  }
+
+  h2 {
+    margin: 6mm 0 2mm;
+    padding-bottom: 1mm;
+    border-bottom: 1px solid var(--line);
+    font-size: 11pt;
+  }
+
+  p, li { margin: 0 0 1.5mm; }
+  ol { margin: 0 0 2mm; padding-left: 5.5mm; }
+  ol ol { margin-top: 1.5mm; }
+
+  /* 자동 채우기가 들어올 자리. 비어 있으면 밑줄만 남습니다. */
+  .fill {
+    display: inline-block;
+    min-width: 22mm;
+    padding: 0 1mm;
+    border-bottom: 1px solid var(--fill);
+    text-align: center;
+    line-height: 1.4;
+  }
+  .fill.w-s  { min-width: 14mm; }
+  .fill.w-l  { min-width: 42mm; }
+  .fill.w-xl { min-width: 70mm; }
+  .fill.w-full { display: block; min-width: 0; width: 100%; text-align: left; }
+  .fill.is-filled { border-bottom-color: transparent; font-weight: 600; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 3mm;
+    font-size: 9.5pt;
+  }
+  th, td {
+    padding: 1.8mm 2mm;
+    border: 1px solid var(--line);
+    text-align: left;
+    vertical-align: middle;
+  }
+  th {
+    width: 26mm;
+    background: #f4f4f4;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  td .fill { border-bottom: none; min-width: 0; text-align: left; }
+
+  .note {
+    margin: 2mm 0 0;
+    color: var(--muted);
+    font-size: 8.5pt;
+    line-height: 1.5;
+  }
+
+  /* 체크박스는 네모를 글자로 찍습니다. 인쇄본에서 손으로 체크하기 위해서입니다. */
+  .check { letter-spacing: 0.2em; }
+
+  .sign {
+    display: flex;
+    gap: 8mm;
+    margin-top: 6mm;
+  }
+  .sign > div { flex: 1; }
+  .sign h3 {
+    margin: 0 0 2mm;
+    font-size: 10pt;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 1mm;
+  }
+  .sign-row { margin-bottom: 2.5mm; font-size: 9.5pt; }
+  .sign-row .label { display: inline-block; width: 16mm; color: var(--muted); }
+
+  .date-line {
+    margin: 8mm 0 4mm;
+    text-align: center;
+    font-size: 11pt;
+    letter-spacing: 0.1em;
+  }
+
+  .warn {
+    margin: 6mm 0 0;
+    padding: 3mm 4mm;
+    border: 1px solid var(--line);
+    background: #fafafa;
+    color: var(--muted);
+    font-size: 8.5pt;
+    line-height: 1.6;
+  }
+
+  .page-break { break-before: page; }
+
+  @media print {
+    body { padding: 0; max-width: none; }
+    .warn { break-inside: avoid; }
+    table, .sign { break-inside: avoid; }
+  }
+</style>
+
+<h1>개체 양도·양수 계약서</h1>
+<p class="subtitle">
+  서식 v1 · 발급 <span class="fill w-s" data-field="doc.issuedOn"></span>
+  · 문서번호 <span class="fill" data-field="doc.number"></span>
+</p>
+
+<p>
+  양도인(이하 “갑”)과 양수인(이하 “을”)은 아래 개체의 양도·양수에 관하여
+  다음과 같이 계약을 체결한다.
+</p>
+
+<h2>제1조 (당사자)</h2>
+<table>
+  <tr>
+    <th>구분</th>
+    <th style="width:auto">갑 (양도인)</th>
+    <th style="width:auto">을 (양수인)</th>
+  </tr>
+  <tr>
+    <th>성명 / 상호</th>
+    <td><span class="fill w-full" data-field="seller.name"></span></td>
+    <td><span class="fill w-full" data-field="buyer.name"></span></td>
+  </tr>
+  <tr>
+    <th>연락처</th>
+    <td><span class="fill w-full" data-field="seller.phone"></span></td>
+    <td><span class="fill w-full" data-field="buyer.phone"></span></td>
+  </tr>
+  <tr>
+    <th>주소</th>
+    <td><span class="fill w-full" data-field="seller.address"></span></td>
+    <td><span class="fill w-full" data-field="buyer.address"></span></td>
+  </tr>
+  <tr>
+    <th>사업자 여부</th>
+    <td class="check">
+      □ 개인 &nbsp; □ 사업자 (등록번호 <span class="fill" data-field="seller.bizNumber"></span>)
+    </td>
+    <td class="check">
+      □ 개인 &nbsp; □ 사업자 (등록번호 <span class="fill" data-field="buyer.bizNumber"></span>)
+    </td>
+  </tr>
+</table>
+<p class="note">
+  주민등록번호는 적지 않습니다. 분쟁 시 본인 특정은 성명·연락처·주소로 충분하며,
+  개체 거래에 주민등록번호를 수집할 법적 근거가 없습니다.
+</p>
+
+<h2>제2조 (개체의 표시)</h2>
+<table>
+  <tr>
+    <th>관리번호</th>
+    <td><span class="fill w-full" data-field="animal.publicId"></span></td>
+    <th>개체명</th>
+    <td><span class="fill w-full" data-field="animal.name"></span></td>
+  </tr>
+  <tr>
+    <th>종 (국명)</th>
+    <td><span class="fill w-full" data-field="animal.speciesKo"></span></td>
+    <th>학명</th>
+    <td><span class="fill w-full" data-field="animal.speciesSci"></span></td>
+  </tr>
+  <tr>
+    <th>성별</th>
+    <td><span class="fill w-full" data-field="animal.sex"></span></td>
+    <th>해칭(생년)일</th>
+    <td><span class="fill w-full" data-field="animal.hatchDate"></span></td>
+  </tr>
+  <tr>
+    <th>모프 / 형질</th>
+    <td colspan="3"><span class="fill w-full" data-field="animal.morphs"></span></td>
+  </tr>
+  <tr>
+    <th>혈통 (부 / 모)</th>
+    <td colspan="3"><span class="fill w-full" data-field="animal.parents"></span></td>
+  </tr>
+  <tr>
+    <th>인도 시 체중</th>
+    <td>
+      <span class="fill" data-field="animal.weight"></span> g
+      (측정일 <span class="fill w-s" data-field="animal.weightOn"></span>)
+    </td>
+    <th>개체 식별</th>
+    <td class="check">□ 사진 &nbsp; □ 마이크로칩 &nbsp; □ 기타</td>
+  </tr>
+  <tr>
+    <th>개체 이력</th>
+    <td colspan="3">
+      <span class="fill w-full" data-field="animal.profileUrl"></span>
+    </td>
+  </tr>
+</table>
+<p class="note">
+  개체 이력 칸에는 공개 개체 카드 주소(QR)를 적습니다. 사진·체중 그래프·혈통이
+  담긴 화면이며, 이 계약서의 별지 역할을 합니다. 갑은 인도 후에도 상당 기간
+  이 주소를 유지하도록 노력한다.
+</p>
+
+<h2>제3조 (대금과 지급)</h2>
+<ol>
+  <li>
+    양도대금은 일금
+    <span class="fill w-l" data-field="deal.priceText"></span>원정
+    (₩ <span class="fill" data-field="deal.price"></span>)으로 한다.
+  </li>
+  <li>
+    계약금 <span class="fill" data-field="deal.deposit"></span>원은
+    계약 체결일에, 잔금 <span class="fill" data-field="deal.balance"></span>원은
+    <span class="fill w-s" data-field="deal.balanceDate"></span>에 지급한다.
+  </li>
+  <li>
+    지급 방법:
+    <span class="check">□ 계좌이체 &nbsp; □ 현금 &nbsp; □ 기타</span>
+    <span class="fill w-l" data-field="deal.payMethod"></span>
+  </li>
+  <li>무상 양도인 경우 본조는 적용하지 아니한다.</li>
+</ol>
+
+<h2>제4조 (인도)</h2>
+<ol>
+  <li>
+    갑은 <span class="fill w-s" data-field="deal.handoverDate"></span>
+    <span class="fill w-l" data-field="deal.handoverPlace"></span>에서 을에게 개체를 인도한다.
+  </li>
+  <li>
+    인도 방법:
+    <span class="check">□ 직접 대면 &nbsp; □ 운송 (운송사 <span class="fill" data-field="deal.courier"></span>)</span>
+  </li>
+  <li>
+    <strong>운송 중 위험부담은</strong>
+    <span class="check">□ 갑 &nbsp; □ 을</span> 이 부담한다.
+    운송을 선택한 경우 갑은 종·계절에 맞는 보온·보냉과 포장을 하여야 한다.
+  </li>
+  <li>
+    개체에 대한 소유권과 사육상 위험은 인도가 완료된 때 을에게 이전한다.
+    다만 대금 전액 지급 전 인도한 경우, 잔금 완납 시까지 소유권은 갑에게 유보된다.
+  </li>
+</ol>
+
+<h2>제5조 (갑의 고지와 보증)</h2>
+<ol>
+  <li>
+    갑은 해당 개체를 <strong>적법하게 취득</strong>하였으며, 개체에 압류·질권 등
+    제3자의 권리가 설정되어 있지 아니함을 보증한다.
+  </li>
+  <li>
+    갑은 인도 시점을 기준으로 아래 사항을 사실대로 고지하였음을 확인한다.
+    <ol>
+      <li>최근 급이일과 급이 상태: <span class="fill w-l" data-field="health.lastFeed"></span></li>
+      <li>최근 탈피·배변 상태: <span class="fill w-l" data-field="health.shedStool"></span></li>
+      <li>
+        알려진 질병·기생충·투약 이력:
+        <span class="fill w-xl" data-field="health.medical"></span>
+      </li>
+      <li>
+        신체 결손 (자절·꼬리 재생·지절 결손 등):
+        <span class="fill w-xl" data-field="health.defects"></span>
+      </li>
+      <li>번식 이력 (교배·산란 경험): <span class="fill w-l" data-field="health.breeding"></span></li>
+    </ol>
+  </li>
+  <li>
+    모프·유전자 표기는 갑이 아는 범위의 정보이다. 계산기 확률 표기나 헷(보인자)
+    표기는 <strong>보증이 아니며</strong>, 실제 자손 발현을 담보하지 아니한다.
+    다만 갑이 알면서 사실과 다르게 표기한 경우에는 그러하지 아니하다.
+  </li>
+</ol>
+
+<h2>제6조 (법령상 의무와 서류)</h2>
+<ol>
+  <li>
+    본 개체의 법적 지위 (해당란 체크):
+    <div class="check" style="margin:1.5mm 0 0 2mm">
+      □ 일반 사육동물 (별도 신고·허가 대상 아님)<br>
+      □ 국제적 멸종위기종 (CITES) — 부속서
+      <span class="fill w-s" data-field="legal.citesAppendix"></span>
+      · 등록·허가번호 <span class="fill w-l" data-field="legal.citesNumber"></span><br>
+      □ 국내 법령상 사육 허가·신고 대상 —
+      근거 <span class="fill w-l" data-field="legal.domesticBasis"></span><br>
+      □ 확인 중
+    </div>
+  </li>
+  <li>
+    위 1항이 <strong>일반 사육동물이 아닌 경우</strong>, 관계 법령이 정하는
+    양도·양수 신고 또는 허가 절차는 다음과 같이 이행한다.
+    <ol>
+      <li>
+        신고·신청 의무자:
+        <span class="check">□ 갑 &nbsp; □ 을 &nbsp; □ 갑과 을 각자</span>
+      </li>
+      <li>
+        이행 기한: 인도일로부터
+        <span class="fill w-s" data-field="legal.deadlineDays"></span>일 이내
+      </li>
+      <li>
+        제출 관청:
+        <span class="fill w-l" data-field="legal.authority"></span>
+      </li>
+    </ol>
+  </li>
+  <li>
+    갑은 인도 시 아래 서류의 원본 또는 사본을 을에게 인계한다.
+    <div class="check" style="margin:1.5mm 0 0 2mm">
+      □ 수입허가서·수입신고필증 사본 &nbsp; □ 인공증식증명서<br>
+      □ CITES 등록증 / 양도양수 신고 관련 서류 &nbsp; □ 이전 소유자 계약서<br>
+      □ 혈통·브리딩 기록 &nbsp; □ 기타
+      <span class="fill w-l" data-field="legal.otherDocs"></span>
+    </div>
+  </li>
+  <li>
+    갑이 위 서류를 인계하지 못하거나 기재 내용이 사실과 다른 경우, 을은 계약을
+    해제하고 대금 전액의 반환을 청구할 수 있다.
+  </li>
+</ol>
+<p class="note">
+  본조의 신고·허가 요건은 종과 시점에 따라 다릅니다. 당사자는 계약 전
+  관할 관청에 해당 여부를 직접 확인하여야 하며, 이 서식은 확인 결과를
+  적어 두기 위한 것일 뿐 법적 판단을 대신하지 않습니다.
+</p>
+
+<h2>제7조 (건강 보증기간)</h2>
+<ol>
+  <li>
+    을은 인도일로부터 <span class="fill w-s" data-field="deal.warrantyDays"></span>일
+    이내에 개체의 이상을 발견한 경우 지체 없이 갑에게 통보하여야 한다.
+  </li>
+  <li>
+    위 기간 내 폐사한 경우, 을은 폐사 사실을 확인할 수 있는 사진 또는 수의사
+    소견서를 갑에게 제공하고, 갑과 을은
+    <span class="check">□ 전액 환불 &nbsp; □ 부분 환불 &nbsp; □ 동급 개체 교환 &nbsp; □ 협의</span>
+    로 처리한다.
+  </li>
+  <li>
+    사육환경 부적정, 취급 부주의, 다른 개체와의 합사로 인한 손상이 원인인 경우
+    본조를 적용하지 아니한다.
+  </li>
+</ol>
+
+<h2>제8조 (번식·재양도에 관한 특약)</h2>
+<p class="check">
+  □ 특약 없음 &nbsp;&nbsp; □ 아래 특약을 둔다
+</p>
+<p><span class="fill w-full" data-field="deal.specialTerms"></span></p>
+<p><span class="fill w-full"></span></p>
+<p class="note">
+  브리더가 라인 관리 목적으로 재판매·번식 조건을 거는 경우 여기에 적습니다.
+  다만 인도 후 사육 방식 전반을 제약하는 조항은 효력이 다투어질 수 있습니다.
+</p>
+
+<h2>제9조 (계약의 해제)</h2>
+<ol>
+  <li>
+    당사자 일방이 본 계약을 이행하지 아니한 때에는 상대방은 상당한 기간을
+    정하여 이행을 최고하고, 그 기간 내에 이행하지 아니하면 계약을 해제할 수 있다.
+  </li>
+  <li>
+    을의 귀책으로 해제된 경우 계약금은 갑에게 귀속하고, 갑의 귀책으로 해제된
+    경우 갑은 계약금의 배액을 을에게 상환한다.
+  </li>
+</ol>
+
+<h2>제10조 (분쟁의 해결)</h2>
+<ol>
+  <li>본 계약에 정하지 아니한 사항은 관계 법령과 거래 관행에 따른다.</li>
+  <li>
+    본 계약과 관련한 분쟁은 상호 협의로 해결하되, 협의가 되지 않으면
+    민사소송법에 따른 관할 법원에 소를 제기한다.
+  </li>
+</ol>
+
+<p style="margin-top:5mm">
+  위 계약을 증명하기 위하여 본 계약서 2통을 작성하고, 갑과 을이 각각 서명(날인)한 후
+  1통씩 보관한다.
+</p>
+
+<p class="date-line">
+  <span class="fill w-s" data-field="doc.year"></span> 년
+  <span class="fill w-s" data-field="doc.month"></span> 월
+  <span class="fill w-s" data-field="doc.day"></span> 일
+</p>
+
+<div class="sign">
+  <div>
+    <h3>갑 (양도인)</h3>
+    <p class="sign-row"><span class="label">성명</span>
+      <span class="fill w-l" data-field="seller.name"></span> (인)</p>
+    <p class="sign-row"><span class="label">연락처</span>
+      <span class="fill w-l" data-field="seller.phone"></span></p>
+    <p class="sign-row"><span class="label">주소</span>
+      <span class="fill w-l" data-field="seller.address"></span></p>
+  </div>
+  <div>
+    <h3>을 (양수인)</h3>
+    <p class="sign-row"><span class="label">성명</span>
+      <span class="fill w-l" data-field="buyer.name"></span> (인)</p>
+    <p class="sign-row"><span class="label">연락처</span>
+      <span class="fill w-l" data-field="buyer.phone"></span></p>
+    <p class="sign-row"><span class="label">주소</span>
+      <span class="fill w-l" data-field="buyer.address"></span></p>
+  </div>
+</div>
+
+<div class="warn">
+  <strong>이 서식에 대하여</strong><br>
+  본 서식은 사육자 간 거래에서 흔히 문제되는 항목을 정리한 참고용 초안이며,
+  법률자문이 아닙니다. 개별 거래의 유효성과 법령상 신고·허가 해당 여부는
+  당사자가 직접 확인하여야 합니다. 특히 제6조의 신고·허가 요건은 종과 시점에
+  따라 달라지므로, 계약 전 관할 유역(지방)환경청 또는 관계 관청에 확인하시기 바랍니다.
+</div>

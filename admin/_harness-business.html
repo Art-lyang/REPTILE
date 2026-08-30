@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Admin business harness</title>
+  <style>
+    :root{--bg:#edeae1;--card:#fdfcf9;--card2:#f4f1e9;--ink:#26221d;--ink2:#8a8375;--hair:rgba(38,34,29,.08);--chipbd:rgba(38,34,29,.16);--teal:#0e7c7b;--eggplant:#6b5686;--warn-hi-bg:#fbeae3;--warn-hi-bd:#f0c3b2;--warn-hi-fg:#b4402a}
+    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,sans-serif}.wrap{max-width:720px;margin:auto;padding:16px}.apad{background:var(--card);border-radius:14px;padding:16px}.ain{width:100%;padding:11px 12px;border:1px solid var(--chipbd);border-radius:10px;background:var(--card2);color:var(--ink)}.abtn,.mini,.atab{border:0;border-radius:9px;padding:8px 11px;font-weight:700;font-family:inherit;cursor:pointer}.abtn{background:var(--teal);color:white}.mini,.atab{background:#e8e5dd;color:var(--ink)}.atab.on{background:var(--ink);color:var(--card)}.mini.del{color:var(--warn-hi-fg)}.aerr{color:var(--warn-hi-fg)}.asub{color:var(--ink2);font-size:13px}
+  </style>
+  <link rel="stylesheet" href="admin-business.css">
+  <script src="admin-business.js"></script>
+</head>
+<body><main class="wrap"><div id="body" class="apad"></div></main>
+<script>
+  /* ?state=empty 로 열면 신청이 하나도 없는 상태, ?state=err 로 열면
+     v60 미적용 상태를 봅니다. */
+  const mode = new URLSearchParams(location.search).get('state') || '';
+  /* 실제 로고 대신 data URI 를 씁니다 — 하네스가 바깥 주소를 부르지 않게 합니다.
+     세 번째 줄은 일부러 깨진 주소라, onerror 자리표시자를 확인할 수 있습니다. */
+  const okLogo='data:image/svg+xml;base64,'+btoa('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="12" fill="#0e7c7b"/><text x="32" y="41" font-size="26" fill="#fff" text-anchor="middle" font-family="sans-serif">R</text></svg>');
+  let rows = mode==='empty' ? [] : [
+    {user_id:'22222222-2222-4222-8222-222222222222',status:'pending',biz_name:'량스튜디오',
+     biz_number:'1234567890',logo_url:okLogo,note:null,
+     applied_at:'2026-08-07T02:00:00Z',decided_at:null,email:'premium@example.com',nickname:'행복한 집사 001'},
+    {user_id:'33333333-3333-4333-8333-333333333333',status:'approved',biz_name:'렙타일하우스',
+     biz_number:'2208601234',logo_url:null,note:null,
+     applied_at:'2026-07-30T02:00:00Z',decided_at:'2026-08-01T04:00:00Z',email:'shop@example.com',nickname:'느긋한 집사 002'},
+    {user_id:'44444444-4444-4444-8444-444444444444',status:'rejected',biz_name:'테스트업체',
+     biz_number:'9999999999',logo_url:'https://example.invalid/nope.png',
+     note:'제출한 번호로 사업자등록 조회가 되지 않습니다. 확인 후 다시 신청해 주세요.',
+     applied_at:'2026-07-20T02:00:00Z',decided_at:'2026-07-21T04:00:00Z',email:'nope@example.com',nickname:null}
+  ];
+  const SB={ rpc:async(fn,args)=>{
+    if(fn==='admin_business_list'){
+      if(mode==='err') return {data:null,error:{code:'PGRST202',message:'not found'}};
+      return {data:rows,error:null};
+    }
+    if(fn==='admin_decide_business'){
+      if(args.p_status==='none') rows=rows.filter(r=>r.user_id!==args.p_target);
+      else { const r=rows.find(x=>x.user_id===args.p_target);
+             r.status=args.p_status; r.note=args.p_note||null; r.decided_at='2026-08-08T05:00:00Z'; }
+      return {data:{status:args.p_status},error:null};
+    }
+    if(fn==='admin_upsert_business'){
+      rows.unshift({user_id:args.p_target,status:args.p_status,biz_name:args.p_name,
+        biz_number:String(args.p_number).replace(/[^0-9]/g,''),logo_url:args.p_logo,note:null,
+        applied_at:'2026-08-08T05:00:00Z',decided_at:'2026-08-08T05:00:00Z',
+        email:'added@example.com',nickname:null});
+      return {data:{status:args.p_status},error:null};
+    }
+    return {data:null,error:null};
+  }};
+  const esc=v=>String(v??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  AdminBusiness.render({SB,body:document.getElementById('body'),esc});
+</script></body></html>

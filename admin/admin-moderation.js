@@ -1,0 +1,541 @@
+/* 이미지 검수 (supabase_v68 · v69 · v70)
+   ---------------------------------------------------------------------------
+   사진은 아무거나 올라올 수 있고 지금까지 아무도 보지 않았습니다. QR·링크로
+   돌고 크롤러가 주워 가면 걸리는 곳이 우리 도메인입니다. 회원 데이터를 보려는
+   것이 아니라 우리 페이지에서 나가는 것을 책임지기 위한 화면입니다.
+
+   ⚠️ 목록에는 공개된 것만 옵니다(admin_photo_queue). 비공개 개체를 보려면
+      '자세히' 로 한 건씩 열어야 하고, 그때마다 열람 기록이 남습니다. 목록으로
+      훑는 것과 사유를 남기고 보는 것은 다릅니다.
+
+   ⚠️ 조치는 둘로 갈립니다.
+      보류    — 일반 위반. 공개·학습은 즉시 끊고, 7일 안에 회원이 고치면 됩니다.
+      즉시삭제 — 성인물·도박·직접적 피해. 유예 기간 동안 우리 서버에 두는 것
+                 자체가 문제라 바로 지웁니다.
+
+   회원 쪽 조각은 care/animal-hold.js 가 그립니다. 여기서 남긴 사유가 그대로
+   회원 화면의 배너 문구가 됩니다 — 그래서 사유를 대충 쓰면 안 됩니다. */
+(function () {
+  'use strict';
+
+  const state = { SB: null, body: null, esc: null, rows: [], counts: null, log: null, logPage: 0, owner: null, detail: null, onlyHeld: false, withPrivate: false, busy: false };
+
+  /* supabase_v68 의 animals_held_category_ck 와 같아야 합니다.
+     severe 인 것은 보류가 아니라 즉시 삭제로 갑니다. */
+  const CATEGORIES = [
+    { id: 'adult',     label: '성인물',            severe: true },
+    { id: 'gambling',  label: '도박',              severe: true },
+    { id: 'illegal',   label: '위법물',            severe: true },
+    { id: 'harm',      label: '직접적 피해',        severe: true },
+    { id: 'unrelated', label: '개체와 무관',        severe: false },
+    { id: 'copyright', label: '저작권 의심',        severe: false },
+    { id: 'other',     label: '기타 약관 위반',     severe: false }
+  ];
+
+  /* 분류 select 안에서만 쓰는 값입니다. moderation_log 의 category 로는
+     가지 않습니다 — '이상없음' 은 분류가 아니라 결과라서 그렇습니다. */
+  const CLEAR = '__ok__';
+
+  const ACTIONS = {
+    view: '목록 열람', detail: '세부조회', clear: '이상없음', hold: '보류', release: '해제',
+    delete_photos: '사진 삭제', delete_animal: '개체 삭제',
+    ai_block: '학습 제외', ai_unblock: '학습 제외 해제', expire: '기한 만료 삭제'
+  };
+
+  const esc = v => state.esc(v == null ? '' : v);
+  const date = v => (v ? String(v).slice(0, 10) : '—');
+
+  function categoryLabel(id) {
+    const c = CATEGORIES.filter(x => x.id === id)[0];
+    return c ? c.label : (id || '—');
+  }
+
+  function photoCount(row) {
+    return (row.photo_url ? 1 : 0) + ((row.photos || []).length);
+  }
+
+  const BUCKET = 'animal-photos';
+
+  /* 저장된 값이 옛 판의 전체 공개 URL 인 경우가 있습니다. 그대로 열면
+     404 Bucket not found 가 납니다 — 버킷이 비공개로 바뀌었기 때문입니다.
+     assets/photo.js 와 같은 방식으로 경로만 뽑아 다시 서명받습니다. */
+  function pathOf(value) {
+    if (!value || typeof value !== 'string') return null;
+    const mark = '/' + BUCKET + '/';
+    const i = value.indexOf(mark);
+    if (i < 0) return /^https?:\/\//.test(value) ? null : value;
+    let out = value.slice(i + mark.length);
+    const q = out.indexOf('?');
+    if (q >= 0) out = out.slice(0, q);
+    if (!out) return null;
+    try { return decodeURIComponent(out); } catch (e) { return out; }
+  }
+
+  /* 사진은 비공개 버킷에 있습니다. 서명 주소를 받아야 열립니다. */
+  async function signed(value) {
+    const path = pathOf(value);
+    /* 우리 버킷 것이 아니면(외부 주소) 그대로 씁니다. */
+    if (!path) return /^https?:\/\//.test(value || '') ? value : null;
+    const r = await state.SB.storage.from(BUCKET).createSignedUrl(path, 300);
+    return r.error ? null : (r.data && r.data.signedUrl);
+  }
+
+  function card(row) {
+    const held = !!row.held_at;
+    const waiting = !!row.waiting;
+    const n = photoCount(row);
+
+    return '<div class="mdcard' + (held ? ' held' : '') + '" data-mdid="' + esc(row.id) + '">'
+      + '<div class="mdthumb" data-mdthumb="' + esc(row.photo_url || (row.photos || [])[0] || '') + '">'
+      + '<span class="mdcount">' + n + '</span></div>'
+      + '<div class="mdinfo">'
+      + '<div class="mdname">' + esc(row.name || '이름 없음')
+      + (held ? '<span class="mdbadge' + (waiting ? ' wait' : '') + '">'
+                + (waiting ? '확인 대기' : '보류 · ' + date(row.purge_after) + ' 삭제')
+                + '</span>' : '')
+      + '</div>'
+      + '<div class="mdmeta">' + esc(row.owner_email || row.owner_nickname || '—')
+      + ' · ' + esc(row.species || '') + ' · ' + date(row.created_at) + '</div>'
+      + (!row.is_public && !row.is_listed
+          ? '<span class="mdprivtag">비공개</span>' : '')
+      + (held ? '<div class="mdreason">' + esc(categoryLabel(row.held_category)) + ' — '
+                + esc(row.held_reason || '') + '</div>' : '')
+      + '</div>'
+      + '<div class="mdacts">'
+      + '<button class="mini" data-mddetail="' + esc(row.id) + '">자세히</button>'
+      + (held
+          ? '<button class="mini" data-mdrelease="' + esc(row.id) + '">해제</button>'
+          : '<button class="mini" data-mdhold="' + esc(row.id) + '">조치</button>')
+      + '</div></div>';
+  }
+
+  const LOG_PAGE = 20;
+
+  /* 개체가 아니라 계정으로 먼저 봅니다. 개체 단위로 쭉 늘어놓으면 회원이
+     늘어날수록 '누구 것을 보고 있는지' 가 사라지고, 한 사람의 사진을 한
+     번에 훑을 수가 없습니다. 검수는 보통 계정 단위로 판단하게 됩니다 —
+     한 장이 이상하면 그 사람 것을 전부 보게 되니까요. */
+  function owners(rows) {
+    const map = {};
+    rows.forEach(function (r) {
+      const key = r.owner_email || r.owner_nickname || '—';
+      if (!map[key]) map[key] = { key: key, animals: 0, photos: 0, held: 0, last: '' };
+      const o = map[key];
+      o.animals += 1;
+      o.photos += photoCount(r);
+      if (r.held_at) o.held += 1;
+      const at = String(r.created_at || '');
+      if (at > o.last) o.last = at;
+    });
+    return Object.keys(map).map(k => map[k])
+      /* 보류가 있는 계정이 먼저. 그다음은 사진이 많은 순 — 볼 것이 많은
+         쪽이 위로 옵니다. */
+      .sort((a, b) => (b.held - a.held) || (b.photos - a.photos));
+  }
+
+  function ownerCard(o) {
+    return '<div class="mdowner" data-mdowner="' + esc(o.key) + '">'
+      + '<div class="mdinfo">'
+      + '<div class="mdname">' + esc(o.key)
+      + (o.held ? '<span class="mdbadge">보류 ' + o.held + '</span>' : '')
+      + '</div>'
+      + '<div class="mdmeta">개체 ' + o.animals + ' · 사진 ' + o.photos
+      + ' · 최근 등록 ' + date(o.last) + '</div>'
+      + '</div>'
+      + '<div class="mdacts"><button class="mini" data-mdowner="' + esc(o.key) + '">개체 보기</button></div>'
+      + '</div>';
+  }
+
+  /* 한눈에 탭은 '등록 개체 13' 이라 하는데 여기엔 4건만 나옵니다. 사진이
+     없는 개체는 검수할 것이 없어 빠진 것인데, 그 말이 없으면 숫자가 어긋난
+     것으로 읽힙니다. 어긋나 보이는 숫자는 어느 쪽이 맞는지를 계속 묻게
+     만듭니다. */
+  /* 새로 등록한 개체는 비공개로 시작합니다(care-app.js 의 is_public: false).
+     그래서 사진을 올려도 '비공개 포함' 을 켜기 전에는 목록에 안 뜹니다.
+     화면이 그 말을 안 하면 사진이 사라진 것으로 읽힙니다 — 실제로 그런
+     신고가 들어왔습니다. */
+  function hiddenPrivate() {
+    const c = state.counts;
+    if (!c) return 0;
+    return Math.max(0, (c.with_photos || 0) - (c.visible || 0));
+  }
+
+  function scopeLine() {
+    const c = state.counts;
+    const base = '사진이 등록된 개체만 나옵니다. ';
+    if (!c) {
+      return base + (state.withPrivate ? '비공개까지 훑고 있으며, 그 사실이 기록에 남습니다.'
+                                       : '‘비공개 포함’ 을 켜면 비공개 개체까지 훑습니다.');
+    }
+
+    const skipped = (c.animals || 0) - (c.with_photos || 0);
+    const hidden = hiddenPrivate();
+    const counts = '전체 개체 ' + (c.animals || 0) + '건 중 사진 있는 것 '
+      + (c.with_photos || 0) + '건'
+      + (skipped > 0 ? ', 사진이 없는 ' + skipped + '건은 검수 대상이 아닙니다' : '') + '. ';
+
+    if (state.withPrivate) {
+      return base + counts + '비공개까지 훑고 있으며, 그 사실이 기록에 남습니다.';
+    }
+    return base + counts
+      + (hidden > 0
+          ? '그중 ' + hidden + '건이 비공개라 지금은 가려져 있습니다 — '
+            + '새로 등록한 개체는 비공개로 시작합니다. ‘비공개 포함’ 을 켜면 보입니다.'
+          : '‘비공개 포함’ 을 켜면 비공개 개체까지 훑습니다.');
+  }
+
+  function html() {
+    const rows = state.rows;
+    return '<div class="mdhead">'
+      + '<div><b>이미지 검수</b>'
+      + '<div class="asub">' + scopeLine() + '</div></div>'
+      /* 목록은 공개된 것만 옵니다. 비공개 개체를 봐야 할 때 — 신고가 들어왔거나
+         회원이 문의했을 때 — 여기로 직접 엽니다. 목록에 안 뜨는 것을 열 방법이
+         없으면 '비공개는 사유가 있을 때 본다' 는 규칙이 그냥 '못 본다' 가 됩니다. */
+      + '<div class="mdlookup">'
+      + '<input class="ain" id="mdFind" placeholder="개체 id 로 직접 열기 (비공개 포함)">'
+      + '<button class="mini" data-mdfind="1">열기</button></div>'
+      + '<div class="mdfilter">'
+      + '<button class="mini' + (state.onlyHeld ? '' : ' on') + '" data-mdfilter="all">전체</button>'
+      + '<button class="mini' + (state.onlyHeld ? ' on' : '') + '" data-mdfilter="held">보류 중</button>'
+      /* 비공개까지 보는 것은 명시적으로 켭니다. 켜면 목록을 불러올 때마다
+         '비공개 포함 열람' 이 기록에 한 줄 남습니다(supabase_v72). */
+      + '<button class="mini' + (state.withPrivate ? ' on' : '') + '" data-mdprivate="1">'
+      + (state.withPrivate ? '비공개 포함 · 켬' : '비공개 포함') + '</button>'
+      + '<button class="mini' + (state.log ? ' on' : '') + '" data-mdlog="1">처리 기록</button>'
+      + '</div></div>'
+      + (state.log ? logHtml() : '')
+      + (state.log ? '' : listHtml(rows));
+  }
+
+  function listHtml(rows) {
+    if (!rows.length) {
+      const hidden = hiddenPrivate();
+      /* 그냥 '없습니다' 라고만 하면, 방금 사진을 올린 회원이 있는데도
+         우리가 못 보는 상황과 구별이 안 됩니다. */
+      return '<div class="asub" style="padding:24px 0">검수할 사진이 없습니다.'
+        + (!state.withPrivate && hidden > 0
+            ? '<br><b>비공개 개체 ' + hidden + '건에는 사진이 있습니다.</b> '
+              + '위의 ‘비공개 포함’ 을 켜면 보입니다.'
+            : '')
+        + '</div>';
+    }
+
+    if (!state.owner) {
+      const list = owners(rows);
+      return '<div class="asub" style="padding:2px 0 8px">계정 ' + list.length + '곳 · 개체 '
+        + rows.length + '건. 계정을 누르면 그 회원이 등록한 개체가 나옵니다.</div>'
+        + '<div class="mdlist">' + list.map(ownerCard).join('') + '</div>';
+    }
+
+    const mine = rows.filter(r => (r.owner_email || r.owner_nickname || '—') === state.owner);
+    return '<div class="mdcrumb">'
+      + '<button class="mini" data-mdback="1">← 계정 목록</button>'
+      + '<b>' + esc(state.owner) + '</b>'
+      + '<span class="asub">개체 ' + mine.length + '건</span></div>'
+      + (mine.length
+          ? '<div class="mdlist">' + mine.map(card).join('') + '</div>'
+          : '<div class="asub" style="padding:24px 0">이 계정에는 볼 개체가 없습니다.</div>');
+  }
+
+  /* 조치 대화상자. 분류를 고르면 보류인지 즉시 삭제인지가 정해집니다 —
+     관리자가 매번 판단하지 않도록 분류에 묶어 둡니다. */
+  function holdDialog(id, name) {
+    return '<div class="mddlg" id="mdDlg"><div class="mddlg-in">'
+      + '<div class="lbl">' + esc(name || '개체') + ' — 조치</div>'
+      + '<div class="lbl2">분류</div>'
+      + '<select class="ain" id="mdCat">'
+      /* 봤는데 문제가 없었다는 결과도 남아야 합니다. 없으면 다른 관리자가
+         같은 개체를 또 열게 되고, 나중에 문제가 불거졌을 때 "그때 보고
+         이상 없다고 판단했다" 를 보일 수가 없습니다. */
+      + '<option value="' + CLEAR + '">이상없음 · 확인만 기록</option>'
+      + CATEGORIES.map(c => '<option value="' + c.id + '"' + (c.severe ? ' data-severe="1"' : '') + '>'
+          + esc(c.label) + (c.severe ? ' · 즉시 삭제' : ' · 7일 보류') + '</option>').join('')
+      + '</select>'
+      + '<div class="lbl2" id="mdReasonLbl">회원에게 보일 사유</div>'
+      + '<textarea class="ain" id="mdReason" rows="3" maxlength="500" '
+      + 'placeholder="예) 개체와 무관한 사진으로 보입니다. 개체 사진으로 교체해 주세요."></textarea>'
+      + '<div class="asub" id="mdReasonHint">여기 적은 문장이 회원 화면에 그대로 뜹니다. 비워 두면 분류 기본 문구가 나갑니다.</div>'
+      + '<div class="mddlg-acts">'
+      + '<button class="abtn" data-mdconfirm="' + esc(id) + '">적용</button>'
+      + '<button class="abtn ghost" data-mdcancel="1">취소</button>'
+      + '</div></div></div>';
+  }
+
+  /* 처리 기록. 남기기만 하고 볼 수 없으면 기록이 아니라 그냥 표입니다 —
+     '누가 언제 무엇을 왜' 에 답할 수 있어야 이 권한을 가질 근거가 됩니다. */
+  function logHtml() {
+    const all = state.log || [];
+    if (!all.length) return '<div class="asub" style="padding:16px 0">아직 기록이 없습니다.</div>';
+
+    /* 목록 열람이 하루에도 수십 줄씩 쌓입니다. 한 화면에 다 쏟으면 정작
+       찾아야 할 조치 한 줄이 그 사이에 묻힙니다. */
+    const pages = Math.ceil(all.length / LOG_PAGE);
+    const page = Math.min(Math.max(state.logPage, 0), pages - 1);
+    const rows = all.slice(page * LOG_PAGE, page * LOG_PAGE + LOG_PAGE);
+
+    return '<div class="mdpager">'
+      + '<button class="mini" data-mdlogpage="' + (page - 1) + '"'
+      + (page <= 0 ? ' disabled' : '') + '>이전</button>'
+      + '<span class="asub">' + (page + 1) + ' / ' + pages + ' 쪽 · 모두 ' + all.length + '줄</span>'
+      + '<button class="mini" data-mdlogpage="' + (page + 1) + '"'
+      + (page >= pages - 1 ? ' disabled' : '') + '>다음</button>'
+      + '</div>'
+      + '<div class="mdlog">' + rows.map(function (r) {
+      return '<div class="mdlogrow">'
+        + '<span class="mdlogact a-' + esc(r.action) + '">'
+        + esc(ACTIONS[r.action] || r.action) + '</span>'
+        + '<span class="mdlogwho">' + esc(r.owner_email || '—') + '</span>'
+        + '<span class="mdlogwhy">'
+        + (r.category ? esc(categoryLabel(r.category)) + ' · ' : '')
+        + esc(r.reason || '') + '</span>'
+        + '<span class="mdlogat">' + esc(String(r.created_at || '').slice(0, 16).replace('T', ' ')) + '</span>'
+        + '</div>';
+    }).join('') + '</div>';
+  }
+
+  async function loadLog() {
+    /* 쪽으로 나눠 보므로 한 번에 넉넉히 받아 둡니다. */
+    const r = await state.SB.rpc('admin_moderation_log', { p_limit: 300 });
+    if (r.error) throw r.error;
+    state.log = r.data || [];
+  }
+
+  /* 세부조회. 사진만 보고는 '개체와 무관한 사진' 인지 알 수 없습니다 —
+     레오파드로 등록해 놓고 전혀 다른 동물 사진을 올린 경우가 그렇습니다.
+     등록된 데이터를 나란히 놓고 봐야 판단이 됩니다. */
+  function detailHtml() {
+    const a = state.detail;
+    if (!a) return '';
+    const row = (k, v) => v == null || v === '' || (Array.isArray(v) && !v.length)
+      ? '' : '<tr><th>' + esc(k) + '</th><td>' + esc(Array.isArray(v) ? v.join(', ') : v) + '</td></tr>';
+    return '<div class="mddlg" id="mdDetail"><div class="mddlg-in">'
+      + '<div class="lbl">' + esc(a.name || '이름 없음') + ' — 세부조회</div>'
+      + '<div class="mdshots" id="mdShots"></div>'
+      + '<table class="mdtable">'
+      + row('소유자', a.owner_email || a.owner_nickname)
+      + row('종', a.species) + row('성별', a.sex) + row('성장 단계', a.life_stage)
+      + row('해칭일', a.hatch_date) + row('클러치', a.clutch_label)
+      + row('모프', a.morphs) + row('헷', a.hets)
+      + row('법적 지위', a.legal_status && a.legal_status !== 'none' ? a.legal_status : null)
+      + row('공개', (a.is_public ? '공개 ' : '') + (a.is_listed ? '갤러리' : '') || '비공개')
+      + row('메모', a.note)
+      + '</table>'
+      + (a.held_at ? '<div class="mdreason">보류 중 — '
+          + esc(categoryLabel(a.held_category)) + ' · ' + esc(a.held_reason || '') + '</div>' : '')
+      + '<div class="mddlg-acts">'
+      + (a.held_at
+          ? '<button class="abtn" data-mdrelease="' + esc(a.id) + '">해제</button>'
+          : '<button class="abtn" data-mdhold="' + esc(a.id) + '">조치</button>')
+      + '<button class="abtn ghost" data-mddclose="1">닫기</button>'
+      + '</div></div></div>';
+  }
+
+  async function showShots(a) {
+    const box = document.getElementById('mdShots');
+    if (!box) return;
+    const paths = [a.photo_url].concat(a.photos || []).filter(Boolean);
+    if (!paths.length) { box.innerHTML = '<div class="asub">사진이 없습니다.</div>'; return; }
+    for (const path of paths) {
+      const url = await signed(path);
+      if (!url) continue;
+      const img = document.createElement('img');
+      img.src = url; img.loading = 'lazy';
+      img.addEventListener('click', () => window.open(url, '_blank', 'noopener'));
+      box.appendChild(img);
+    }
+  }
+
+  async function load() {
+    state.body.innerHTML = '<div class="asub">불러오는 중…</div>';
+    const r = await state.SB.rpc('admin_photo_queue', {
+      /* 계정으로 묶어 보여 주므로 한 계정 것이 잘리면 안 됩니다. */
+      p_only_held: state.onlyHeld, p_limit: 200, p_offset: 0,
+      p_include_private: state.withPrivate
+    });
+    if (r.error) {
+      state.body.innerHTML = '<div class="aerr"><b>검수 목록을 불러오지 못했습니다.</b><br><br>'
+        + '<code>supabase_v70.sql</code> 을 적용했는지 확인하세요.<br>'
+        + esc(r.error.message || '') + '</div>';
+      return;
+    }
+    state.rows = r.data || [];
+
+    /* 계정을 하나 골라 둔 채로 필터를 바꾸면, 그 계정이 새 결과에 없을 때
+       '이 계정에는 볼 개체가 없습니다' 만 뜹니다. 방금 등록된 남의 개체가
+       바로 옆에 있는데도 안 보이는 겁니다. 없으면 목록으로 돌립니다. */
+    if (state.owner && !state.rows.some(function (x) {
+      return (x.owner_email || x.owner_nickname || '—') === state.owner;
+    })) state.owner = null;
+
+    /* 없어도 목록은 봐야 합니다 — v74 를 아직 안 올렸으면 숫자만 빠집니다. */
+    try {
+      /* 토글과 무관하게 '공개만' 으로 셉니다 — 비공개를 켜면 몇 건이 더
+         보이는지를 알려면 두 숫자가 모두 필요합니다. */
+      const c = await state.SB.rpc('admin_photo_queue_counts',
+        { p_include_private: false });
+      state.counts = (c && !c.error) ? c.data : null;
+    } catch (e) { state.counts = null; }
+    state.body.innerHTML = html();
+    hydrate();
+  }
+
+  /* 썸네일은 서명 주소를 받아야 보입니다. 한 번에 여러 장이라 화면을 먼저
+     그리고 나중에 채웁니다 — 서명을 기다리며 빈 화면을 보여 주지 않습니다. */
+  function hydrate() {
+    state.body.querySelectorAll('[data-mdthumb]').forEach(async function (el) {
+      const url = await signed(el.getAttribute('data-mdthumb'));
+      if (url) el.style.backgroundImage = 'url("' + url + '")';
+    });
+  }
+
+  async function act(fn, okMsg, keep) {
+    if (state.busy) return;
+    state.busy = true;
+    /* keep 이면 다시 그리지 않습니다 — 세부조회 패널을 띄운 뒤 목록을
+       다시 그리면 방금 연 패널이 사라집니다. */
+    try { await fn(); if (!keep) await load(); }
+    catch (e) { alert((e && e.message) || String(e)); }
+    finally { state.busy = false; }
+  }
+
+  function onClick(ev) {
+    /* 계정 카드는 버튼이 아니라 줄 전체가 눌립니다 — 옆의 작은 버튼만
+       눌리면 커서만 손가락 모양이고 실제로는 안 열립니다. */
+    const t = ev.target.closest('button, [data-mdthumb], [data-mdowner]');
+    if (!t || !state.body.contains(t)) return;
+    const d = t.dataset;
+
+    if (d.mdfilter) { state.onlyHeld = (d.mdfilter === 'held'); return load(); }
+
+    if (d.mdlog) {
+      if (state.log) { state.log = null; state.body.innerHTML = html(); hydrate(); return; }
+      return act(async function () { await loadLog(); });
+    }
+
+    if (d.mdprivate) {
+      if (!state.withPrivate
+          && !confirm('비공개 개체까지 목록에 올립니다. 열람 기록이 남습니다. 계속할까요?')) return;
+      state.withPrivate = !state.withPrivate;
+      return load();
+    }
+
+    if (d.mdfind) {
+      const box = document.getElementById('mdFind');
+      const id = (box.value || '').trim();
+      if (!id) return;
+      return openDetail(id);
+    }
+
+    if (d.mdhold) {
+      const row = state.rows.filter(x => x.id === d.mdhold)[0];
+      const wrap = document.createElement('div');
+      wrap.innerHTML = holdDialog(d.mdhold, row && row.name);
+      state.body.appendChild(wrap.firstChild);
+      /* '이상없음' 은 회원에게 아무것도 안 보입니다. 같은 안내를 두면
+         관리자가 회원이 볼 문장인 줄 알고 적게 됩니다. */
+      const sel0 = document.getElementById('mdCat');
+      if (sel0) sel0.onchange = function () {
+        const ok = sel0.value === CLEAR;
+        const lbl = document.getElementById('mdReasonLbl');
+        const hint = document.getElementById('mdReasonHint');
+        if (lbl) lbl.textContent = ok ? '기록에 남길 메모 (관리자만 봄)' : '회원에게 보일 사유';
+        if (hint) hint.textContent = ok
+          ? '회원에게는 아무것도 보이지 않습니다. 무엇을 확인했는지 적어 두세요.'
+          : '여기 적은 문장이 회원 화면에 그대로 뜹니다. 비워 두면 분류 기본 문구가 나갑니다.';
+      };
+      /* 처음 열렸을 때도 맞춰 둡니다 — 기본값이 '이상없음' 이라 안 부르면
+         회원에게 보일 사유인 줄 알고 적게 됩니다. */
+      if (sel0) sel0.onchange();
+      return;
+    }
+    if (d.mddclose) {
+      const dlg = document.getElementById('mdDetail');
+      if (dlg) dlg.remove();
+      state.detail = null;
+      return;
+    }
+
+    if (d.mdcancel) { const dlg = document.getElementById('mdDlg'); if (dlg) dlg.remove(); return; }
+
+    /* 계정 목록 ↔ 그 계정의 개체 */
+    if (d.mdowner) { state.owner = d.mdowner; state.body.innerHTML = html(); hydrate(); return; }
+    if (d.mdback)  { state.owner = null;      state.body.innerHTML = html(); hydrate(); return; }
+
+    if (d.mdlogpage) {
+      state.logPage = parseInt(d.mdlogpage, 10) || 0;
+      state.body.innerHTML = html(); hydrate(); return;
+    }
+
+    if (d.mdconfirm) {
+      const sel = document.getElementById('mdCat');
+      const cat = sel.value;
+
+      /* 이상없음 — 개체는 그대로 두고 기록만 남깁니다. */
+      if (cat === CLEAR) {
+        const note = document.getElementById('mdReason').value.trim();
+        const dlg0 = document.getElementById('mdDlg');
+        if (dlg0) dlg0.remove();
+        return act(async function () {
+          const r = await state.SB.rpc('admin_clear_animal', {
+            p_animal: d.mdconfirm, p_reason: note || '확인함 · 이상 없음'
+          });
+          if (r.error) throw r.error;
+        });
+      }
+
+      const severe = !!(CATEGORIES.filter(c => c.id === cat)[0] || {}).severe;
+      const reason = document.getElementById('mdReason').value.trim();
+      const dlg = document.getElementById('mdDlg');
+
+      if (severe && !confirm('즉시 삭제합니다. 사진은 되돌릴 수 없습니다. 계속할까요?')) return;
+      if (dlg) dlg.remove();
+
+      return act(async function () {
+        const rpc = severe ? 'admin_purge_photos' : 'admin_hold_animal';
+        const r = await state.SB.rpc(rpc, {
+          p_animal: d.mdconfirm, p_category: cat, p_reason: reason || null
+        });
+        if (r.error) throw r.error;
+      });
+    }
+
+    if (d.mdrelease) {
+      const reason = prompt('해제 사유 (회원에게 보입니다)', '확인했습니다. 조치해 주셔서 감사합니다.');
+      if (reason === null) return;
+      return act(async function () {
+        const r = await state.SB.rpc('admin_release_animal', {
+          p_animal: d.mdrelease, p_reason: reason || null
+        });
+        if (r.error) throw r.error;
+      });
+    }
+
+    if (d.mddetail) return openDetail(d.mddetail);
+  }
+
+  /* 한 건 열기. 목록의 '자세히' 와 위 조회창이 같은 길을 씁니다 — 어느 쪽으로
+     열든 열람 사유를 묻고 기록에 남깁니다. */
+  function openDetail(id) {
+    const why = prompt('열람 사유를 남깁니다 (기록됩니다)', '검수');
+    if (why === null) return;
+    return act(async function () {
+      const r = await state.SB.rpc('admin_animal_detail', { p_animal: id, p_reason: why });
+      if (r.error) throw r.error;
+      const a = r.data || {};
+      state.detail = a;
+      const wrap = document.createElement('div');
+      wrap.innerHTML = detailHtml();
+      state.body.appendChild(wrap.firstChild);
+      await showShots(a);
+    }, null, true);
+  }
+
+  async function render_(deps) {
+    state.SB = deps.SB; state.body = deps.body; state.esc = deps.esc;
+    if (!render_.bound) { document.addEventListener('click', onClick); render_.bound = true; }
+    await load();
+  }
+
+  window.AdminModeration = { render: render_, CATEGORIES: CATEGORIES };
+}());

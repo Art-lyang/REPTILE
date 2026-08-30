@@ -123,6 +123,12 @@
   function country() {
     var K = 'studioGeo';
     try {
+      var host = String(location.hostname || '').toLowerCase();
+      if (host === 'localhost' || host === '127.0.0.1' || host === '0.0.0.0' || host === '::1') {
+        return Promise.resolve(null);
+      }
+    } catch (e) {}
+    try {
       var c = JSON.parse(localStorage.getItem(K) || 'null');
       if (c && c.v && Date.now() - c.t < 864e5) return Promise.resolve(c.v);
     } catch (e) {}
@@ -146,20 +152,6 @@
     });
   }
 
-  /* 컬럼이 아직 없는 서버에서도 로그가 끊기지 않게, 넓은 것부터 좁혀가며 넣습니다.
-     supabase_v3.sql 을 적용하기 전에는 client/ua 없이 저장됩니다. */
-  function insertWithFallback(sb, table, variants) {
-    var i = 0;
-    function tryNext() {
-      if (i >= variants.length) return Promise.resolve();
-      var row = variants[i++];
-      return sb.from(table).insert(row).then(function (r) {
-        if (r && r.error) return tryNext();
-      }, tryNext);
-    }
-    return tryNext();
-  }
-
   var API = {
     kind: clientKind,
     device: deviceId,
@@ -175,24 +167,42 @@
       var ua = String(navigator.userAgent || '').slice(0, 300);
       var rf = refInfo();
       return country().then(function (cc) {
-        return insertWithFallback(sb, 'visits', [
-          { device: base.device, lang: base.lang, service: service, client: kind, ua: ua,
-            ref_kind: rf.kind, ref_host: rf.host, ref_name: rf.name, country: cc },
-          { device: base.device, lang: base.lang, service: service, client: kind, ua: ua },
-          { device: base.device, lang: base.lang, service: service },
-          base
-        ]);
+        return sb.rpc('log_visit', {
+          p_device: base.device,
+          p_lang: base.lang,
+          p_service: service,
+          p_client: kind,
+          p_ua: ua,
+          p_ref_kind: rf.kind,
+          p_ref_host: rf.host,
+          p_ref_name: rf.name,
+          p_country: cc
+        });
       });
     },
 
     /* 조합 검색 1건 기록. 수집기가 만든 건 통계를 흐리므로 남기지 않습니다. */
     logCombo: function (sb, service, ckey, label) {
       if (!sb || clientKind() !== 'human') return Promise.resolve();
-      var base = { ckey: ckey, label: label };
-      return insertWithFallback(sb, 'combo_queries', [
-        { ckey: ckey, label: label, service: service },
-        base
-      ]);
+      return sb.rpc('log_combo_query', {
+        p_device: deviceId(),
+        p_service: service,
+        p_ckey: ckey,
+        p_label: label
+      });
+    },
+
+    /* 깔때기 한 칸 (supabase_v76). 사람이 아닌 접속은 세지 않습니다 —
+       수집기가 안내를 '본' 것으로 잡히면 노출 수가 부풀고, 그러면 전환율이
+       실제보다 낮게 보입니다.
+       실패해도 조용히 넘어갑니다. 통계 한 줄 때문에 화면이 멈추면 안 됩니다. */
+    logFunnel: function (sb, event, service) {
+      if (!sb || clientKind() !== 'human') return Promise.resolve();
+      return sb.rpc('log_funnel', {
+        p_device: deviceId(),
+        p_event: event,
+        p_service: service || null
+      }).catch(function () {});
     }
   };
 

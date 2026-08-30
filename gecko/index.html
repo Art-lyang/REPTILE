@@ -17,12 +17,18 @@
 <meta property="og:title" content="레오파드 게코 모프 계산기 · RYANG STUDIO">
 <meta property="og:description" content="부모 개체의 모프를 고르면 새끼에게 나올 모프와 확률을 계산합니다. 알비노 계통, 헷 표기, 위험 조합 경고까지 한국어·영어·중국어·일본어로 제공합니다.">
 <meta property="og:url" content="https://ryangstudio.com/gecko/">
-<meta property="og:image" content="https://ryangstudio.com/assets/leopard-hero-v1.png">
+<!-- 공유 카드는 tools/make_og.py 가 만든 불투명 1200x630 을 씁니다.
+     헤더용 hero PNG 를 그대로 쓰면 배경이 투명해서 카카오톡·X 가 검정으로
+     메웁니다. hero 를 바꿨다면 make_og.py 를 다시 돌리세요. -->
+<meta property="og:image" content="https://ryangstudio.com/assets/og-gecko-v1.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="바위 위에 있는 레오파드 게코">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="레오파드 게코 모프 계산기 · RYANG STUDIO">
 <meta name="twitter:description" content="부모 개체의 모프를 고르면 새끼에게 나올 모프와 확률을 계산합니다. 알비노 계통, 헷 표기, 위험 조합 경고까지 한국어·영어·중국어·일본어로 제공합니다.">
-<meta name="twitter:image" content="https://ryangstudio.com/assets/leopard-hero-v1.png">
+<meta name="twitter:image" content="https://ryangstudio.com/assets/og-gecko-v1.jpg">
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <script type="application/ld+json">
 {
@@ -40,15 +46,18 @@
 </script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="../assets/studio-config.js?v=113119"></script>
-<script src="gecko-core.js?v=222435"></script>
-<script src="../assets/analytics.js?v=113119"></script>
-<script src="../assets/uitext.js?v=160549"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.8/dist/umd/supabase.js"></script>
+<script src="../assets/studio-config.js?v=20260810k"></script>
+<script src="../assets/breeding-draft.js?v=20260731a"></script>
+<script src="/assets/imgtool.js?v=20260809x"></script>
+<script src="gecko-core.js?v=20260809x"></script>
+<script src="../assets/analytics.js?v=20260809x"></script>
+<script src="../assets/uitext.js?v=20260806b"></script>
 <script src="gecko-boot.js?v=014345"></script>
-<link rel="stylesheet" href="../assets/base.css?v=013848">
-<link rel="stylesheet" href="gecko.css?v=031715">
-<link rel="stylesheet" href="../assets/theme.css?v=025334">
+<link rel="stylesheet" href="../assets/base.css?v=20260810e">
+<link rel="stylesheet" href="gecko.css?v=20260731f">
+<link rel="stylesheet" href="gecko-explain.css?v=20260731e">
+<link rel="stylesheet" href="../assets/theme.css?v=20260809x">
 </head>
 <body class="leo">
 <header>
@@ -66,7 +75,8 @@
              좁은 화면에서는 base.css 가 글자를 숨기고 아이콘만 남깁니다. -->
         <a class="blink home" href="/" title="량 스튜디오"><i class="bi bi-house" aria-hidden="true"></i><span>스튜디오</span></a>
         <a class="blink" id="acctBtn" href="login.html" style="display:none"><i class="bi bi-person" aria-hidden="true"></i><span>내 정보</span></a>
-        <a class="blink" id="proBtn" href="breeding.html" style="display:none"><i class="bi bi-journal-check" aria-hidden="true"></i><span>브리딩 관리</span></a>
+        <a class="blink" data-signup-btn hidden></a>
+        <a class="blink" id="proBtn" href="/care/breeding.html?species=gecko&amp;v=20260803m" style="display:none"><i class="bi bi-journal-check" aria-hidden="true"></i><span>브리딩 관리</span></a>
         <button class="blink prem" id="premBtn" onclick="openPrem()" style="display:none"><i class="bi bi-gem" aria-hidden="true"></i><span>프리미엄 코드</span></button>
         <button class="blink update-btn" onclick="openUpd()"><i class="bi bi-file-earmark-text" aria-hidden="true"></i><span>업데이트 노트</span></button>
       </nav>
@@ -79,10 +89,10 @@
   </div>
   <div class="langmenu" id="langMenu">
     <div class="mtitle" id="lbl-langtitle">Language</div>
-    <button data-lang="ko">한국어</button>
-    <button data-lang="en">English</button>
-    <button data-lang="zh">中文</button>
-    <button data-lang="ja">日本語</button>
+    <a data-lang="ko" href="/gecko/">한국어</a>
+    <a data-lang="en" href="/en/gecko/">English</a>
+    <a data-lang="zh" href="/zh/gecko/">中文</a>
+    <a data-lang="ja" href="/ja/gecko/">日本語</a>
   </div>
 </header>
 
@@ -99,16 +109,26 @@
       <div class="card-top">
         <div class="avatar"><img src="../assets/leo-face-a.png" alt="" aria-hidden="true"></div>
         <div class="card-name"><h2><span id="lbl-pa"></span></h2><div class="card-role" id="lbl-pa-role-leo">유전 형질 선택</div></div>
-        <button type="button" class="helpbtn" onclick="toggleLeoOptNote()"><i class="bi bi-info-circle" aria-hidden="true"></i><span id="lbl-help-leo">선택 도움말</span></button>
       </div>
+      <div class="searchbar">
+        <i class="bi bi-search sicon" aria-hidden="true"></i>
+        <input type="search" id="qA" autocomplete="off" spellcheck="false" enterkeyhint="search">
+        <button type="button" class="sclr" id="qclrA"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
+      </div>
+      <div class="searchcnt" id="cntA"></div>
       <div id="parentA"></div>
     </div>
     <div class="card b">
       <div class="card-top">
         <div class="avatar"><img src="../assets/leo-face-b.png" alt="" aria-hidden="true"></div>
         <div class="card-name"><h2><span id="lbl-pb"></span></h2><div class="card-role" id="lbl-pb-role-leo">유전 형질 선택</div></div>
-        <button type="button" class="helpbtn" onclick="toggleLeoOptNote()"><i class="bi bi-info-circle" aria-hidden="true"></i><span id="lbl-help2-leo">선택 도움말</span></button>
       </div>
+      <div class="searchbar">
+        <i class="bi bi-search sicon" aria-hidden="true"></i>
+        <input type="search" id="qB" autocomplete="off" spellcheck="false" enterkeyhint="search">
+        <button type="button" class="sclr" id="qclrB"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
+      </div>
+      <div class="searchcnt" id="cntB"></div>
       <div id="parentB"></div>
     </div>
   </div>
@@ -129,7 +149,7 @@
 
   <div class="results" id="results"></div>
 
-  <div class="adslot" id="adSlot"></div>
+  <div class="adslot" id="adSlot" hidden></div>
   <div class="donate-wrap"><button class="donate" id="donateBtn" type="button" onclick="openPrem()"></button></div>
 
   <div class="bottom-links">
@@ -148,7 +168,7 @@
        JS 로 그리는 부분과 달리 첫 요청에서 바로 색인됩니다. -->
   <section class="seo-intro">
     <h2>레오파드 게코 모프 계산기</h2>
-    <p>부모 개체의 유전 형질을 고르면 새끼에게 나올 모프와 확률을 멘델 유전 법칙으로 계산합니다. 트램퍼·벨·레인워터 알비노, 이클립스, 블리자드, 머피 패턴리스, 맥스노우, 레몬 프로스트, 에니그마, 화이트 앤 옐로우, 슈퍼자이언트를 지원하며 랩터·갤럭시·디아블로 블랑코·레이다·타이푼 등 콤보 명칭도 함께 표시합니다. 탠저린·만다린·멜라니스틱 같은 라인브리딩 형질은 계열을 따져 멜라텐져린처럼 이름을 붙여줍니다. 한국어·영어·중국어·일본어를 지원하며 회원가입 없이 무료로 쓸 수 있습니다.</p>
+    <p>부모 개체의 유전 형질을 고르면 새끼에게 나올 모프와 확률을 멘델 유전 법칙으로 계산합니다. 트램퍼·벨·레인워터 알비노, 이클립스, 블리자드, 머피 패턴리스, 맥스노우, 레몬 프로스트, 에니그마, 화이트앤옐로우(WY), 슈퍼자이언트를 지원하며 랩터·갤럭시·디아블로 블랑코·레이다·타이푼 등 콤보 명칭도 함께 표시합니다. 탠저린·만다린·멜라니스틱 같은 라인브리딩 형질은 계열을 따져 멜라텐져린처럼 이름을 붙여줍니다. 한국어·영어·중국어·일본어를 지원하며 회원가입 없이 무료로 쓸 수 있습니다.</p>
   </section>
 
   <footer id="footer">확률은 멘델 유전 법칙에 따른 이론값입니다 · 라인브리딩(폴리제닉) 형질은 확률 계산 대상이 아닙니다</footer>
@@ -164,7 +184,7 @@
 <div class="modal-overlay" id="updModal">
   <div class="modal">
     <div class="modal-head">
-      <h3>📢 업데이트 노트</h3>
+      <h3 id="lbl-updtitle">📢 업데이트 노트</h3>
       <button class="modal-x" onclick="closeUpd()" aria-label="close">✕</button>
     </div>
     <div class="modal-body">
@@ -177,11 +197,11 @@
         <div class="upd-title soon" id="lbl-updsoon">🔜 업데이트 예정</div>
         <ul id="updSoon"></ul>
       </div>
-      <div class="modal-mail">문의 · 건의: <a href="mailto:kmc612000@gmail.com">kmc612000@gmail.com</a></div>
+      <div class="modal-mail"><span id="lbl-modalmail">문의 · 건의: </span><a href="mailto:kmc612000@gmail.com">kmc612000@gmail.com</a></div>
     </div>
     <div class="modal-foot">
-      <button class="btn-today" onclick="dismissToday()">오늘 하루 안 보기</button>
-      <button class="btn-close" onclick="closeUpd()">닫기</button>
+      <button class="btn-today" onclick="dismissToday()"><span id="lbl-updtoday">오늘 하루 안 보기</span></button>
+      <button class="btn-close" onclick="closeUpd()"><span id="lbl-updclose">닫기</span></button>
     </div>
   </div>
 </div>
@@ -189,18 +209,18 @@
 <!-- 프리미엄 코드 모달 -->
 <div class="modal-overlay" id="premModal">
   <div class="modal" style="max-width:400px">
-    <div class="modal-head"><h3>💎 프리미엄 코드</h3><button class="modal-x" onclick="closePrem()">✕</button></div>
+    <div class="modal-head"><h3 id="pmTitle">💎 프리미엄 코드</h3><button class="modal-x" onclick="closePrem()">✕</button></div>
     <div class="modal-body">
       <div id="premAccount"></div>
 
       <div class="perkbox" id="perkBox">
-        <div class="perkhead">프리미엄으로 열리는 기능</div>
-        <div class="perk"><span class="pk">🦎</span><div><b>브리딩 관리</b><span>내 개체·혈통 등록, 사진 저장, 페어링·클러치 기록 관리</span></div></div>
-        <div class="perk"><span class="pk">🎯</span><div><b>목표 모프 역산</b><span>등록한 개체 기준으로 목표까지 가능한 페어링과 부족한 조건을 찾아줍니다</span></div></div>
-        <div class="perk"><span class="pk">🖼️</span><div><b>결과 이미지 저장</b><span>계산 결과를 이미지로 내려받아 기록·공유</span></div></div>
-        <div class="perk"><span class="pk">🚫</span><div><b>광고 제거</b><span>모든 화면에서 광고가 표시되지 않습니다</span></div></div>
-        <div class="perk"><span class="pk">☁️</span><div><b>계정 동기화</b><span>휴대폰·PC 어디서든 같은 기록을 이어서 사용</span></div></div>
-        <div class="perkfoot">무료로도 <b>모프 확률 계산·콤보 명칭·위험 조합 경고</b>는 계속 이용할 수 있어요.</div>
+        <div class="perkhead" id="pmPerkHead">프리미엄으로 열리는 기능</div>
+        <div class="perk"><span class="pk">🦎</span><div><b id="pmPerk1T">브리딩 관리</b><span id="pmPerk1B">내 개체·혈통 등록, 사진 저장, 페어링·클러치 기록 관리</span></div></div>
+        <div class="perk"><span class="pk">🎯</span><div><b id="pmPerk2T">목표 모프 역산</b><span id="pmPerk2B">등록한 개체 기준으로 목표까지 가능한 페어링과 부족한 조건을 찾아줍니다</span></div></div>
+        <div class="perk"><span class="pk">🖼️</span><div><b id="pmPerk3T">결과 이미지 저장</b><span id="pmPerk3B">계산 결과를 이미지로 내려받아 기록·공유</span></div></div>
+        <div class="perk"><span class="pk">🚫</span><div><b id="pmPerk4T">광고 제거</b><span id="pmPerk4B">모든 화면에서 광고가 표시되지 않습니다</span></div></div>
+        <div class="perk"><span class="pk">☁️</span><div><b id="pmPerk5T">계정 동기화</b><span id="pmPerk5B">휴대폰·PC 어디서든 같은 기록을 이어서 사용</span></div></div>
+        <div class="perkfoot" id="pmPerkFoot">무료로도 <b>모프 확률 계산·콤보 명칭·위험 조합 경고</b>는 계속 이용할 수 있어요.</div>
       </div>
 
       <div id="premStatus" style="font-size:13px;margin:12px 0 8px;color:var(--ink2)"></div>
@@ -209,16 +229,16 @@
       <div id="premMsg" style="font-size:12.5px;margin-top:8px;min-height:16px"></div>
 
       <div class="donatebox" id="donateBox">
-        <div class="dhead">☕ 개발자 후원하기</div>
-        <div class="dsub">이 계산기는 개인이 무료로 만들어 운영하고 있어요. 후원해 주시면 서버 비용과 모프 데이터 업데이트에 사용됩니다.</div>
+        <div class="dhead" id="pmDonHead">☕ 개발자 후원하기</div>
+        <div class="dsub" id="pmDonSub">이 계산기는 개인이 무료로 만들어 운영하고 있어요. 후원해 주시면 서버 비용과 모프 데이터 업데이트에 사용됩니다.</div>
         <div class="dacct"><span class="dbank" id="donBank">카카오뱅크</span><b id="donAcct">3333-17-6613203</b>
           <button class="mini" id="donCopy">복사</button></div>
-        <div class="dnote">후원은 자율이며, 후원하지 않아도 모든 무료 기능을 그대로 이용하실 수 있습니다. 후원금은 프리미엄 이용권과 무관합니다.</div>
+        <div class="dnote" id="pmDonNote">후원은 자율이며, 후원하지 않아도 모든 무료 기능을 그대로 이용하실 수 있습니다. 후원금은 프리미엄 이용권과 무관합니다.</div>
       </div>
     </div>
     <div class="modal-foot">
-      <button class="btn-today" onclick="closePrem()">닫기</button>
-      <button class="btn-close" onclick="redeemPrem()">활성화</button>
+      <button class="btn-today" id="pmClose" onclick="closePrem()">닫기</button>
+      <button class="btn-close" id="pmRedeem" onclick="redeemPrem()">활성화</button>
     </div>
   </div>
 </div>
@@ -226,8 +246,12 @@
 <!-- 관리자 페이지 (#admin) -->
 <div id="adminRoot" class="admin-root"></div>
 
-<script src="gecko-ui.js?v=020520"></script>
+<script src="gecko-explain.js?v=20260731e"></script>
+<script src="/assets/calculation-history-store.js?v=20260731h"></script>
+<script src="/assets/result-card.js?v=20260810a"></script>
+<script src="gecko-ui.js?v=20260810f"></script>
 
-<script src="gecko-app.js?v=024811"></script>
+<script src="gecko-app.js?v=20260809a"></script>
+<script src="/assets/signup-cta.js?v=20260810i" data-nudge></script>
 </body>
 </html>

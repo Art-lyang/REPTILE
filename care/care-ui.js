@@ -9,6 +9,13 @@
 
   const C = window.CareCore;
   const A = window.CareApp;
+  const I = window.CareI18n;
+  const R = window.CareRoutine;
+  const CareTodayUi = window.CareTodayUi;
+  const CarePlanUi = window.CarePlanUi;
+  const CareHealthUi = window.CareHealthUi;
+  const CarePhotos = window.CarePhotos;
+  const LifeStage = window.AnimalLifeStage;
   const $ = id => document.getElementById(id);
 
   function esc(s) {
@@ -23,11 +30,23 @@
      숨겨두지 않습니다 — 그러면 어디가 진짜인지 알 수 없게 됩니다. */
   const S = {
     tab: 'today',
-    animals: [], plans: [], records: [], weights: [], feeds: [],
+    animals: [], plans: [], records: [], weights: [], feeds: [], streak: 0,
     focus: '',       // 개체 필터 ('' = 전체)
     editAnimal: null, editPlan: null, editFeed: null,
     busy: false
   };
+  /* 일괄 빠른 기록. 브리딩 개체 탭과 같은 조각을 씁니다 — 케어 기록이 쌓이는
+     곳이 여기라 이쪽이 본 자리이고, 브리딩에서도 같은 것을 부릅니다. */
+  const Bulk = window.createBulkCareRecord({
+    state: S, app: A, core: C, i18n: I, esc: esc,
+    icon: function (n) { return icon(n); },
+    act: function (fn, msg) { return act(fn, msg); },
+    render: function () { render(); }
+  });
+  const AnimalForm = window.createCareAnimalForm({
+    state: S, app: A, core: C, i18n: I, photos: CarePhotos, lifeStage: LifeStage,
+    element: $, escapeHtml: esc, icon: icon, act: act
+  });
 
   function toast(msg) {
     const t = $('toast');
@@ -41,15 +60,39 @@
   function kindTag(k) {
     const i = C.kindInfo(k);
     return '<span class="kind" style="color:' + i.color + '">'
-         + '<i class="bi ' + i.icon + '" aria-hidden="true"></i>' + esc(i.ko) + '</span>';
+         + '<i class="bi ' + i.icon + '" aria-hidden="true"></i>' + esc(I.kindName(k)) + '</span>';
   }
   function icon(name) {
     return '<i class="bi ' + name + '" aria-hidden="true"></i>';
   }
 
+  /* ── 무료 한도 ─────────────────────────────────────────────────────────
+     활성 = 수정·계획 지정·알림이 되는 개체입니다. 무료로 내려온 사람은 10마리만
+     활성이고, 나머지는 보기와 삭제만 됩니다.
+
+     quota.active 가 없으면(v54 적용 전, 또는 조회 실패) 전부 활성으로 봅니다.
+     화면이 잠기는 쪽으로 틀리면 멀쩡한 사람이 자기 기록을 못 고칩니다. */
+  function quota() { return S.quota || { premium: true, active: null, known: false }; }
+  function isActiveAnimal(id) {
+    const q = quota();
+    if (q.premium || !q.active) return true;
+    return q.active.indexOf(id) >= 0;
+  }
+  function overLimit() {
+    const q = quota();
+    return !q.premium && q.active ? Math.max(0, S.animals.length - q.active.length) : 0;
+  }
+
   function animalById(id) { return S.animals.filter(a => a.id === id)[0] || null; }
-  function animalName(id) { const a = animalById(id); return a ? (a.name || '이름 없음') : null; }
+  function animalName(id) { const a = animalById(id); return a ? (a.name || I.t('unnamed')) : null; }
   function speciesOf(a) { return C.SPECIES[a && a.species] || C.SPECIES.other; }
+  function speciesName(a) { return I.speciesName((a && a.species) || 'other'); }
+  function planName(p) { return p.title ? I.presetTitle(p.title) : I.kindName(p.kind); }
+  function loginUrl() {
+    return I.url('/gecko/login.html', {
+      next: location.pathname + location.search + location.hash
+    });
+  }
 
   /* ── 데이터 불러오기 ──────────────────────────────────────────────────
      기록은 90일치만 받습니다. 화면에서 쓰는 것은 오늘 상태와 주간 요약뿐이라
@@ -57,10 +100,13 @@
      여유를 두려고 7일이 아니라 90일로 잡았습니다. */
   async function loadAll() {
     const from = C.addDays(C.today(), -90);
-    const [animals, plans, records, weights, feeds] = await Promise.all([
-      A.listAnimals(), A.listPlans(), A.listRecords(from), A.listWeights(null), A.listFeeds()
+    const [animals, plans, records, weights, feeds, streak, quota] = await Promise.all([
+      A.listAnimals(), A.listPlans(), A.listRecords(from), A.listWeights(null), A.listFeeds(),
+      A.routineStreak(), A.careQuota()
     ]);
     S.animals = animals; S.plans = plans; S.records = records; S.weights = weights; S.feeds = feeds;
+    S.streak = streak; S.quota = quota;
+    window.CareAnimalEditRoute.activate(S, CarePhotos, A, location, history);
   }
 
   /* 캘린더에 넣을 주문 안내. 계산은 core 가 합니다. */
@@ -75,7 +121,7 @@
 
   async function reload() {
     try { await loadAll(); render(); }
-    catch (e) { toast(A.friendly(e)); }
+    catch (e) { toast(I.friendly(e)); }
   }
 
   /* 서버를 건드리는 동작 공통 껍데기. 연타로 같은 요청이 두 번 나가는 것을
@@ -84,12 +130,13 @@
     if (S.busy) return;
     S.busy = true;
     try {
-      await fn();
+      const result = await fn();
       await loadAll();
       render();
-      if (okMsg) toast(okMsg);
+      if (okMsg) toast(typeof okMsg === 'function' ? okMsg(result) : okMsg);
+      return result;
     } catch (e) {
-      toast(A.friendly(e));
+      toast(I.friendly(e));
       render();
     } finally {
       S.busy = false;
@@ -105,61 +152,14 @@
 
   function tabToday() {
     const day = C.today();
-    const plans = S.plans.filter(p => p.is_active !== false)
+    const routinePlans = S.plans.filter(p => p.is_active !== false);
+    const plans = routinePlans
                          .filter(p => !S.focus || p.animal_id === S.focus || !p.animal_id);
-
-    if (!S.plans.length) {
-      return '<div class="pad"><div class="empty">'
-        + icon('bi-calendar-plus') + '아직 반복 계획이 없습니다.<br>'
-        + '<b>계획</b> 탭에서 종별 기본값을 한 번에 넣을 수 있어요.</div>'
-        + '<button class="btn wide" data-go="plans" style="margin-top:14px">'
-        + icon('bi-arrow-right-circle') + '계획 만들러 가기</button></div>';
-    }
-
-    const rows = plans.map(p => ({ p: p, st: C.planStatus(p, day, doneDatesFor(p.id)) }));
-    const late = rows.filter(r => r.st.overdue > 0 && !r.st.done);
-    const now  = rows.filter(r => r.st.due && !r.st.done && r.st.overdue === 0);
-    const did  = rows.filter(r => r.st.done);
-
-    let h = '';
-    const dayName = C.WEEKDAY_KO[C.weekdayOf(day)];
-    h += '<div class="pad"><div class="lbl">' + day.slice(5).replace('-', '월 ') + '일 (' + dayName + ')</div>'
-       + '<div class="hint">오늘 할 일 ' + (late.length + now.length) + '건'
-       + (did.length ? ' · 완료 ' + did.length + '건' : '') + '</div></div>';
-
-    if (late.length) {
-      h += '<div class="sect"><h2>밀린 것</h2><span class="n">' + late.length + '</span></div>';
-      h += late.map(r => taskRow(r, true)).join('');
-    }
-    if (now.length) {
-      h += '<div class="sect"><h2>오늘</h2><span class="n">' + now.length + '</span></div>';
-      h += now.map(r => taskRow(r, false)).join('');
-    }
-    if (!late.length && !now.length) {
-      h += '<div class="pad"><div class="empty">'
-        + icon('bi-check2-circle') + '오늘 할 일을 모두 끝냈습니다</div></div>';
-    }
-    if (did.length) {
-      h += '<div class="sect"><h2>완료</h2><span class="n">' + did.length + '</span></div>';
-      h += did.map(r => taskRow(r, false)).join('');
-    }
-    return h;
-  }
-
-  function taskRow(r, isLate) {
-    const p = r.p, st = r.st, k = C.kindInfo(p.kind);
-    const who = p.animal_id ? animalName(p.animal_id) : '전체';
-    const cls = 'task' + (st.done ? ' did' : (isLate ? ' late' : ''));
-    let sub = kindTag(p.kind) + esc(who) + ' · ' + esc(C.cycleLabel(p));
-    if (isLate) sub += ' · <span class="late-t">' + st.overdue + '일 밀림</span>';
-    if (p.detail) sub += '<br>' + esc(p.detail);
-
-    return '<div class="' + cls + '">'
-      + '<button class="tick' + (st.done ? ' on' : '') + '" data-tick="' + p.id + '" '
-      + 'aria-label="' + esc((p.title || k.ko) + ' ' + (st.done ? '완료 취소' : '완료')) + '">'
-      + (st.done ? '<i class="bi bi-check-lg" aria-hidden="true"></i>' : '') + '</button>'
-      + '<div class="tinfo"><div class="tname">' + esc(p.title || k.ko) + '</div>'
-      + '<div class="tsub">' + sub + '</div></div></div>';
+    return CareTodayUi.render({
+      plans: plans, routinePlans: routinePlans, records: S.records, day: day, streak: S.streak,
+      core: C, routine: R, i18n: I, escapeHtml: esc, icon: icon,
+      animalName: animalName, planName: planName, kindTag: kindTag
+    });
   }
 
   /* =============================================================================
@@ -168,22 +168,61 @@
   function tabAnimals() {
     if (S.editAnimal) return animalForm(S.editAnimal);
 
-    let h = '<button class="btn wide" data-newanimal="1" style="margin-bottom:14px">'
-          + icon('bi-plus-lg') + '개체 등록</button>';
+    const q = quota();
+    let h = '';
+
+    /* 남은 자리를 미리 알려 줍니다. 다 채우고 나서 "안 됩니다" 라고 하는 것보다
+       채워 가는 동안 보이는 편이 낫습니다.
+
+       무료는 늘 보여 줍니다 — 10마리는 금방 차고, 결제를 권할 자리이기도 합니다.
+       유료(50마리)는 8할을 넘겼을 때만 띄웁니다. 3/50 을 매번 보여 주면
+       알려 주는 게 아니라 거슬리기만 합니다. */
+    const over = overLimit();
+    const nearFull = q.limit > 0 && S.animals.length >= Math.ceil(q.limit * 0.8);
+    if (q.known && (!q.premium || nearFull)) {
+      const full = q.limit > 0 && S.animals.length >= q.limit;
+      h += '<div class="quotabar' + (over || full ? ' over' : '') + '">'
+        + '<div><b>' + esc(I.t('freeQuotaTitle', {
+            used: I.formatNumber(S.animals.length), limit: I.formatNumber(q.limit),
+          })) + '</b>'
+        + '<div class="quotahint">' + esc(
+            over ? I.t('freeQuotaOver', { count: I.formatNumber(over) })
+              : full ? I.t('quotaFull', { limit: I.formatNumber(q.limit) })
+                /* 관리자가 따로 올려 준 회원은 무료·유료 기본 설명이 맞지
+                   않습니다. 10마리라고 적혀 있는데 30마리를 쓰고 있으면
+                   문의가 옵니다. */
+                : q.custom ? I.t('quotaCustomHint', { limit: I.formatNumber(q.limit) })
+                  : q.premium ? I.t('quotaPremiumHint', { limit: I.formatNumber(q.limit) })
+                    : I.t('freeQuotaHint', { limit: I.formatNumber(q.limit) })
+          ) + '</div></div>'
+        /* 유료는 더 권할 것이 없으니 결제 안내를 붙이지 않습니다.
+
+           예전에는 로그인 화면으로 보냈습니다. 여기까지 온 사람은 이미 로그인한
+           상태라, 눌러 봐야 자기 계정 화면만 나오고 무엇이 더 열리는지는 알 수
+           없었습니다. */
+        + (q.premium ? ''
+          : '<a class="mini" href="' + esc(I.url('/pricing.html')) + '">'
+            + icon('bi-gem') + esc(I.t('premiumAction')) + '</a>')
+        + '</div>';
+    }
+
+    h += '<button class="btn wide" data-newanimal="1" style="margin-bottom:14px">'
+       + icon('bi-plus-lg') + I.t('addAnimal') + '</button>';
     if (!S.animals.length) {
       return h + '<div class="pad"><div class="empty">'
-        + icon('bi-heart') + '등록한 개체가 없습니다.<br>'
-        + '브리딩 관리에 등록한 개체가 있다면 로그인 상태에서 여기에도 함께 보입니다.</div></div>';
+        + icon('bi-heart') + I.t('noAnimalsTitle') + '<br>' + I.t('noAnimalsBody') + '</div></div>';
     }
 
     /* 종별로 묶어 보여줍니다. 여러 종을 키우면 한 줄로 늘어놓았을 때
        어느 것이 무엇인지 알아보기 어렵습니다. */
+    h += Bulk.toggleButton() + Bulk.barHtml();
+
     const bySp = {};
     S.animals.forEach(a => { (bySp[a.species] = bySp[a.species] || []).push(a); });
 
     Object.keys(bySp).forEach(function (sp) {
       const info = C.SPECIES[sp] || C.SPECIES.other;
-      h += '<div class="sect"><h2>' + info.icon + ' ' + esc(info.ko) + '</h2>'
+      h += '<div class="sect"><h2>' + info.icon + ' ' + esc(I.speciesName(sp)) + '</h2>'
          + '<span class="n">' + bySp[sp].length + '</span></div>';
       h += bySp[sp].map(animalCard).join('');
     });
@@ -198,61 +237,87 @@
 
     const bits = [];
     if (last) bits.push(Number(last.grams) + 'g · ' + last.measured_on.slice(5));
-    bits.push('계획 ' + nPlans + '개');
-    if (a.hatch_date) bits.push('해칭 ' + a.hatch_date);
+    bits.push(I.t('countPlans', { count: I.formatNumber(nPlans) }));
+    if (a.hatch_date) bits.push(I.t('hatchDate', { date: I.formatDate(a.hatch_date) }));
 
-    const sex = a.sex === 'male' ? '<span class="chip">♂ 수컷</span>'
-              : a.sex === 'female' ? '<span class="chip">♀ 암컷</span>' : '';
+    const sex = a.sex === 'male' ? '<span class="chip">' + icon('bi-gender-male chip-sex') + I.t('sexMale') + '</span>'
+              : a.sex === 'female' ? '<span class="chip">' + icon('bi-gender-female chip-sex') + I.t('sexFemale') + '</span>' : '';
+    const stage = '<span class="chip">' + esc(I.t(LifeStage.labelKey(a.life_stage))) + '</span>';
 
-    return '<div class="card">'
-      + '<div class="thumb">' + (a.photo_url ? '<img src="' + esc(a.photo_url) + '" alt="">' : info.icon) + '</div>'
-      + '<div class="info"><div class="nm">' + esc(a.name || '이름 없음') + sex + '</div>'
-      + '<div class="ms">' + esc(bits.join(' · ')) + '</div></div>'
+    /* 무료 한도를 넘어 잠긴 개체. 왜 잠겼는지 보이지 않으면 고장으로 읽힙니다.
+       삭제는 되고 수정만 막히므로, 수정 자리에 '활성으로 바꾸기' 를 둡니다. */
+    const locked = !isActiveAnimal(a.id);
+    const acts = locked
+      ? '<button class="mini" data-slotanimal="' + a.id + '">'
+        + icon('bi-arrow-up-circle') + esc(I.t('freeSlotActivate')) + '</button>'
+      : '<button class="mini" data-editanimal="' + a.id + '">' + icon('bi-pencil') + I.t('edit') + '</button>';
+
+    return '<div class="card' + (locked ? ' card-locked' : '') + Bulk.cardClass(a) + '">'
+      + Bulk.cardBox(a)
+      + '<div class="thumb">' + (a.photo_url ? Photo.tag(a.photo_url, a.name || '') : info.icon) + '</div>'
+      + '<div class="info"><div class="nm">' + esc(a.name || I.t('unnamed')) + sex + stage
+      + (locked ? '<span class="chip chip-locked">' + icon('bi-lock') + esc(I.t('freeSlotLocked')) + '</span>' : '')
+      /* 100마리를 키우면 어느 개체가 조치됐는지 목록에서 못 찾습니다. */
+      + (a.held_at ? '<span class="chip chip-held">' + icon('bi-exclamation-octagon')
+          + esc(I.t('holdBadge')) + '</span>' : '')
+      /* 넘긴 개체는 고칠 수 없습니다. 목록에서 미리 보여야 헛걸음을 안 합니다. */
+      + (a.transferred_at ? '<span class="chip chip-locked">' + icon('bi-box-arrow-right')
+          + esc(I.t('tfDone')) + '</span>' : '')
+      + '</div>'
+      + '<div class="ms">' + esc(bits.join(' · '))
+      + (locked ? '<br><span class="lockedwhy">' + esc(I.t('freeSlotLockedWhy')) + '</span>' : '')
+      + '</div></div>'
       + '<div class="acts">'
       /* 개체 관리 화면으로. 주소에 id 가 들어가 즐겨찾기에 둘 수 있습니다. */
-      + '<a class="mini" href="animal.html?id=' + encodeURIComponent(a.id) + '">'
-      + icon('bi-graph-up') + '관리</a>'
-      + '<button class="mini" data-editanimal="' + a.id + '">' + icon('bi-pencil') + '수정</button>'
+      + '<a class="mini" href="' + esc(I.url('animal.html?id=' + encodeURIComponent(a.id))) + '">'
+      + icon('bi-graph-up') + I.t('manage') + '</a>'
+      + acts
       + '</div></div>'
       + (S.focus === a.id ? weightPanel(a) : '');
   }
 
-  function animalForm(a) {
-    const isNew = !a.id;
-    const spOpts = Object.keys(C.SPECIES).map(k =>
-      '<option value="' + k + '"' + (a.species === k ? ' selected' : '') + '>'
-      + C.SPECIES[k].icon + ' ' + esc(C.SPECIES[k].ko) + '</option>').join('');
-
+  /* 넘긴 개체는 고칠 수 없습니다. 서버가 거부하지만(supabase_v77), 다 적고
+     저장을 눌러 보고 나서 알게 하면 안 됩니다 — 그건 안내가 아니라 함정입니다. */
+  function transferredNotice(a) {
     return '<div class="pad">'
-      + '<div class="lbl">' + (isNew ? '개체 등록' : '개체 수정') + '</div>'
-      + '<div class="lbl2">이름</div><input class="in" id="f_name" value="' + esc(a.name || '') + '" placeholder="예) 노랑이">'
-      + '<div class="lbl2">종</div><select class="in" id="f_species">' + spOpts + '</select>'
-      + '<div class="hint">종을 고르면 그 종에 흔히 쓰는 케어 계획을 한 번에 만들 수 있습니다.</div>'
-      + '<div class="row2">'
-      + '<div><div class="lbl2"><label for="f_sex">성별</label></div><select class="in" id="f_sex">'
-      + ['unknown:미상', 'male:수컷', 'female:암컷'].map(o => {
-          const [v, t] = o.split(':');
-          return '<option value="' + v + '"' + ((a.sex || 'unknown') === v ? ' selected' : '') + '>' + t + '</option>';
-        }).join('')
-      + '</select></div>'
-      /* 빈 날짜 칸은 브라우저에 따라 아무것도 안 보입니다. 눌러야 무슨 칸인지
-         알 수 있다는 지적이 있어 제목을 밖에 두고 label 로 묶었습니다. */
-      + '<div><div class="lbl2"><label for="f_hatch">해칭·입양일 (선택)</label></div>'
-      + '<input class="in" id="f_hatch" type="date" value="' + esc(a.hatch_date || '') + '"></div>'
-      + '</div>'
-      + '<div class="lbl2">메모</div><textarea class="in" id="f_note">' + esc(a.note || '') + '</textarea>'
-      + '<div class="err" id="f_err"></div>'
-      + '<div class="formbtns"><button class="btn" id="f_save">' + icon('bi-check-lg') + '저장</button>'
-      + '<button class="btn ghost" data-cancel="animal">취소</button>'
-      + (isNew ? '' : '<button class="btn danger" data-delanimal="' + a.id + '" style="margin-left:auto">'
-                    + icon('bi-trash3') + '삭제</button>')
-      + '</div></div>';
+      + '<div class="lbl">' + icon('bi-box-arrow-right') + esc(a.name || I.t('unnamed')) + '</div>'
+      + '<div><span class="chip chip-locked">' + icon('bi-box-arrow-right')
+      + esc(I.t('tfDone')) + '</span></div>'
+      + (a.transferred_at
+          ? '<div class="hint">' + esc(I.t('tfDoneAt', { date: I.formatDate(a.transferred_at) })) + '</div>'
+          : '')
+      + '<div class="hint">' + esc(I.t('tfLocked')) + '</div>'
+      + '<button class="btn ghost wide" data-cancel="animal" style="margin-top:16px">'
+      + icon('bi-arrow-left') + esc(I.t('backToList')) + '</button>'
+      + '</div>';
+  }
+
+  /* 이 개체의 가장 최근 체중. 폼이 '그람수가 사라졌다' 로 보이지 않게
+     넘겨줍니다. */
+  function latestWeightOf(id) {
+    const rows = S.weights.filter(w => w.animal_id === id && w.measured_on)
+      .slice().sort((x, y) => x.measured_on < y.measured_on ? 1 : -1);
+    return rows.length ? { grams: Number(rows[0].grams), measured_on: rows[0].measured_on } : null;
+  }
+
+  function animalForm(a) {
+    if (a.transferred_at) return transferredNotice(a);
+    /* 이 개체를 부모로 걸어 둔 자식이 있으면 종·성별·성장 단계를 잠급니다.
+       바꾸면 자식 쪽 혈통이 어긋납니다 — 레오파드 새끼의 어미가 '기타' 가 되는
+       식으로요. 서버도 같은 것을 막습니다(supabase_v63.sql). */
+    return AnimalForm.html(a, C.childrenOf(S.animals, a.id),
+      { latestWeight: a.id ? latestWeightOf(a.id) : null });
   }
 
   /* ── 체중 ─────────────────────────────────────────────────────────── */
   function weightPanel(a) {
     const w = S.weights.filter(x => x.animal_id === a.id)
-                       .sort((x, y) => x.measured_on < y.measured_on ? -1 : 1);
+                       .sort((x, y) => {
+                         if (x.measured_on !== y.measured_on) return x.measured_on < y.measured_on ? -1 : 1;
+                         const left = x.measured_at || x.created_at || '';
+                         const right = y.measured_at || y.created_at || '';
+                         return left < right ? -1 : left > right ? 1 : 0;
+                       });
     const rng = speciesOf(a).weightRange;
 
     let head = '';
@@ -260,23 +325,23 @@
       const last = Number(w[w.length - 1].grams);
       const first = Number(w[0].grams);
       const d = Math.round((last - first) * 10) / 10;
-      head = '<div class="wstat"><span><b>' + last + 'g</b> 최근</span>'
-           + (w.length >= 2 ? '<span>' + (d >= 0 ? '+' : '') + d + 'g · ' + w.length + '회 측정</span>' : '')
+      head = '<div class="wstat"><span><b>' + last + 'g</b> ' + I.t('latest') + '</span>'
+           + (w.length >= 2 ? '<span>' + (d >= 0 ? '+' : '') + d + 'g · ' + I.t('measurements', { count: I.formatNumber(w.length) }) + '</span>' : '')
            + '</div>';
     }
 
     return '<div class="pad">'
-      + '<div class="lbl">' + esc(a.name || '이름 없음') + ' 체중</div>'
+      + '<div class="lbl">' + esc(a.name || I.t('unnamed')) + ' · ' + I.t('weight') + '</div>'
       + head + sparkline(w)
       + '<div class="row2" style="margin-top:8px">'
-      + '<input class="in" id="w_g" type="number" step="0.1" min="' + rng[0] + '" max="' + rng[1] + '" placeholder="무게 (g)" inputmode="decimal">'
-      + '<input class="in" id="w_d" type="date" value="' + C.today() + '">'
+      + '<input class="in" id="w_g" type="number" step="0.1" min="' + rng[0] + '" max="' + rng[1] + '" placeholder="' + esc(I.t('weightPlaceholder')) + '" inputmode="decimal">'
+      + DateField.html({ id: 'w_d', value: C.today(), max: C.today(), aria: I.t('measuredDate') })
       + '</div>'
-      + '<div class="hint">같은 날 다시 재면 덮어씁니다. 하루에 값이 둘이면 증감이 무엇을 뜻하는지 알 수 없어서입니다.</div>'
+      + '<div class="hint">' + I.t('weightSameDayHint') + '</div>'
       + '<div class="err" id="w_err"></div>'
       + '<div class="formbtns"><button class="btn" data-savew="' + a.id + '">'
-      + icon('bi-check-lg') + '체중 기록</button>'
-      + '<button class="btn ghost" data-weigh="">닫기</button></div>'
+      + icon('bi-check-lg') + I.t('weightRecord') + '</button>'
+      + '<button class="btn ghost" data-weigh="">' + I.t('close') + '</button></div>'
       + '</div>';
   }
 
@@ -284,7 +349,7 @@
      점 몇 개를 잇는 데 외부 파일을 하나 더 받아올 이유가 없습니다. */
   function sparkline(w) {
     if (w.length < 2) {
-      return '<div class="hint">두 번 이상 재면 그래프가 그려집니다.</div>';
+      return '<div class="hint">' + I.t('graphAfterTwo') + '</div>';
     }
     const W = 640, H = 150, PAD = 26;
     const vals = w.map(x => Number(x.grams));
@@ -292,12 +357,8 @@
     if (hi - lo < 1) { lo -= 1; hi += 1; }          // 값이 거의 같으면 납작해집니다
     const span = hi - lo;
 
-    const t0 = C.parseYmd(w[0].measured_on).getTime();
-    const t1 = C.parseYmd(w[w.length - 1].measured_on).getTime();
-    const dt = Math.max(1, t1 - t0);
-
-    const pt = x => {
-      const px = PAD + (C.parseYmd(x.measured_on).getTime() - t0) / dt * (W - PAD * 2);
+    const pt = (x, index) => {
+      const px = PAD + index / Math.max(1, w.length - 1) * (W - PAD * 2);
       const py = PAD + (1 - (Number(x.grams) - lo) / span) * (H - PAD * 2);
       return [Math.round(px * 10) / 10, Math.round(py * 10) / 10];
     };
@@ -306,7 +367,7 @@
     const area = line + ' L' + pts[pts.length - 1][0] + ' ' + (H - PAD) + ' L' + pts[0][0] + ' ' + (H - PAD) + ' Z';
 
     return '<svg class="wchart" viewBox="0 0 ' + W + ' ' + H + '" role="img" '
-      + 'aria-label="체중 ' + lo + 'g 에서 ' + hi + 'g 사이 ' + w.length + '회 측정">'
+      + 'aria-label="' + esc(I.t('weightChartAria', { min: lo, max: hi, count: I.formatNumber(w.length) })) + '">'
       + '<path d="' + area + '" fill="var(--teal)" opacity=".10"/>'
       + '<path d="' + line + '" fill="none" stroke="var(--teal)" stroke-width="2.5" '
       + 'stroke-linejoin="round" stroke-linecap="round"/>'
@@ -320,118 +381,12 @@
      계획
      ============================================================================= */
   function tabPlans() {
-    if (S.editPlan) return planForm(S.editPlan);
-
-    let h = '<div class="pad"><div class="lbl">캘린더로 내보내기</div>'
-      + '<div class="hint">파일을 받아 폰에서 열면 구글·애플·삼성 캘린더에 반복 일정으로 들어갑니다. '
-      + '그 뒤로는 캘린더가 알아서 알림을 울려 줍니다 — 이 화면을 열어두지 않아도 됩니다.</div>'
-      + '<button class="btn wide" id="ics" style="margin-top:10px" ' + (S.plans.length ? '' : 'disabled') + '>'
-      + icon('bi-calendar-check') + '캘린더 파일 받기'
-      + (S.plans.length ? ' (' + S.plans.filter(p => p.is_active !== false).length + '건)' : '') + '</button></div>';
-
-    h += '<div class="row2" style="margin-bottom:14px">'
-      + '<button class="btn" data-newplan="1">' + icon('bi-plus-lg') + '계획 추가</button>'
-      + '<button class="btn ghost" id="preset">' + icon('bi-magic') + '종별 기본값</button></div>';
-
-    if (!S.plans.length) {
-      return h + '<div class="pad"><div class="empty">'
-        + icon('bi-arrow-repeat') + '아직 계획이 없습니다.<br>'
-        + '<b>종별 기본값</b>을 누르면 흔히 쓰는 주기가 한 번에 만들어집니다.</div></div>';
-    }
-
-    /* 개체별로 묶습니다. 공통 계획을 맨 위에 둡니다. */
-    const groups = [{ id: '', label: '🏠 전체 공통' }].concat(
-      S.animals.map(a => ({ id: a.id, label: (speciesOf(a).icon + ' ' + (a.name || '이름 없음')) })));
-
-    groups.forEach(function (g) {
-      const list = S.plans.filter(p => (p.animal_id || '') === g.id);
-      if (!list.length) return;
-      h += '<div class="sect"><h2>' + esc(g.label) + '</h2><span class="n">' + list.length + '</span></div>';
-      h += list.map(planCard).join('');
+    return CarePlanUi.render({
+      plans: S.plans, animals: S.animals, feeds: S.feeds, editPlan: S.editPlan,
+      calendarOrderCount: feedOrders().length,
+      core: C, routine: R, i18n: I, escapeHtml: esc, icon: icon,
+      speciesOf: speciesOf, planName: planName
     });
-    return h;
-  }
-
-  function planCard(p) {
-    const k = C.kindInfo(p.kind);
-    const off = p.is_active === false;
-    return '<div class="card"' + (off ? ' style="opacity:.5"' : '') + '>'
-      + '<div class="thumb" style="background:' + k.color + '1a;border-color:' + k.color + '33;color:' + k.color + '">'
-      + '<i class="bi ' + k.icon + '" aria-hidden="true"></i></div>'
-      + '<div class="info"><div class="nm">' + esc(p.title || k.ko)
-      + (off ? '<span class="chip off">꺼짐</span>' : '') + '</div>'
-      + '<div class="ms">' + esc(C.cycleLabel(p))
-      + (p.time_of_day ? ' · ' + esc(String(p.time_of_day).slice(0, 5)) : ' · 종일')
-      + (p.detail ? ' · ' + esc(p.detail) : '') + '</div></div>'
-      + '<div class="acts"><button class="mini" data-editplan="' + p.id + '">'
-      + icon('bi-pencil') + '수정</button></div></div>';
-  }
-
-  function planForm(p) {
-    const isNew = !p.id;
-    const mode = (p.weekdays && p.weekdays.length) ? 'week' : 'days';
-    /* <option> 안에서는 아이콘 폰트가 렌더되지 않습니다. 여기만 emoji 를 씁니다. */
-    const kinds = Object.keys(C.CARE_KINDS).map(k =>
-      '<option value="' + k + '"' + (p.kind === k ? ' selected' : '') + '>'
-      + C.CARE_KINDS[k].emoji + ' ' + esc(C.CARE_KINDS[k].ko) + '</option>').join('');
-    const aOpts = '<option value="">🏠 전체 공통</option>' + S.animals.map(a =>
-      '<option value="' + a.id + '"' + (p.animal_id === a.id ? ' selected' : '') + '>'
-      + speciesOf(a).icon + ' ' + esc(a.name || '이름 없음') + '</option>').join('');
-
-    return '<div class="pad">'
-      + '<div class="lbl">' + (isNew ? '계획 추가' : '계획 수정') + '</div>'
-      + '<div class="row2">'
-      + '<div><div class="lbl2">종류</div><select class="in" id="p_kind">' + kinds + '</select></div>'
-      + '<div><div class="lbl2">대상</div><select class="in" id="p_animal">' + aOpts + '</select></div>'
-      + '</div>'
-      + '<div class="lbl2">이름</div><input class="in" id="p_title" value="' + esc(p.title || '') + '" placeholder="예) 칼슘 더스팅">'
-      + '<div class="lbl2">메모 (먹이 종류, 영양제 이름 등)</div>'
-      + '<input class="in" id="p_detail" value="' + esc(p.detail || '') + '">'
-
-      /* 먹이를 연결하면 이 계획을 완료할 때 그 먹이가 1회분 줄어듭니다.
-         비워두면 기록만 남고 재고는 그대로입니다. */
-      + '<div class="lbl2"><label for="p_feed">쓰는 먹이 (선택)</label></div>'
-      + '<select class="in" id="p_feed"><option value="">연결 안 함</option>'
-      + S.feeds.filter(f => f.is_active !== false).map(f =>
-          '<option value="' + f.id + '"' + (p.feed_item_id === f.id ? ' selected' : '') + '>'
-          + C.feedKindInfo(f.kind).emoji + ' ' + esc(f.name) + '</option>').join('')
-      + '</select>'
-      + '<div class="hint">' + (S.feeds.length
-          ? '연결하면 이 계획을 완료할 때 남은 양이 1회분만큼 줄어듭니다.'
-          : '<b>먹이</b> 탭에서 먼저 등록하면 여기에 나옵니다.') + '</div>'
-
-      + '<div class="lbl2">반복</div>'
-      + '<div class="modes">'
-      + '<button class="mode' + (mode === 'days' ? ' on' : '') + '" data-mode="days">며칠마다</button>'
-      + '<button class="mode' + (mode === 'week' ? ' on' : '') + '" data-mode="week">요일 지정</button>'
-      + '</div>'
-      + '<div id="m_days" style="display:' + (mode === 'days' ? 'block' : 'none') + '">'
-      + '<input class="in" id="p_interval" type="number" min="1" max="365" inputmode="numeric" '
-      + 'value="' + (p.interval_days || 1) + '" placeholder="며칠마다">'
-      + '<div class="hint">1 = 매일, 3 = 3일마다, 30 = 30일마다</div></div>'
-      + '<div id="m_week" style="display:' + (mode === 'week' ? 'block' : 'none') + '">'
-      + '<div class="wdays">' + C.WEEKDAY_KO.map((w, i) =>
-          '<button class="wd' + ((p.weekdays || []).indexOf(i) >= 0 ? ' on' : '') + '" data-wd="' + i + '">' + w + '</button>').join('')
-      + '</div></div>'
-
-      + '<div class="row2">'
-      + '<div><div class="lbl2">시작일</div><input class="in" id="p_start" type="date" value="' + esc(p.start_date || C.today()) + '"></div>'
-      + '<div><div class="lbl2">알림 시각</div><input class="in" id="p_time" type="time" value="' + esc(p.time_of_day ? String(p.time_of_day).slice(0, 5) : '') + '"></div>'
-      + '</div>'
-      + '<div class="hint">시각을 비우면 종일 일정으로 넣고 아침 9시에 알림이 옵니다. '
-      + '반복 날짜는 <b>시작일</b>부터 셉니다 — 늦게 해도 다음 날짜는 밀리지 않습니다.</div>'
-
-      + '<div class="lbl2">사용</div>'
-      + '<select class="in" id="p_active">'
-      + '<option value="1"' + (p.is_active !== false ? ' selected' : '') + '>켜짐</option>'
-      + '<option value="0"' + (p.is_active === false ? ' selected' : '') + '>꺼짐 (오늘 할 일·캘린더에서 빠짐)</option>'
-      + '</select>'
-      + '<div class="err" id="p_err"></div>'
-      + '<div class="formbtns"><button class="btn" id="p_save">' + icon('bi-check-lg') + '저장</button>'
-      + '<button class="btn ghost" data-cancel="plan">취소</button>'
-      + (isNew ? '' : '<button class="btn danger" data-delplan="' + p.id + '" style="margin-left:auto">'
-                    + icon('bi-trash3') + '삭제</button>')
-      + '</div></div>';
   }
 
   /* =============================================================================
@@ -458,21 +413,19 @@
     const need = rows.filter(r => ['out', 'now', 'expired', 'expiring'].indexOf(r.fc.level) >= 0);
 
     let h = '<button class="btn wide" data-newfeed="1" style="margin-bottom:14px">'
-          + icon('bi-plus-lg') + '먹이 · 용품 등록</button>';
+          + icon('bi-plus-lg') + I.t('addFeed') + '</button>';
 
     if (!S.feeds.length) {
       return h + '<div class="pad"><div class="empty">' + icon('bi-box-seam')
-        + '아직 등록한 먹이가 없습니다.<br>'
-        + '쓰시는 사료·간식·영양제를 넣어두면 <b>언제 떨어질지</b> 알려드리고,<br>'
-        + '주문할 날짜를 캘린더에도 함께 넣어드립니다.</div></div>';
+        + I.t('feedEmptyTitle') + '<br>' + I.t('feedEmptyBody') + '</div></div>';
     }
 
     if (need.length) {
-      h += '<div class="sect"><h2>주문이 필요해요</h2><span class="n">' + need.length + '</span></div>';
+      h += '<div class="sect"><h2>' + I.t('orderNeeded') + '</h2><span class="n">' + need.length + '</span></div>';
       h += need.map(r => feedCard(r.f, r.fc)).join('');
       const rest = rows.filter(r => need.indexOf(r) < 0);
       if (rest.length) {
-        h += '<div class="sect"><h2>여유 있음</h2><span class="n">' + rest.length + '</span></div>';
+        h += '<div class="sect"><h2>' + I.t('enough') + '</h2><span class="n">' + rest.length + '</span></div>';
         h += rest.map(r => feedCard(r.f, r.fc)).join('');
       }
     } else {
@@ -480,13 +433,12 @@
     }
 
     if (off.length) {
-      h += '<div class="sect"><h2>안 쓰는 것</h2><span class="n">' + off.length + '</span></div>';
+      h += '<div class="sect"><h2>' + I.t('unused') + '</h2><span class="n">' + off.length + '</span></div>';
       h += off.map(f => feedCard(f, C.feedForecast(f, S.plans, C.today()))).join('');
     }
 
     h += '<div class="hint" style="text-align:center;margin-top:16px">'
-      + '남은 양은 <b>계획대로 먹였을 때</b>를 기준으로 줄어듭니다. '
-      + '실제와 다르면 카드에서 직접 고쳐주세요.</div>';
+      + I.t('feedEstimateHint') + '</div>';
     return h;
   }
 
@@ -497,17 +449,17 @@
     const usedBy = S.plans.filter(p => p.feed_item_id === f.id && p.is_active !== false);
 
     const bits = [];
-    if (f.amount_left != null) bits.push(Number(f.amount_left) + (f.unit || '') + ' 남음');
-    if (fc.daysLeft != null) bits.push('약 ' + fc.daysLeft + '일치');
-    else if (!usedBy.length) bits.push('연결된 급여 계획 없음');
-    else if (!f.per_use) bits.push('1회분 미입력');
-    if (f.expires_on) bits.push('기한 ' + f.expires_on.slice(2));
+    if (f.amount_left != null) bits.push(I.t('remainingAmount', { amount: I.formatNumber(f.amount_left), unit: f.unit || '' }));
+    if (fc.daysLeft != null) bits.push(I.t('aboutDaysLeft', { count: I.formatNumber(fc.daysLeft) }));
+    else if (!usedBy.length) bits.push(I.t('noLinkedPlan'));
+    else if (!f.per_use) bits.push(I.t('missingPerUse'));
+    if (f.expires_on) bits.push(I.t('expires', { date: I.formatDate(f.expires_on) }));
 
     return '<div class="feedcard' + (off ? ' off' : '') + ' lv-' + lv.tone + '">'
       + '<div class="fctop">'
       + '<span class="kind" style="color:' + k.color + '">'
-      + '<i class="bi ' + k.icon + '" aria-hidden="true"></i>' + esc(k.ko) + '</span>'
-      + '<span class="fclv ' + lv.tone + '">' + esc(off ? '안 씀' : lv.ko) + '</span>'
+      + '<i class="bi ' + k.icon + '" aria-hidden="true"></i>' + esc(I.feedKindName(f.kind)) + '</span>'
+      + '<span class="fclv ' + lv.tone + '">' + esc(off ? I.t('notUsed') : I.feedLevelName(fc.level)) + '</span>'
       + '</div>'
       + '<div class="fcname">' + esc(f.name)
       + (f.brand ? '<span class="fcbrand">' + esc(f.brand) + '</span>' : '') + '</div>'
@@ -515,14 +467,14 @@
           '<div class="fcbar"><span style="width:' + fc.pct + '%"></span></div>')
       + '<div class="fcsub">' + esc(bits.join(' · ')) + '</div>'
       + (fc.orderOn && !off
-          ? '<div class="fcorder">' + icon('bi-calendar-event') + esc(fc.orderOn) + ' 쯤 주문'
-            + (fc.emptyOn ? ' <span class="fcdim">(' + esc(fc.emptyOn) + ' 소진 예상)</span>' : '') + '</div>'
+          ? '<div class="fcorder">' + icon('bi-calendar-event') + esc(I.t('orderAround', { date: I.formatDate(fc.orderOn) }))
+            + (fc.emptyOn ? ' <span class="fcdim">' + esc(I.t('expectedEmpty', { date: I.formatDate(fc.emptyOn) })) + '</span>' : '') + '</div>'
           : '')
       + '<div class="fcacts">'
       + (f.buy_url ? '<a class="mini" href="' + esc(f.buy_url) + '" target="_blank" rel="noopener noreferrer">'
-                     + icon('bi-cart') + '사러 가기</a>' : '')
-      + '<button class="mini" data-refill="' + f.id + '">' + icon('bi-arrow-clockwise') + '새로 채움</button>'
-      + '<button class="mini" data-editfeed="' + f.id + '">' + icon('bi-pencil') + '수정</button>'
+                     + icon('bi-cart') + I.t('buy') + '</a>' : '')
+      + '<button class="mini" data-refill="' + f.id + '">' + icon('bi-arrow-clockwise') + I.t('refill') + '</button>'
+      + '<button class="mini" data-editfeed="' + f.id + '">' + icon('bi-pencil') + I.t('edit') + '</button>'
       + '</div></div>';
   }
 
@@ -530,62 +482,61 @@
     const isNew = !f.id;
     const kinds = Object.keys(C.FEED_KINDS).map(k =>
       '<option value="' + k + '"' + (f.kind === k ? ' selected' : '') + '>'
-      + C.FEED_KINDS[k].emoji + ' ' + esc(C.FEED_KINDS[k].ko) + '</option>').join('');
+      + C.FEED_KINDS[k].emoji + ' ' + esc(I.feedKindName(k)) + '</option>').join('');
     const v = x => x == null ? '' : String(x);
 
     return '<div class="pad">'
-      + '<div class="lbl">' + (isNew ? '먹이 · 용품 등록' : '수정') + '</div>'
-      + '<div class="hint">실제로 쓰시는 제품을 그대로 적으면 됩니다.</div>'
+      + '<div class="lbl">' + I.t(isNew ? 'addFeed' : 'editFeed') + '</div>'
+      + '<div class="hint">' + I.t('feedFormHint') + '</div>'
 
-      + '<div class="lbl2"><label for="fd_name">이름</label></div>'
-      + '<input class="in" id="fd_name" value="' + esc(f.name || '') + '" placeholder="예) 판게아 파파야">'
+      + '<div class="lbl2"><label for="fd_name">' + I.t('name') + '</label></div>'
+      + '<input class="in" id="fd_name" value="' + esc(f.name || '') + '" placeholder="' + esc(I.t('planNamePlaceholder')) + '">'
       + '<div class="row2">'
-      + '<div><div class="lbl2"><label for="fd_kind">종류</label></div><select class="in" id="fd_kind">' + kinds + '</select></div>'
-      + '<div><div class="lbl2"><label for="fd_brand">브랜드 (선택)</label></div>'
+      + '<div><div class="lbl2"><label for="fd_kind">' + I.t('type') + '</label></div><select class="in" id="fd_kind">' + kinds + '</select></div>'
+      + '<div><div class="lbl2"><label for="fd_brand">' + I.t('brand') + '</label></div>'
       + '<input class="in" id="fd_brand" value="' + esc(f.brand || '') + '"></div>'
       + '</div>'
 
-      + '<div class="lbl2">양</div>'
+      + '<div class="lbl2">' + I.t('amount') + '</div>'
       + '<div class="row3">'
-      + '<input class="in" id="fd_left" type="number" step="0.1" min="0" inputmode="decimal" placeholder="남은 양" value="' + esc(v(f.amount_left)) + '">'
-      + '<input class="in" id="fd_full" type="number" step="0.1" min="0" inputmode="decimal" placeholder="새 것 기준" value="' + esc(v(f.amount_full)) + '">'
-      + '<input class="in" id="fd_unit" placeholder="단위" value="' + esc(f.unit || 'g') + '">'
+      + '<input class="in" id="fd_left" type="number" step="0.1" min="0" inputmode="decimal" placeholder="' + esc(I.t('amountLeft')) + '" value="' + esc(v(f.amount_left)) + '">'
+      + '<input class="in" id="fd_full" type="number" step="0.1" min="0" inputmode="decimal" placeholder="' + esc(I.t('amountFull')) + '" value="' + esc(v(f.amount_full)) + '">'
+      + '<input class="in" id="fd_unit" placeholder="' + esc(I.t('unit')) + '" value="' + esc(f.unit || 'g') + '">'
       + '</div>'
-      + '<div class="hint">단위는 자유입니다 — g · ml · 마리 · 통 등. '
-      + '<b>새 것 기준</b>을 적어두면 다음에 살 때 그 값으로 채웁니다.</div>'
+      + '<div class="hint">' + I.t('amountUnitHint') + '</div>'
 
-      + '<div class="lbl2"><label for="fd_per">1회 급여량</label></div>'
+      + '<div class="lbl2"><label for="fd_per">' + I.t('perUse') + '</label></div>'
       + '<input class="in" id="fd_per" type="number" step="0.1" min="0" inputmode="decimal" value="' + esc(v(f.per_use)) + '">'
-      + '<div class="hint">한 번 줄 때 쓰는 양입니다. 이게 있어야 <b>언제 떨어질지</b> 계산됩니다.</div>'
+      + '<div class="hint">' + I.t('perUseHint') + '</div>'
 
       + '<div class="row2">'
-      + '<div><div class="lbl2"><label for="fd_opened">개봉일 (선택)</label></div>'
-      + '<input class="in" id="fd_opened" type="date" value="' + esc(f.opened_on || '') + '"></div>'
-      + '<div><div class="lbl2"><label for="fd_exp">사용기한 (선택)</label></div>'
-      + '<input class="in" id="fd_exp" type="date" value="' + esc(f.expires_on || '') + '"></div>'
+      + '<div><div class="lbl2"><label for="fd_opened">' + I.t('openedDate') + '</label></div>'
+      + DateField.html({ id: 'fd_opened', value: f.opened_on || '' }) + '</div>'
+      + '<div><div class="lbl2"><label for="fd_exp">' + I.t('expiryDate') + '</label></div>'
+      + DateField.html({ id: 'fd_exp', value: f.expires_on || '' }) + '</div>'
       + '</div>'
-      + '<div class="hint">개봉 후 보관기간이 짧은 제품은 그 날짜를 적어두세요. 소진보다 먼저 오면 그쪽을 먼저 알려드립니다.</div>'
+      + '<div class="hint">' + I.t('expiryHint') + '</div>'
 
-      + '<div class="lbl2"><label for="fd_url">구매처 주소 (선택)</label></div>'
+      + '<div class="lbl2"><label for="fd_url">' + I.t('buyUrl') + '</label></div>'
       + '<input class="in" id="fd_url" type="url" inputmode="url" value="' + esc(f.buy_url || '') + '" placeholder="https://">'
-      + '<div class="lbl2"><label for="fd_lead">주문 후 도착까지 (일)</label></div>'
+      + '<div class="lbl2"><label for="fd_lead">' + I.t('arrivalDays') + '</label></div>'
       + '<input class="in" id="fd_lead" type="number" min="0" max="90" inputmode="numeric" value="' + esc(v(f.lead_days == null ? 3 : f.lead_days)) + '">'
-      + '<div class="hint">이만큼 앞당겨 알려드립니다. 소진일에 알려주면 이미 늦습니다.</div>'
+      + '<div class="hint">' + I.t('arrivalHint') + '</div>'
 
-      + '<div class="lbl2"><label for="fd_note">메모 (선택)</label></div>'
+      + '<div class="lbl2"><label for="fd_note">' + I.t('optionalNote') + '</label></div>'
       + '<input class="in" id="fd_note" value="' + esc(f.note || '') + '">'
 
-      + '<div class="lbl2"><label for="fd_active">사용</label></div>'
+      + '<div class="lbl2"><label for="fd_active">' + I.t('use') + '</label></div>'
       + '<select class="in" id="fd_active">'
-      + '<option value="1"' + (f.is_active !== false ? ' selected' : '') + '>쓰는 중</option>'
-      + '<option value="0"' + (f.is_active === false ? ' selected' : '') + '>안 씀 (목록 아래로 내려감)</option>'
+      + '<option value="1"' + (f.is_active !== false ? ' selected' : '') + '>' + I.t('using') + '</option>'
+      + '<option value="0"' + (f.is_active === false ? ' selected' : '') + '>' + I.t('notUsing') + '</option>'
       + '</select>'
 
       + '<div class="err" id="fd_err"></div>'
-      + '<div class="formbtns"><button class="btn" id="fd_save">' + icon('bi-check-lg') + '저장</button>'
-      + '<button class="btn ghost" data-cancel="feed">취소</button>'
+      + '<div class="formbtns"><button class="btn" id="fd_save">' + icon('bi-check-lg') + I.t('save') + '</button>'
+      + '<button class="btn ghost" data-cancel="feed">' + I.t('cancel') + '</button>'
       + (isNew ? '' : '<button class="btn danger" data-delfeed="' + f.id + '" style="margin-left:auto">'
-                    + icon('bi-trash3') + '삭제</button>')
+                    + icon('bi-trash3') + I.t('delete') + '</button>')
       + '</div></div>';
   }
 
@@ -600,84 +551,12 @@
         남깁니다. care-core.js 의 SIGNS 머리말에 이유가 있습니다.
      ============================================================================= */
   function tabHealth() {
-    if (!S.animals.length) {
-      return '<div class="pad"><div class="empty">' + icon('bi-heart-pulse')
-        + '먼저 개체를 등록해 주세요.<br>증세는 개체별로 남깁니다.</div></div>';
-    }
-    /* 개체를 골라야 합니다. 어느 개체의 증세인지 모르면 기록이 쓸모없습니다. */
-    if (!S.focus) {
-      return '<div class="pad"><div class="lbl">증세 관찰</div>'
-        + '<div class="hint">개체를 고르면 그 종에서 볼 항목이 나옵니다.</div>'
-        + '<div class="empty" style="margin-top:12px">' + icon('bi-arrow-up')
-        + '위 <b>개체</b> 에서 한 마리를 골라주세요.</div></div>';
-    }
-
-    const a = animalById(S.focus);
-    const recs = S.records.filter(r => r.animal_id === S.focus);
-    const status = C.signStatus(recs, C.today());
-    const open = status.filter(s => s.open);
-    const closed = status.filter(s => !s.open);
-    const codes = C.signsFor(a.species);
-
-    let h = '';
-
-    /* 1. 지금 보고 있는 것 */
-    if (open.length) {
-      h += '<div class="sect"><h2>관찰 중</h2><span class="n">' + open.length + '</span></div>';
-      h += open.map(function (s) {
-        const g = C.SIGNS[s.code] || { ko: s.code, what: '' };
-        return '<div class="signcard' + (g.vet ? ' vet' : '') + '">'
-          + '<div class="sgtop"><div class="sgname">' + esc(g.ko) + '</div>'
-          + '<div class="sgdays">' + s.days + '일째</div></div>'
-          + '<div class="sgwhat">' + esc(g.what) + '</div>'
-          + (g.vet ? '<div class="sgvet">' + icon('bi-hospital') + '수의사에게 보이시길 권합니다</div>' : '')
-          + '<div class="sgfoot"><span>최초 ' + esc(s.first) + ' · 마지막 '
-          + (s.ago === 0 ? '오늘' : s.ago + '일 전') + ' · ' + s.n + '회 기록</span>'
-          + '<span class="sgbtns">'
-          + '<button class="mini" data-sign="' + s.code + '" data-sact="again">' + icon('bi-plus-lg') + '오늘도</button>'
-          + '<button class="mini" data-sign="' + s.code + '" data-sact="end">' + icon('bi-check-lg') + '해소</button>'
-          + '</span></div></div>';
-      }).join('');
-    }
-
-    /* 2. 기록하기 */
-    h += '<div class="pad"><div class="lbl">증세 남기기</div>'
-      + '<div class="hint">' + esc(a.name || '이 개체') + ' 에서 보인 것을 고르세요. '
-      + '<b>진단이 아니라 관찰 기록</b>입니다 — 무엇이 보였는지와 언제부터인지만 남습니다.</div>'
-      + '<div class="signgrid">' + codes.map(function (code) {
-          const g = C.SIGNS[code];
-          const on = open.some(s => s.code === code);
-          return '<button class="sgpick' + (on ? ' on' : '') + '" data-sign="' + code + '" data-sact="new">'
-            + esc(g.ko) + (g.vet ? '<i class="bi bi-hospital" aria-hidden="true" title="수의사 상담 권고"></i>' : '')
-            + '</button>';
-        }).join('') + '</div>'
-      + '<input class="in" id="sg_note" placeholder="메모 (선택) — 며칠째인지, 어느 쪽인지 등" style="margin-top:10px">'
-      + '</div>';
-
-    /* 3. 지난 것 */
-    if (closed.length) {
-      h += '<div class="sect"><h2>해소된 것</h2><span class="n">' + closed.length + '</span></div>';
-      h += closed.map(function (s) {
-        const g = C.SIGNS[s.code] || { ko: s.code };
-        return '<div class="card"><div class="info"><div class="nm">' + esc(g.ko)
-          + '<span class="chip">해소</span></div>'
-          + '<div class="ms">' + esc(s.first) + ' ~ ' + esc(s.last) + ' · ' + s.n + '회 기록</div></div>'
-          + '<div class="acts"><button class="mini" data-sign="' + s.code + '" data-sact="again">'
-          + icon('bi-arrow-counterclockwise') + '다시</button></div></div>';
-      }).join('');
-    }
-
-    /* 4. 유전 관련은 계산기가 봅니다 */
-    const calc = (C.SPECIES[a.species] || {}).calc;
-    h += '<div class="pad"><div class="lbl">모프와 관련된 위험</div>'
-      + '<div class="hint">에니그마 계열의 신경 증상, 레몬 프로스트의 종양처럼 <b>모프에 따라 알려진 위험</b>은 '
-      + '태어나기 전에 확인하는 편이 낫습니다. 계산기가 교배 조합을 넣는 단계에서 알려줍니다.</div>'
-      + (calc ? '<a class="btn ghost wide" style="text-decoration:none;margin-top:10px" href="' + calc + '">'
-                + icon('bi-calculator') + esc((C.SPECIES[a.species] || {}).ko) + ' 계산기 열기</a>'
-              : '<div class="hint">이 종은 아직 계산기가 없습니다.</div>')
-      + '<div class="safety">' + esc(C.SAFETY_NOTE) + '</div></div>';
-
-    return h;
+    const resolved = CareHealthUi.resolveAnimalId(S.animals, S.focus);
+    if (resolved && !S.focus && S.animals.length === 1) S.focus = resolved;
+    return CareHealthUi.render({
+      animals: S.animals, focus: S.focus, records: S.records, today: C.today(),
+      core: C, i18n: I, escapeHtml: esc, icon: icon
+    });
   }
 
   /* =============================================================================
@@ -692,26 +571,26 @@
     const r = C.weeklySummary(recs, wts, C.today());
 
     let h = '<div class="pad">'
-      + '<div class="lbl">최근 7일' + (target ? ' · ' + esc(target.name || '이름 없음') : ' · 전체') + '</div>'
-      + '<div class="hint">' + r.start + ' ~ ' + r.end + '</div>'
+      + '<div class="lbl">' + I.t('recentSevenDays') + (target ? ' · ' + esc(target.name || I.t('unnamed')) : ' · ' + I.t('whole')) + '</div>'
+      + '<div class="hint">' + I.formatDate(r.start) + ' ~ ' + I.formatDate(r.end) + '</div>'
       + '<div class="grid4">'
-      + stat(r.feed, '급여') + stat(r.water, '물') + stat(r.clean, '청소') + stat(r.supplement, '영양제')
+      + stat(r.feed, I.t('kindFeed')) + stat(r.water, I.t('kindWater')) + stat(r.clean, I.t('kindClean')) + stat(r.supplement, I.t('kindSupplement'))
       + '</div>';
 
     if (S.focus) {
-      h += '<div class="grid4"><div class="stat"><div class="v">' + r.weighIns + '</div><div class="k">체중 측정</div></div>'
+      h += '<div class="grid4"><div class="stat"><div class="v">' + I.formatNumber(r.weighIns) + '</div><div class="k">' + I.t('weightMeasurements') + '</div></div>'
         + '<div class="stat"><div class="v">' + (r.weightDelta == null ? '–' : (r.weightDelta > 0 ? '+' : '') + r.weightDelta)
-        + '</div><div class="k">체중 증감(g)</div></div></div>';
+        + '</div><div class="k">' + I.t('weightChange') + '</div></div></div>';
     } else {
-      h += '<div class="hint">개체를 고르면 체중 변화도 함께 봅니다. (위 <b>개체</b> 선택)</div>';
+      h += '<div class="hint">' + I.t('chooseForWeightReport') + '</div>';
     }
     h += '</div>';
 
     const NOTE_ICON = { warn: 'bi-exclamation-triangle', good: 'bi-check2-circle', info: 'bi-info-circle' };
-    h += '<div class="pad"><div class="lbl">눈에 띄는 것</div><div style="margin-top:10px"></div>';
+    h += '<div class="pad"><div class="lbl">' + I.t('noteworthy') + '</div><div style="margin-top:10px"></div>';
     h += r.notes.map(n => '<div class="note ' + n.level + '">'
-      + icon(NOTE_ICON[n.level] || 'bi-info-circle') + '<span>' + esc(n.text) + '</span></div>').join('');
-    h += '<div class="safety">' + esc(C.SAFETY_NOTE) + '</div></div>';
+      + icon(NOTE_ICON[n.level] || 'bi-info-circle') + '<span>' + esc(I.summaryNote(n)) + '</span></div>').join('');
+    h += '<div class="safety">' + esc(I.t('safetyNote')) + '</div></div>';
     return h;
   }
 
@@ -726,9 +605,9 @@
     /* 개체 필터 */
     const sel = $('focus');
     if (sel) {
-      sel.innerHTML = '<option value="">전체 개체</option>' + S.animals.map(a =>
+      sel.innerHTML = '<option value="">' + I.t('allAnimals') + '</option>' + S.animals.map(a =>
         '<option value="' + a.id + '"' + (S.focus === a.id ? ' selected' : '') + '>'
-        + speciesOf(a).icon + ' ' + esc(a.name || '이름 없음') + '</option>').join('');
+        + speciesOf(a).icon + ' ' + esc(a.name || I.t('unnamed')) + '</option>').join('');
       $('focusbar').style.display = S.animals.length ? '' : 'none';
     }
 
@@ -738,9 +617,14 @@
     $('body').innerHTML =
       ({ today: tabToday, animals: tabAnimals, plans: tabPlans,
          feed: tabFeed, health: tabHealth, report: tabReport }[S.tab])();
+    /* 사진은 비공개 버킷이라 서명 주소를 받아야 보입니다.
+       다 그린 뒤 한 번에 채웁니다 (assets/photo.js). */
+    Photo.hydrate($('body'), A.sb);
+
   }
 
-  function go(tab) {
+  async function go(tab) {
+    if (S.editAnimal) await CarePhotos.cancel();
     S.tab = tab; S.editAnimal = null; S.editPlan = null; S.editFeed = null;
     /* 주소에 남겨 둡니다. 개체 관리 화면에서 /care/#health 로 보내는 링크가
        실제로 그 탭을 열게 하려면 이게 있어야 합니다. 뒤로 가기도 자연스러워집니다. */
@@ -757,25 +641,62 @@
   /* 화면을 다시 그릴 때마다 요소가 새로 만들어지므로, 각 버튼에 리스너를 달지
      않고 문서 하나에서 받아 처리합니다. */
   document.addEventListener('click', function (ev) {
+    /* 체크상자는 button 이 아니라 input 이라 아래 closest('button') 보다
+       먼저 받아야 합니다. */
+    const pick = ev.target.closest('[data-bulkpick]');
+    if (pick) return Bulk.toggle(pick.getAttribute('data-bulkpick'), pick.checked);
+
+    const bulkBtn = ev.target.closest('button');
+    if (bulkBtn) {
+      const bd = bulkBtn.dataset;
+      if (bd.bulktoggle) return Bulk.mode();
+      if (bd.bulkall) return Bulk.all();
+      if (bd.bulkclear) return Bulk.clear();
+      if (bd.bulkkind) return Bulk.record(bd.bulkkind);
+    }
     const t = ev.target.closest('button, [data-go]');
     if (!t) return;
     const d = t.dataset;
 
     if (t.classList.contains('tab')) return go(t.getAttribute('data-t'));
     if (d.go) return go(d.go);
+    if (d.carePhotoRemove) {
+      CarePhotos.remove(d.carePhotoRemove);
+      CarePhotos.refresh(document, A.sb);
+      return;
+    }
 
     /* ── 오늘 ── */
     if (d.tick) {
       const p = S.plans.filter(x => x.id === d.tick)[0];
       if (!p) return;
       const done = doneDatesFor(p.id).indexOf(C.today()) >= 0;
-      return act(() => done ? A.undoPlan(p) : A.completePlan(p), done ? '취소했습니다' : '완료!');
+      return act(() => done ? A.undoPlan(p) : A.completePlan(p), done ? I.t('undoneToast') : I.t('completedToast'));
     }
 
     /* ── 개체 ── */
-    if (d.newanimal) { S.editAnimal = { species: 'leopard', sex: 'unknown' }; return render(); }
-    if (d.editanimal) { S.editAnimal = animalById(d.editanimal); return render(); }
-    if (d.cancel === 'animal') { S.editAnimal = null; return render(); }
+    if (d.newanimal) {
+      S.editAnimal = { species: 'leopard', sex: 'unknown' };
+      CarePhotos.begin(S.editAnimal, A);
+      return render();
+    }
+    if (d.editanimal) {
+      S.editAnimal = animalById(d.editanimal);
+      CarePhotos.begin(S.editAnimal, A);
+      return render();
+    }
+    /* 잠긴 개체를 활성 자리로 올립니다. 자리가 다 찼으면 서버가 거절하고,
+       그때는 다른 개체를 먼저 내리라고 알려 줍니다. */
+    if (d.slotanimal) {
+      return act(function () { return A.setAnimalSlot(d.slotanimal, true); },
+        I.t('freeSlotActivated'));
+    }
+    if (d.cancel === 'animal') {
+      return CarePhotos.cancel().then(function () {
+        S.editAnimal = null;
+        render();
+      });
+    }
     if (d.cancel === 'plan') { S.editPlan = null; return render(); }
     if (d.cancel === 'feed') { S.editFeed = null; return render(); }
 
@@ -784,25 +705,33 @@
     if (d.editfeed) { S.editFeed = S.feeds.filter(x => x.id === d.editfeed)[0]; return render(); }
     if (t.id === 'fd_save') return saveFeed();
     if (d.delfeed) {
-      if (!confirm('이 먹이를 지울까요?\n연결된 급여 계획은 남고 연결만 끊깁니다.')) return;
-      return act(async () => { await A.deleteFeed(d.delfeed); S.editFeed = null; }, '삭제했습니다');
+      if (!confirm(I.t('feedDeleteConfirm'))) return;
+      return act(async () => { await A.deleteFeed(d.delfeed); S.editFeed = null; }, I.t('deleted'));
     }
     if (d.refill) {
       const f = S.feeds.filter(x => x.id === d.refill)[0];
       if (!f) return;
       const def = f.amount_full != null ? String(f.amount_full) : '';
-      const v = prompt('새로 채운 양을 적어주세요 (' + (f.unit || '') + ')', def);
+      const v = prompt(I.t('refillPrompt', { unit: f.unit || '' }), def);
       if (v == null) return;
       const n = parseFloat(v);
-      if (!(n >= 0)) { toast('숫자를 적어주세요'); return; }
-      return act(() => A.refillFeed(f.id, n), '채웠습니다');
+      if (!(n >= 0)) { toast(I.t('numberRequired')); return; }
+      return act(() => A.refillFeed(f.id, n), I.t('refilled'));
     }
 
-    if (t.id === 'f_save') return saveAnimal();
+    if (t.id === 'f_save') return AnimalForm.save();
 
     if (d.delanimal) {
-      if (!confirm('이 개체와 그에 딸린 케어·체중 기록이 모두 지워집니다. 되돌릴 수 없습니다.\n계속할까요?')) return;
-      return act(async () => { await A.deleteAnimal(d.delanimal); S.editAnimal = null; S.focus = ''; }, '삭제했습니다');
+      if (!confirm(I.t('animalDeleteConfirm'))) return;
+      const animal = animalById(d.delanimal);
+      return act(async () => {
+        await A.deleteAnimal(d.delanimal);
+        await CarePhotos.cancel();
+        const cleanup = await CarePhotos.deleteAnimalPhotos(animal, A);
+        S.editAnimal = null;
+        S.focus = '';
+        return cleanup;
+      }, cleanup => cleanup && cleanup.ok ? I.t('deleted') : CarePhotos.t('cleanupWarning'));
     }
 
     /* 체중 패널 열기·닫기 — 개체 필터와 같은 값을 씁니다 */
@@ -814,18 +743,62 @@
     if (d.editplan) { S.editPlan = S.plans.filter(x => x.id === d.editplan)[0]; return render(); }
     if (t.id === 'p_save') return savePlan();
     if (d.delplan) {
-      if (!confirm('이 계획을 지울까요? 이미 남긴 완료 기록은 그대로 둡니다.')) return;
-      return act(async () => { await A.deletePlan(d.delplan); S.editPlan = null; }, '삭제했습니다');
+      if (!confirm(I.t('planDeleteConfirm'))) return;
+      return act(async () => { await A.deletePlan(d.delplan); S.editPlan = null; }, I.t('deleted'));
     }
     /* 계획 폼의 반복 방식 토글. 그 폼이 열려 있을 때만 동작해야 합니다 —
        다른 화면에도 data-mode 가 생기면 여기서 없는 요소를 만지고 죽습니다. */
-    if (d.mode && $('m_days') && $('m_week')) {
-      document.querySelectorAll('.mode').forEach(m => m.classList.toggle('on', m === t));
-      $('m_days').style.display = d.mode === 'days' ? 'block' : 'none';
-      $('m_week').style.display = d.mode === 'week' ? 'block' : 'none';
+    if (d.mode && document.querySelector('.repeat-panel')) {
+      document.querySelectorAll('.mode').forEach(function (mode) {
+        const active = mode === t;
+        mode.classList.toggle('on', active);
+        mode.setAttribute('aria-pressed', String(active));
+      });
+      document.querySelectorAll('.repeat-panel').forEach(function (panel) {
+        panel.hidden = panel.id !== 'm_' + d.mode;
+      });
       return;
     }
-    if (d.wd !== undefined) { t.classList.toggle('on'); return; }
+    if (d.wd !== undefined) {
+      t.classList.toggle('on');
+      t.setAttribute('aria-pressed', String(t.classList.contains('on')));
+      return;
+    }
+    if (d.weeklyTarget !== undefined) {
+      const target = parseInt(d.weeklyTarget, 10);
+      $('p_weekly_target').value = String(target);
+      document.querySelectorAll('.weekly-target').forEach(function (button) {
+        const active = button === t;
+        button.classList.toggle('on', active);
+        button.setAttribute('aria-pressed', String(active));
+      });
+      document.querySelectorAll('.weekly-target-preview i').forEach(function (dot, index) {
+        dot.classList.toggle('on', index < target);
+      });
+      const copy = document.querySelector('.weekly-target-copy');
+      if (copy) copy.textContent = I.t('weeklyTargetCount', { count: I.formatNumber(target) });
+      return;
+    }
+
+    /* 주기 프리셋 — 누르면 숫자 칸에 넣고 그 버튼만 켜둡니다. 숫자만 바꾸고
+       버튼은 그대로 두면 어떤 게 골라진 건지 알 수 없습니다. */
+    if (d.preset) {
+      const el = $('p_interval');
+      if (el) el.value = d.preset;
+      t.parentNode.querySelectorAll('.preset').forEach(b => b.classList.toggle('on', b === t));
+      return;
+    }
+    /* 요일 묶음 — 해당 요일만 켭니다 (더하는 게 아니라 갈아끼웁니다) */
+    if (d.wdset !== undefined) {
+      const want = d.wdset.split(',');
+      document.querySelectorAll('.wd').forEach(function (button) {
+        const active = want.indexOf(button.dataset.wd) >= 0;
+        button.classList.toggle('on', active);
+        button.setAttribute('aria-pressed', String(active));
+      });
+      t.parentNode.querySelectorAll('.preset').forEach(b => b.classList.toggle('on', b === t));
+      return;
+    }
     if (t.id === 'preset') return addPreset();
     if (t.id === 'ics') return exportIcs();
 
@@ -838,59 +811,57 @@
       const end = d.sact === 'end';
       return act(() => A.addRecord({
         animal_id: S.focus, kind: 'symptom', detail: d.sign,
-        title: end ? '해소' : '관찰', note: note || null
-      }), end ? '해소로 표시했습니다' : g.ko + ' 기록됨');
+        title: end ? 'resolved' : 'observing', note: note || null
+      }), end ? I.t('symptomResolved') : I.t('recorded', { name: I.signName(d.sign) }));
     }
   });
 
-  document.addEventListener('change', function (ev) {
+  document.addEventListener('change', async function (ev) {
     if (ev.target.id === 'focus') { S.focus = ev.target.value; render(); }
+    const slot = ev.target.dataset && ev.target.dataset.carePhotoPick;
+    if (slot) {
+      try {
+        const selected = await CarePhotos.select(slot, ev.target.files && ev.target.files[0]);
+        if (selected) CarePhotos.refresh(document, A.sb);
+      } catch (e) {
+        toast(I.friendly(e));
+      } finally {
+        ev.target.value = '';
+      }
+    }
   });
 
   /* ── 저장 동작 ────────────────────────────────────────────────────── */
-  function saveAnimal() {
-    const name = $('f_name').value.trim();
-    if (!name) { $('f_err').textContent = '이름을 적어주세요.'; return; }
-    const row = Object.assign({}, S.editAnimal, {
-      name: name,
-      species: $('f_species').value,
-      sex: $('f_sex').value,
-      hatch_date: $('f_hatch').value || null,
-      note: $('f_note').value.trim() || null
-    });
-    act(async () => { await A.saveAnimal(row); S.editAnimal = null; }, '저장했습니다');
-  }
-
   function saveWeight(animalId) {
     const g = parseFloat($('w_g').value);
     const a = animalById(animalId);
     const rng = speciesOf(a).weightRange;
-    if (!(g > 0)) { $('w_err').textContent = '무게를 적어주세요.'; return; }
+    if (!(g > 0)) { $('w_err').textContent = I.t('weightRequired'); return; }
     /* 범위 밖이면 막지 않고 물어봅니다. 실제로 그만한 개체가 있을 수 있고,
        막아버리면 기록할 방법이 없어집니다. 자릿수 실수만 걸러내는 것이 목적입니다. */
     if (g < rng[0] || g > rng[1]) {
-      if (!confirm(g + 'g 은 ' + speciesOf(a).ko + ' 기준(' + rng[0] + '~' + rng[1] + 'g)을 벗어납니다.\n그대로 기록할까요?')) return;
+      if (!confirm(I.t('weightOutOfRange', { grams: g, species: speciesName(a), min: rng[0], max: rng[1] }))) return;
     }
-    act(() => A.saveWeight(animalId, g, $('w_d').value), '체중을 기록했습니다');
+    act(() => A.saveWeight(animalId, g, $('w_d').value), I.t('weightSaved'));
   }
 
   function saveFeed() {
     const name = $('fd_name').value.trim();
-    if (!name) { $('fd_err').textContent = '이름을 적어주세요.'; return; }
+    if (!name) { $('fd_err').textContent = I.t('nameRequired'); return; }
 
     const url = $('fd_url').value.trim();
     /* 주소는 http/https 만 받습니다. javascript: 같은 것을 넣어두면 나중에
        '사러 가기' 를 누르는 순간 그게 실행됩니다. */
     if (url && !/^https?:\/\//i.test(url)) {
-      $('fd_err').textContent = '구매처 주소는 http:// 또는 https:// 로 시작해야 합니다.';
+      $('fd_err').textContent = I.t('urlRequired');
       return;
     }
     const num = id => { const v = $(id).value.trim(); return v === '' ? null : Number(v); };
     const left = num('fd_left'), full = num('fd_full'), per = num('fd_per');
     if ([left, full, per].some(v => v != null && !(v >= 0))) {
-      $('fd_err').textContent = '양은 0 이상 숫자로 적어주세요.'; return;
+      $('fd_err').textContent = I.t('nonnegativeAmount'); return;
     }
-    if (per != null && per <= 0) { $('fd_err').textContent = '1회 급여량은 0보다 커야 합니다.'; return; }
+    if (per != null && per <= 0) { $('fd_err').textContent = I.t('perUsePositive'); return; }
 
     const row = Object.assign({}, S.editFeed, {
       name: name, kind: $('fd_kind').value, brand: $('fd_brand').value.trim() || null,
@@ -901,44 +872,53 @@
       note: $('fd_note').value.trim() || null,
       is_active: $('fd_active').value === '1'
     });
-    act(async () => { await A.saveFeed(row); S.editFeed = null; }, '저장했습니다');
+    act(async () => { await A.saveFeed(row); S.editFeed = null; }, I.t('saved'));
   }
 
   function savePlan() {
     const p = S.editPlan;
-    const weekMode = document.querySelector('.mode.on') && document.querySelector('.mode.on').dataset.mode === 'week';
+    const activeMode = document.querySelector('.mode.on');
+    const mode = activeMode ? activeMode.dataset.mode : 'days';
+    const weekMode = mode === 'week';
+    const targetMode = mode === 'target';
     const wd = weekMode
       ? Array.prototype.slice.call(document.querySelectorAll('.wd.on')).map(b => +b.dataset.wd)
       : [];
-    if (weekMode && !wd.length) { $('p_err').textContent = '요일을 하나 이상 골라주세요.'; return; }
+    if (weekMode && !wd.length) { $('p_err').textContent = I.t('weekdayRequired'); return; }
 
     const iv = parseInt($('p_interval').value, 10);
-    if (!weekMode && (!iv || iv < 1 || iv > 365)) { $('p_err').textContent = '며칠마다인지 1~365 사이로 적어주세요.'; return; }
+    if (mode === 'days' && (!iv || iv < 1 || iv > 365)) { $('p_err').textContent = I.t('intervalRequired'); return; }
+    const weeklyTarget = targetMode ? parseInt($('p_weekly_target').value, 10) : null;
+    if (targetMode && (!weeklyTarget || weeklyTarget < 1 || weeklyTarget > 7)) {
+      $('p_err').textContent = I.t('weeklyTargetRequired'); return;
+    }
 
     const row = {
       id: p.id,
       animal_id: $('p_animal').value || null,
       kind: $('p_kind').value,
-      title: $('p_title').value.trim() || null,
-      detail: $('p_detail').value.trim() || null,
-      interval_days: weekMode ? null : iv,
+      title: I.canonicalPresetTitle($('p_title').value.trim()) || null,
+      detail: I.canonicalPlanDetail($('p_detail').value.trim()) || null,
+      feed_item_id: $('p_feed').value || null,
+      interval_days: mode === 'days' ? iv : null,
       weekdays: weekMode ? wd : null,
+      weekly_target: targetMode ? weeklyTarget : null,
       start_date: $('p_start').value || C.today(),
       time_of_day: $('p_time').value || null,
       is_active: $('p_active').value === '1'
     };
-    act(async () => { await A.savePlan(row); S.editPlan = null; }, '저장했습니다');
+    act(async () => { await A.savePlan(row); S.editPlan = null; }, I.t('saved'));
   }
 
   /* 종별 기본 계획 한 번에 넣기.
      이미 같은 이름의 계획이 있으면 건너뜁니다 — 두 번 눌러서 같은 것이
      두 개씩 생기면 오늘 할 일이 전부 겹쳐 보입니다. */
   function addPreset() {
-    if (!S.animals.length) { toast('먼저 개체를 등록해 주세요'); return; }
+    if (!S.animals.length) { toast(I.t('presetNeedAnimal')); return; }
     const target = S.focus ? [animalById(S.focus)] : S.animals;
     const rows = [];
     target.forEach(function (a) {
-      const has = S.plans.filter(p => p.animal_id === a.id).map(p => p.title);
+      const has = S.plans.filter(p => p.animal_id === a.id).map(p => I.canonicalPresetTitle(p.title));
       speciesOf(a).plans.forEach(function (t) {
         if (has.indexOf(t.title) >= 0) return;
         rows.push({
@@ -949,19 +929,28 @@
         });
       });
     });
-    if (!rows.length) { toast('이미 다 들어가 있습니다'); return; }
-    const who = S.focus ? (animalById(S.focus).name || '이 개체') : '전체 개체';
-    if (!confirm(who + '에 기본 계획 ' + rows.length + '건을 넣습니다.\n주기는 나중에 개체에 맞게 고치세요.')) return;
-    act(() => A.addPlans(rows), rows.length + '건 넣었습니다');
+    if (!rows.length) { toast(I.t('presetExists')); return; }
+    const who = S.focus ? (animalById(S.focus).name || I.t('unnamed')) : I.t('allAnimals');
+    if (!confirm(I.t('presetConfirm', { name: who, count: I.formatNumber(rows.length) }))) return;
+    act(() => A.addPlans(rows), I.t('presetAdded', { count: I.formatNumber(rows.length) }));
   }
 
   /* 캘린더 파일 내려받기. 서버를 거치지 않고 브라우저에서 바로 만듭니다. */
   function exportIcs() {
     const names = {};
-    S.animals.forEach(a => { names[a.id] = a.name || '이름 없음'; });
+    S.animals.forEach(a => { names[a.id] = a.name || I.t('unnamed'); });
     /* 케어 일정과 주문 안내를 한 파일에 담습니다. 파일을 두 번 받게 하면
        한쪽만 등록해두고 왜 안 울리냐고 하게 됩니다. */
-    const ics = C.buildIcs(S.plans, names, location.hostname || 'ryangstudio.com', feedOrders());
+    const ics = C.buildIcs(S.plans, names, location.hostname || 'ryangstudio.com', feedOrders(), {
+      language: I.language().toUpperCase(),
+      calendarName: I.t('calendarName'),
+      kindName: I.kindName,
+      planTitle: I.presetTitle,
+      planDetail: I.planDetail,
+      orderTitle: name => I.t('calendarOrderTitle', { name: name }),
+      orderDescription: date => I.t('calendarOrderDescription', { date: I.formatDate(date) }),
+      orderCategory: I.t('calendarOrderCategory')
+    });
 
     const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
     const url = URL.createObjectURL(blob);
@@ -973,7 +962,7 @@
     document.body.removeChild(a);
     /* 곧바로 지우면 사파리에서 내려받기가 취소되는 일이 있습니다. */
     setTimeout(() => URL.revokeObjectURL(url), 4000);
-    toast('받은 파일을 열면 캘린더에 들어갑니다');
+    toast(I.t('calendarDownloaded'));
   }
 
   /* =============================================================================
@@ -981,49 +970,47 @@
      ============================================================================= */
   async function boot() {
     if (!A.ready) {
-      $('body').innerHTML = '<div class="gate"><div class="pad">백엔드가 설정되지 않았습니다.<br>'
-        + 'assets/studio-config.js 를 확인해 주세요.</div></div>';
+      $('body').innerHTML = '<div class="gate"><div class="pad">' + I.t('backendTitle') + '<br>'
+        + I.t('backendBody') + '</div></div>';
       return;
     }
     await A.boot();
-    A.logVisit();
+    A.logVisit(I.language());
 
     if (!A.user) {
       $('body').innerHTML = '<div class="gate"><div class="pad">'
         + '<div class="gicon">' + icon('bi-person-lock') + '</div>'
-        + '<div class="lbl">로그인이 필요합니다</div>'
-        + '<div class="hint">케어 기록은 계정에 저장됩니다. 기기에만 두면 폰을 바꿀 때 사라지고, '
-        + '여러 기기에서 같이 볼 수도 없습니다.</div>'
-        /* login.html 은 로그인 뒤 돌아올 곳을 받지 않습니다. 없는 동작을
-           있는 것처럼 ?next= 를 붙이지 않고, 로그인하면 그 화면에 뜨는
-           링크로 돌아오게 둡니다. */
+        + '<div class="lbl">' + I.t('loginTitle') + '</div>'
+        + '<div class="hint">' + I.t('loginBody') + '</div>'
         + '<a class="btn wide" style="text-decoration:none;margin-top:16px" '
-        + 'href="/gecko/login.html">' + icon('bi-box-arrow-in-right') + '로그인 · 회원가입</a>'
+        + 'href="' + loginUrl() + '">' + icon('bi-box-arrow-in-right') + I.t('loginAction') + '</a>'
         + '</div></div>';
       return;
     }
 
-    if (!A.premium.active) {
-      $('body').innerHTML = '<div class="gate"><div class="pad">'
-        + '<div class="gicon">' + icon('bi-gem') + '</div>'
-        + '<div class="lbl">프리미엄 기능입니다</div>'
-        + '<div class="hint">개체별 급여·청소·영양제 주기 관리, 체중 추이, 주간 요약, '
-        + '캘린더 알림 내보내기를 이용할 수 있습니다.</div>'
-        /* 코드 입력 창은 계정 화면에 있습니다. 계산기에는 #premium 앵커가 없어
-           그리로 보내면 아무 데도 도착하지 않습니다. */
-        + '<a class="btn wide" style="text-decoration:none;margin-top:16px" '
-        + 'href="/gecko/login.html">' + icon('bi-gem') + '프리미엄 코드 입력</a></div></div>';
-      return;
-    }
+    /* 예전에는 여기서 프리미엄이 아니면 통째로 막았습니다. 그러면 써 보지도
+       못한 사람에게 결제를 권하는 셈이라, 무료도 들어오게 바꿨습니다.
+       무료는 개체 10마리까지 쓰고, 브리딩 관리 같은 브리더용 기능만 잠깁니다.
+       한도를 실제로 지키는 곳은 DB 입니다(supabase_v54.sql). */
 
     /* 헤더 부제를 계정 정보로 바꿉니다. 로그인 전에는 이 도구가 무엇인지
        설명하는 문구가 들어 있고, 들어온 뒤에는 그 설명이 필요 없습니다. */
     $('who').textContent = (A.user.email || '')
-      + (A.premium.kind === 'sub' ? ' · 구독' : A.premium.kind ? ' · 체험판' : '');
+      + (A.premium.kind === 'sub' ? ' · ' + I.t('subscription')
+        : A.premium.kind === 'trial' ? ' · ' + I.t('trial')
+          : A.premium.kind ? ' · ' + I.t('premiumAccess') : '');
     $('acctBtn').style.display = '';
     $('tabs').style.display = '';
     S.tab = tabFromHash();
     await reload();
+
+    /* 이용 기한이 얼마 안 남았으면 알려 줍니다. 기록을 실제로 만지는 화면이라
+       여기서 알려야 연장하든 정리하든 고를 수 있습니다.
+       모듈이 없으면(스크립트 미로드) 조용히 넘어갑니다 — 안내 하나 때문에
+       케어 화면이 안 뜨면 안 됩니다. */
+    if (window.PremiumExpiryNotice) {
+      window.PremiumExpiryNotice.show(A.premium, I.language());
+    }
   }
 
   boot();

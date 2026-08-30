@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>브리딩 관리 · 량 스튜디오</title>
+
+<!-- 개인 사육 기록 화면입니다. 검색에 절대 노출되면 안 됩니다. -->
+<meta name="robots" content="noindex, nofollow">
+
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/logo-mark-32.png">
+<link rel="apple-touch-icon" href="/assets/logo-mark-180.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#f5f1e8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#151a17" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+<!-- 테스트 중 임시 잠금. 케어 화면과 같은 비밀번호를 씁니다. -->
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<link rel="stylesheet" href="care.css?v=20260810m">
+<link rel="stylesheet" href="breeding-workspace.css?v=20260809a">
+<link rel="stylesheet" href="breeding-mating-groups.css?v=20260803a">
+<link rel="stylesheet" href="breeding-hatch.css?v=20260803b">
+<script src="breeding-i18n-ko.js?v=20260810c"></script>
+<script src="breeding-i18n-en.js?v=20260810c"></script>
+<script src="breeding-i18n-zh.js?v=20260808a"></script>
+<script src="breeding-i18n-ja.js?v=20260810c"></script>
+<script src="breeding-i18n.js?v=20260808a"></script>
+<script>window.BreedingI18n.initialize();</script>
+</head>
+<body class="breeding">
+
+<header>
+  <img class="hd-deco leaf" src="/assets/leaf.svg" alt="" aria-hidden="true">
+  <div class="hd">
+    <div class="hd-txt">
+      <h1 id="btitle" data-bm-text="pageHeader">브리딩 관리</h1>
+      <div class="sub" id="bsub" data-bm-text="pageSubtitle">개체 · 페어링 · 클러치를 기록합니다</div>
+    </div>
+    <div class="hd-btns">
+      <a class="blink" href="/care/" title="크리처 케어로그" data-bm-title="care"><i class="bi bi-clipboard-heart" aria-hidden="true"></i><span data-bm-text="care">케어</span></a>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <!-- 종 고르기. 종을 바꾸면 페이지를 다시 엽니다 — 계산기 코어는 한 페이지에
+       하나만 올라갈 수 있어서(모두 최상위 const SERVICE_ID 선언) 화면 안에서
+       갈아끼울 수 없습니다. -->
+  <div class="focusbar" id="spbar" style="display:none">
+    <span class="fl" data-bm-text="species">종</span>
+    <select id="species" aria-label="종 고르기" data-bm-aria="speciesAria"></select>
+    <i class="bi bi-chevron-down" aria-hidden="true"></i>
+  </div>
+
+  <div class="tabs" id="tabs" style="display:none">
+    <button class="tab on" data-t="animals"><i class="bi bi-heart" aria-hidden="true"></i><span data-bm-text="tabAnimals">개체</span></button>
+    <button class="tab" data-t="pair"><i class="bi bi-arrow-left-right" aria-hidden="true"></i><span data-bm-text="tabPairings">페어링</span></button>
+    <button class="tab" data-t="clutch"><i class="bi bi-egg" aria-hidden="true"></i><span data-bm-text="tabClutches">클러치</span></button>
+    <button class="tab" data-t="goal"><i class="bi bi-bullseye" aria-hidden="true"></i><span data-bm-text="tabGoals">역산</span></button>
+    <button class="tab" data-t="analysis"><i class="bi bi-bar-chart-line" aria-hidden="true"></i><span data-bm-text="tabAnalysis">분석</span></button>
+  </div>
+
+  <div id="body"><div class="empty" data-bm-text="loading">불러오는 중…</div></div>
+
+  <div class="legal">
+    <a href="/terms.html#terms" data-bm-text="terms">이용약관</a> ·
+    <a href="/terms.html#privacy" data-bm-text="privacy">개인정보처리방침</a>
+  </div>
+</div>
+
+<div id="toast" role="status" aria-live="polite"></div>
+<script>window.BreedingI18n.apply(document);</script>
+
+<!-- 코어는 breeding-ui.js 가 ?species= 를 보고 골라 넣습니다.
+     여기서 <script> 로 미리 넣으면 종을 바꿀 수 없습니다. -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.8/dist/umd/supabase.js"></script>
+<script src="/assets/studio-config.js?v=20260810k"></script>
+<script src="/assets/breeding-draft.js?v=20260731a"></script>
+<script src="/assets/pairing-compare-metrics.js?v=20260731h"></script>
+<script src="/assets/calculation-history-store.js?v=20260731h"></script>
+<script src="/assets/line-trait-scores.js?v=20260731a"></script>
+<script src="/assets/breeding-project-contract.js?v=20260731a"></script>
+<script src="/assets/breeding-goal-i18n.js?v=20260802a"></script>
+<script src="/assets/breeding-project-flow.js?v=20260731a"></script>
+<script src="/assets/linebreeding-species-policy.js?v=20260802b"></script>
+<script src="breeding-goal-results.js?v=20260802a"></script>
+<script src="breeding-goal-ui.js?v=20260802d"></script>
+<script src="/assets/breeding-workspace-i18n.js?v=20260731h"></script>
+<script src="/assets/breeding-workspace.js?v=20260731h"></script>
+<script src="/assets/imgtool.js?v=20260809x"></script>
+<script src="/assets/photo.js?v=20260731c"></script>
+<script src="photo-cropper-i18n.js?v=20260731d"></script>
+<script src="photo-cropper-geometry.js?v=20260731d"></script>
+<script src="photo-cropper.js?v=20260731d"></script>
+<script src="care-photos.js?v=20260731d"></script>
+<script src="animal-life-stage.js?v=20260803a"></script>
+<script src="care-core.js?v=20260809x"></script>
+<script src="date-field.js?v=20260807c"></script>
+<script src="/assets/analytics.js?v=20260809x"></script>
+<script src="care-plan-store.js?v=20260802a"></script>
+<script src="care-app.js?v=20260809a"></script>
+<script src="bulk-care-record.js?v=20260809a"></script>
+<script src="breeding-animal-panel.js?v=20260808a"></script>
+<script src="breeding-pairing-panel.js?v=20260803b"></script>
+<script src="breeding-mating-groups.js?v=20260803a"></script>
+<script src="breeding-mating-panel.js?v=20260807c"></script>
+<script src="breeding-hatch-outcomes.js?v=20260803b"></script>
+<script src="breeding-hatch-panel.js?v=20260807c"></script>
+<script src="breeding-clutch-panel.js?v=20260807c"></script>
+<script src="breeding-genetic-goal.js?v=20260802b"></script>
+<script src="breeding-events.js?v=20260808a"></script>
+<script src="breeding-row-scope.js?v=20260802c"></script>
+<script src="breeding-ui.js?v=20260808c"></script>
+</body>
+</html>

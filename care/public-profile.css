@@ -1,0 +1,50 @@
+.psection-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
+.pweight-now{font-size:24px;font-weight:850;letter-spacing:-.04em;color:var(--teal)}
+.pweight canvas{display:block;width:100%;height:180px;margin-top:14px;border-radius:14px;background:var(--card2)}
+.pweight-axis{display:flex;justify-content:space-between;margin-top:7px;color:var(--ink2);font-size:11px;font-weight:650}
+.pparent-photo{width:54px;height:54px;flex:0 0 54px;border-radius:16px;overflow:hidden;background:var(--gtile);border:1px solid var(--hair)}
+.pparent-photo img{width:100%;height:100%;object-fit:cover;display:block}
+.parent-card{align-items:center}
+.pbreeder{text-decoration:none;transition:border-color .14s,color .14s}
+.pbreeder:hover{border-color:var(--teal);color:var(--teal)}
+/* 인증된 업체 줄. 로고가 사람 아이콘 자리를 대신합니다 — 이름 뒤에 덧붙이면
+   줄이 길어져 좁은 화면에서 브리더명이 잘립니다. */
+.pbreeder.verified{color:var(--ink);border-color:rgba(14,124,123,.28);padding-left:4px}
+.pbizlogo{width:20px;height:20px;border-radius:50%;object-fit:contain;
+  background:var(--card);border:1px solid var(--hair);flex:0 0 auto}
+.pbizmark{color:var(--teal);font-size:12px;margin-left:-1px}
+.breeder-more{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:14px}
+.breeder-more .mini{text-decoration:none;white-space:nowrap}
+body.breeder-public .wrap{max-width:1040px}
+.breeder-hero{display:grid;grid-template-columns:auto 1fr;align-items:center;gap:18px;padding:22px}
+.breeder-mark{width:62px;height:62px;border-radius:20px;display:flex;align-items:center;justify-content:center;background:var(--teal);color:#fff;font-size:27px}
+.breeder-eyebrow{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--teal)}
+.breeder-name{margin:4px 0 2px;font-size:28px;line-height:1.15;letter-spacing:-.045em}
+/* 인증된 업체는 위쪽 원 안이 사람 아이콘 대신 그 회사 로고입니다. 로고는 어떤
+   비율로 올라올지 모르니 contain 으로 담습니다 — cover 로 두면 가로로 긴 로고의
+   양끝이 잘려서 무슨 상표인지 알아볼 수 없습니다. */
+.breeder-mark.has-logo{background:var(--card,#fff);padding:6px}
+.breeder-mark.has-logo img{width:100%;height:100%;object-fit:contain;display:block}
+.breeder-mark-check{font-size:.5em;color:var(--teal);margin-left:.28em;vertical-align:.18em}
+/* 이름 자체가 이력을 여는 버튼입니다. 버튼처럼 보이면 제목이 아니라 조작으로
+   읽혀서, 화살표만 작게 붙이고 나머지는 제목 그대로 둡니다. */
+.breeder-name button{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:6px;
+  font:inherit;letter-spacing:inherit;color:inherit}
+.breeder-name button i{font-size:.62em;opacity:.5;transition:transform .18s}
+.breeder-name button[aria-expanded="true"] i{transform:rotate(180deg)}
+.breeder-name button:focus-visible{outline:2px solid currentColor;outline-offset:3px;border-radius:6px}
+.breeder-nick{margin:8px 0 2px}
+.breeder-nick .lbl{margin-bottom:6px}
+.breeder-nick ul{list-style:none;margin:0;padding:0;display:grid;gap:5px}
+.breeder-nick li{display:flex;flex-wrap:wrap;gap:2px 10px;align-items:baseline;font-size:12px;
+  opacity:.85}
+.breeder-nick li b{font-size:12.5px;word-break:break-all}
+.breeder-meta{color:var(--ink2);font-size:13px;font-weight:650}
+.breeder-filter{display:flex;gap:7px;overflow-x:auto;padding:4px 0 12px;scrollbar-width:none}
+.breeder-filter::-webkit-scrollbar{display:none}
+.breeder-filter button{flex:0 0 auto;min-height:38px;padding:7px 15px;border:1px solid var(--hair);border-radius:999px;background:var(--card);color:var(--ink2);font:750 12px inherit;cursor:pointer}
+.breeder-filter button.on{background:var(--teal);border-color:var(--teal);color:#fff}
+.breeder-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+.breeder-empty{padding:46px 20px;text-align:center;color:var(--ink2);border:1px dashed var(--hair);border-radius:var(--radius)}
+@media(max-width:700px){.breeder-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.breeder-filter{flex-wrap:wrap;overflow:visible}.breeder-hero{padding:18px}.breeder-name{font-size:24px}}
+@media(max-width:380px){.breeder-mark{width:52px;height:52px;border-radius:17px}.breeder-hero{gap:13px}.breeder-name{font-size:21px}}

@@ -1,0 +1,13 @@
+#w_d{
+  display:block;
+  box-sizing:border-box;
+  min-width:0!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-inline-size:0!important;
+  inline-size:100%!important;
+  max-inline-size:100%!important;
+}
+@media (max-width:640px){
+  .row2:has(#w_g):has(#w_d){grid-template-columns:minmax(0,1fr)}
+}

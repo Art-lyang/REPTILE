@@ -5,6 +5,25 @@ function escapeHtml(s){return String(s).replace(/[&<>"]/g,function(x){return {'&
 function gName(g){ return g[LANG]||g.en; }
 function gSuper(g){ return g['super'+LANG.charAt(0).toUpperCase()+LANG.slice(1)]||g.superEn; }
 function pName(p){ return p[LANG]||p.en; }
+function leoNorm(value){
+  return String(value||'').toLowerCase().replace(/[\s·・.()（）\-_/&]/g,'');
+}
+function leoHaystack(item){
+  if(!item) return '';
+  const names=[
+    item.id,
+    item.ko, item.en, item.zh, item.ja,
+    item.superKo, item.superEn, item.superZh, item.superJa
+  ].concat(item.alias||[]);
+  return names.filter(Boolean).map(leoNorm).join('|');
+}
+function leoMatches(item, query){
+  if(!query) return true;
+  return leoHaystack(item).indexOf(leoNorm(query))>=0;
+}
+function leoSearchKeeps(item, selected, query){
+  return selected || !query || leoMatches(item, query);
+}
 var CORE_T = { ko:{normal:'노멀',visualTag:'비주얼',hetShort:'헷',superShort:'슈퍼폼'},
                en:{normal:'Normal',visualTag:'Visual',hetShort:'het',superShort:'Super form'},
                zh:{normal:'普通',visualTag:'表现',hetShort:'het',superShort:'超级形态'},
@@ -39,7 +58,7 @@ const SHOW_DONATE     = false;
    ※ 링크만 감출 뿐 terms.html 은 그대로 접근 가능합니다.
      개인정보처리방침은 공개 의무가 있으므로 파일을 지우지 마세요.
      정식 공개(회원가입 오픈) 전에 반드시 true 로 되돌려야 합니다. */
-const SHOW_ACCOUNT_UI  = false;
+const SHOW_ACCOUNT_UI  = true;
 const SHOW_LEGAL_LINKS = false;
 
 /* --- 후원 계좌 --- */
@@ -57,7 +76,7 @@ const DONATE_ACCT = '3333-17-6613203';
       (terms.html 에 관련 문단이 준비되어 있으니 사업자명만 채우면 됩니다)
    2. 만 14세 미만 이용자에게는 맞춤형 광고를 노출하지 않도록 설정해야 합니다.
    3. 애드센스 등 대부분의 네트워크는 자체 도메인·충분한 콘텐츠를 요구합니다.  */
-const AD_ENABLED  = true;
+const AD_ENABLED  = false;
 const AD_HTML     = '';
 const AD_PROVIDER = '';    // 예: 'Google AdSense' — 채우면 개인정보처리방침 안내에 표시됨
 /* --- 백엔드(Supabase) 접속 정보는 assets/studio-config.js 로 옮겼습니다.
@@ -78,6 +97,7 @@ const GENES = [
   {id:'marble',   type:'rec', family:'eye', ko:'마블 아이', en:'Marble Eye', zh:'大理石眼', ja:'マーブルアイ'},
   {id:'blizzard', type:'rec', family:'patternless', ko:'블리자드', en:'Blizzard', zh:'暴雪', ja:'ブリザード'},
   {id:'murphy',   type:'rec', family:'patternless', ko:'머피 패턴리스', en:'Murphy Patternless', zh:'墨菲无纹', ja:'マーフィーパターンレス'},
+  {id:'noir',     type:'rec', family:'melanisticgene', risk:true, ko:'느와르', en:'Noir', zh:'Noir（黑化）', ja:'ノワール'},
   /* 라인브리딩에 '자이언트' 로 있던 것을 열성 유전 형질로 옮기고 이름을
      '슈퍼자이언트' 로 바꿨습니다. 이제 확률 계산 대상이고, 한 개만 있으면
      헷 보인자로 표시됩니다. */
@@ -87,8 +107,28 @@ const GENES = [
   {id:'lemonfrost',type:'incdom', family:'snowcolor', risk:true, ko:'레몬 프로스트', en:'Lemon Frost', zh:'柠檬霜', ja:'レモンフロスト',
      superKo:'슈퍼 레몬 프로스트', superEn:'Super Lemon Frost', superZh:'超级柠檬霜', superJa:'スーパーレモンフロスト'},
   {id:'enigma',   type:'dom', family:'dominant', risk:true, ko:'에니그마', en:'Enigma', zh:'谜 (Enigma)', ja:'エニグマ'},
-  {id:'wy',       type:'dom', family:'dominant', ko:'화이트 앤 옐로우', en:'White & Yellow', zh:'白与黄 (W&Y)', ja:'ホワイト&イエロー'},
+  {id:'wy',       type:'dom', family:'dominant', ko:'화이트앤옐로우(WY)', en:'White & Yellow', zh:'白与黄 (W&Y)', ja:'ホワイト&イエロー'},
 ];
+
+const LEO_LOCKED_GENE_LABELS = {wy:{ko:'화이트앤옐로우(WY)'}};
+const LEO_LOCKED_GENE_STRUCTURE = {noir:{type:'rec',family:'melanisticgene',risk:true}};
+const LEO_REQUIRED_GENE_IDS = new Set(['noir']);
+function leoApplyLockedGeneLabels(gene){
+  const labels=LEO_LOCKED_GENE_LABELS[gene.id];
+  if(!labels)return gene;
+  Object.keys(labels).forEach(key=>{gene[key]=labels[key];});
+  return gene;
+}
+function leoApplyLockedGeneStructure(gene){
+  const fields=LEO_LOCKED_GENE_STRUCTURE[gene.id];
+  if(!fields)return gene;
+  Object.keys(fields).forEach(key=>{gene[key]=fields[key];});
+  return gene;
+}
+function leoMergeRequiredGenes(loadedGenes,builtinGenes){
+  const loadedIds=new Set(loadedGenes.map(gene=>gene.id));
+  return loadedGenes.concat(builtinGenes.filter(gene=>LEO_REQUIRED_GENE_IDS.has(gene.id)&&!loadedIds.has(gene.id)));
+}
 
 /* ================= 형질 계열 (families) — 표시 순서 & 유전방식 배지 ================= */
 const FAMILIES = [
@@ -98,6 +138,8 @@ const FAMILIES = [
      desc:{ko:'눈 색·구조 변이', en:'Eye color / structure', zh:'眼睛颜色 / 结构', ja:'眼の色・構造'}},
   {id:'patternless', type:'rec', ko:'패턴리스·화이트', en:'Patternless & White', zh:'无纹·白', ja:'パターンレス・白',
      desc:{ko:'패턴·색소 감소', en:'Reduced pattern / pigment', zh:'斑纹 / 色素减少', ja:'模様・色素の減少'}},
+  {id:'melanisticgene', type:'rec', ko:'멜라니스틱 유전 형질', en:'Melanistic gene', zh:'黑化基因', ja:'黒化遺伝形質',
+     desc:{ko:'열성 멜라닌 형질', en:'Recessive melanistic trait', zh:'隐性黑化性状', ja:'劣性の黒化形質'}},
   {id:'size', type:'rec', ko:'크기', en:'Size', zh:'体型', ja:'サイズ',
      desc:{ko:'몸 크기 · 두 개가 모두 모여야 발현', en:'Body size · needs two copies', zh:'体型 · 需两个拷贝', ja:'体の大きさ · 2つ揃って発現'}},
   {id:'snowcolor', type:'incdom', ko:'스노우·색', en:'Snow & Color', zh:'雪花·颜色', ja:'スノー・カラー',
@@ -114,10 +156,29 @@ const POLY = [
   {id:'mandarin',  line:'tangerine', ko:'만다린', en:'Mandarin', zh:'曼达林', ja:'マンダリン'},
   {id:'blood',     line:'tangerine', ko:'블러드', en:'Blood', zh:'血红', ja:'ブラッド'},
   {id:'inferno',   line:'tangerine', ko:'인페르노', en:'Inferno', zh:'地狱火', ja:'インフェルノ'},
-  {id:'sunglow',   line:'tangerine', ko:'썬글로우', en:'Sunglow', zh:'阳光', ja:'サングロー'},
+  {id:'sunglow',   line:'tangerine', implies:{tremper:'mm'}, ko:'썬글로우', en:'Sunglow', zh:'阳光', ja:'サングロー'},
   {id:'electric',  line:'tangerine', ko:'일렉트릭', en:'Electric', zh:'电光', ja:'エレクトリック'},
   {id:'atomic',    line:'tangerine', ko:'아토믹', en:'Atomic', zh:'原子', ja:'アトミック'},
   {id:'tangerinered',line:'tangerine', ko:'레드', en:'Red', zh:'红', ja:'レッド'},
+  /* 레드데빌 — 붉은 발색 라인. 텐져린 계열로 묶었습니다.
+
+     ⚠️ implies — 이 라인은 벨 알비노를 물고 있습니다.
+     붉은 발색 자체는 다인자라 확률 계산 대상이 아니지만, 벨 알비노는
+     열성 유전자라 계산 대상입니다. 그래서 레드데빌을 골랐는데 벨 알비노가
+     꺼져 있으면 확률이 조용히 틀립니다 — 노멀과 붙여도 최소 50% 는 het
+     벨인데 화면에는 0% 로 나옵니다.
+
+     'mm' 이 아니라 'het' 인 이유. 벨 알비노는 열성이라 라인 안에 겉으로
+     드러나지 않는 보인자가 섞여 있습니다. 레드데빌이라고 전부 비주얼
+     알비노는 아니라는 뜻이고, 모든 레드데빌에 대해 확실히 말할 수 있는
+     선은 '최소 보인자' 까지입니다.
+
+     그래서 implies 는 **최소값** 으로 다룹니다 (genoRank 참고).
+     내 개체가 눈으로 봐서 알비노면 벨 알비노 칩을 '비주얼' 로 올리면
+     되고, 그때 경고는 안 뜹니다 — 어긋난 게 아니라 더 진한 경우니까요.
+     반대로 아예 꺼버리면 확률이 실제보다 낮다고 알려줍니다. */
+  {id:'reddevil',  line:'tangerine', implies:{bell:'het'},
+     ko:'레드데빌', en:'Red Devil', zh:'红魔', ja:'レッドデビル'},
   /* 에머릴드 + 텐져린 계열. 예전에는 따로 보기도 했지만 요즘은
      텐져린 계열로 취급합니다. (현직 브리더 확인) */
   {id:'emerine',   line:'tangerine', ko:'에머린', en:'Emerine', zh:'翡翠橘', ja:'エメリン'},
@@ -129,13 +190,64 @@ const POLY = [
   {id:'superhypo', ko:'슈퍼하이포', en:'Super Hypo', zh:'超级少黑', ja:'スーパーハイポ'},
   {id:'melanistic',line:'melanistic', ko:'멜라니스틱', en:'Melanistic', zh:'黑化', ja:'メラニスティック'},
   {id:'blacknight',line:'melanistic', ko:'블랙나이트', en:'Black Night', zh:'黑夜', ja:'ブラックナイト'},
+  /* 카본 — 흑화 계열 라인. 블랙나이트·차콜·블랙펄과 같은 부류로,
+     단일 유전자가 아니라 검은 발색을 골라 고정한 라인입니다. */
+  {id:'carbon',    line:'melanistic', ko:'카본', en:'Carbon', zh:'碳黑', ja:'カーボン'},
   {id:'dark',      line:'tangerine', ko:'다크', en:'Dark', zh:'暗色', ja:'ダーク'},
   {id:'carrottail',ko:'캐럿 테일', en:'Carrot Tail', zh:'胡萝卜尾', ja:'キャロットテール'},
   {id:'carrothead',ko:'캐럿 헤드', en:'Carrot Head', zh:'胡萝卜头', ja:'キャロットヘッド'},
+  /* 발디 — 머리에 반점이 없는 개체. 슈퍼하이포처럼 반점이 적은 개체를
+     골라 붙여 고정한 라인이라 확률 계산 대상이 아닙니다.
+     캐럿헤드·볼드스트라이프처럼 계열(line)을 두지 않습니다 — 다른 형질과
+     섞였을 때 되돌아갈 상위 라인이 없습니다. */
+  {id:'baldy',     ko:'발디', en:'Baldy', zh:'无斑头', ja:'ボールディ'},
   {id:'boldstripe',ko:'볼드 스트라이프', en:'Bold Stripe', zh:'粗条纹', ja:'ボールドストライプ'},
   {id:'stripe',    ko:'스트라이프', en:'Stripe', zh:'条纹', ja:'ストライプ'},
   {id:'jungle',    ko:'정글', en:'Jungle', zh:'丛林', ja:'ジャングル'},
   {id:'ghost',     ko:'고스트', en:'Ghost', zh:'幽灵', ja:'ゴースト'},
+
+  /* ── 흑화·다크 계열 라인 (브리더 '레게 태영이' 제공, 2026-07-29) ──────
+     "전부 라인. 얘들끼리 나오는 조합이나 뭐끼리 붙이면 만들어지고
+      그런 건 없다" 고 확인받았습니다. 그래서 전부 POLY 이고 COMBOS 에는
+     넣지 않습니다. 확률 계산에는 들어가지 않습니다.
+
+     gt · gg · gct.m · gct.s · BMD 는 약칭 그대로 씁니다. 브리더 사이에서
+     쓰이는 이름이라 억지로 풀어 쓰면 오히려 못 알아봅니다. 정식 명칭을
+     아시면 알려주세요 — ko/en/zh/ja 만 바꾸면 됩니다. */
+  {id:'charcoal',  line:'melanistic', ko:'차콜', en:'Charcoal', zh:'木炭黑', ja:'チャコール'},
+  {id:'blackblood',line:'melanistic', ko:'블랙블러드', en:'Black Blood', zh:'黑血', ja:'ブラックブラッド'},
+  {id:'blackpearl',line:'melanistic', ko:'블랙펄', en:'Black Pearl', zh:'黑珍珠', ja:'ブラックパール'},
+  {id:'pepper',    line:'melanistic', ko:'페퍼', en:'Pepper', zh:'胡椒', ja:'ペッパー'},
+  /* 아프간은 원래 아종(E. m. afghanicus) 이름이지만, 국내에서는 흑화
+     라인명으로 씁니다. 여기서도 라인으로 다룹니다. */
+  {id:'afghan',    line:'melanistic', ko:'아프간', en:'Afghan', zh:'阿富汗', ja:'アフガン'},
+  {id:'gt',        ko:'GT', en:'GT', zh:'GT', ja:'GT'},
+  {id:'gg',        ko:'GG', en:'GG', zh:'GG', ja:'GG'},
+  {id:'gctm',      ko:'GCT.M', en:'GCT.M', zh:'GCT.M', ja:'GCT.M'},
+  {id:'gcts',      ko:'GCT.S', en:'GCT.S', zh:'GCT.S', ja:'GCT.S'},
+  {id:'bmd',       ko:'BMD', en:'BMD', zh:'BMD', ja:'BMD'},
+  /* '차콜카본다크만다린' 은 넣지 않습니다. 하나의 라인이 아니라
+     차콜 + 카본 + 다크 + 만다린 을 붙여 쓴 이름이고, 넷 다 이미 위에
+     따로 있습니다. 항목으로 만들면 같은 개체를 두 가지 방법으로 고를 수
+     있게 되고, 그때 결과 이름이 서로 달라집니다. */
+
+  /* ── 붉은 계열 라인 (같은 출처) ──────────────────────────────────── */
+  {id:'crimson',       line:'tangerine', ko:'크림슨', en:'Crimson', zh:'深红', ja:'クリムゾン'},
+  {id:'bordeaux',      line:'tangerine', ko:'보르도', en:'Bordeaux', zh:'波尔多', ja:'ボルドー'},
+  {id:'darktangerine', line:'tangerine', ko:'다크텐져린', en:'Dark Tangerine', zh:'暗橘', ja:'ダークタンジェリン'},
+
+  /* ── 알비노를 물고 있는 라인 ──────────────────────────────────────
+     레드데빌과 같은 구조입니다. implies 설명은 위 reddevil 항목 참고.
+
+     스모그는 트램퍼 알비노, 오렌지 스모그는 벨 알비노가 발현된 라인으로
+     계산합니다. 따라서 다른 모프와 교배하면 해당 알비노의 보인자가
+     자손에게 100% 전달됩니다.
+
+     ⚠️ 트램퍼와 벨은 서로 다른 유전자입니다. 스모그(비주얼 트램퍼) 와
+        오렌지 스모그(비주얼 벨) 를 붙여도 알비노는 안 나옵니다 — 더블 het
+        가 될 뿐입니다. 계산기가 이 부분을 이미 안내합니다. */
+  {id:'smog',       implies:{tremper:'mm'}, ko:'스모그', en:'Smog', zh:'烟灰', ja:'スモッグ'},
+  {id:'orangesmog', implies:{bell:'mm'},    ko:'오렌지 스모그', en:'Orange Smog', zh:'橙烟灰', ja:'オレンジスモッグ'},
 ];
 
 /* ================= 위험 조합 메시지 ================= */
@@ -163,6 +275,13 @@ const DANGER = {
       en:'🛑 This is an <b>Enigma × Enigma</b> pairing. It can produce more severely affected individuals and is generally discouraged.',
       zh:'🛑 这是<b>谜 × 谜 (Enigma × Enigma)</b> 配对，可能产生症状更严重的个体，通常不推荐。',
       ja:'🛑 <b>エニグマ × エニグマ</b>の交配です。より症状の重い個体が出ることがあり、一般的に推奨されません。'},
+  },
+  noir:{
+    any:{level:'med',
+      ko:'⚠️ <b>느와르</b> 비주얼 개체는 난임 또는 번식력 저하 이슈가 있을 수 있습니다. 개체차가 있으므로 교배 전 계통과 번식 이력을 함께 확인해 주세요.',
+      en:'⚠️ Visual <b>Noir</b> animals may have reduced fertility or infertility. This varies by animal, so review lineage and breeding history before pairing.',
+      zh:'⚠️ <b>Noir</b> 表现型个体可能存在生育力下降或不育问题。个体差异较大，配对前请同时确认血统与繁殖记录。',
+      ja:'⚠️ <b>ノワール</b>のビジュアル個体には、繁殖力の低下や不妊の問題が見られる場合があります。個体差があるため、交配前に系統と繁殖履歴も確認してください。'},
   },
 };
 
@@ -262,6 +381,7 @@ const GCOLOR={
   tremper:'#F0E0BE',bell:'#F0E0BE',rainwater:'#F0E0BE',
   eclipse:'#2B2724',marble:'#8A7C64',
   blizzard:'#EDEBE4',murphy:'#CFC7A0',
+  noir:'#24211F',
   macksnow:'#D8D4C8',super_macksnow:'#F1F0EC',lemonfrost:'#EEE7A8',super_lemonfrost:'#F5EEB0',
   enigma:'#DCC78C',wy:'#F1EBD2',
   tangerine:'#E8944A',mandarin:'#E07A2E',blood:'#C7502A',
@@ -282,6 +402,7 @@ function geckoProfile(tokens){
   if(has('blizzard')) base='#EAE7E0';
   if(has('tremper')||has('bell')||has('rainwater')) base='#F2E6CA';  // 알비노 파스텔
   if(has('super_macksnow')) base='#F1F0EC';                          // 슈퍼스노우 화이트
+  if(has('noir')) base='#24211F';
   const albino = has('tremper')||has('bell')||has('rainwater');
   const solidEye = has('eclipse')||has('super_macksnow');            // 이클립스/슈퍼스노우 = 솔리드 블랙아이
   const eye = albino? '#C0392B' : '#2A2622';                         // 알비노 = 레드아이
@@ -342,6 +463,103 @@ GENES.forEach(g=>{STATE.A[g.id]='nn';STATE.B[g.id]='nn';});
 POLY.forEach(p=>{STATE.A[p.id]='no';STATE.B[p.id]='no';});
 
 
+/* ── 라인브리딩 형질이 깔고 가는 유전자 (implies) ────────────────────────
+   라인브리딩은 원래 확률 계산 대상이 아닙니다. 그런데 라인 자체가 유전자를
+   품고 있는 경우가 있습니다 — 레드데빌은 벨 알비노를 깔고 갑니다. 이때
+   벨 알비노를 안 켜면 확률이 조용히 틀립니다.
+
+   그래서 implies 가 붙은 칩을 켜면 해당 유전자도 같이 켭니다.
+
+   기록을 **라인별이 아니라 유전자별로** 남깁니다. 벨 알비노는 레드데빌도
+   오렌지 스모그도 물고 있어서, 라인별로 기억하면 이런 일이 납니다.
+   레드데빌을 켜서 벨이 het 이 되고 → 오렌지 스모그를 켜면 이미 het 이라
+   아무 기록도 안 남고 → 레드데빌을 끄면 오렌지 스모그가 넘겨받고 →
+   오렌지 스모그를 끄면 되돌릴 값이 없어 het 이 그대로 남습니다.
+
+   그래서 '사용자가 원래 두었던 값(base)' 과 '우리가 넣은 값(set)' 을
+   유전자 하나당 한 벌만 기억하고, 켜고 끌 때마다 syncImplies() 로
+   전체를 다시 맞춥니다. 우리가 넣은 값이 그대로 남아 있을 때만 되돌리기
+   때문에, 중간에 사용자가 직접 바꿨으면 그 값을 그대로 둡니다. */
+const IMPLIED={A:{}, B:{}};   // {유전자id: {base:원래값, set:우리가넣은값|null}}
+
+/* implies 는 '이만큼은 확실하다' 는 **최소값** 입니다. 정확한 값이 아닙니다.
+   레드데빌은 벨 알비노를 물고 있지만 열성이라 보인자인지 발현인지는
+   개체마다 다릅니다. 그래서 het 을 깔되, 사용자가 비주얼로 올려둔 것을
+   het 으로 끌어내리지 않고, 올려둔 것을 어긋났다고 경고하지도 않습니다.
+
+   nn(정상) < het(보인자) < mm(발현) 순서. 'no' 는 라인브리딩 칩의 꺼짐입니다. */
+const GENO_RANK={no:0, nn:0, het:1, mm:2};
+function genoRank(v){ return GENO_RANK[v]===undefined? 0 : GENO_RANK[v]; }
+
+/* 켜져 있는 라인들이 요구하는 최소치를 유전자별로 모읍니다.
+   같은 유전자를 둘 이상이 요구하면 가장 높은 값이 이깁니다. */
+function impliesNeeded(side){
+  const need={};
+  POLY.forEach(p=>{
+    if(!p.implies || STATE[side][p.id]==='no') return;
+    Object.keys(p.implies).forEach(gid=>{
+      if(!GENES.some(g=>g.id===gid)) return;   // DB 에서 유전자가 빠졌을 수도
+      if(genoRank(p.implies[gid]) > genoRank(need[gid])) need[gid]=p.implies[gid];
+    });
+  });
+  return need;
+}
+
+/* 라인 칩을 켜든 끄든 이거 하나만 부르면 상태가 맞춰집니다. */
+function syncImplies(side){
+  const need=impliesNeeded(side), rec=IMPLIED[side];
+
+  /* 1) 이제 아무도 요구하지 않는 유전자 — 사용자 값으로 되돌립니다.
+        단 우리가 넣은 값이 그대로 남아 있을 때만. */
+  Object.keys(rec).forEach(gid=>{
+    if(need[gid]!==undefined) return;
+    if(rec[gid].set!==null && STATE[side][gid]===rec[gid].set) STATE[side][gid]=rec[gid].base;
+    delete rec[gid];
+  });
+
+  /* 2) 요구되는 유전자 — 최소치까지 올립니다. 내리지는 않습니다. */
+  Object.keys(need).forEach(gid=>{
+    const want=need[gid];
+    if(!rec[gid]){
+      /* 처음 요구됨 — 사용자가 두었던 값을 여기서 기억해 둡니다 */
+      const base=STATE[side][gid];
+      if(genoRank(base) >= genoRank(want)){ rec[gid]={base:base, set:null}; return; }
+      STATE[side][gid]=want; rec[gid]={base:base, set:want};
+      return;
+    }
+    /* 우리가 넣은 값이 사라졌다면 사용자가 손댄 것 — 건드리지 않습니다.
+       (그 상태는 impliesReport 가 경고로 잡아줍니다) */
+    if(rec[gid].set!==null && STATE[side][gid]!==rec[gid].set) return;
+    if(genoRank(STATE[side][gid]) >= genoRank(want)) return;
+    STATE[side][gid]=want; rec[gid].set=want;
+  });
+}
+
+/* 초기화처럼 STATE 를 통째로 갈아엎을 때 기억을 비웁니다.
+   안 비우면 '우리가 넣은 값' 이 안 맞아 다음에 켤 때 안 올라갑니다. */
+function resetImplies(){ IMPLIED.A={}; IMPLIED.B={}; }
+
+/* 지금 켜져 있는 라인브리딩 형질 중 implies 가 있는 것들을 훑어서,
+   딸린 유전자가 실제로 맞게 켜져 있는지 봅니다. IMPLIED 기록이 아니라
+   STATE 를 직접 보기 때문에, 사용자가 유전 모프에서 손으로 꺼 버린
+   경우에도 어긋난 것을 잡아냅니다. */
+function impliesReport(side){
+  const on=[], off=[];
+  POLY.forEach(p=>{
+    if(!p.implies || STATE[side][p.id]==='no') return;
+    Object.keys(p.implies).forEach(gid=>{
+      const g=GENES.find(x=>x.id===gid); if(!g) return;
+      const cur=STATE[side][gid];
+      /* 최소치 이상이면 정상입니다. het 을 요구하는데 비주얼이면 그건
+         어긋난 게 아니라 더 진한 경우라 경고하지 않습니다. */
+      (genoRank(cur) >= genoRank(p.implies[gid]) ? on : off)
+        .push({poly:p, gene:g, val:p.implies[gid], cur:cur});
+    });
+  });
+  return {on:on, off:off};
+}
+
+
 /* ================= 계산 엔진 ================= */
 function gcd(a,b){a=Math.abs(a);b=Math.abs(b);while(b){[a,b]=[b,a%b];}return a||1;}
 function lcm(a,b){return a/gcd(a,b)*b;}
@@ -366,12 +584,16 @@ function computeWarnings(dists){
   const w=[];
   const distFor=id=>{const d=dists.find(x=>x.g.id===id);return d?d.dist:{NN:0,Nm:0,mm:0};};
   const lf=distFor('lemonfrost');
-  if(lf.mm>0){const d=DANGER.lemonfrost.super; w.push({level:d.level,text:d[LANG]});}
-  else if(lf.Nm>0){const d=DANGER.lemonfrost.het; w.push({level:d.level,text:d[LANG]});}
+  if(lf.mm>0){const d=DANGER.lemonfrost.super; w.push({geneId:'lemonfrost',level:d.level,text:d[LANG]});}
+  else if(lf.Nm>0){const d=DANGER.lemonfrost.het; w.push({geneId:'lemonfrost',level:d.level,text:d[LANG]});}
   const en=distFor('enigma');
   if(en.Nm>0||en.mm>0){
-    const d=DANGER.enigma.any; w.push({level:d.level,text:d[LANG]});
-    if(STATE.A.enigma!=='nn'&&STATE.B.enigma!=='nn'){const d2=DANGER.enigma.double; w.push({level:d2.level,text:d2[LANG]});}
+    const d=DANGER.enigma.any; w.push({geneId:'enigma',level:d.level,text:d[LANG]});
+    if(STATE.A.enigma!=='nn'&&STATE.B.enigma!=='nn'){const d2=DANGER.enigma.double; w.push({geneId:'enigma',level:d2.level,text:d2[LANG]});}
+  }
+  const noir=distFor('noir');
+  if(noir.mm>0||STATE.A.noir==='mm'||STATE.B.noir==='mm'){
+    const d=DANGER.noir.any; w.push({geneId:'noir',level:d.level,text:d[LANG]});
   }
   return w;
 }
@@ -427,7 +649,13 @@ function buildPie(rows){
 function gatherPoly(){
   if(!showPoly) return [];
   return POLY.filter(p=>STATE.A[p.id]==='yes'||STATE.B[p.id]==='yes')
-    .map(p=>({id:p.id, name:pName(p), both:STATE.A[p.id]==='yes'&&STATE.B[p.id]==='yes'}));
+    .map(p=>({
+      id:p.id,
+      name:pName(p),
+      a:STATE.A[p.id]==='yes',
+      b:STATE.B[p.id]==='yes',
+      both:STATE.A[p.id]==='yes'&&STATE.B[p.id]==='yes'
+    }));
 }
 /* 새끼 이름에 붙을 라인브리딩 부분.
    양쪽을 합친 형질 집합이 POLY_COMBOS 에 있으면 그 이름을, 없으면
@@ -450,7 +678,7 @@ function polyLabel(poly){
      원점으로 돌아갑니다. 만다린 × 텐져린 이 만다린이 아니라
      텐져린이 되는 이유입니다. (현직 브리더 확인)
      한 가지 형질만 쓰였다면 고정이 유지되므로 그 라인명을 그대로 둡니다. */
-  if(ids.length===1) return poly[0].name;
+  if(ids.length===1) return poly[0].both ? poly[0].name : '';
   const base=POLY.filter(p=>p.id===[...lines][0])[0];
   return base ? pName(base) : poly.map(p=>p.name).join(' ');
 }
@@ -461,61 +689,18 @@ function polyLabel(poly){
    - EXIF 회전 자동 보정 (createImageBitmap)
    - 최대 변 길이 제한 + 목표 용량(기본 350KB)까지 화질 자동 조정
    - 아주 큰 이미지는 단계적으로 축소해 모바일 브라우저 메모리 초과 방지 */
+/* 사진 줄이기는 assets/imgtool.js 로 옮겼습니다.
+   케어·브리딩 화면이 종을 가리지 않게 되면서 크레스티드·펫테일·볼파이톤
+   에서도 필요해졌는데, 그쪽은 이 파일을 읽지 않기 때문입니다. 구현을 두 벌
+   두면 한쪽만 고쳐지므로 여기서는 넘기기만 합니다.
+
+   ⚠️ 이 함수를 쓰는 페이지는 assets/imgtool.js 를 먼저 읽어야 합니다.
+      (gecko/index.html · gecko/login.html · admin/index.html) */
 async function resizeImage(file, max, opt){
-  opt = opt || {};
-  const maxBytes = opt.maxBytes || 350*1024;   // 목표 용량
-  const minQ     = opt.minQ     || 0.5;        // 최저 화질
-  max = max || 900;
-
-  if(!file || !/^image\//.test(file.type||'')) throw new Error('이미지 파일이 아니에요.');
-
-  // 1) 디코딩 (EXIF 회전 반영)
-  let src = null, useBitmap = false;
-  try{
-    if(window.createImageBitmap){
-      src = await createImageBitmap(file, {imageOrientation:'from-image'});
-      useBitmap = true;
-    }
-  }catch(e){ src = null; }
-  if(!src){
-    src = await new Promise((res,rej)=>{ const i=new Image();
-      i.onload=()=>res(i); i.onerror=()=>rej(new Error('이미지를 열 수 없어요.'));
-      i.src=URL.createObjectURL(file); });
+  if(!window.ImgTool || !window.ImgTool.resize){
+    throw new Error('사진 도구를 불러오지 못했습니다. 새로고침 후 다시 시도해 주세요.');
   }
-
-  let sw = src.width, sh = src.height;
-  if(!sw || !sh) throw new Error('이미지 크기를 읽을 수 없어요.');
-
-  // 2) 목표 크기 계산
-  const scale = Math.min(1, max/Math.max(sw,sh));
-  let tw = Math.max(1, Math.round(sw*scale)), th = Math.max(1, Math.round(sh*scale));
-
-  // 3) 단계적 축소 (한 번에 1/2 이하로 줄이면 계단현상 → 반씩 줄임)
-  let cur = document.createElement('canvas');
-  cur.width = sw; cur.height = sh;
-  cur.getContext('2d').drawImage(src, 0, 0);
-  if(useBitmap && src.close) src.close();
-
-  let cw = sw, ch = sh;
-  while(cw > tw*2 || ch > th*2){
-    const nw = Math.max(tw, Math.round(cw/2)), nh = Math.max(th, Math.round(ch/2));
-    const nx = document.createElement('canvas'); nx.width=nw; nx.height=nh;
-    const cx = nx.getContext('2d'); cx.imageSmoothingQuality='high';
-    cx.drawImage(cur, 0, 0, nw, nh);
-    cur = nx; cw = nw; ch = nh;
-  }
-  const out = document.createElement('canvas'); out.width=tw; out.height=th;
-  const ox = out.getContext('2d'); ox.imageSmoothingQuality='high';
-  ox.drawImage(cur, 0, 0, tw, th);
-
-  // 4) 용량이 목표보다 크면 화질을 낮춰 재인코딩
-  const encode = q => new Promise((res,rej)=>
-    out.toBlob(b=> b? res(b) : rej(new Error('이미지 변환에 실패했어요.')), 'image/jpeg', q));
-  let q = 0.85, blob = await encode(q);
-  while(blob.size > maxBytes && q > minQ){
-    q = Math.max(minQ, q - 0.12);
-    blob = await encode(q);
-  }
-  return blob;
+  return window.ImgTool.resize(file, max, opt);
 }
+
 if(typeof window!=='undefined') window.resizeImage = resizeImage;

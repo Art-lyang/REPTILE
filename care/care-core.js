@@ -9,7 +9,18 @@
    같습니다. 다른 것은 기본값뿐이라 SPECIES 표로 빼두었습니다.
    ============================================================================= */
 
-const SERVICE_ID = 'care';
+/* ⚠️ 최상위에 const SERVICE_ID 를 두지 않습니다.
+   네 계산기 코어가 전부 최상위에서 const SERVICE_ID 를 선언합니다. 이 파일과
+   계산기 코어를 같은 페이지에 올리면 두 번째 것이 통째로 죽습니다
+   ('Identifier already declared' — 스크립트 전체가 파싱 단계에서 실패합니다).
+
+   실제로 브리딩 화면(/care/breeding.html)이 그 조합입니다. 이 파일이 먼저
+   올라가 있어서 gecko-core.js 가 아무것도 정의하지 못했고, 모프 목록이 통째로
+   비어 나왔습니다.
+
+   analytics.js 는 서비스 이름을 인자로 받으므로 전역 상수가 필요 없습니다.
+   값은 아래 CareCore.SERVICE_ID 로만 내보냅니다. */
+const CARE_SERVICE_ID = 'care';
 
 /* ── 케어 종류 ────────────────────────────────────────────────────────────
    supabase_v16.sql 의 kind 제약과 같아야 합니다. 여기에만 추가하면 저장할 때
@@ -96,7 +107,7 @@ const SPECIES = {
     ]
   },
   fattail: {
-    ko: '아프리카 팻테일 게코', icon: '🦎', calc: '/fattail/',
+    ko: '아프리카 펫테일 게코', icon: '🦎', calc: '/fattail/',
     weightRange: [8, 120],
     plans: [
       { kind: 'feed',       title: '급여',          interval_days: 3 },
@@ -325,11 +336,15 @@ function icsRrule(plan) {
 
 /* UID 는 계획 id 로 고정합니다. 같은 계획을 두 번 내려받아도 캘린더가 같은
    일정으로 알아보고 덮어씁니다. 매번 새 값을 넣으면 중복 일정이 쌓입니다. */
-function icsEvent(plan, animalName, host) {
+function icsEvent(plan, animalName, host, labels) {
+  labels = labels || {};
   const stamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
   const start = (plan.start_date || today()).replace(/-/g, '');
   const info = kindInfo(plan.kind);
-  const title = (plan.title || info.ko) + (animalName ? ' · ' + animalName : '');
+  const baseTitle = plan.title
+    ? (labels.planTitle ? labels.planTitle(plan.title) : plan.title)
+    : (labels.kindName ? labels.kindName(plan.kind) : info.ko);
+  const title = baseTitle + (animalName ? ' · ' + animalName : '');
 
   const L = [];
   L.push('BEGIN:VEVENT');
@@ -349,8 +364,8 @@ function icsEvent(plan, animalName, host) {
   /* 아이콘 폰트가 없는 곳으로 나가는 값이라 emoji 를 씁니다. icon(=bi 클래스)을
      넣으면 캘린더에 'bi-egg-fried 급여' 라고 뜹니다. */
   L.push('SUMMARY:' + icsEscape(info.emoji + ' ' + title));
-  if (plan.detail) L.push('DESCRIPTION:' + icsEscape(plan.detail));
-  L.push('CATEGORIES:' + icsEscape(info.ko));
+  if (plan.detail) L.push('DESCRIPTION:' + icsEscape(labels.planDetail ? labels.planDetail(plan.detail) : plan.detail));
+  L.push('CATEGORIES:' + icsEscape(labels.kindName ? labels.kindName(plan.kind) : info.ko));
 
   /* 알림. 시각이 정해진 일정은 정각에, 종일 일정은 그날 아침 9시에 울립니다.
      (종일 일정의 DTSTART 는 자정이라 PT9H 가 곧 아침 9시입니다) */
@@ -367,11 +382,13 @@ function icsEvent(plan, animalName, host) {
    UID 를 먹이 id 로 고정합니다. 소진 예상일이 바뀐 뒤 다시 내려받으면 캘린더가
    같은 일정으로 알아보고 날짜를 옮깁니다. 매번 새 UID 를 주면 옛 날짜의 안내가
    그대로 남아, 이미 산 것을 또 사라고 알리게 됩니다. */
-function icsOrderEvent(order, host) {
+function icsOrderEvent(order, host, labels) {
+  labels = labels || {};
   const stamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
   const day = String(order.orderOn).replace(/-/g, '');
-  const title = '🛒 ' + order.name + ' 주문';
-  const desc = (order.emptyOn ? order.emptyOn + ' 쯤 떨어질 것으로 보입니다.' : '')
+  const title = labels.orderTitle ? labels.orderTitle(order.name) : '🛒 ' + order.name + ' 주문';
+  const desc = (order.emptyOn ? (labels.orderDescription
+    ? labels.orderDescription(order.emptyOn) : order.emptyOn + ' 쯤 떨어질 것으로 보입니다.') : '')
              + (order.buyUrl ? '\n' + order.buyUrl : '');
 
   const L = [];
@@ -383,7 +400,7 @@ function icsOrderEvent(order, host) {
   L.push('SUMMARY:' + icsEscape(title));
   if (desc) L.push('DESCRIPTION:' + icsEscape(desc));
   if (order.buyUrl) L.push('URL:' + icsEscape(order.buyUrl));
-  L.push('CATEGORIES:' + icsEscape('주문'));
+  L.push('CATEGORIES:' + icsEscape(labels.orderCategory || '주문'));
   L.push('BEGIN:VALARM');
   L.push('ACTION:DISPLAY');
   L.push('DESCRIPTION:' + icsEscape(title));
@@ -395,23 +412,23 @@ function icsOrderEvent(order, host) {
 
 /* 계획 여러 개를 캘린더 파일 하나로. animalNames 는 { 개체id: 이름 }
    orders 는 주문 안내 목록 (선택) — [{id, name, orderOn, emptyOn, buyUrl}] */
-function buildIcs(plans, animalNames, host, orders) {
+function buildIcs(plans, animalNames, host, orders, labels) {
   const names = animalNames || {};
   let L = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//ryangstudio//care//KO',
+    'PRODID:-//ryangstudio//care//' + ((labels && labels.language) || 'KO'),
     'CALSCALE:GREGORIAN',
     'METHOD:PUBLISH',
-    'X-WR-CALNAME:' + icsEscape('사육 케어')
+    'X-WR-CALNAME:' + icsEscape((labels && labels.calendarName) || '사육 케어')
   ];
   (plans || []).forEach(function (p) {
-    if (p.is_active === false) return;
-    L = L.concat(icsEvent(p, p.animal_id ? names[p.animal_id] : null, host));
+    if (p.is_active === false || Number(p.weekly_target) > 0) return;
+    L = L.concat(icsEvent(p, p.animal_id ? names[p.animal_id] : null, host, labels));
   });
   (orders || []).forEach(function (o) {
     if (!o || !o.orderOn) return;
-    L = L.concat(icsOrderEvent(o, host));
+    L = L.concat(icsOrderEvent(o, host, labels));
   });
   L.push('END:VCALENDAR');
   /* 규격이 CRLF 를 요구합니다. LF 만 쓰면 읽는 앱에 따라 통째로 실패합니다. */
@@ -476,27 +493,27 @@ function weeklySummary(records, weights, endDate) {
   const total = rs.length;
 
   if (total === 0 && ws.length === 0) {
-    notes.push({ level: 'info', text: '이번 주에는 기록이 없습니다. 오늘 상태를 한 줄만 남겨두면 다음 주에 비교할 수 있습니다.' });
+    notes.push({ level: 'info', code: 'empty', values: {}, text: '이번 주에는 기록이 없습니다. 오늘 상태를 한 줄만 남겨두면 다음 주에 비교할 수 있습니다.' });
   } else {
     if (weightAware && delta != null && delta < -1) {
-      notes.push({ level: 'warn', text: '체중이 ' + Math.abs(delta) + 'g 줄었습니다. 급여량과 활동 상태를 함께 확인해 보세요.' });
+      notes.push({ level: 'warn', code: 'weightDown', values: { grams: Math.abs(delta) }, text: '체중이 ' + Math.abs(delta) + 'g 줄었습니다. 급여량과 활동 상태를 함께 확인해 보세요.' });
     }
     if (weightAware && (!lastWeigh || daysBetween(lastWeigh, end) >= 10)) {
-      notes.push({ level: 'info', text: '체중 기록이 뜸합니다. 주 1회 정도 재두면 변화를 알아보기 쉽습니다.' });
+      notes.push({ level: 'info', code: 'weightSparse', values: {}, text: '체중 기록이 뜸합니다. 주 1회 정도 재두면 변화를 알아보기 쉽습니다.' });
     }
     if (feed === 0) {
-      notes.push({ level: 'warn', text: '이번 주 급여 기록이 없습니다. 실제로 걸렀는지, 적는 것만 걸렀는지 확인해 보세요.' });
+      notes.push({ level: 'warn', code: 'noFeed', values: {}, text: '이번 주 급여 기록이 없습니다. 실제로 걸렀는지, 적는 것만 걸렀는지 확인해 보세요.' });
     }
     const lastWater = lastOf('water');
     if (!lastWater || daysBetween(lastWater, end) >= 2) {
-      notes.push({ level: 'info', text: '물 교체 기록이 이틀 넘게 없습니다. 신선한 물이 있는지 확인해 보세요.' });
+      notes.push({ level: 'info', code: 'waterSparse', values: {}, text: '물 교체 기록이 이틀 넘게 없습니다. 신선한 물이 있는지 확인해 보세요.' });
     }
     const lastClean = lastOf('clean');
     if (!lastClean || daysBetween(lastClean, end) >= 10) {
-      notes.push({ level: 'info', text: '청소 기록이 열흘 넘게 없습니다. 청소 주기를 점검해 보세요.' });
+      notes.push({ level: 'info', code: 'cleanSparse', values: {}, text: '청소 기록이 열흘 넘게 없습니다. 청소 주기를 점검해 보세요.' });
     }
     if (notes.length === 0) {
-      notes.push({ level: 'good', text: '이번 주 기록이 고르게 남아 있습니다.' });
+      notes.push({ level: 'good', code: 'balanced', values: {}, text: '이번 주 기록이 고르게 남아 있습니다.' });
     }
   }
 
@@ -540,6 +557,8 @@ function feedKindInfo(k) {
    주기가 규칙적이라 평균으로 환산해도 오차가 크지 않습니다. */
 function planPerDay(plan) {
   if (!plan || plan.is_active === false) return 0;
+  const weekly = Number(plan.weekly_target);
+  if (Number.isInteger(weekly) && weekly >= 1 && weekly <= 7) return weekly / 7;
   if (Array.isArray(plan.weekdays) && plan.weekdays.length) return plan.weekdays.length / 7;
   const n = parseInt(plan.interval_days, 10);
   return (n && n > 0) ? 1 / n : 0;
@@ -688,8 +707,9 @@ function signsFor(species) {
   });
 }
 
-/* 증세 기록은 kind='symptom', detail=코드, title='관찰' 또는 '해소' 입니다.
-   코드별로 가장 최근 기록이 '관찰' 이면 아직 보고 있는 것으로 봅니다.
+/* 증세 기록은 kind='symptom', detail=코드, title='observing' 또는 'resolved' 입니다.
+   예전 행의 '관찰'·'해소'도 함께 읽습니다. 코드별로 가장 최근 기록이 해소가
+   아니면 아직 보고 있는 것으로 봅니다.
 
    상태 칼럼을 따로 두지 않은 이유 — 상태는 기록에서 나옵니다. 칼럼으로 두면
    기록과 상태가 어긋날 수 있고, 그때 어느 쪽이 맞는지 알 수 없습니다. */
@@ -704,11 +724,140 @@ function signStatus(records, endDate) {
   });
   return Object.keys(by).map(function (code) {
     const g = by[code];
-    g.open = g.latestTitle !== '해소';
+    g.open = g.latestTitle !== 'resolved' && g.latestTitle !== '해소';
     g.days = daysBetween(g.first, end) + 1;
     g.ago = daysBetween(g.last, end);
     return g;
   }).sort((a, b) => (a.open === b.open) ? (a.last < b.last ? 1 : -1) : (a.open ? -1 : 1));
+}
+
+
+/* =============================================================================
+   족보
+   -----------------------------------------------------------------------------
+   animals 의 parent_a · parent_b 가 이미 그래프입니다. 여기서는 그것을 세대별
+   자리로 펴서, 화면이 좌표만 붙이면 되게 만듭니다.
+
+   자리 잡는 법 — 세대 g 는 2^g 칸입니다.
+       0세대            [ 본인 ]
+       1세대       [ 부 ]      [ 모 ]
+       2세대   [조부][조모] [외조부][외조모]
+   칸 s 의 부모는 다음 세대의 칸 2s(부) · 2s+1(모) 입니다. 비어 있는 자리는
+   그냥 없습니다 — 미등록 조상까지 빈칸으로 그리면 화면이 대부분 빈칸이 됩니다.
+
+   ---------------------------------------------------------------------------
+   두 가지를 반드시 잡아야 합니다
+   ---------------------------------------------------------------------------
+   ① 순환 — 실수로 자기 자손을 부모로 지정하면 위로 무한히 올라갑니다.
+      화면이 멈추고 사용자는 이유를 모릅니다. 지나온 경로를 들고 다니며
+      다시 만나면 거기서 끊고 따로 알려줍니다.
+
+   ② 겹치는 조상 — 같은 개체가 족보에 두 번 이상 나오면 근친입니다.
+      이게 족보를 그리는 가장 큰 이유이므로 눈에 띄게 표시할 수 있도록
+      횟수를 함께 돌려줍니다.
+   ============================================================================= */
+
+/* animals 전체와 중심 개체 id 를 받아 세대별로 폅니다.
+
+   반환
+     root      중심 개체
+     up        [[{slot, id, animal, repeated}], …]  가까운 세대부터
+     slots     up 각 세대의 칸 수 (2^(g+1))
+     children  [{animal, mate}]  이 개체가 부모로 들어간 자식
+     repeats   [{id, name, count}]  두 번 이상 나온 조상
+     cycles    [{id, name}]  자기 조상이면서 자손인 잘못된 입력
+     known     조상 칸 중 실제로 채워진 개수 / 전체 칸 수 */
+/* 이 개체를 부모로 걸어 둔 자식들.
+   -----------------------------------------------------------------------------
+   부모 자격은 자식 쪽에서만 검사하고 있었습니다. 그래서 어미를 만들어 연결한
+   뒤에 그 어미의 종을 '기타' 로 바꾸면, 레오파드 새끼의 어미가 기타가 되는 일이
+   생겼습니다. 성별과 성장 단계도 마찬가지입니다 — 어미를 수컷이나 베이비로
+   바꿔도 아무도 막지 않았습니다.
+
+   화면에서 먼저 막으려면 '이 개체가 누군가의 부모인가' 를 알아야 해서, 족보와
+   따로 쓸 수 있게 꺼내 둡니다. 서버 쪽 검사는 supabase_v63.sql 이 합니다 —
+   화면만 막으면 화면을 거치지 않는 경로가 그대로 남습니다. */
+function childrenOf(animals, id) {
+  if (!id) return [];
+  return (animals || []).filter(a => a.parent_a === id || a.parent_b === id);
+}
+
+function buildPedigree(animals, rootId, upGen) {
+  const list = animals || [];
+  const byId = {};
+  list.forEach(a => { byId[a.id] = a; });
+  const root = byId[rootId];
+  if (!root) return null;
+
+  /* upGen 을 안 주면 3세대. 0 을 줬을 때 기본값으로 새지 않게 NaN 만 봅니다 —
+     parseInt(0) || 3 은 0 이 falsy 라 3 이 됩니다.
+
+     상한은 6세대입니다. 마지막 줄이 64칸(2^6)이고 조상 칸을 다 합치면 126칸인데,
+     이게 혈통서에서 흔히 쓰는 깊이입니다. 더 늘리면 칸이 다시 두 배가 되는 데
+     비해 채워지는 칸은 거의 늘지 않습니다 — 그만큼 거슬러 올라간 기록을 가진
+     사람이 없습니다. */
+  const asked = parseInt(upGen, 10);
+  const maxUp = Math.max(1, Math.min(isNaN(asked) ? 3 : asked, 6));
+  const up = [], slots = [];
+  const seen = {}, cycles = [];
+
+  /* 경로(path)는 이 노드까지 내려온 조상 사슬입니다. 순환을 잡는 데만 쓰고,
+     다 훑은 뒤 화면에 넘기기 전에 떼어냅니다. */
+  let cur = [{ slot: 0, animal: root, path: [rootId] }];
+  for (let g = 0; g < maxUp; g++) {
+    const next = [];
+    cur.forEach(function (node) {
+      if (!node.animal) return;
+      [['parent_a', 0], ['parent_b', 1]].forEach(function (side) {
+        const pid = node.animal[side[0]];
+        if (!pid) return;
+        /* 순환. 여기서 끊지 않으면 세대 제한에 걸릴 때까지 같은 개체가
+           계속 올라가고, 근친 표시도 거짓으로 부풀려집니다. */
+        if (node.path.indexOf(pid) >= 0) {
+          if (!cycles.some(c => c.id === pid)) {
+            cycles.push({ id: pid, name: (byId[pid] && byId[pid].name) || '이름 없음' });
+          }
+          return;
+        }
+        seen[pid] = (seen[pid] || 0) + 1;
+        next.push({
+          slot: node.slot * 2 + side[1],
+          id: pid,
+          animal: byId[pid] || null,      // 지워진 개체를 가리킬 수 있습니다
+          path: node.path.concat([pid])
+        });
+      });
+    });
+    if (!next.length) break;
+    up.push(next);
+    slots.push(Math.pow(2, g + 1));
+    cur = next;
+  }
+  /* 화면에는 경로가 필요 없습니다. 들고 나가면 그만큼 무거워지기만 합니다. */
+  up.forEach(row => row.forEach(n => { delete n.path; }));
+
+  up.forEach(row => row.forEach(n => { n.repeated = seen[n.id] > 1; }));
+
+  const repeats = Object.keys(seen).filter(k => seen[k] > 1).map(k => ({
+    id: k, name: (byId[k] && byId[k].name) || '이름 없음', count: seen[k]
+  })).sort((a, b) => b.count - a.count);
+
+  /* 이 개체가 부모로 들어간 자식. 짝(다른 부모)도 함께 — '누구와 낳았나' 가
+     족보에서 자식만큼 중요합니다. */
+  const children = list.filter(a => a.parent_a === rootId || a.parent_b === rootId)
+    .map(function (a) {
+      const mateId = a.parent_a === rootId ? a.parent_b : a.parent_a;
+      return { animal: a, mate: mateId ? (byId[mateId] || null) : null, mateId: mateId || null };
+    });
+
+  const totalSlots = slots.reduce((s, n) => s + n, 0);
+  const filled = up.reduce((s, row) => s + row.filter(n => n.animal).length, 0);
+
+  return {
+    root: root, up: up, slots: slots, children: children,
+    repeats: repeats, cycles: cycles,
+    known: { filled: filled, total: totalSlots }
+  };
 }
 
 
@@ -770,7 +919,12 @@ function lastDoneByKind(records, endDate) {
 
 /* 체중 한눈에 */
 function weightSummary(weights) {
-  const w = (weights || []).slice().sort((a, b) => a.measured_on < b.measured_on ? -1 : 1);
+  const w = (weights || []).slice().sort(function (a, b) {
+    if (a.measured_on !== b.measured_on) return a.measured_on < b.measured_on ? -1 : 1;
+    const left = a.measured_at || a.created_at || '';
+    const right = b.measured_at || b.created_at || '';
+    return left < right ? -1 : left > right ? 1 : 0;
+  });
   if (!w.length) return { count: 0 };
   const g = w.map(x => Number(x.grams));
   const round1 = v => Math.round(v * 10) / 10;
@@ -825,12 +979,12 @@ function ageText(hatchDate, endDate) {
 /* ── 밖에서 쓰도록 내보내기 ─────────────────────────────────────────────── */
 if (typeof window !== 'undefined') {
   window.CareCore = {
-    SERVICE_ID, CARE_KINDS, RECORD_ONLY_KINDS, QUICK_KINDS, SPECIES, WEEKDAY_KO, SAFETY_NOTE,
+    SERVICE_ID: CARE_SERVICE_ID, CARE_KINDS, RECORD_ONLY_KINDS, QUICK_KINDS, SPECIES, WEEKDAY_KO, SAFETY_NOTE,
     kindInfo, ymd, parseYmd, today, addDays, daysBetween, weekdayOf,
     isDueOn, lastDueBefore, nextDueAfter, planStatus, cycleLabel,
     buildIcs, icsEscape, icsFold, weeklySummary,
     completionRate, streakDays, lastDoneByKind, weightSummary, dailyCounts, ageText,
-    SIGNS, signsFor, signStatus,
+    SIGNS, signsFor, signStatus, buildPedigree, childrenOf,
     FEED_KINDS, FEED_LEVEL, feedKindInfo, planPerDay, feedForecast
   };
 }
